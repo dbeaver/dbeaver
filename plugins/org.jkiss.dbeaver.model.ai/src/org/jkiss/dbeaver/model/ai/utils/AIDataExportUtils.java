@@ -27,10 +27,14 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class AIDataExportUtils {
+    private static final byte[] CSV_RESULT_SEPARATOR = "\n---\n\n".getBytes(StandardCharsets.UTF_8);
+
     private AIDataExportUtils() {
     }
 
@@ -86,6 +90,13 @@ public final class AIDataExportUtils {
             return exporter;
         }
         throw new DBException("Format '" + processor.getAIFormatId() + "' does not support data export");
+    }
+
+    public static void writeResultSeparator(@NotNull ByteArrayOutputStream output, @NotNull IStreamDataExporter exporter) {
+        // Each CSV result retains its own header and may have a different column layout.
+        if (exporter instanceof DataExporterCSV && output.size() > 0) {
+            output.writeBytes(CSV_RESULT_SEPARATOR);
+        }
     }
 
     @NotNull

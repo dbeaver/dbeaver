@@ -35,8 +35,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -95,6 +97,25 @@ class AIDataExportUtilsTest {
         Assertions.assertTrue(output.startsWith("[\n"), output);
         Assertions.assertTrue(output.contains("\"value\" : \"Montréal\\n東京\""), output);
         Assertions.assertTrue(output.endsWith("]\n"), output);
+    }
+
+    @Test
+    void separatesCompleteCsvResultsAndPreservesTheirHeaders() throws Exception {
+        DataTransferProcessorDescriptor processor = Mockito.mock(DataTransferProcessorDescriptor.class);
+        Mockito.when(processor.getInstance()).thenAnswer(invocation -> new DataExporterCSV());
+        DBPPropertyDescriptor[] properties = {property("headerCase", "as is")};
+        Mockito.when(processor.getProperties()).thenReturn(properties);
+        String first = exportRow(processor, "Montréal");
+        String second = exportRow(processor, "東京");
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        AIDataExportUtils.writeResultSeparator(output, AIDataExportUtils.createExporter(processor));
+        output.writeBytes(first.getBytes(StandardCharsets.UTF_8));
+        AIDataExportUtils.writeResultSeparator(output, AIDataExportUtils.createExporter(processor));
+        output.writeBytes(second.getBytes(StandardCharsets.UTF_8));
+
+        Assertions.assertEquals(first + "\n---\n\n" + second, output.toString(StandardCharsets.UTF_8));
+        Assertions.assertTrue(first.startsWith("\"value\"\n"), first);
+        Assertions.assertTrue(second.startsWith("\"value\"\n"), second);
     }
 
     @NotNull

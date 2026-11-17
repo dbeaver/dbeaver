@@ -174,8 +174,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         if (queries.isEmpty()) {
             throw new DBException("No SQL statements to execute");
         }
-        // File-append support does not make separately exported result sets one valid inline document.
-        if (processor != null && queries.size() > 1) {
+        if (processor != null && queries.size() > 1 && !processor.isAppendable()) {
             throw new DBException("Format '" + processor.getAIFormatId() + "' supports only one statement per call");
         }
         for (SQLQuery query : queries) {
@@ -202,6 +201,8 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         for (SQLQuery query : queries) {
             StreamTransferConsumer consumer = null;
             if (processor != null) {
+                var exporter = AIDataExportUtils.createExporter(processor);
+                AIDataExportUtils.writeResultSeparator(output, exporter);
                 query.setResultSetLimit(0, maxRows);
                 consumer = new StreamTransferConsumer();
                 StreamConsumerSettings settings = new StreamConsumerSettings();
@@ -212,7 +213,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
                     new SQLQueryDataContainer(new DataSourceContextProvider(dataSource), query, scriptContext, log),
                     settings,
                     new IDataTransferConsumer.TransferParameters(false, false, output),
-                    AIDataExportUtils.createExporter(processor),
+                    exporter,
                     AIDataExportUtils.getProperties(processor),
                     dataSource.getContainer().getProject()
                 );

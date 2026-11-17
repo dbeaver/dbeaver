@@ -112,15 +112,19 @@ class SQLExecutionFunctionsTest {
     }
 
     @Test
-    void inlineExportsRejectMultipleStatementsEvenForAppendableFormats() throws DBException {
+    void inlineExportsAllowAppendableFormatsAndRejectNonAppendableDocuments() throws DBException {
         ScopeFixture fixture = new ScopeFixture();
         DataTransferProcessorDescriptor processor = Mockito.mock(DataTransferProcessorDescriptor.class);
         Mockito.when(processor.getAIFormatId()).thenReturn("csv");
         Mockito.when(processor.isAppendable()).thenReturn(true);
+        List<SQLQuery> queries = List.of(new SQLQuery(null, "SELECT 1"), new SQLQuery(null, "SELECT 2"));
+        ExecuteDQLFunction function = new ExecuteDQLFunction();
+        Assertions.assertDoesNotThrow(() -> function.verifyQueries(fixture.context, fixture.executionContext, queries, processor));
+        Mockito.when(processor.getAIFormatId()).thenReturn("json");
+        Mockito.when(processor.isAppendable()).thenReturn(false);
         DBException error = Assertions.assertThrows(DBException.class,
-            () -> new ExecuteDQLFunction().verifyQueries(fixture.context, fixture.executionContext,
-                List.of(new SQLQuery(null, "SELECT 1"), new SQLQuery(null, "SELECT 2")), processor));
-        Assertions.assertEquals("Format 'csv' supports only one statement per call", error.getMessage());
+            () -> function.verifyQueries(fixture.context, fixture.executionContext, queries, processor));
+        Assertions.assertEquals("Format 'json' supports only one statement per call", error.getMessage());
         Mockito.verify(processor, Mockito.never()).getInstance();
         Assertions.assertDoesNotThrow(() -> new ExecuteDMLFunction().verifyQueries(fixture.context, fixture.executionContext,
             List.of(new SQLQuery(null, "UPDATE public.orders SET id=1"), new SQLQuery(null, "DELETE FROM public.orders")), null));
