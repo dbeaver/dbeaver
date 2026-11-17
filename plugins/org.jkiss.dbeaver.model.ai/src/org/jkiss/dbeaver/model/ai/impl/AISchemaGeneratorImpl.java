@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.model.ai.impl;
 
-import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.select.Select;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -36,14 +33,11 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
-import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
-import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -71,11 +65,10 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         if (!CommonUtils.isEmpty(tableDDL)) {
             DBStructUtils.addDDLLine(ddl, tableDDL);
         } else {
-            Set<DBSEntityConstraint> includedConstraints = new HashSet<>();
-            generateCustomDDL(monitor, executionContext, options, entity, ddl, includedConstraints);
+            generateCustomDDL(monitor, executionContext, options, entity, ddl);
             ddl.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(GeneralUtils.getDefaultLineSeparator());
             if (options.sendIndexes() && entity instanceof DBSTable table) {
-                addIndexesDDL(monitor, options, table, includedConstraints, ddl);
+                describeIndexes(monitor, options, table, ddl);
             }
         }
 
@@ -89,162 +82,36 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         return ddl.toString().trim();
     }
 
-    private void addIndexesDDL(
+    private void describeIndexes(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSTable table,
-        @NotNull Set<DBSEntityConstraint> includedConstraints,
         @NotNull StringBuilder ddl
     ) throws DBException {
-        Map<String, Object> ddlOptions = Map.of(DBPScriptObject.OPTION_SKIP_DROPS, true);
-        SQLTableManager<?, ?> tableManager = options.sendConstraints()
-            ? DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(table.getClass(), SQLTableManager.class)
-            : null;
-        Set<String> excludedColumns = new HashSet<>();
-        for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-            if (DBUtils.isHiddenObject(column) || !options.includesObject(monitor, column)) {
-                excludedColumns.add(column.getName());
-            }
-        }
         for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
             if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)) {
                 continue;
             }
-            if (tableManager != null && includedConstraints.contains(tableManager.getIndexConstraint(monitor, index))) {
+            List<? extends DBSTableIndexColumn> references = index.getAttributeReferences(monitor);
+            if (CommonUtils.isEmpty(references)) {
                 continue;
             }
-            if (!includesAttributes(monitor, options, index)) {
-                continue;
-            }
-            String indexDDL = DBStructUtils.generateObjectDDL(monitor, index, ddlOptions, false);
-            var references = index.getAttributeReferences(monitor);
-            boolean checkExpressions = CommonUtils.isEmpty(references)
-                || references.stream().anyMatch(reference -> reference.getAttribute() == null);
-            if (includesIndexDefinition(table.getDataSource(), excludedColumns, checkExpressions, indexDDL)) {
-                DBStructUtils.addDDLLine(ddl, indexDDL);
-            }
-        }
-    }
-
-    private boolean includesAttributes(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntityReferrer referrer
-    ) throws DBException {
-        for (DBSEntityAttributeRef reference : CommonUtils.safeCollection(referrer.getAttributeReferences(monitor))) {
-            DBSEntityAttribute attribute = reference.getAttribute();
-            if (attribute != null && (DBUtils.isHiddenObject(attribute) || !options.includesObject(monitor, attribute))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean includesIndexDefinition(
-        @NotNull DBPDataSource dataSource,
-        @NotNull Set<String> excludedColumns,
-        boolean checkExpressions,
-        @NotNull String indexDDL
-    ) {
-        if (excludedColumns.isEmpty()) {
-            return true;
-        }
-        var context = SQLScriptParser.prepareSqlParserContext(
-            dataSource, dataSource.getSQLDialect(), DBWorkbench.getPlatform().getPreferenceStore(), indexDDL);
-        var scanner = context.getScanner();
-        scanner.setRange(context.getDocument(), 0, indexDDL.length());
-        List<String> expressions = new ArrayList<>();
-        boolean tableFound = false;
-        boolean columnsFound = false;
-        boolean includedColumns = false;
-        int depth = 0;
-        int columnsStart = -1;
-        int predicateStart = -1;
-        for (TPToken token = scanner.nextToken(); !token.isEOF(); token = scanner.nextToken()) {
-            Object tokenType = token.getData();
-            if (tokenType == SQLTokenType.T_STRING || tokenType == SQLTokenType.T_QUOTED
-                || tokenType == SQLTokenType.T_COMMENT || token.isWhitespace()) {
-                continue;
-            }
-            int offset = scanner.getTokenOffset();
-            String text = indexDDL.substring(offset, offset + scanner.getTokenLength());
-            if (!tableFound) {
-                tableFound = text.equalsIgnoreCase("ON");
-                continue;
-            }
-            if (text.equals("(")) {
-                if (depth == 0 && (!columnsFound || includedColumns)) {
-                    columnsStart = offset + 1;
-                }
-                depth++;
-            } else if (text.equals(")")) {
-                depth--;
-                if (depth == 0 && columnsStart >= 0) {
-                    if (checkExpressions) {
-                        expressions.add("SELECT 1 ORDER BY " + indexDDL.substring(columnsStart, offset));
-                    }
-                    columnsStart = -1;
-                    columnsFound = true;
-                    includedColumns = false;
-                }
-            } else if (depth == 0 && columnsFound) {
-                if (predicateStart >= 0 && (text.equals(";") || text.equalsIgnoreCase("WITH")
-                    || text.equalsIgnoreCase("ON"))) {
-                    expressions.add("SELECT 1 WHERE " + indexDDL.substring(predicateStart, offset));
-                    predicateStart = -1;
+            StringJoiner columns = new StringJoiner(", ", "(", ")");
+            boolean included = true;
+            for (DBSTableIndexColumn reference : references) {
+                DBSEntityAttribute attribute = reference.getAttribute();
+                if (attribute != null && (DBUtils.isHiddenObject(attribute) || !options.includesObject(monitor, attribute))) {
+                    included = false;
                     break;
                 }
-                if (predicateStart < 0 && text.equalsIgnoreCase("WHERE")) {
-                    predicateStart = offset + scanner.getTokenLength();
-                } else if (predicateStart < 0 && text.equalsIgnoreCase("INCLUDE")) {
-                    includedColumns = true;
-                }
+                columns.add((attribute == null ? "<expression>" : DBUtils.getQuotedIdentifier(attribute))
+                    + (reference.isAscending() ? " ASC" : " DESC"));
             }
-        }
-        if (predicateStart >= 0) {
-            expressions.add("SELECT 1 WHERE " + indexDDL.substring(predicateStart));
-        }
-        if (checkExpressions && (!columnsFound || depth != 0)) {
-            return false;
-        }
-        for (String expression : expressions) {
-            if (!includesIndexExpression(dataSource, excludedColumns, expression)) {
-                return false;
+            if (included) {
+                ddl.append(index.isUnique() ? "-- UNIQUE INDEX " : "-- INDEX ")
+                    .append(DBUtils.getQuotedIdentifier(index)).append(" ").append(columns)
+                    .append(GeneralUtils.getDefaultLineSeparator());
             }
-        }
-        return true;
-    }
-
-    private boolean includesIndexExpression(
-        @NotNull DBPDataSource dataSource,
-        @NotNull Set<String> excludedColumns,
-        @NotNull String expression
-    ) {
-        Set<String> columns = new HashSet<>();
-        var dialect = dataSource.getSQLDialect();
-        var visitor = new ExpressionVisitorAdapter<Void>() {
-            @Nullable
-            @Override
-            public <CONTEXT> Void visit(@NotNull Column column, @Nullable CONTEXT context) {
-                String name = column.getColumnName();
-                columns.add(dialect.isQuotedIdentifier(name)
-                    ? dialect.getUnquotedIdentifier(name, true)
-                    : DBUtils.getUnQuotedNormalizedIdentifier(dialect, name));
-                return null;
-            }
-        };
-        try {
-            var select = ((Select) SQLSemanticProcessor.parseQuery(dialect, expression)).getPlainSelect();
-            if (select.getWhere() != null) {
-                select.getWhere().accept(visitor, null);
-            }
-            for (var orderBy : CommonUtils.safeCollection(select.getOrderByElements())) {
-                orderBy.getExpression().accept(visitor, null);
-            }
-            return Collections.disjoint(excludedColumns, columns);
-        } catch (DBException e) {
-            log.debug("Unable to determine index column scope", e);
-            return false;
         }
     }
 
@@ -325,13 +192,13 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
     }
 
-    private void generateCustomDDL(
+    @NotNull
+    private String generateCustomDDL(
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBCExecutionContext executionContext,
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSEntity table,
-        @NotNull StringBuilder ddl,
-        @NotNull Set<DBSEntityConstraint> includedConstraints
+        @NotNull StringBuilder ddl
     ) throws DBException {
         String name = options.useFQN() || requiresFqn(table, executionContext)
             ? DBUtils.getObjectFullName(table.getDataSource(), table, DBPEvaluationContext.DDL)
@@ -355,8 +222,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         List<? extends DBSEntityAttribute> attributes = table.getAttributes(monitor);
 
         if (attributes == null || attributes.isEmpty()) {
-            ddl.append(");");
-            return;
+            return ddl.append(");").toString();
         }
 
         StringJoiner joiner = new StringJoiner(",", " (", ") ");
@@ -373,7 +239,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
 
         if (options.sendConstraints()) {
-            describeTableKeys(monitor, options, table, includedConstraints).forEach(joiner::add);
+            describeTableKeys(monitor, options, table).forEach(joiner::add);
         }
 
         if (options.sendForeignKeys()) {
@@ -381,6 +247,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
 
         ddl.append(joiner);
+        return ddl.toString();
     }
 
     private static boolean requiresFqn(
@@ -400,8 +267,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
     private List<String> describeTableKeys(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntity entity,
-        @NotNull Set<DBSEntityConstraint> includedConstraints
+        @NotNull DBSEntity entity
     ) throws DBException {
         Collection<? extends DBSEntityConstraint> constraints = entity.getConstraints(monitor);
         if (CommonUtils.isEmpty(constraints)) {
@@ -410,14 +276,12 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
 
         List<String> keyDescriptions = new ArrayList<>(constraints.size());
         for (DBSEntityConstraint c : constraints) {
-            if (!options.includesObject(monitor, c)
-                || c instanceof DBSEntityReferrer referrer && !includesAttributes(monitor, options, referrer)) {
+            if (!options.includesObject(monitor, c)) {
                 continue;
             }
             String description = describeConstraint(monitor, c);
             if (!CommonUtils.isEmpty(description)) {
                 keyDescriptions.add(description);
-                includedConstraints.add(c);
             }
         }
 

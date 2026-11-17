@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -206,14 +205,6 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 log.error(e);
             }
         }
-    }
-
-    @Nullable
-    @Override
-    public PostgreTableConstraintBase getIndexConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSTableIndex index)
-            throws DBException {
-        PostgreIndex pgIndex = (PostgreIndex) index;
-        return pgIndex.isPrimaryKeyIndex() ? pgIndex.getTable().getConstraint(monitor, pgIndex.getName()) : null;
     }
 
     @Override

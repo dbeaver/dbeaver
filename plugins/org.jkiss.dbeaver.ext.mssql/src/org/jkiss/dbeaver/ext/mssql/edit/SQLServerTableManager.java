@@ -134,18 +134,6 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
         processObjectRename(commandContext, object, options, newName);
     }
 
-    @Nullable
-    @Override
-    public DBSEntityConstraint getIndexConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSTableIndex index)
-            throws DBException {
-        for (DBSEntityConstraint constraint : CommonUtils.safeCollection(index.getTable().getConstraints(monitor))) {
-            if (constraint instanceof SQLServerTableUniqueKey uniqueKey && uniqueKey.getIndex() == index) {
-                return constraint;
-            }
-        }
-        return null;
-    }
-
     @Override
     protected boolean isIncludeIndexInDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSTableIndex index) throws DBException {
         Collection<? extends DBSEntityConstraint> constraints = index.getTable().getConstraints(monitor);
