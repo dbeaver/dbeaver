@@ -17,22 +17,87 @@
 package org.jkiss.dbeaver.ui.datadam.project.event;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDSharedProjectEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectEventSource;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
-import org.jkiss.dbeaver.ui.datadam.project.event.actions.AbstractProjectEventJob;
-import org.jkiss.dbeaver.ui.datadam.project.event.actions.ProjectConfigurationUpdatedAction;
-import org.jkiss.dbeaver.ui.datadam.project.event.actions.ProjectCreatedAction;
-import org.jkiss.dbeaver.ui.datadam.project.event.actions.ProjectDeletedAction;
+import org.jkiss.dbeaver.ui.datadam.project.event.actions.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DDProjectEventListener implements DDSharedProjectEventSource.Subscriber {
     private static final Log log = Log.getLog(DDProjectEventListener.class);
     private final DDProjectUIManager uiManager;
+    private final List<DDSharedProjectEvent> pendingEvents = new ArrayList<>();
+    private State state = State.STOPPED;
+    private boolean syncRunning;
+
+    private enum State {
+        STOPPED, SYNCHRONIZING, LISTENING
+    }
 
     public DDProjectEventListener(@NotNull DDProjectUIManager uiManager) {
         this.uiManager = uiManager;
+    }
+
+    @Override
+    public synchronized void start() {
+        if (state != State.STOPPED) {
+            return;
+        }
+        state = State.SYNCHRONIZING;
+        if (!syncRunning) {
+            startSynchronization();
+        }
+    }
+
+    @Override
+    public synchronized void stop() {
+        state = State.STOPPED;
+        pendingEvents.clear();
+    }
+
+    @Override
+    public synchronized void onEvent(@NotNull DDSharedProjectEvent event) throws DBException {
+        switch (state) {
+            case STOPPED -> { }
+            case SYNCHRONIZING -> pendingEvents.add(event);
+            case LISTENING -> DDSharedProjectEventSource.Subscriber.super.onEvent(event);
+        }
+    }
+
+    private void startSynchronization() {
+        syncRunning = true;
+        SyncAllJob job = new SyncAllJob();
+        job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(@NotNull IJobChangeEvent event) {
+                job.removeJobChangeListener(this);
+                synchronizationFinished();
+            }
+        });
+        job.setUser(true);
+        job.schedule();
+    }
+
+    private synchronized void synchronizationFinished() {
+        syncRunning = false;
+        if (state == State.STOPPED) {
+            return;
+        }
+        state = State.LISTENING;
+        for (DDSharedProjectEvent event : pendingEvents) {
+            try {
+                DDSharedProjectEventSource.Subscriber.super.onEvent(event);
+            } catch (DBException | RuntimeException e) {
+                log.warn("Could not process buffered shared project event", e);
+            }
+        }
+        pendingEvents.clear();
     }
 
     @Override

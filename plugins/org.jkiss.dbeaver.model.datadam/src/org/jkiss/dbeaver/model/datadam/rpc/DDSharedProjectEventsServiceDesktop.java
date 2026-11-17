@@ -20,7 +20,6 @@ import com.dbeaver.datadam.dam.remote.api.model.DDSharedProjectEvent;
 import com.dbeaver.datadam.dam.remote.api.service.desktop.DDSharedProjectEventsService;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 
 import java.util.List;
@@ -30,7 +29,8 @@ public final class DDSharedProjectEventsServiceDesktop implements DDSharedProjec
     private static final Log log = Log.getLog(DDSharedProjectEventsServiceDesktop.class);
     private static final DDSharedProjectEventsServiceDesktop INSTANCE = new DDSharedProjectEventsServiceDesktop();
 
-    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    private final List<Subscriber> subscribers = new CopyOnWriteArrayList<>();
+    private boolean started;
 
     private DDSharedProjectEventsServiceDesktop() {
     }
@@ -42,29 +42,65 @@ public final class DDSharedProjectEventsServiceDesktop implements DDSharedProjec
 
     @NotNull
     @Override
-    public DDRemoteDamSubscription subscribe(@NotNull Subscriber subscriber) {
-        Listener registration = new Listener(subscriber);
-        listeners.add(registration);
-        return () -> listeners.remove(registration);
+    public synchronized DDRemoteDamSubscription subscribe(@NotNull Subscriber subscriber) {
+        subscribers.add(subscriber);
+        if (started) {
+            startSubscriber(subscriber);
+        }
+        return () -> unsubscribe(subscriber);
+    }
+
+    private synchronized void unsubscribe(@NotNull Subscriber subscriber) {
+        if (subscribers.remove(subscriber)) {
+            stopSubscriber(subscriber);
+        }
     }
 
     @Override
     public void projectChanged(@NotNull DDSharedProjectEvent event) {
         log.debug("Received shared project event " + event.change() + " for project " + event.projectId());
-        for (Listener listener : listeners) {
+        for (Subscriber subscriber : subscribers) {
             try {
-                listener.subscriber.onEvent(event);
-            } catch (DBException | RuntimeException e) {
+                subscriber.onEvent(event);
+            } catch (Exception e) {
                 log.warn("Shared project event listener failed", e);
             }
         }
     }
 
-    private static class Listener {
-        private final Subscriber subscriber;
+    public synchronized void start() {
+        if (started) {
+            return;
+        }
+        started = true;
+        for (Subscriber subscriber : subscribers) {
+            startSubscriber(subscriber);
+        }
+    }
 
-        private Listener(@NotNull Subscriber subscriber) {
-            this.subscriber = subscriber;
+    public synchronized void stop() {
+        if (!started) {
+            return;
+        }
+        started = false;
+        for (Subscriber subscriber : subscribers) {
+            stopSubscriber(subscriber);
+        }
+    }
+
+    private void startSubscriber(@NotNull Subscriber subscriber) {
+        try {
+            subscriber.start();
+        } catch (Exception e) {
+            log.warn("Could not start shared project subscriber", e);
+        }
+    }
+
+    private void stopSubscriber(@NotNull Subscriber subscriber) {
+        try {
+            subscriber.stop();
+        } catch (Exception e) {
+            log.warn("Could not stop shared project subscriber", e);
         }
     }
 }

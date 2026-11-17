@@ -36,6 +36,7 @@ public class DDSharedProjectDesktopRpcRegistration implements DDDesktopRpcRegist
             endpoint.register(DDSharedProjectEventsService.SERVICE_ID, DDSharedProjectEventsService.class,
                 DDSharedProjectEventsServiceDesktop.getInstance());
             registeredEndpoint = endpoint;
+            DDSharedProjectEventsServiceDesktop.getInstance().start();
         }
     }
 }

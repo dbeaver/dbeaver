@@ -26,6 +26,11 @@ public interface DDSharedProjectEventSource {
     DDRemoteDamSubscription subscribe(@NotNull Subscriber subscriber);
 
     interface Subscriber {
+
+        void start() throws DBException;
+
+        void stop() throws DBException;
+
         default void onEvent(@NotNull DDSharedProjectEvent event) throws DBException {
             switch (event.change()) {
                 case CREATED -> projectCreated(event);
