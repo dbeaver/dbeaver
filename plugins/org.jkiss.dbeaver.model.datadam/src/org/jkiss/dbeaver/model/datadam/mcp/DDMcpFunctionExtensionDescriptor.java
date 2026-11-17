@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -40,7 +41,10 @@ public class DDMcpFunctionExtensionDescriptor extends AbstractDescriptor {
             extension.getAttribute("id"),
             extension.getAttribute("name"),
             extension.getAttribute("description"),
-            Arrays.stream(extension.getChildren("parameter")).map(this::readParameter).toList()
+            Arrays.stream(extension.getChildren("parameter")).map(this::readParameter).toList(),
+            CommonUtils.toBoolean(extension.getAttribute("readOnlyHint"), false),
+            CommonUtils.toBoolean(extension.getAttribute("destructiveHint"), true),
+            CommonUtils.toBoolean(extension.getAttribute("idempotentHint"), false)
         );
     }
 

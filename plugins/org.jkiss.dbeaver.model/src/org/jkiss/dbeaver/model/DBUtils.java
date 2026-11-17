@@ -2952,7 +2952,8 @@ public final class DBUtils {
         StringTokenizer st = new StringTokenizer(arrayString, ",", false);
         while (st.hasMoreTokens()) {
             String token = st.nextToken().trim();
-            if (token.startsWith("\"") && token.endsWith("\"")) {
+            // A lone quote (e.g. left after splitting a quoted element that contains a comma) must stay as is
+            if (token.length() > 1 && token.startsWith("\"") && token.endsWith("\"")) {
                 token = token.substring(1, token.length() - 1);
             }
             items.add(token);

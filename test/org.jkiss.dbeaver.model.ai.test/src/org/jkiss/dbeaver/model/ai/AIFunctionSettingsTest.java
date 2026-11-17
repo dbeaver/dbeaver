@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,5 +75,70 @@ class AIFunctionSettingsTest {
 
         Assertions.assertTrue(settings.getAskFunctions().isEmpty());
         Assertions.assertEquals(Set.of(FUNCTION_ID), settings.getAlwaysAllowedFunctions());
+    }
+
+    @Test
+    void migratesDisabledTableReadOnLoadAndSavesOnlyCanonicalName() {
+        AIFunctionSettings loaded = JSONUtils.GSON.fromJson("""
+            {"functions":{"db":{"df":["readTableSampleRows"]}}}
+            """, AIFunctionSettings.class);
+        loaded.finishSettingsLoading();
+        AIToolbox toolbox = Mockito.mock(AIToolbox.class);
+        Mockito.when(toolbox.getToolboxId()).thenReturn(AIConstants.INTERNAL_TOOLBOX_ID);
+        AIFunctionDescriptor tableRead = Mockito.mock(AIFunctionDescriptor.class);
+        Mockito.when(tableRead.getId()).thenReturn("readTableData");
+        Mockito.when(tableRead.isEnabledByDefault()).thenReturn(true);
+        AIFunctionSettings.ToolboxSettings internal = loaded.getToolboxSettings(toolbox);
+
+        Assertions.assertFalse(internal.isFunctionEnabled(tableRead));
+        Assertions.assertEquals(Set.of("readTableData"), internal.getDisabledFunctions());
+        String saved = JSONUtils.GSON.toJson(loaded);
+        Assertions.assertFalse(saved.contains("readTableSampleRows"));
+        Assertions.assertTrue(saved.contains("readTableData"));
+
+        internal.setFunctionEnabled(tableRead, true);
+        Assertions.assertTrue(internal.isFunctionEnabled(tableRead));
+        Assertions.assertTrue(internal.getDisabledFunctions().isEmpty());
+    }
+
+    @Test
+    void migratesAllInternalFunctionSettingsWithoutChangingExternalToolboxes() {
+        AIFunctionSettings loaded = JSONUtils.GSON.fromJson("""
+            {"functions":{
+                "db":{
+                    "ef":["readTableSampleRows","readTableData","otherFunction"],
+                    "df":["readTableSampleRows"],
+                    "aaf":["readTableSampleRows"],
+                    "qf":["readTableSampleRows"]
+                },
+                "external":{"df":["readTableSampleRows"]}
+            }}
+            """, AIFunctionSettings.class);
+        loaded.finishSettingsLoading();
+        AIToolbox toolbox = Mockito.mock(AIToolbox.class);
+        Mockito.when(toolbox.getToolboxId()).thenReturn(AIConstants.INTERNAL_TOOLBOX_ID);
+        AIFunctionSettings.ToolboxSettings internal = loaded.getToolboxSettings(toolbox);
+        Assertions.assertEquals(Set.of("readTableData", "otherFunction"), internal.getEnabledFunctions());
+        Assertions.assertEquals(Set.of("readTableData"), internal.getDisabledFunctions());
+        Assertions.assertEquals(Set.of("readTableData"), internal.getAlwaysAllowedFunctions());
+        Assertions.assertEquals(Set.of("readTableData"), internal.getAskFunctions());
+
+        Mockito.when(toolbox.getToolboxId()).thenReturn("external");
+        Assertions.assertEquals(Set.of("readTableSampleRows"), loaded.getToolboxSettings(toolbox).getDisabledFunctions());
+        String saved = JSONUtils.GSON.toJson(loaded);
+        loaded.finishSettingsLoading();
+        Assertions.assertEquals(saved, JSONUtils.GSON.toJson(loaded));
+    }
+
+    @Test
+    void migratesDisabledExecuteSqlToDqlOnlyWhenLoadingSettings() {
+        AIFunctionSettings loaded = JSONUtils.GSON.fromJson("""
+            {"functions":{"db":{"df":["executeSQL"]}}}
+            """, AIFunctionSettings.class);
+        loaded.finishSettingsLoading();
+        AIToolbox toolbox = Mockito.mock(AIToolbox.class);
+        Mockito.when(toolbox.getToolboxId()).thenReturn(AIConstants.INTERNAL_TOOLBOX_ID);
+        Assertions.assertEquals(Set.of("executeDQL"), loaded.getToolboxSettings(toolbox).getDisabledFunctions());
+        Assertions.assertFalse(JSONUtils.GSON.toJson(loaded).contains("executeSQL"));
     }
 }

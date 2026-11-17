@@ -386,7 +386,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
                         String optimizerVersion = connectionInfo.getProviderProperty(OracleConstants.PROP_USE_META_OPTIMIZER_VERSION);
                         if (CommonUtils.isEmpty(optimizerVersion) && isServerVersionAtLeast(10, 2)) {
-                            optimizerVersion = OracleConstants.OPTIMIZER_VERSION_DEFAULT;
+                            // older optimizer features can break DBMS_METADATA on Oracle 23
+                            optimizerVersion = isServerVersionAtLeast(23, 0)
+                                ? OracleConstants.OPTIMIZER_VERSION_231
+                                : OracleConstants.OPTIMIZER_VERSION_DEFAULT;
                         }
                         if (!CommonUtils.isEmpty(optimizerVersion)) {
                             paramsMap.put("OPTIMIZER_FEATURES_ENABLE", "'" + optimizerVersion + "'");
