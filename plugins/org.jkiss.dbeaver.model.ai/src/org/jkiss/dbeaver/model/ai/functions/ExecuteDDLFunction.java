@@ -73,6 +73,17 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
             // Procedural-language bodies are opaque to JSQLParser and cannot be verified within a narrowed scope.
             verifyDatasourceScope(context);
         }
+        // Cascades can affect dependencies that are not explicitly named in the statement.
+        if (statement instanceof Truncate truncate && truncate.getCascade()
+            || statement instanceof Drop drop && CommonUtils.safeCollection(drop.getParameters()).stream()
+                .anyMatch(parameter -> parameter.equalsIgnoreCase("CASCADE"))) {
+            verifyDatasourceScope(context);
+        }
+        if (statement instanceof Alter alter && CommonUtils.safeCollection(alter.getAlterExpressions()).stream()
+            .anyMatch(expression -> CommonUtils.safeCollection(expression.getParameters()).stream()
+                .anyMatch(parameter -> parameter.equalsIgnoreCase("CASCADE")))) {
+            verifyDatasourceScope(context);
+        }
         if (operation != null) {
             String type = operation.objectKind() == SQLObjectOperation.ObjectKind.OTHER && statement instanceof Drop drop
                 ? drop.getType().toUpperCase(Locale.ROOT) : operation.objectKind().name();
@@ -169,6 +180,9 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
         requireStatement(Set.of("CREATE", "ALTER", "DROP", "TRUNCATE", "RENAME", "COMMENT", "REFRESH").contains(command)
             && !(command.equals("ALTER") && tokens.size() > 2 && tokens.get(1).equalsIgnoreCase("DEFAULT")
                 && tokens.get(2).equalsIgnoreCase("PRIVILEGES")), SQLQueryCategory.DDL);
+        if (containsKeyword(tokens, Set.of("CASCADE"))) {
+            verifyDatasourceScope(context);
+        }
         int start = 1;
         while (start < tokens.size() && Set.of("OR", "REPLACE", "ALTER", "TEMP", "TEMPORARY", "UNLOGGED", "UNIQUE", "MATERIALIZED", "ON")
             .contains(tokens.get(start).toUpperCase(Locale.ROOT))) {

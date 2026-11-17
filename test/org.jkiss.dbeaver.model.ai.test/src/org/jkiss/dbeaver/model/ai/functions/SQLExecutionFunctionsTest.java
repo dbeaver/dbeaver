@@ -241,6 +241,30 @@ class SQLExecutionFunctionsTest {
     }
 
     @Test
+    void cascadingDdlRequiresDatasourceWideScope() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        ExecuteDDLFunction function = new ExecuteDDLFunction();
+        List<String> statements = List.of("TRUNCATE TABLE public.orders CASCADE", "DROP TABLE public.orders CASCADE",
+            "ALTER TABLE public.orders DROP COLUMN id CASCADE");
+        for (String sql : statements) {
+            Assertions.assertThrows(DBException.class, () -> fixture.verify(function, sql), sql);
+            fixture.assertTextRestricted(function, sql);
+        }
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function, "ALTER TABLE public.orders DROP COLUMN \"CASCADE\""));
+        Assertions.assertDoesNotThrow(() -> fixture.verifyText(function, "COMMENT ON TABLE public.orders IS 'CASCADE'"));
+        Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
+        for (String sql : statements) {
+            Assertions.assertDoesNotThrow(() -> fixture.verify(function, sql), sql);
+            Assertions.assertDoesNotThrow(() -> fixture.verifyText(function, sql), sql);
+        }
+        Mockito.when(fixture.databaseContext.hasDataSourceCustomScope()).thenReturn(true);
+        for (String sql : statements) {
+            Assertions.assertThrows(DBException.class, () -> fixture.verify(function, sql), sql);
+            fixture.assertTextRestricted(function, sql);
+        }
+    }
+
+    @Test
     void opaqueRoutineDefinitionsRequireDatasourceWideScope() throws DBException {
         ScopeFixture fixture = new ScopeFixture();
         ExecuteDDLFunction function = new ExecuteDDLFunction();
