@@ -53,13 +53,6 @@ public class DDManagementMenu extends CompoundContributionItem {
         });
         var view = page.findView(DDTrackingView.ID);
         tracking.setChecked(view != null && page.isPartVisible(view));
-        Action integration = new Action(DDManagementMessages.integration_enabled, IAction.AS_CHECK_BOX) {
-            @Override
-            public void run() {
-                DDManagementActions.setIntegrationEnabled(isChecked());
-            }
-        };
-        integration.setChecked(enabled);
         Action login = action(signedIn ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
             : DDTrackingUIMessages.sync_preference_page_desktop_sign_in, IAction.AS_PUSH_BUTTON, DDManagementActions::toggleLogin);
         login.setEnabled(enabled);
@@ -92,7 +85,7 @@ public class DDManagementMenu extends CompoundContributionItem {
         }
         return new IContributionItem[] {
             new ActionContributionItem(configure), new ActionContributionItem(tracking),
-            new ActionContributionItem(integration), new ActionContributionItem(mcp),
+            new ActionContributionItem(mcp),
             new Separator(), new ActionContributionItem(login)
         };
     }
