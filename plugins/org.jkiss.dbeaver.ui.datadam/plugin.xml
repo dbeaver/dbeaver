@@ -55,10 +55,7 @@
             lightweight="false"
             state="true">
             <enablement>
-                <and>
-                    <reference definitionId="org.jkiss.dbeaver.ui.datadam.integrationEnabled"/>
-                    <objectClass name="org.jkiss.dbeaver.model.navigator.DBNProject"/>
-                </and>
+                <objectClass name="org.jkiss.dbeaver.model.navigator.DBNProject"/>
             </enablement>
         </decorator>
     </extension>
