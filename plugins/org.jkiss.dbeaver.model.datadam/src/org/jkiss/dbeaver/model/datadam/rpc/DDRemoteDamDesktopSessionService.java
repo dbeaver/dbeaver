@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.internal.DDConnectionMessages;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
@@ -49,7 +50,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
 
     private static final String APP_INSTANCE_ID = UUID.randomUUID().toString();
     private static final long RPC_RETRY_DELAY = 1_000;
-    private static final String RPC_INITIALIZATION_ERROR = "Cannot open DataDam RPC endpoint";
+    private static final String RPC_INITIALIZATION_ERROR = DDConnectionMessages.rpc_initialization_failed;
 
     private static DDRemoteDamDesktopSessionService instance;
 

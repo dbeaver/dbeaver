@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="datadam-status-fragments">
     <imports xsi:type="basic:TrimBar" xmi:id="datadam-status-trim" elementId="org.eclipse.ui.trim.status"/>
-    <fragments xsi:type="fragment:StringModelFragment" xmi:id="datadam-status-fragment" featurename="children" parentElementId="org.eclipse.ui.trim.status" positionInList="before:org.jkiss.dbeaver.core.ui.Breadcrumb">
+    <fragments xsi:type="fragment:StringModelFragment" xmi:id="datadam-status-fragment" featurename="children" parentElementId="org.eclipse.ui.trim.status" positionInList="after:org.jkiss.dbeaver.core.ui.Projects">
         <elements xsi:type="menu:ToolControl" xmi:id="datadam-status-control" elementId="org.jkiss.dbeaver.ui.datadam.status" contributionURI="bundleclass://org.jkiss.dbeaver.ui.datadam/org.jkiss.dbeaver.ui.datadam.management.DDStatusContribution"/>
     </fragments>
 </fragment:ModelFragments>

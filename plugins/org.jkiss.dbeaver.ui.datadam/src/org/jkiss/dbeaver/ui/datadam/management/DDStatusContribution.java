@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.datadam.management;
 
 import jakarta.annotation.PostConstruct;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimElement;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.osgi.util.NLS;
@@ -46,6 +48,8 @@ import java.time.format.DateTimeFormatter;
 
 public class DDStatusContribution implements IWorkbenchWindowInitializer {
     private static final String STATUS_ID = "org.jkiss.dbeaver.ui.datadam.status";
+    private static final String PROJECT_SELECTOR_ID = "org.jkiss.dbeaver.core.ui.Projects";
+    private static final String BOTTOM_TRIM_ID = "org.eclipse.ui.trim.status";
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         .withZone(ZoneId.systemDefault());
     @Nullable
@@ -61,6 +65,17 @@ public class DDStatusContribution implements IWorkbenchWindowInitializer {
         var contribution = modelService.find(STATUS_ID, window.getModel());
         if (contribution == null) {
             return;
+        }
+        var projects = modelService.find(PROJECT_SELECTOR_ID, window.getModel());
+        var bottomTrim = modelService.find(BOTTOM_TRIM_ID, window.getModel());
+        if (contribution instanceof MTrimElement trimContribution
+            && bottomTrim instanceof MTrimBar trim && projects != null) {
+            int currentIndex = trim.getChildren().indexOf(contribution);
+            int projectIndex = trim.getChildren().indexOf(projects);
+            if (currentIndex >= 0 && projectIndex >= 0 && currentIndex != projectIndex + 1) {
+                // Fragment ordering and restored layouts can otherwise put this before the project selector.
+                modelService.move(trimContribution, trim, projectIndex + (currentIndex < projectIndex ? 0 : 1));
+            }
         }
         var store = DBWorkbench.getPlatform().getPreferenceStore();
         var shell = window.getShell();

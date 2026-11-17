@@ -23,11 +23,13 @@ import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.*;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.internal.DDConnectionMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.BaseWebSocketClient;
@@ -282,7 +284,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             String token = tokens.getAccessToken(endpoint);
             if (token == null || token.isBlank()) {
                 log.debug("DataDam desktop channel has no access token");
-                finish(attempt, false, "DataDam access token is unavailable");
+                finish(attempt, false, DDConnectionMessages.token_unavailable);
                 return;
             }
             if (!isCurrent(attempt)) {
@@ -307,13 +309,13 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             }
         } catch (DBException e) {
             log.warn("Cannot obtain DataDam desktop channel access token", e);
-            finish(attempt, true, "Cannot obtain DataDam access token");
+            finish(attempt, true, DDConnectionMessages.token_failed);
         } catch (InterruptedException e) {
             finish(attempt, true);
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             log.warn("Cannot connect DataDam desktop channel", e);
-            finish(attempt, !isAuthorizationFailure(e), "Cannot connect to DataDam (" + e.getClass().getSimpleName() + ")");
+            finish(attempt, !isAuthorizationFailure(e), NLS.bind(DDConnectionMessages.connect_failed, e.getClass().getSimpleName()));
         }
     }
 
@@ -376,7 +378,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                 Thread.currentThread().interrupt();
                 return;
             } catch (Exception e) {
-                finish(attempt, true, "Cannot send DataDam message (" + e.getClass().getSimpleName() + ")");
+                finish(attempt, true, NLS.bind(DDConnectionMessages.send_failed, e.getClass().getSimpleName()));
                 return;
             }
             boolean accepted;
@@ -406,7 +408,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             }
         }
         if (overflow) {
-            finish(attempt, true, "DataDam incoming message queue is full");
+            finish(attempt, true, DDConnectionMessages.incoming_queue_full);
         }
     }
 
@@ -438,7 +440,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                 try {
                     deliverText(attempt, text);
                 } catch (RuntimeException e) {
-                    finish(attempt, true, "Invalid DataDam message");
+                    finish(attempt, true, DDConnectionMessages.invalid_message);
                 }
             }
         }
@@ -508,7 +510,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             if (current != attempt || attempt.session != null || !waitingForReady && attempt.socket != null) {
                 return;
             }
-            monitor.failed(waitingForReady ? "DataDam session handshake timed out" : "DataDam WebSocket connection timed out");
+            monitor.failed(waitingForReady ? DDConnectionMessages.handshake_timeout : DDConnectionMessages.connect_timeout);
             detach(attempt, true);
         }
         log.warn("DataDam desktop channel timed out waiting for "
@@ -518,7 +520,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
     }
 
     private void finish(@NotNull Attempt attempt, boolean retry) {
-        finish(attempt, retry, "DataDam connection interrupted");
+        finish(attempt, retry, DDConnectionMessages.interrupted);
     }
 
     private void finish(@NotNull Attempt attempt, boolean retry, @NotNull String failure) {
@@ -682,7 +684,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                     monitor.received(data.remaining());
                 }
             }
-            finish(attempt, true, "Unexpected binary DataDam message");
+            finish(attempt, true, DDConnectionMessages.binary_message);
             return null;
         }
 
@@ -691,7 +693,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             if (isCurrent(attempt)) {
                 log.warn("DataDam desktop channel closed by remote server (code " + statusCode + ")");
             }
-            finish(attempt, true, "DataDam connection closed (code " + statusCode + ")");
+            finish(attempt, true, NLS.bind(DDConnectionMessages.remote_closed, Integer.toString(statusCode)));
         }
 
         @Override
@@ -699,7 +701,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             if (isCurrent(attempt)) {
                 log.warn("DataDam desktop channel error", cause);
             }
-            finish(attempt, !isAuthorizationFailure(cause), "DataDam WebSocket error (" + cause.getClass().getSimpleName() + ")");
+            finish(attempt, !isAuthorizationFailure(cause), NLS.bind(DDConnectionMessages.websocket_error, cause.getClass().getSimpleName()));
         }
 
         private void dispose(@NotNull WebSocket socket, boolean graceful) {

@@ -25,6 +25,7 @@ import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.BaseWebSocketClient;
 import org.junit.jupiter.api.Assertions;
@@ -148,7 +149,12 @@ public class DDRemoteDamDesktopMonitoringTest extends DBeaverUnitTest {
         private final DDRemoteDamSubscription stateObservation;
 
         private Fixture() throws DBException {
-            channel = new DDRemoteDamDesktopChannel(URI.create("wss://example.com/ws"), HELLO, resource -> "token", this::client);
+            // Platform startup and cold instrumentation must complete before the activity wait starts.
+            DBWorkbench.getPlatform();
+            var clients = new LinkedBlockingQueue<BaseWebSocketClient>();
+            clients.add(client());
+            clients.add(client());
+            channel = new DDRemoteDamDesktopChannel(URI.create("wss://example.com/ws"), HELLO, resource -> "token", clients::remove);
             channel.subscribe("test", (session, message) -> received.add(message));
             stateObservation = channel.observeState(status -> {
                 if (status.isReady()) {
@@ -161,15 +167,15 @@ public class DDRemoteDamDesktopMonitoringTest extends DBeaverUnitTest {
         @NotNull
         private BaseWebSocketClient client() {
             var client = Mockito.mock(BaseWebSocketClient.class);
+            var socket = Mockito.mock(WebSocket.class);
+            var sent = new LinkedBlockingQueue<String>();
+            Mockito.when(socket.sendText(Mockito.any(), Mockito.eq(true))).thenAnswer(send -> {
+                sent.add(send.getArgument(0).toString());
+                return CompletableFuture.completedFuture(socket);
+            });
             try {
                 Mockito.when(client.connect(Mockito.any(), Mockito.anyMap(), Mockito.any())).thenAnswer(invocation -> {
-                    var socket = Mockito.mock(WebSocket.class);
                     var listener = (BaseWebSocketClient.Listener) invocation.getArgument(2);
-                    var sent = new LinkedBlockingQueue<String>();
-                    Mockito.when(socket.sendText(Mockito.any(), Mockito.eq(true))).thenAnswer(send -> {
-                        sent.add(send.getArgument(0).toString());
-                        return CompletableFuture.completedFuture(socket);
-                    });
                     listener.onOpen(socket);
                     peers.add(new Peer(socket, listener, sent));
                     return socket;
