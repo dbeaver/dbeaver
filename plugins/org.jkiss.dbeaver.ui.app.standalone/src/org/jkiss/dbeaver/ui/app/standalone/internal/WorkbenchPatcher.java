@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -233,93 +232,6 @@ public final class WorkbenchPatcher {
         }
     }
 
-    public static void patchWorkbenchLocale(@NotNull Location instance) {
-        Path path = getWorkbenchSaveLocation(instance);
-        if (path == null || !Files.isRegularFile(path)) {
-            return;
-        }
-
-        try {
-            Path nlFile = path.resolveSibling(NL_STATE_FILENAME);
-            Properties properties = new Properties();
-            if (Files.isRegularFile(nlFile)) {
-                try (var input = Files.newInputStream(nlFile)) {
-                    properties.load(input);
-                }
-            }
-            String locale = Platform.getNL();
-            if (locale.equals(properties.getProperty(NL_STATE_KEY))) {
-                return;
-            }
-
-            Map<String, String> labels = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_VIEWS)
-                .map(IExtension::getConfigurationElements).flatMap(Stream::of)
-                .filter(element -> element.getName().equals(IWorkbenchRegistryConstants.TAG_VIEW))
-                .collect(Collectors.toMap(
-                    element -> element.getAttribute(IWorkbenchRegistryConstants.ATT_ID),
-                    element -> element.getAttribute(IWorkbenchRegistryConstants.ATT_NAME),
-                    (first, second) -> second
-                ));
-            Document document = XMLUtils.parseDocument(path);
-            Map<String, String> previousLabels = new HashMap<>();
-            NodeList descriptors = document.getElementsByTagName("descriptors");
-            for (int index = 0; index < descriptors.getLength(); index++) {
-                Element descriptor = (Element) descriptors.item(index);
-                previousLabels.put(descriptor.getAttribute("elementId"), descriptor.getAttribute("label"));
-            }
-            if (patchViewLabelsRecursively(document, labels, previousLabels)) {
-                saveWorkbenchXmi(path, document);
-            }
-
-            // eclipse clears the entire model on a locale change; acknowledge it only after updating the saved labels
-            properties.setProperty(NL_STATE_KEY, locale);
-            Path patch = Files.createTempFile(nlFile.getParent(), NL_STATE_FILENAME, ".patch");
-            try {
-                try (var output = Files.newOutputStream(patch)) {
-                    properties.store(output, "Eclipse last used NL locale");
-                }
-                Files.move(patch, nlFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            } finally {
-                Files.deleteIfExists(patch);
-            }
-        } catch (Exception e) {
-            log.error("Failed to update workbench locale: " + path, e);
-        }
-    }
-
-    private static boolean patchViewLabelsRecursively(
-        @NotNull Node node,
-        @NotNull Map<String, String> labels,
-        @NotNull Map<String, String> previousLabels
-    ) {
-        boolean modified = false;
-        NodeList children = node.getChildNodes();
-        for (int index = 0; index < children.getLength(); index++) {
-            if (!(children.item(index) instanceof Element child)) {
-                continue;
-            }
-            if (CompatibilityPart.COMPATIBILITY_VIEW_URI.equals(child.getAttribute("contributionURI"))) {
-                String viewId = child.getAttribute("elementId");
-                int separator = viewId.indexOf(':');
-                viewId = separator < 0 ? viewId : viewId.substring(0, separator);
-                String label = labels.get(viewId);
-                String oldLabel = child.getAttribute("label");
-                String previousLabel = previousLabels.get(viewId);
-                // views can have instance-specific titles, such as a database object name
-                boolean defaultLabel = child.getTagName().equals("descriptors") || previousLabel == null || previousLabel.equals(oldLabel);
-                if (label != null && defaultLabel && !label.equals(oldLabel)) {
-                    child.setAttribute("label", label);
-                    if (child.hasAttribute("tooltip") && oldLabel.equals(child.getAttribute("tooltip"))) {
-                        child.setAttribute("tooltip", label);
-                    }
-                    modified = true;
-                }
-            }
-            modified |= patchViewLabelsRecursively(child, labels, previousLabels);
-        }
-        return modified;
-    }
-
     /**
      * Patches the {@code workbench.xmi} file, updating all view and editor
      * parts' icons to their actual values taken directly from contributed
@@ -343,35 +255,71 @@ public final class WorkbenchPatcher {
     }
 
     private static void patchWorkbenchXmi(@NotNull Path workbenchXmi) throws Exception {
+        Path nlFile = workbenchXmi.resolveSibling(NL_STATE_FILENAME);
+        Properties localeState = new Properties();
+        if (Files.isRegularFile(nlFile)) {
+            try (var input = Files.newInputStream(nlFile)) {
+                localeState.load(input);
+            }
+        }
+        String locale = Platform.getNL();
+        boolean localeChanged = !locale.equals(localeState.getProperty(NL_STATE_KEY));
         var parts = collectContributedParts();
-        var checker = new PartIconChecker(parts);
-        try (var input = Files.newInputStream(workbenchXmi)) {
-            XMLUtils.newSecureSAXParserFactory().newSAXParser().parse(input, checker);
-            return;
-        } catch (SAXException e) {
-            if (e != PartIconChecker.PATCH_REQUIRED) {
-                throw e;
+        if (!localeChanged) {
+            var checker = new PartIconChecker(parts);
+            try (var input = Files.newInputStream(workbenchXmi)) {
+                XMLUtils.newSecureSAXParserFactory().newSAXParser().parse(input, checker);
+                return;
+            } catch (SAXException e) {
+                if (e != PartIconChecker.PATCH_REQUIRED) {
+                    throw e;
+                }
             }
         }
 
         var document = XMLUtils.parseDocument(workbenchXmi);
-        if (patchPartIconsRecursively(document, parts)) {
-            saveWorkbenchXmi(workbenchXmi, document);
-        }
-    }
-
-    private static void saveWorkbenchXmi(@NotNull Path workbenchXmi, @NotNull Document document) throws Exception {
-        var transformer = XMLUtils.newSecureTransformerFactory().newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
-        Path workbenchXmiPatch = Files.createTempFile(workbenchXmi.getParent(), "workbench", ".patch");
-        try {
-            try (OutputStream output = Files.newOutputStream(workbenchXmiPatch)) {
-                transformer.transform(new DOMSource(document), new StreamResult(output));
+        Map<String, String> labels = new HashMap<>();
+        Map<String, String> previousLabels = new HashMap<>();
+        if (localeChanged) {
+            getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_VIEWS)
+                .map(IExtension::getConfigurationElements).flatMap(Stream::of)
+                .filter(element -> element.getName().equals(IWorkbenchRegistryConstants.TAG_VIEW))
+                .forEach(element -> labels.put(element.getAttribute("id"), element.getAttribute("name")));
+            for (Element descriptor : XMLUtils.getChildElementList(document.getDocumentElement(), "descriptors")) {
+                previousLabels.put(descriptor.getAttribute("elementId"), descriptor.getAttribute("label"));
             }
+        }
+        if (patchPartsRecursively(document, parts, labels, previousLabels)) {
+            var transformerFactory = XMLUtils.newSecureTransformerFactory();
+            var transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
+
+            Path workbenchXmiPatch = workbenchXmi.resolveSibling(workbenchXmi.getFileName() + ".patch");
+
+            // Write to a temporary file first
+            try (OutputStream os = Files.newOutputStream(workbenchXmiPatch)) {
+                var source = new DOMSource(document);
+                var result = new StreamResult(os);
+
+                transformer.transform(source, result);
+            }
+
+            // Then replace the original file with the patched one
             Files.move(workbenchXmiPatch, workbenchXmi, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        } finally {
-            Files.deleteIfExists(workbenchXmiPatch);
+        }
+        if (localeChanged) {
+            // eclipse must see the new locale only after the saved labels have been updated
+            localeState.setProperty(NL_STATE_KEY, locale);
+            Path patch = workbenchXmi.resolveSibling(NL_STATE_FILENAME + ".patch");
+            try {
+                try (var output = Files.newOutputStream(patch)) {
+                    localeState.store(output, "Eclipse last used NL locale");
+                }
+                Files.move(patch, nlFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } finally {
+                Files.deleteIfExists(patch);
+            }
         }
     }
 
@@ -432,7 +380,12 @@ public final class WorkbenchPatcher {
         }
     }
 
-    private static boolean patchPartIconsRecursively(@NotNull Node node, @NotNull Map<String, PartDescriptor> parts) {
+    private static boolean patchPartsRecursively(
+        @NotNull Node node,
+        @NotNull Map<String, PartDescriptor> parts,
+        @NotNull Map<String, String> labels,
+        @NotNull Map<String, String> previousLabels
+    ) {
         NodeList children = node.getChildNodes();
         boolean modified = false;
 
@@ -459,7 +412,22 @@ public final class WorkbenchPatcher {
                 }
             }
 
-            modified |= patchPartIconsRecursively(child, parts);
+            if (CompatibilityPart.COMPATIBILITY_VIEW_URI.equals(child.getAttribute("contributionURI"))) {
+                String viewId = child.getAttribute("elementId").split(":", 2)[0];
+                String label = labels.get(viewId);
+                String oldLabel = child.getAttribute("label");
+                String previousLabel = previousLabels.get(viewId);
+                // keep instance-specific titles, such as a database object name
+                boolean defaultLabel = child.getTagName().equals("descriptors") || previousLabel == null || previousLabel.equals(oldLabel);
+                if (label != null && defaultLabel && !label.equals(oldLabel)) {
+                    child.setAttribute("label", label);
+                    if (child.hasAttribute("tooltip") && oldLabel.equals(child.getAttribute("tooltip"))) {
+                        child.setAttribute("tooltip", label);
+                    }
+                    modified = true;
+                }
+            }
+            modified |= patchPartsRecursively(child, parts, labels, previousLabels);
         }
 
         return modified;
