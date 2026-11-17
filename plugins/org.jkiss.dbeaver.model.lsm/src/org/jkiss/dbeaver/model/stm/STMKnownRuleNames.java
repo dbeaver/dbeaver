@@ -24,6 +24,7 @@ public class STMKnownRuleNames {
     public static final String sqlQueries = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlQueries]; // EOF - don't stop early. must match all input
     public static final String sqlQuery = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlQuery];
     public static final String sqlQueryBody = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlQueryBody];
+    public static final String explainableSqlQueryBody = SQLStandardParser.ruleNames[SQLStandardParser.RULE_explainableSqlQueryBody];
     public static final String variableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableStatement];
     public static final String variableDeclarationStatement =
         SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableDeclarationStatement];
@@ -35,6 +36,7 @@ public class STMKnownRuleNames {
     public static final String variableInitializer = SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableInitializer];
 
     public static final String directSqlDataStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_directSqlDataStatement];
+    public static final String explainStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_explainStatement];
     public static final String selectStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectStatement];
 
     // data type literals
