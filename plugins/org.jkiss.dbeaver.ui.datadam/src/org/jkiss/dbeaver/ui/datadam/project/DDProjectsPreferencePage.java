@@ -23,6 +23,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
@@ -31,7 +35,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -111,13 +114,15 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private TableViewer viewer;
     private Button showRemote;
     private Button refreshButton;
-    private Composite actionButtons;
-    private Button editButton;
-    private Button syncButton;
-    private Button unbindButton;
-    private Button connectButton;
-    private Button syncAllButton;
-    private Button importAllButton;
+    private ToolBarManager actionsToolbar;
+    private Action editAction;
+    private Action syncAction;
+    private Action unbindAction;
+    private Action connectAction;
+    private Action syncAllAction;
+    private Action importAllAction;
+    private ActionContributionItem unbindItem;
+    private ActionContributionItem importAllItem;
     private boolean operationRunning;
     private final DDRemoteDamSettingsStore.Listener settingsListener = settings -> UIUtils.asyncExec(() -> {
         if (streamSyncCheck != null && !streamSyncCheck.isDisposed()) {
@@ -206,14 +211,26 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         refreshButton = iconButton(controlsRow, UIIcon.REFRESH, DDTrackingUIMessages.projects_refresh, this::loadProjects);
         refreshButton.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 
-        Composite tableRow = new Composite(projectsSection, SWT.NONE);
-        GridLayout tableRowLayout = new GridLayout(2, false);
-        tableRowLayout.marginWidth = 0;
-        tableRowLayout.marginHeight = 0;
-        tableRow.setLayout(tableRowLayout);
-        tableRow.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+        actionsToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+        editAction = toolbarAction(DDTrackingUIMessages.projects_edit, UIIcon.EDIT, this::editProject);
+        syncAction = toolbarAction(DDTrackingUIMessages.projects_sync, DDTrackingUIIcons.PROJECT_SYNC, this::syncSelected);
+        unbindAction = toolbarAction(
+            DDTrackingUIMessages.projects_disconnect, DDTrackingUIIcons.PROJECT_DISCONNECT, this::unbindSelected);
+        connectAction = toolbarAction(DDTrackingUIMessages.projects_connect, null, this::connectProject);
+        syncAllAction = toolbarAction(DDTrackingUIMessages.projects_sync_all, null, this::syncAll);
+        importAllAction = toolbarAction(DDTrackingUIMessages.projects_import_all, null, this::importAll);
+        unbindItem = new ActionContributionItem(unbindAction);
+        importAllItem = new ActionContributionItem(importAllAction);
+        actionsToolbar.add(editAction);
+        actionsToolbar.add(syncAction);
+        actionsToolbar.add(unbindItem);
+        actionsToolbar.add(new Separator());
+        actionsToolbar.add(connectAction);
+        actionsToolbar.add(syncAllAction);
+        actionsToolbar.add(importAllItem);
+        actionsToolbar.createControl(projectsSection).setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        viewer = new TableViewer(tableRow, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+        viewer = new TableViewer(projectsSection, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         Table table = viewer.getTable();
         table.setHeaderVisible(true);
         GridData tableData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
@@ -239,38 +256,6 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         );
         viewer.addSelectionChangedListener(e -> updateSelectionActions());
 
-        actionButtons = new Composite(tableRow, SWT.NONE);
-        GridLayout actionLayout = new GridLayout(1, false);
-        actionLayout.marginWidth = 0;
-        actionLayout.marginHeight = 0;
-        actionButtons.setLayout(actionLayout);
-        actionButtons.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
-        editButton = iconButton(actionButtons, UIIcon.EDIT, DDTrackingUIMessages.projects_edit, this::editProject);
-        syncButton = iconButton(
-            actionButtons, DDTrackingUIIcons.PROJECT_SYNC,
-            DDTrackingUIMessages.projects_sync, this::syncSelected
-        );
-        unbindButton = iconButton(
-            actionButtons, DDTrackingUIIcons.PROJECT_DISCONNECT, DDTrackingUIMessages.projects_disconnect,
-            this::unbindSelected
-        );
-
-        Composite endButtons = new Composite(projectsSection, SWT.NONE);
-        endButtons.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-        GridLayout endLayout = new GridLayout(3, false);
-        endLayout.marginWidth = 0;
-        endButtons.setLayout(endLayout);
-        connectButton = new Button(endButtons, SWT.PUSH);
-        connectButton.setText(DDTrackingUIMessages.projects_connect);
-        connectButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> connectProject()));
-        syncAllButton = new Button(endButtons, SWT.PUSH);
-        syncAllButton.setText(DDTrackingUIMessages.projects_sync_all);
-        syncAllButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> syncAll()));
-        importAllButton = new Button(endButtons, SWT.PUSH);
-        importAllButton.setText(DDTrackingUIMessages.projects_import_all);
-        importAllButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-        importAllButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> importAll()));
-
         settingsStore.addListener(settingsListener);
         refreshKeys();
         return content;
@@ -287,6 +272,9 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     @Override
     public void dispose() {
         settingsStore.removeListener(settingsListener);
+        if (actionsToolbar != null) {
+            actionsToolbar.dispose();
+        }
         if (streamSyncJob != null) {
             streamSyncJob.cancel();
         }
@@ -363,23 +351,36 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         return button;
     }
 
+    @NotNull
+    private Action toolbarAction(@NotNull String label, @Nullable DBPImage icon, @NotNull Runnable callback) {
+        Action action = new Action(label) {
+            @Override
+            public void run() {
+                callback.run();
+            }
+        };
+        if (icon != null) {
+            action.setImageDescriptor(DBeaverIcons.getImageDescriptor(icon));
+        }
+        action.setToolTipText(label);
+        return action;
+    }
+
     private void updateSelectionActions() {
         List<DDProjectView> selection = selectedRows();
         SelectionSyncAction syncAction = selectionSyncAction(selection);
         boolean available = !operationRunning && uiManager.isProjectSyncReady();
         refreshButton.setEnabled(available);
-        editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
-        syncButton.setEnabled(available && !streamSyncEnabled && syncAction != SelectionSyncAction.NONE);
+        editAction.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
+        this.syncAction.setEnabled(available && !streamSyncEnabled && syncAction != SelectionSyncAction.NONE);
         boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
-        syncButton.setImage(DBeaverIcons.getImage(download ? DDTrackingUIIcons.IMPORT_PROJECT : DDTrackingUIIcons.PROJECT_SYNC));
-        syncButton.setToolTipText(download ? DDTrackingUIMessages.projects_download : DDTrackingUIMessages.projects_sync);
+        this.syncAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(
+            download ? DDTrackingUIIcons.IMPORT_PROJECT : DDTrackingUIIcons.PROJECT_SYNC));
+        this.syncAction.setToolTipText(download ? DDTrackingUIMessages.projects_download : DDTrackingUIMessages.projects_sync);
         boolean selected = !selection.isEmpty();
-        unbindButton.setEnabled(available && selected && selection.stream().allMatch(this::canUnbind));
+        unbindAction.setEnabled(available && selected && selection.stream().allMatch(this::canUnbind));
         boolean showUnbind = !download;
-        unbindButton.setVisible(showUnbind);
-        ((GridData) unbindButton.getLayoutData()).exclude = !showUnbind;
-        actionButtons.layout(true, true);
-        connectButton.setEnabled(available);
+        connectAction.setEnabled(available);
         boolean hasLocal = false;
         boolean hasRemote = false;
         for (var item : viewer.getTable().getItems()) {
@@ -387,13 +388,14 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             hasLocal |= canSynchronize(view);
             hasRemote |= canImport(view);
         }
-        syncAllButton.setEnabled(available && hasLocal);
-        importAllButton.setEnabled(available && hasRemote);
+        syncAllAction.setEnabled(available && hasLocal);
+        importAllAction.setEnabled(available && hasRemote);
         boolean showImportAll = !streamSyncEnabled && showRemote.getSelection();
-        if (importAllButton.getVisible() != showImportAll) {
-            importAllButton.setVisible(showImportAll);
-            ((GridData) importAllButton.getLayoutData()).exclude = !showImportAll;
-            importAllButton.getParent().getParent().layout(true, true);
+        if (unbindItem.isVisible() != showUnbind || importAllItem.isVisible() != showImportAll) {
+            unbindItem.setVisible(showUnbind);
+            importAllItem.setVisible(showImportAll);
+            actionsToolbar.update(true);
+            actionsToolbar.getControl().getParent().layout(true, true);
         }
     }
 
@@ -442,7 +444,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         boolean showRemoteProjects = !streamSyncEnabled;
         showRemote.setVisible(showRemoteProjects);
         ((GridData) showRemote.getLayoutData()).exclude = !showRemoteProjects;
-        syncAllButton.setText(streamSyncEnabled
+        syncAllAction.setText(streamSyncEnabled
             ? DDTrackingUIMessages.projects_push_changes : DDTrackingUIMessages.projects_sync_all);
         viewer.refresh();
         updateTableHeight();
