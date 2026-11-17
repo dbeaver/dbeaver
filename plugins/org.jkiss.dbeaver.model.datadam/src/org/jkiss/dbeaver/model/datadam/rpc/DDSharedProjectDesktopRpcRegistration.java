@@ -16,13 +16,21 @@
  */
 package org.jkiss.dbeaver.model.datadam.rpc;
 
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.dbeaver.datadam.dam.remote.api.service.desktop.DDSharedProjectEventsService;
+import com.dbeaver.messaging.requestreply.MessagingSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
+import com.dbeaver.messaging.rpc.MessagingRpcException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 public class DDSharedProjectDesktopRpcRegistration implements DDDesktopRpcRegistration {
+    private final DDSharedProjectEventsServiceDesktop service = DDSharedProjectEventsServiceDesktop.getInstance();
+    @Nullable
     private MessagingRpcEndpoint registeredEndpoint;
+    @Nullable
+    private MessagingSubscription subscription;
 
     @NotNull
     @Override
@@ -31,12 +39,29 @@ public class DDSharedProjectDesktopRpcRegistration implements DDDesktopRpcRegist
     }
 
     @Override
-    public void register(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) {
+    public synchronized void register(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) {
+        if (endpoint.isClosed()) {
+            throw new MessagingRpcException(MessagingRpcException.Reason.CLOSED);
+        }
         if (registeredEndpoint != endpoint) {
-            endpoint.register(DDSharedProjectEventsService.SERVICE_ID, DDSharedProjectEventsService.class,
-                DDSharedProjectEventsServiceDesktop.getInstance());
+            unregister();
             registeredEndpoint = endpoint;
-            DDSharedProjectEventsServiceDesktop.getInstance().start();
+        }
+        if (settings.isDamEnabled(DDRemoteDamSettingKeys.PROJECTS_STREAM_SYNC, false)) {
+            if (subscription == null) {
+                subscription = endpoint.register(DDSharedProjectEventsService.SERVICE_ID, DDSharedProjectEventsService.class, service);
+                service.start();
+            }
+        } else {
+            unregister();
+        }
+    }
+
+    private void unregister() {
+        if (subscription != null) {
+            subscription.close();
+            subscription = null;
+            service.stop();
         }
     }
 }
