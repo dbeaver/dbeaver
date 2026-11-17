@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,17 @@ import java.util.Set;
  * @see SQLQueryType
  */
 public enum SQLQueryCategory {
-    SQL,
+    /** Data Query Language: SELECT-like statements that retrieve data. */
+    DQL,
+    /** Data Manipulation Language: statements that insert, update, delete, or otherwise manipulate data. */
     DML,
+    /** Data Definition Language: statements that create, alter, or remove database structures. */
     DDL,
+    /** Data Control Language: statements that grant, revoke, or otherwise manage access privileges. */
+    DCL,
+    /** Transaction Control Language: statements that manage transactions, such as COMMIT and ROLLBACK. */
     TCL,
+    /** Statements whose category cannot be determined. */
     UNKNOWN;
 
     @NotNull
