@@ -185,11 +185,12 @@
             name="Execute SQL query"
             description="Executes various SQL queries"/>
 
+        <!-- SELECT statements may invoke routines with side effects. -->
         <function
             id="executeDQL"
-            readOnlyHint="true"
-            destructiveHint="false"
-            idempotentHint="true"
+            readOnlyHint="false"
+            destructiveHint="true"
+            idempotentHint="false"
             name="Execute DQL"
             enabledByDefault="true"
             type="INFORMATION"
