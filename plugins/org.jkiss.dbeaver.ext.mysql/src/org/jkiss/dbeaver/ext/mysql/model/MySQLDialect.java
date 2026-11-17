@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -234,6 +235,8 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     private static final String[] EXEC_KEYWORDS =  { "CALL" };
     private int lowerCaseTableNames;
+    @Nullable
+    private MySQLDataSource dataSource;
 
     public MySQLDialect() {
         super("MySQL", "mysql");
@@ -270,6 +273,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @Override
     public void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
+        this.dataSource = (MySQLDataSource) dataSource;
         this.lowerCaseTableNames = ((MySQLDataSource) dataSource).getLowerCaseTableNames();
         this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
     }
@@ -382,6 +386,34 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @Override
     public String[] getSingleLineComments() {
         return new String[] { "-- ", "--\t", "#" };
+    }
+
+    @NotNull
+    @Override
+    public List<String> getExecutableCommentPrefixes() {
+        // mysql and mariadb share this dialect
+        return List.of("/*!", "/*M!");
+    }
+
+    @Nullable
+    @Override
+    public Boolean isExecutableCommentActive(@NotNull String prefix, int version) {
+        if (dataSource == null) {
+            return version == 0 && "/*!".equals(prefix) ? Boolean.TRUE : null;
+        }
+        if ("/*M!".equals(prefix) && !dataSource.isMariaDB()) {
+            return false;
+        }
+        // mariadb skips mysql 5.7+ extensions, but executes its own versioned comments
+        if ("/*!".equals(prefix) && dataSource.isMariaDB() && version >= 50700 && version <= 99999) {
+            return false;
+        }
+        if (version == 0) {
+            return true;
+        }
+        Version serverVersion = dataSource.getVersion();
+        return serverVersion == null ? null
+            : serverVersion.compareTo(new Version(version / 10000, version / 100 % 100, version % 100)) >= 0;
     }
 
     @Override

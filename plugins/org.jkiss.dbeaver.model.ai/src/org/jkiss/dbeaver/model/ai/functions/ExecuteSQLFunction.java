@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.sql.exec.SQLScriptProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
@@ -115,11 +116,11 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull DBCExecutionContext executionContext,
         @NotNull SQLQuery query
     ) throws DBException {
-        // Some dialects execute special comments that JSQLParser otherwise ignores.
-        if (query.getText().contains("/*!") || query.getText().contains("/*M!") || query.getText().contains("/*m!")) {
-            tokenize(executionContext.getDataSource().getSQLDialect(), query.getText());
-        }
         if (query.getStatement() == null || query.getParseError() != null || query.getStatement() instanceof UnsupportedStatement) {
+            if (executionContext.getDataSource().getSQLDialect().getExecutableCommentPrefixes().stream()
+                .anyMatch(prefix -> query.getText().contains(prefix))) {
+                throw new DBException("Cannot verify database object scope in an unparsed SQL statement containing executable comments");
+            }
             verifyQueryText(context, executionContext, query.getText());
         } else {
             verifyStatement(context, executionContext, query);
@@ -799,17 +800,13 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             for (String[] quotes : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
                 bracketIdentifiers |= quotes.length == 2 && quotes[0].equals("[") && quotes[1].equals("]");
             }
-            CCJSqlParser lexer = new CCJSqlParser(sql).withSquareBracketQuotation(bracketIdentifiers)
+            String expandedSql = SQLUtils.expandExecutableComments(dialect, sql);
+            CCJSqlParser lexer = new CCJSqlParser(SQLUtils.maskComments(dialect, expandedSql))
+                .withSquareBracketQuotation(bracketIdentifiers)
                 .withBackslashEscapeCharacter(dialect.getStringEscapeCharacter() == '\\');
             List<String> tokens = new ArrayList<>();
             while (true) {
                 Token token = lexer.getNextToken();
-                for (Token comment = token.specialToken; comment != null; comment = comment.specialToken) {
-                    String text = comment.image.toUpperCase(Locale.ROOT);
-                    if (text.startsWith("/*!") || text.startsWith("/*M!")) {
-                        throw new DBException("Cannot verify executable SQL comments");
-                    }
-                }
                 if (token.kind == CCJSqlParserConstants.EOF) {
                     return tokens;
                 }

@@ -80,9 +80,10 @@ public class SQLSemanticProcessor {
 
     @NotNull
     private static CCJSqlParser buildParser(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
+        String expandedSql = dialect == null ? sql : SQLUtils.expandExecutableComments(dialect, sql);
         final String sqlWithoutComments = dialect == null
-            ? sql
-            : SQLUtils.stripComments(dialect, SQLUtils.maskDialectLineComments(dialect, sql));
+            ? expandedSql
+            : SQLUtils.maskComments(dialect, expandedSql);
         try {
             CCJSqlParser parser = new CCJSqlParser(sqlWithoutComments)
                 .withAllowComplexParsing(ALLOW_COMPLEX_PARSING);

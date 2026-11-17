@@ -76,6 +76,9 @@ class SQLExecutionFunctionsTest {
         RecordingFunction function = new RecordingFunction();
         AIFunctionContext context = Mockito.mock(AIFunctionContext.class);
         DBCExecutionContext executionContext = Mockito.mock(DBCExecutionContext.class);
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(BasicSQLDialect.INSTANCE);
+        Mockito.when(executionContext.getDataSource()).thenReturn(dataSource);
         function.verifyQuery(context, executionContext, new SQLQuery(null, "SELECT 1"));
         SQLQuery unparsed = Mockito.mock(SQLQuery.class);
         Mockito.when(unparsed.getText()).thenReturn("SELECT unsupported syntax");
@@ -356,8 +359,46 @@ class SQLExecutionFunctionsTest {
     }
 
     @Test
+    void executableCommentsUseSemanticScopeAndStatementTypeChecks() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        fixture.enableExecutableComments();
+        ExecuteDQLFunction dql = new ExecuteDQLFunction();
+        for (String sql : List.of(
+            "SELECT 1 /*! UNION SELECT id FROM public.orders */",
+            "SELECT 1 /*!50000 UNION SELECT id FROM public.orders */",
+            "SELECT 1 /*M!100100 UNION SELECT id FROM public.orders */",
+            "/*! SELECT id FROM public.orders */",
+            "SELECT '/*! UNION SELECT id FROM private.orders */'"
+        )) {
+            Assertions.assertDoesNotThrow(() -> fixture.verify(dql, sql), sql);
+        }
+        for (String sql : List.of(
+            "SELECT 1 /*! UNION SELECT id FROM private.orders */",
+            "SELECT 1 /*!50000 UNION SELECT id FROM private.orders */",
+            "SELECT 1 /*M!100100 UNION SELECT id FROM private.orders */",
+            "SELECT id FROM public.orders /*! INTO public.copy */"
+        )) {
+            fixture.assertRestricted(dql, sql);
+        }
+        Assertions.assertDoesNotThrow(() -> fixture.verify(dql, "SELECT 1 /*!999999 UNION SELECT id FROM private.orders */"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDMLFunction(), "/*! UPDATE public.orders SET id=2 */"));
+        fixture.assertRestricted(new ExecuteDMLFunction(), "/*! UPDATE private.orders SET id=2 */");
+    }
+
+    @Test
+    void textTokenizationSeesExecutableReferencesAndDialectLineComments() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        fixture.enableExecutableComments();
+        List<String> tokens = ExecuteSQLFunction.tokenize(fixture.dataSource.getSQLDialect(),
+            "SELECT * FROM public.orders /*! JOIN private.orders ON true */ # ignored FROM other.orders");
+        Assertions.assertEquals(Set.of("public.orders", "private.orders"),
+            ExecuteSQLFunction.findTextObjects(tokens, Set.of("FROM", "JOIN")));
+    }
+
+    @Test
     void executableCommentsAndUnterminatedStringsCannotBypassTextChecks() throws Exception {
         ScopeFixture fixture = new ScopeFixture();
+        fixture.enableExecutableComments();
         Assertions.assertThrows(DBException.class,
             () -> fixture.verify(new ExecuteDQLFunction(), "SELECT * FROM public.orders /*! UNION SELECT * FROM private.orders */"));
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT 'unterminated FROM public.orders");
@@ -516,8 +557,36 @@ class SQLExecutionFunctionsTest {
             return entity;
         }
 
+        private void enableExecutableComments() {
+            Mockito.when(dataSource.getSQLDialect()).thenReturn(new BasicSQLDialect() {
+                @NotNull
+                @Override
+                public DBPIdentifierCase storesUnquotedCase() {
+                    return DBPIdentifierCase.LOWER;
+                }
+
+                @NotNull
+                @Override
+                public List<String> getExecutableCommentPrefixes() {
+                    return List.of("/*!", "/*M!");
+                }
+
+                @NotNull
+                @Override
+                public Boolean isExecutableCommentActive(@NotNull String prefix, int version) {
+                    return version <= 100100;
+                }
+
+                @NotNull
+                @Override
+                public String[] getSingleLineComments() {
+                    return new String[]{"-- ", "--\t", "#"};
+                }
+            });
+        }
+
         private void verify(@NotNull ExecuteSQLFunction function, @NotNull String sql) throws DBException {
-            function.verifyQuery(context, executionContext, new SQLQuery(null, sql));
+            function.verifyQuery(context, executionContext, new SQLQuery(dataSource, sql));
         }
 
         private void verifyText(@NotNull ExecuteSQLFunction function, @NotNull String sql) throws DBException {
