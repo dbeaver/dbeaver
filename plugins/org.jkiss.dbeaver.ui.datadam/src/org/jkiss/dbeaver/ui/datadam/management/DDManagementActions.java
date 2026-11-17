@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
+import org.jkiss.dbeaver.model.impl.GlobalPropertyTester;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -49,7 +50,7 @@ public final class DDManagementActions {
 
     public static void setIntegrationEnabled(boolean enabled) {
         DDProductConfig.setIntegrationEnabled(enabled);
-        ActionUtils.evaluatePropertyState(DDIntegrationPropertyTester.ENABLED_PROPERTY);
+        ActionUtils.evaluatePropertyState(GlobalPropertyTester.NAMESPACE + "." + GlobalPropertyTester.PROP_HAS_PREFERENCE);
         DDProjectSyncPropertyTester.firePropertyChange();
         AbstractJob job = new AbstractJob(DDManagementMessages.integration_enabled) {
             @Override

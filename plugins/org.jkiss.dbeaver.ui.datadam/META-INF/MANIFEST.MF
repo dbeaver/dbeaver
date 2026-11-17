@@ -15,8 +15,5 @@ Require-Bundle: org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.model.datadam,
  com.dbeaver.datadam.mcp.api,
  org.jkiss.dbeaver.model,
- org.eclipse.e4.ui.model.workbench,
- org.eclipse.e4.ui.workbench,
  org.eclipse.ui
-Import-Package: jakarta.annotation
 Automatic-Module-Name: org.jkiss.dbeaver.ui.datadam

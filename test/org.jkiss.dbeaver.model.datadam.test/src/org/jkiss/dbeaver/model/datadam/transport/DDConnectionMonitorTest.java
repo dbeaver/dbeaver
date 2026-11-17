@@ -67,16 +67,20 @@ class DDConnectionMonitorTest {
         var monitor = new DDConnectionMonitor();
         monitor.record(DDConnectionMonitor.EventType.SIGNED_IN, "oldest");
         var original = monitor.getEvents();
-        for (int i = 0; i < 1_000; i++) {
-            monitor.record(DDConnectionMonitor.EventType.ERROR, "x".repeat(8_192));
+        for (int i = 0; i < 10_000; i++) {
+            monitor.record(DDConnectionMonitor.EventType.ERROR, Integer.toString(i));
         }
         var events = monitor.getEvents();
-        Assertions.assertEquals(1_000, events.size());
-        Assertions.assertEquals(4_096, events.getFirst().details().length());
+        Assertions.assertEquals(10_000, events.size());
+        Assertions.assertEquals("0", events.getFirst().details());
         Assertions.assertEquals("oldest", original.getFirst().details());
         Assertions.assertThrows(UnsupportedOperationException.class, events::clear);
+        monitor.record(DDConnectionMonitor.EventType.ERROR, "x".repeat(8_192));
+        Assertions.assertEquals(10_000, monitor.getEvents().size());
+        Assertions.assertEquals("1", monitor.getEvents().getFirst().details());
+        Assertions.assertEquals(4_096, monitor.getEvents().getLast().details().length());
         monitor.clearEvents();
         Assertions.assertTrue(monitor.getEvents().isEmpty());
-        Assertions.assertEquals(1_000, events.size());
+        Assertions.assertEquals(10_000, events.size());
     }
 }

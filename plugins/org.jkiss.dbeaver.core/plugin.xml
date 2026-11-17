@@ -2,6 +2,10 @@
 <?eclipse version="3.2"?>
 <plugin>
     <!-- UI extensions -->
+    <extension-point id="org.jkiss.dbeaver.statusBar" name="Status bar contributions" schema="schema/org.jkiss.dbeaver.statusBar.exsd"/>
+    <extension point="org.jkiss.dbeaver.statusBar">
+        <item id="org.jkiss.dbeaver.core.ui.Projects" class="org.jkiss.dbeaver.ui.controls.ProjectSelectorContributor" order="100"/>
+    </extension>
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="Workbench handlers" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.clearHistoryHandler" name="Clear history handlers" schema="schema/org.jkiss.dbeaver.clearHistoryHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.toolBarConfiguration" name="Toolbar configurations" schema="schema/org.jkiss.dbeaver.toolBarConfiguration.exsd" />
@@ -1198,6 +1202,7 @@
 
     <extension id="org.jkiss.dbeaver.core.fragment" point="org.eclipse.e4.workbench.model">
         <fragment apply="always" uri="fragment.e4xmi"/>
+        <processor class="org.jkiss.dbeaver.ui.controls.StatusBarModelProcessor" beforefragment="false"/>
     </extension>
     <extension point="org.jkiss.dbeaver.workbenchHandler">
         <workbenchWindowInitializer class="org.jkiss.dbeaver.DBeaverCoreWorkbenchInitializer" order="2"/>

@@ -20,10 +20,6 @@
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
-        <propertyTester class="org.jkiss.dbeaver.ui.datadam.management.DDIntegrationPropertyTester"
-                        id="org.jkiss.dbeaver.ui.datadam.integration.tester"
-                        namespace="org.jkiss.dbeaver.ui.datadam.integration"
-                        properties="enabled" type="org.eclipse.ui.IWorkbenchWindow"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester"
             id="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester"
@@ -59,7 +55,10 @@
             lightweight="false"
             state="true">
             <enablement>
-                <objectClass name="org.jkiss.dbeaver.model.navigator.DBNProject"/>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.ui.datadam.integrationEnabled"/>
+                    <objectClass name="org.jkiss.dbeaver.model.navigator.DBNProject"/>
+                </and>
             </enablement>
         </decorator>
     </extension>
@@ -80,34 +79,49 @@
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.ui.datadam.integrationEnabled">
+            <and>
+                <test property="org.jkiss.dbeaver.app.config.isFeatureEnabled" value="datadam" forcePluginActivation="true"/>
+                <test property="org.jkiss.dbeaver.core.global.hasPreference" value="datadam.integration.enabled" args="true" forcePluginActivation="true"/>
+            </and>
+        </definition>
         <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.hasKeys">
-            <with variable="activeWorkbenchWindow">
-                <test forcePluginActivation="true" property="org.jkiss.dbeaver.ui.datadam.projectSync.enabled"/>
-            </with>
+            <and>
+                <reference definitionId="org.jkiss.dbeaver.ui.datadam.integrationEnabled"/>
+                <with variable="activeWorkbenchWindow">
+                    <test forcePluginActivation="true" property="org.jkiss.dbeaver.ui.datadam.projectSync.enabled"/>
+                </with>
+            </and>
         </definition>
         <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.canShareProject">
-            <with variable="selection">
-                <count value="1"/>
-                <iterate operator="and">
-                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject">
-                        <test
-                            forcePluginActivation="true"
-                            property="org.jkiss.dbeaver.ui.datadam.projectSync.canShare"/>
-                    </adapt>
-                </iterate>
-            </with>
+            <and>
+                <reference definitionId="org.jkiss.dbeaver.ui.datadam.integrationEnabled"/>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject">
+                            <test
+                                forcePluginActivation="true"
+                                property="org.jkiss.dbeaver.ui.datadam.projectSync.canShare"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </and>
         </definition>
         <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.canSyncProject">
-            <with variable="selection">
-                <count value="1"/>
-                <iterate operator="and">
-                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject">
-                        <test
-                            forcePluginActivation="true"
-                            property="org.jkiss.dbeaver.ui.datadam.projectSync.canSync"/>
-                    </adapt>
-                </iterate>
-            </with>
+            <and>
+                <reference definitionId="org.jkiss.dbeaver.ui.datadam.integrationEnabled"/>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject">
+                            <test
+                                forcePluginActivation="true"
+                                property="org.jkiss.dbeaver.ui.datadam.projectSync.canSync"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </and>
         </definition>
     </extension>
 
@@ -190,9 +204,7 @@
         <menuContribution locationURI="toolbar:dbeaver-general?after=org.jkiss.dbeaver.core.menu.newConnection">
             <command commandId="org.jkiss.dbeaver.datadam.configure" id="org.jkiss.dbeaver.datadam.menu" style="pulldown">
                 <visibleWhen>
-                    <with variable="activeWorkbenchWindow">
-                        <test property="org.jkiss.dbeaver.ui.datadam.integration.enabled" forcePluginActivation="true"/>
-                    </with>
+                    <reference definitionId="org.jkiss.dbeaver.ui.datadam.integrationEnabled"/>
                 </visibleWhen>
             </command>
         </menuContribution>
@@ -234,9 +246,10 @@
         <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.ai.DDAIEngine" uiClass="org.jkiss.dbeaver.ui.datadam.ai.DDAIEngineConfigurator"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.management.DDStatusContribution" order="101"/>
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer" order="100"/>
+    <extension point="org.jkiss.dbeaver.statusBar">
+        <item id="org.jkiss.dbeaver.ui.datadam.status" class="org.jkiss.dbeaver.ui.datadam.management.DDStatusContribution" order="200">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ui.datadam.integrationEnabled"/></enabledWhen>
+        </item>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
@@ -260,13 +273,10 @@
 
     <extension point="org.eclipse.ui.views">
         <view id="org.jkiss.dbeaver.ui.datadam.tracking"
-              name="%view.datadam.tracking.name"
+              name="DataDam"
               category="org.jkiss.dbeaver.core.category"
               class="org.jkiss.dbeaver.ui.datadam.management.DDTrackingView"
               icon="icons/project_datadam.svg" restorable="true"/>
-    </extension>
-    <extension id="org.jkiss.dbeaver.ui.datadam.fragment" point="org.eclipse.e4.workbench.model">
-        <fragment apply="always" uri="fragment.e4xmi"/>
     </extension>
     <extension point="org.eclipse.ui.perspectiveExtensions">
         <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">

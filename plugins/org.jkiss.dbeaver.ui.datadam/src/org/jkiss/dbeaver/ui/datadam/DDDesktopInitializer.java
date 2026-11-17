@@ -18,26 +18,23 @@ package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.datadam.internal.DDUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class DDDesktopInitializer implements IWorkbenchWindowInitializer {
+public class DDDesktopInitializer {
 
     private static final Log log = Log.getLog(DDDesktopInitializer.class);
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
-    @Override
-    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
+    public static void initialize() {
         if (!DDProductConfig.isIntegrationEnabled() || !INITIALIZED.compareAndSet(false, true)) {
             return;
         }

@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.datadam.management;
+package org.jkiss.dbeaver.ui;
 
-import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.DBException;
 
-public class DDIntegrationPropertyTester extends PropertyTester {
-    public static final String ENABLED_PROPERTY = "org.jkiss.dbeaver.ui.datadam.integration.enabled";
-
-    @Override
-    public boolean test(@Nullable Object receiver, @NotNull String property, @NotNull Object[] args, @Nullable Object expectedValue) {
-        return "enabled".equals(property) && DDProductConfig.isIntegrationEnabled();
-    }
+/** A window-local contribution to the DBeaver status bar. */
+public interface IStatusBarContributor {
+    /**
+     * Creates content in a host-owned, single-column container.
+     * The host disposes this container when enablement becomes false or the window closes.
+     * Contributors must release listeners and jobs when the container is disposed.
+     */
+    void createControls(@NotNull Composite parent) throws DBException;
 }

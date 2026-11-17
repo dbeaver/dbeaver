@@ -24,6 +24,7 @@ import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor.EventType;
@@ -31,7 +32,7 @@ import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor.EventType;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** Records live MCP request metadata without retaining arguments or result data. */
+/** Records live MCP requests and their parameters without retaining result data. */
 public final class DDMcpTrackingFunctionService implements DDMcpFunctionService {
     private static final Log log = Log.getLog(DDMcpTrackingFunctionService.class);
 
@@ -61,7 +62,7 @@ public final class DDMcpTrackingFunctionService implements DDMcpFunctionService 
     @Override
     @NotNull
     public DDMcpFunctionResult callFunction(@NotNull DDMcpFunctionCall call) throws DDMcpFunctionException {
-        events.accept("callFunction: " + call.functionId());
+        events.accept("callFunction: " + call.functionId() + "\n\n" + JSONUtils.PRETTY_GSON.toJson(call.arguments()));
         return delegate.callFunction(call);
     }
 

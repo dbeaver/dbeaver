@@ -16,22 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import jakarta.annotation.PostConstruct;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.IStatusBarContributor;
 
-/** Project selection is a separate trim so other window contributions can follow it. */
-public class ProjectSelectorTrim {
-    @PostConstruct
+public class ProjectSelectorContributor implements IStatusBarContributor {
+    @Override
     public void createControls(@NotNull Composite parent) {
-        if (!DBWorkbench.getPlatform().getApplication().isStandalone()) {
-            return;
-        }
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 0);
-        ((GridLayout) composite.getLayout()).marginLeft = 5;
-        new ProjectsPanel(composite);
+        new ProjectsPanel(parent);
     }
 }

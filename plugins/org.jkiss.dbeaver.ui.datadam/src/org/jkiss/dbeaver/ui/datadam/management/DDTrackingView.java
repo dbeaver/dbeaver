@@ -17,20 +17,25 @@
 package org.jkiss.dbeaver.ui.datadam.management;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -39,7 +44,9 @@ import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIStandardLabel;
 import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDManagementMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -67,7 +74,8 @@ public class DDTrackingView extends ViewPart {
         BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_ERROR, settings -> viewer.refresh(), table);
         createColumn(DDManagementMessages.event_time, 190, event -> TIME_FORMAT.format(event.time()));
         createColumn(DDManagementMessages.event_type, 170, event -> eventLabel(event.type()));
-        createColumn(DDManagementMessages.event_details, 600, DDConnectionMonitor.Event::details);
+        createColumn(DDManagementMessages.event_details, 600, event -> event.type() == DDConnectionMonitor.EventType.MCP_REQUEST
+            ? event.details().lines().findFirst().orElse("") : event.details());
         viewer.addOpenListener(event -> showDetails());
         table.addDisposeListener(event -> table.getDisplay().timerExec(-1, refreshTask));
         Action clear = new Action(DDManagementMessages.clear_events, DBeaverIcons.getImageDescriptor(UIIcon.CLEAN)) {
@@ -81,7 +89,52 @@ public class DDTrackingView extends ViewPart {
             }
         };
         getViewSite().getActionBars().getToolBarManager().add(clear);
+        createContextMenu(clear);
         refresh();
+    }
+
+    private void createContextMenu(@NotNull Action clear) {
+        Action details = new Action(UIStandardLabel.SHOW_DETAILS.getLabel(), DBeaverIcons.getImageDescriptor(UIIcon.RS_DETAILS)) {
+            @Override
+            public void run() {
+                showDetails();
+            }
+        };
+        details.setEnabled(false);
+        Action copy = new Action(UIStandardLabel.COPY.getLabel(), DBeaverIcons.getImageDescriptor(UIIcon.COPY)) {
+            @Override
+            public void run() {
+                var selected = (DDConnectionMonitor.Event) viewer.getStructuredSelection().getFirstElement();
+                if (selected != null && !selected.details().isEmpty()) {
+                    UIUtils.setClipboardContents(viewer.getControl().getDisplay(), TextTransfer.getInstance(), selected.details());
+                }
+            }
+        };
+        copy.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
+        copy.setEnabled(false);
+        viewer.addSelectionChangedListener(event -> {
+            var selected = (DDConnectionMonitor.Event) viewer.getStructuredSelection().getFirstElement();
+            details.setEnabled(selected != null);
+            copy.setEnabled(selected != null && !selected.details().isEmpty());
+        });
+        Action preferences = new Action(DDManagementMessages.configuration,
+            DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
+            @Override
+            public void run() {
+                DDManagementActions.configure();
+            }
+        };
+        MenuManager menu = new MenuManager();
+        menu.add(details);
+        menu.add(copy);
+        menu.add(clear);
+        menu.add(new Separator());
+        menu.add(preferences);
+        viewer.getControl().setMenu(menu.createContextMenu(viewer.getControl()));
+        viewer.getControl().addDisposeListener(event -> menu.dispose());
+        getViewSite().setSelectionProvider(viewer);
+        getViewSite().registerContextMenu(menu, viewer);
+        getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.COPY.getId(), copy);
     }
 
     private void createColumn(@NotNull String title, int width, @NotNull Function<DDConnectionMonitor.Event, String> text) {

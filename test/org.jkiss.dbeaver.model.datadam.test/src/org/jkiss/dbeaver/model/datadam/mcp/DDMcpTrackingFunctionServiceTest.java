@@ -22,6 +22,7 @@ import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionErrorCode;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionResult;
 import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,19 +49,39 @@ class DDMcpTrackingFunctionServiceTest {
     private final DDMcpTrackingFunctionService service = new DDMcpTrackingFunctionService(delegate, monitor);
 
     @Test
-    void recordsRequestsBeforeExecutionAndDoesNotRetainArgumentsOrResults() throws Exception {
-        var call = new DDMcpFunctionCall("query", Map.of("password", "argument-secret"));
+    void recordsParametersBeforeExecutionWithoutRetainingResults() throws Exception {
+        var arguments = new HashMap<String, Object>();
+        arguments.put("query", "select 'example'\nfrom sample");
+        arguments.put("options", Map.of("limit", 10, "columns", List.of("id", "name")));
+        var call = new DDMcpFunctionCall("query", arguments);
         var result = new DDMcpFunctionResult(new JsonPrimitive("result-secret"), false);
         Mockito.when(delegate.callFunction(call)).thenAnswer(invocation -> {
             Assertions.assertEquals(List.of(EventType.MCP_REQUEST), types());
+            Assertions.assertEquals("select 'example'\nfrom sample", JsonParser.parseString(
+                details(0).substring(details(0).indexOf('\n'))).getAsJsonObject().get("query").getAsString());
+            arguments.clear();
             return result;
         });
 
         Assertions.assertSame(result, service.callFunction(call));
         Assertions.assertEquals(List.of(EventType.MCP_REQUEST), types());
-        Assertions.assertEquals("callFunction: query", details(0));
-        Assertions.assertFalse(monitor.getEvents().toString().contains("argument-secret"));
+        Assertions.assertTrue(details(0).startsWith("callFunction: query\n\n{\n"));
+        var parameters = JsonParser.parseString(details(0).substring(details(0).indexOf('\n'))).getAsJsonObject();
+        Assertions.assertEquals(10, parameters.getAsJsonObject("options").get("limit").getAsInt());
+        Assertions.assertEquals(2, parameters.getAsJsonObject("options").getAsJsonArray("columns").size());
         Assertions.assertFalse(monitor.getEvents().toString().contains("result-secret"));
+        Mockito.verify(delegate).callFunction(call);
+    }
+
+    @Test
+    void boundsParameterDetailsWithoutChangingTheCall() throws Exception {
+        var call = new DDMcpFunctionCall("query", Map.of("query", "x".repeat(8_192)));
+        var result = new DDMcpFunctionResult(new JsonPrimitive("ok"), false);
+        Mockito.when(delegate.callFunction(call)).thenReturn(result);
+
+        Assertions.assertSame(result, service.callFunction(call));
+        Assertions.assertEquals(4_096, details(0).length());
+        Assertions.assertTrue(details(0).startsWith("callFunction: query\n\n{\n"));
         Mockito.verify(delegate).callFunction(call);
     }
 
@@ -78,7 +100,7 @@ class DDMcpTrackingFunctionServiceTest {
         Mockito.when(delegate.callFunction(call)).thenReturn(result);
         Assertions.assertSame(result, service.callFunction(call));
         Assertions.assertEquals(List.of(EventType.MCP_REQUEST), types());
-        Assertions.assertEquals("callFunction: query", details(0));
+        Assertions.assertEquals("callFunction: query\n\n{}", details(0));
         Assertions.assertNull(monitor.snapshot().error());
         Assertions.assertFalse(monitor.getEvents().toString().contains("private-error-data"));
     }
@@ -119,7 +141,7 @@ class DDMcpTrackingFunctionServiceTest {
             second.get(1, TimeUnit.SECONDS);
         }
         Assertions.assertEquals(List.of(EventType.MCP_REQUEST, EventType.MCP_REQUEST), types());
-        Assertions.assertEquals(Set.of("callFunction: first", "callFunction: second"), Set.of(details(0), details(1)));
+        Assertions.assertEquals(Set.of("callFunction: first\n\n{}", "callFunction: second\n\n{}"), Set.of(details(0), details(1)));
     }
 
     @Test

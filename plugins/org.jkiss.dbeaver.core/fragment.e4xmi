@@ -6,7 +6,7 @@
       <tags>stretch</tags>
     </elements>
   </fragments>
-  <fragments xsi:type="fragment:StringModelFragment" xmi:id="projects-selector-fragment" featurename="children" parentElementId="org.eclipse.ui.trim.status" positionInList="before:org.jkiss.dbeaver.core.ui.Breadcrumb">
-    <elements xsi:type="menu:ToolControl" xmi:id="projects-selector-control" elementId="org.jkiss.dbeaver.core.ui.Projects" contributionURI="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.controls.ProjectSelectorTrim"/>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="dbeaver-status-fragment" featurename="children" parentElementId="org.eclipse.ui.trim.status" positionInList="before:org.jkiss.dbeaver.core.ui.Breadcrumb">
+    <elements xsi:type="menu:ToolControl" xmi:id="dbeaver-status-control" elementId="org.jkiss.dbeaver.core.ui.StatusBar" contributionURI="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.controls.DBeaverStatusBarTrim"/>
   </fragments>
 </fragment:ModelFragments>

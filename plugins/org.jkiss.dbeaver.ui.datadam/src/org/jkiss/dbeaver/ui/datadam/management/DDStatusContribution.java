@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.datadam.management;
 
-import jakarta.annotation.PostConstruct;
-import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
-import org.eclipse.e4.ui.model.application.ui.basic.MTrimElement;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -28,28 +24,21 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.dbeaver.ui.IStatusBarContributor;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer;
 import org.jkiss.dbeaver.ui.datadam.internal.DDManagementMessages;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-public class DDStatusContribution implements IWorkbenchWindowInitializer {
-    private static final String STATUS_ID = "org.jkiss.dbeaver.ui.datadam.status";
-    private static final String PROJECT_SELECTOR_ID = "org.jkiss.dbeaver.core.ui.Projects";
-    private static final String BOTTOM_TRIM_ID = "org.eclipse.ui.trim.status";
+public class DDStatusContribution implements IStatusBarContributor {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         .withZone(ZoneId.systemDefault());
     @Nullable
@@ -57,47 +46,10 @@ public class DDStatusContribution implements IWorkbenchWindowInitializer {
     private Label statusIcon;
 
     @Override
-    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
-        if (!(configurer.getWindow() instanceof WorkbenchWindow window)) {
-            return;
-        }
-        var modelService = window.getService(EModelService.class);
-        var contribution = modelService.find(STATUS_ID, window.getModel());
-        if (contribution == null) {
-            return;
-        }
-        var projects = modelService.find(PROJECT_SELECTOR_ID, window.getModel());
-        var bottomTrim = modelService.find(BOTTOM_TRIM_ID, window.getModel());
-        if (contribution instanceof MTrimElement trimContribution
-            && bottomTrim instanceof MTrimBar trim && projects != null) {
-            int currentIndex = trim.getChildren().indexOf(contribution);
-            int projectIndex = trim.getChildren().indexOf(projects);
-            if (currentIndex >= 0 && projectIndex >= 0 && currentIndex != projectIndex + 1) {
-                // Fragment ordering and restored layouts can otherwise put this before the project selector.
-                modelService.move(trimContribution, trim, projectIndex + (currentIndex < projectIndex ? 0 : 1));
-            }
-        }
-        var store = DBWorkbench.getPlatform().getPreferenceStore();
-        var shell = window.getShell();
-        Runnable updateVisibility = () -> {
-            if (!shell.isDisposed()) {
-                contribution.setVisible(DDProductConfig.isIntegrationEnabled());
-                shell.layout(true, true);
-            }
-        };
-        DBPPreferenceListener listener = event -> {
-            if (DDProductConfig.INTEGRATION_ENABLED.equals(event.getProperty())) {
-                UIUtils.asyncExec(updateVisibility);
-            }
-        };
-        store.addPropertyChangeListener(listener);
-        shell.addDisposeListener(event -> store.removePropertyChangeListener(listener));
-        updateVisibility.run();
-    }
-
-    @PostConstruct
     public void createControls(@NotNull Composite parent) {
+        DDDesktopInitializer.initialize();
         Composite widget = createWidget(parent);
+        widget.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, true));
         var display = widget.getDisplay();
         Runnable refreshTask = new Runnable() {
             @Override
@@ -110,7 +62,7 @@ public class DDStatusContribution implements IWorkbenchWindowInitializer {
                 }
             }
         };
-        widget.addDisposeListener(event -> display.timerExec(-1, refreshTask));
+        parent.addDisposeListener(event -> display.timerExec(-1, refreshTask));
         refreshTask.run();
     }
 

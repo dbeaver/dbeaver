@@ -31,7 +31,7 @@ import java.util.List;
  * Traffic counts application payload bytes, excluding WebSocket framing, control frames and TLS overhead.
  */
 public final class DDConnectionMonitor {
-    private static final int MAX_EVENTS = 1_000;
+    private static final int MAX_EVENTS = 10_000;
     private static final int MAX_DETAILS_LENGTH = 4_096;
 
     public enum EventType {
