@@ -800,8 +800,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             for (String[] quotes : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
                 bracketIdentifiers |= quotes.length == 2 && quotes[0].equals("[") && quotes[1].equals("]");
             }
-            String expandedSql = SQLUtils.expandExecutableComments(dialect, sql);
-            CCJSqlParser lexer = new CCJSqlParser(SQLUtils.maskComments(dialect, expandedSql))
+            CCJSqlParser lexer = new CCJSqlParser(SQLUtils.prepareQueryForParsing(dialect, sql))
                 .withSquareBracketQuotation(bracketIdentifiers)
                 .withBackslashEscapeCharacter(dialect.getStringEscapeCharacter() == '\\');
             List<String> tokens = new ArrayList<>();

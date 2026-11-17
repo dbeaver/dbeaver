@@ -62,6 +62,8 @@ public class MySQLExecutableCommentsTest {
         Mockito.when(dataSource.getVersion()).thenCallRealMethod();
         MySQLDialect dialect = new MySQLDialect();
         dialect.afterDataSourceInitialization(dataSource);
+        // validation must use the metadata snapshot without returning to the datasource
+        Mockito.reset(dataSource);
         return dialect;
     }
 }

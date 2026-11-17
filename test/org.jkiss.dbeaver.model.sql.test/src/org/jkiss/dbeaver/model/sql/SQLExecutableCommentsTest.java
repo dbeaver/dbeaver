@@ -75,7 +75,7 @@ public class SQLExecutableCommentsTest {
             "# 'ignore this\nSELECT 1 /*! UNION SELECT id FROM secret */",
             "/* 'ignore this */ SELECT 1 /*! UNION SELECT id FROM secret */"
         )) {
-            Assertions.assertNotEquals(sql, SQLUtils.expandExecutableComments(MYSQL_LIKE_DIALECT, sql), sql);
+            Assertions.assertNotEquals(sql, SQLUtils.prepareQueryForParsing(MYSQL_LIKE_DIALECT, sql), sql);
             var statement = SQLSemanticProcessor.parseQuery(MYSQL_LIKE_DIALECT, sql);
             Assertions.assertTrue(new TablesNamesFinder<>().getTables(statement).contains("secret"), sql);
         }
@@ -84,7 +84,7 @@ public class SQLExecutableCommentsTest {
     @Test
     public void skipsInactiveCommentsAndPreservesOffsets() throws Exception {
         String sql = "SELECT 1\n/*!80037 UNION SELECT id FROM secret */";
-        String expanded = SQLUtils.expandExecutableComments(MYSQL_LIKE_DIALECT, sql);
+        String expanded = SQLUtils.prepareQueryForParsing(MYSQL_LIKE_DIALECT, sql);
         Assertions.assertEquals(sql.length(), expanded.length());
         Assertions.assertEquals(sql.indexOf('\n'), expanded.indexOf('\n'));
         Assertions.assertEquals(Set.of(), new TablesNamesFinder<>().getTables(
@@ -123,6 +123,11 @@ public class SQLExecutableCommentsTest {
             "SELECT `/*! not executable */` FROM allowed",
             "SELECT `name``/*! not executable */` FROM allowed",
             "SELECT \"/*M! not executable */\" FROM allowed",
+            "SELECT 1"
+        )) {
+            Assertions.assertEquals(sql, SQLUtils.prepareQueryForParsing(MYSQL_LIKE_DIALECT, sql), sql);
+        }
+        for (String sql : List.of(
             "SELECT 1 /* /*! not executable */",
             "SELECT 1 /*M ! not executable */",
             "SELECT 1 /*+ MAX_EXECUTION_TIME(1000) */",
@@ -132,7 +137,7 @@ public class SQLExecutableCommentsTest {
             "SELECT 1 --\f/*! not executable */",
             "SELECT 1 # ' /*! not executable */\n"
         )) {
-            Assertions.assertEquals(sql, SQLUtils.expandExecutableComments(MYSQL_LIKE_DIALECT, sql), sql);
+            Assertions.assertEquals("SELECT 1", SQLSemanticProcessor.parseQuery(MYSQL_LIKE_DIALECT, sql).toString(), sql);
         }
         Assertions.assertNotNull(SQLSemanticProcessor.parseQuery(MYSQL_LIKE_DIALECT, "SELECT 1 /* regular comment */"));
     }
@@ -164,7 +169,7 @@ public class SQLExecutableCommentsTest {
     @Test
     public void ordinaryDialectsKeepTreatingTheSyntaxAsComments() throws Exception {
         String sql = "SELECT 1 /*! UNION SELECT id FROM secret */";
-        Assertions.assertEquals(sql, SQLUtils.expandExecutableComments(BasicSQLDialect.INSTANCE, sql));
+        Assertions.assertEquals("SELECT 1", SQLUtils.prepareQueryForParsing(BasicSQLDialect.INSTANCE, sql).trim());
         Assertions.assertEquals("SELECT 1", SQLSemanticProcessor.parseQuery(BasicSQLDialect.INSTANCE, sql).toString());
     }
 
