@@ -368,6 +368,8 @@ class SQLExecutionFunctionsTest {
             "SELECT 1 /*!50000 UNION SELECT id FROM public.orders */",
             "SELECT 1 /*M!100100 UNION SELECT id FROM public.orders */",
             "/*! SELECT id FROM public.orders */",
+            "SELECT /*!1+1*/",
+            "SELECT /*! '*/' AS value FROM public.orders */",
             "SELECT '/*! UNION SELECT id FROM private.orders */'"
         )) {
             Assertions.assertDoesNotThrow(() -> fixture.verify(dql, sql), sql);
@@ -376,6 +378,8 @@ class SQLExecutionFunctionsTest {
             "SELECT 1 /*! UNION SELECT id FROM private.orders */",
             "SELECT 1 /*!50000 UNION SELECT id FROM private.orders */",
             "SELECT 1 /*M!100100 UNION SELECT id FROM private.orders */",
+            "SELECT /*!1+1 FROM private.orders */",
+            "SELECT /*! '*/' AS value FROM private.orders */",
             "SELECT id FROM public.orders /*! INTO public.copy */"
         )) {
             fixture.assertRestricted(dql, sql);
@@ -383,6 +387,18 @@ class SQLExecutionFunctionsTest {
         Assertions.assertDoesNotThrow(() -> fixture.verify(dql, "SELECT 1 /*!999999 UNION SELECT id FROM private.orders */"));
         Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDMLFunction(), "/*! UPDATE public.orders SET id=2 */"));
         fixture.assertRestricted(new ExecuteDMLFunction(), "/*! UPDATE private.orders SET id=2 */");
+    }
+
+    @Test
+    void dollarQuotedCommentMarkersCannotHideRestrictedTables() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        ExecuteDQLFunction function = new ExecuteDQLFunction();
+        for (String literal : List.of("$$--$$", "$$/* hidden */$$")) {
+            Assertions.assertDoesNotThrow(() -> fixture.verify(function,
+                "SELECT " + literal + " AS value, id FROM public.orders"));
+            fixture.assertRestricted(function, "SELECT " + literal + " AS value, id FROM private.orders");
+            fixture.assertTextRestricted(function, "SELECT " + literal + " AS value, id FROM private.orders");
+        }
     }
 
     @Test

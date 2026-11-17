@@ -54,12 +54,11 @@ public class MySQLExecutableCommentsTest {
     }
 
     private MySQLDialect dialect(boolean mariaDb, String version) {
-        MySQLDataSource dataSource = Mockito.mock(MySQLDataSource.class);
+        MySQLDataSource dataSource = Mockito.mock(MySQLDataSource.class, Mockito.CALLS_REAL_METHODS);
         DBPDataSourceInfo info = Mockito.mock(DBPDataSourceInfo.class);
-        Mockito.when(dataSource.getInfo()).thenReturn(info);
+        Mockito.doReturn(info).when(dataSource).getInfo();
         Mockito.when(info.getDatabaseProductVersion()).thenReturn(version);
-        Mockito.when(dataSource.isMariaDB()).thenReturn(mariaDb);
-        Mockito.when(dataSource.getVersion()).thenCallRealMethod();
+        Mockito.doReturn(mariaDb).when(dataSource).isMariaDB();
         MySQLDialect dialect = new MySQLDialect();
         dialect.afterDataSourceInitialization(dataSource);
         // validation must use the metadata snapshot without returning to the datasource

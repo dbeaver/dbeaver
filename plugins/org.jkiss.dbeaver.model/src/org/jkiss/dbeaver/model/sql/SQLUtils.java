@@ -177,12 +177,18 @@ public final class SQLUtils {
     @NotNull
     public static String prepareQueryForParsing(@NotNull SQLDialect dialect, @NotNull String sql) throws DBCException {
         List<String> lineComments = ArrayUtils.safeArray(dialect.getSingleLineComments());
+        List<String> executablePrefixes = dialect.getExecutableCommentPrefixes();
+        if (executablePrefixes.isEmpty() && lineComments.stream().allMatch(prefix -> prefix.startsWith(SQLConstants.SL_COMMENT))) {
+            // let jsqlparser handle standard comments and dialect literals, including dollar-quoted strings
+            return sql;
+        }
         Pair<String, String> blockComment = dialect.getMultiLineComments();
         String[][] stringQuotes = dialect.getStringQuoteStrings();
         String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
         char escapeChar = dialect.getStringEscapeCharacter();
         StringBuilder result = new StringBuilder(sql);
         List<Integer> subtractionSeparators = new ArrayList<>();
+        boolean executableComment = false;
         int pos = 0;
         while (pos < result.length()) {
             String[] stringQuote = quoteStartingAt(result, pos, stringQuotes);
@@ -191,12 +197,16 @@ public final class SQLUtils {
                 pos = skipQuoted(result, pos, stringQuote, escapeChar);
             } else if (identifierQuote != null) {
                 pos = skipQuoted(result, pos, identifierQuote, (char) 0);
+            } else if (executableComment && startsWith(result, blockComment.getSecond(), pos)) {
+                maskCommentRange(result, pos, pos + blockComment.getSecond().length());
+                pos += blockComment.getSecond().length();
+                executableComment = false;
             } else if (isLineCommentStart(result, pos, lineComments)) {
                 int lineEnd = getLineEnd(result, pos);
                 maskCommentRange(result, pos, lineEnd);
                 pos = lineEnd;
             } else if (blockComment != null && startsWith(result, blockComment.getFirst(), pos)) {
-                String executablePrefix = prefixStartingAt(result, pos, dialect.getExecutableCommentPrefixes());
+                String executablePrefix = prefixStartingAt(result, pos, executablePrefixes);
                 if (executablePrefix != null) {
                     int bodyStart = pos + executablePrefix.length();
                     int versionEnd = bodyStart;
@@ -204,21 +214,31 @@ public final class SQLUtils {
                         versionEnd++;
                     }
                     int versionLength = versionEnd - bodyStart;
-                    if (versionLength != 0 && versionLength != 5 && versionLength != 6) {
+                    if (versionLength > 6) {
                         throw new DBCException("Cannot determine executable comment version");
+                    }
+                    if (versionLength < 5) {
+                        versionEnd = bodyStart;
+                        versionLength = 0;
                     }
                     int version = versionLength == 0 ? 0 : Integer.parseInt(result.substring(bodyStart, versionEnd));
                     Boolean active = dialect.isExecutableCommentActive(executablePrefix, version);
                     if (active == null) {
                         throw new DBCException("Cannot determine whether an executable comment applies to this server");
                     }
-                    int end = result.indexOf(blockComment.getSecond(), versionEnd);
-                    if (end < 0) {
-                        throw new DBCException("Unterminated executable comment");
+                    if (active) {
+                        maskCommentRange(result, pos, versionEnd);
+                        pos = versionEnd;
+                        executableComment = true;
+                    } else {
+                        int end = result.indexOf(blockComment.getSecond(), versionEnd);
+                        if (end < 0) {
+                            throw new DBCException("Unterminated executable comment");
+                        }
+                        end += blockComment.getSecond().length();
+                        maskCommentRange(result, pos, end);
+                        pos = end;
                     }
-                    maskCommentRange(result, pos, active ? versionEnd : end);
-                    maskCommentRange(result, end, end + blockComment.getSecond().length());
-                    pos = active ? versionEnd : end + blockComment.getSecond().length();
                 } else {
                     int end = pos + blockComment.getFirst().length();
                     int depth = 1;
@@ -243,6 +263,9 @@ public final class SQLUtils {
             } else {
                 pos++;
             }
+        }
+        if (executableComment) {
+            throw new DBCException("Unterminated executable comment");
         }
         for (int index = subtractionSeparators.size() - 1; index >= 0; index--) {
             result.insert(subtractionSeparators.get(index).intValue(), ' ');

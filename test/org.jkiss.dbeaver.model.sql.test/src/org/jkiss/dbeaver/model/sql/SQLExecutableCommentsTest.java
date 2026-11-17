@@ -71,6 +71,8 @@ public class SQLExecutableCommentsTest {
             "/*! SELECT id FROM secret */",
             "SELECT * FROM allowed /*! UNION SELECT id FROM secret */",
             "SELECT 2--1 /*! UNION SELECT id FROM secret */",
+            "SELECT /*! '*/' AS value FROM secret */",
+            "SELECT /*!1+1 FROM secret */",
             "--\f 'ignore this\nSELECT 1 /*! UNION SELECT id FROM secret */",
             "# 'ignore this\nSELECT 1 /*! UNION SELECT id FROM secret */",
             "/* 'ignore this */ SELECT 1 /*! UNION SELECT id FROM secret */"
@@ -169,8 +171,20 @@ public class SQLExecutableCommentsTest {
     @Test
     public void ordinaryDialectsKeepTreatingTheSyntaxAsComments() throws Exception {
         String sql = "SELECT 1 /*! UNION SELECT id FROM secret */";
-        Assertions.assertEquals("SELECT 1", SQLUtils.prepareQueryForParsing(BasicSQLDialect.INSTANCE, sql).trim());
+        Assertions.assertEquals(sql, SQLUtils.prepareQueryForParsing(BasicSQLDialect.INSTANCE, sql));
         Assertions.assertEquals("SELECT 1", SQLSemanticProcessor.parseQuery(BasicSQLDialect.INSTANCE, sql).toString());
+    }
+
+    @Test
+    public void preservesDollarQuotedStringsForTheExistingParser() throws Exception {
+        for (String sql : List.of(
+            "SELECT $$--$$ AS value, id FROM secret",
+            "SELECT $$/*$$ AS value, id FROM secret WHERE marker = $$*/$$"
+        )) {
+            Assertions.assertEquals(sql, SQLUtils.prepareQueryForParsing(BasicSQLDialect.INSTANCE, sql));
+            Assertions.assertEquals(Set.of("secret"), new TablesNamesFinder<>().getTables(
+                SQLSemanticProcessor.parseQuery(BasicSQLDialect.INSTANCE, sql)));
+        }
     }
 
     @Test
