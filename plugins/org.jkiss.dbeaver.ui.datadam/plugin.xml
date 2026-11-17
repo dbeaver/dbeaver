@@ -261,7 +261,7 @@
     <extension point="org.eclipse.ui.views">
         <view id="org.jkiss.dbeaver.ui.datadam.tracking"
               name="%view.datadam.tracking.name"
-              category="org.jkiss.dbeaver.core"
+              category="org.jkiss.dbeaver.core.category"
               class="org.jkiss.dbeaver.ui.datadam.management.DDTrackingView"
               icon="icons/project_datadam.svg" restorable="true"/>
     </extension>
