@@ -17,14 +17,28 @@
 package org.jkiss.dbeaver.model.datadam;
 
 import org.jkiss.dbeaver.model.impl.config.ProductConfigPropertyTester;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public final class DDProductConfig {
+    public static final String INTEGRATION_ENABLED = "datadam.integration.enabled";
     private static final ProductConfigPropertyTester PROPERTY_TESTER = new ProductConfigPropertyTester();
 
     private DDProductConfig() {
     }
 
     public static boolean isIntegrationEnabled() {
+        var store = DBWorkbench.getPlatform().getPreferenceStore();
+        return isIntegrationAvailable() && (!store.contains(INTEGRATION_ENABLED) || store.getBoolean(INTEGRATION_ENABLED));
+    }
+
+    public static boolean isIntegrationAvailable() {
         return PROPERTY_TESTER.test(null, "isFeatureEnabled", new Object[0], "datadam");
+    }
+
+    public static void setIntegrationEnabled(boolean enabled) {
+        var store = DBWorkbench.getPlatform().getPreferenceStore();
+        // Without the effective default, the first write of false is treated as unchanged.
+        store.setDefault(INTEGRATION_ENABLED, true);
+        store.setValue(INTEGRATION_ENABLED, enabled);
     }
 }
