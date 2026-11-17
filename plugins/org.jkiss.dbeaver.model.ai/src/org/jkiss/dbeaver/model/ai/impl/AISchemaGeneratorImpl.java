@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -68,7 +67,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             generateCustomDDL(monitor, executionContext, options, entity, ddl);
             ddl.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(GeneralUtils.getDefaultLineSeparator());
             if (options.sendIndexes() && entity instanceof DBSTable table) {
-                addIndexesDDL(monitor, options, table, ddl);
+                addIndexesDDL(monitor, executionContext, options, table, ddl);
             }
         }
 
@@ -82,20 +81,34 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         return ddl.toString().trim();
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void addIndexesDDL(
         @NotNull DBRProgressMonitor monitor,
+        @Nullable DBCExecutionContext executionContext,
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSTable table,
         @NotNull StringBuilder ddl
     ) {
         try {
+            DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
             for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
-                if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)) {
+                if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)
+                    || !includesIndexAttributes(monitor, options, index)) {
                     continue;
                 }
-                String description = describeIndex(monitor, options, index);
-                if (!CommonUtils.isEmpty(description)) {
-                    ddl.append(description).append(GeneralUtils.getDefaultLineSeparator());
+                SQLObjectEditor indexEditor = editorsRegistry.getObjectManager(index.getClass(), SQLObjectEditor.class);
+                if (indexEditor != null) {
+                    String indexName = index.getName();
+                    try {
+                        DBEPersistAction[] actions = indexEditor.makeCreateCommand(index, Map.of()).getPersistActions(
+                            monitor, executionContext == null ? DBUtils.getDefaultContext(index, true) : executionContext, Map.of());
+                        DBStructUtils.addDDLLine(ddl, SQLUtils.generateScript(table.getDataSource(), actions, false));
+                    } finally {
+                        // generic index managers may quote the cached object's name while generating DDL
+                        if (index instanceof DBPNamedObject2 namedIndex && !indexName.equals(index.getName())) {
+                            namedIndex.setName(indexName);
+                        }
+                    }
                 }
             }
         } catch (DBException e) {
@@ -103,26 +116,18 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
     }
 
-    @Nullable
-    private String describeIndex(
+    private boolean includesIndexAttributes(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSTableIndex index
     ) throws DBException {
-        List<? extends DBSTableIndexColumn> references = index.getAttributeReferences(monitor);
-        if (CommonUtils.isEmpty(references)) {
-            return null;
-        }
-        StringJoiner columns = new StringJoiner(", ", "(", ")");
-        for (DBSTableIndexColumn reference : references) {
+        for (DBSEntityAttributeRef reference : CommonUtils.safeCollection(index.getAttributeReferences(monitor))) {
             DBSEntityAttribute attribute = reference.getAttribute();
             if (attribute != null && (DBUtils.isHiddenObject(attribute) || !options.includesObject(monitor, attribute))) {
-                return null;
+                return false;
             }
-            columns.add((attribute == null ? "<expression>" : DBUtils.getQuotedIdentifier(attribute))
-                + (reference.isAscending() ? " ASC" : " DESC"));
         }
-        return (index.isUnique() ? "-- UNIQUE INDEX " : "-- INDEX ") + DBUtils.getQuotedIdentifier(index) + " " + columns;
+        return true;
     }
 
     @Nullable
