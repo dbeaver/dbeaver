@@ -120,6 +120,46 @@ class ManticoreQueryTransformerLimitTest extends DBeaverUnitTest {
         assertFalse(transformer.transformQueryString(new SQLQuery(null, "SELECT * FROM test")).contains("OPTION"));
     }
 
+    @ParameterizedTest
+    @CsvSource({"0,200", "1000,200"})
+    void keepsOptimizerHintsAfterPagination(long offset, long length) throws Exception {
+        String query = "SELECT * FROM students WHERE age > 21";
+        String hint = "/*+ SecondaryIndex(age) */";
+        String expected = query + "\nLIMIT " + offset + ", " + length
+            + (offset > 0 ? "\nOPTION max_matches=" + (offset + length) : "") + "\n" + hint;
+        DBCQueryTransformer transformer = transformer(offset, length);
+        assertEquals(expected, transformer.transformQueryString(new SQLQuery(null, query + " " + hint + ";")));
+        DBCStatement statement = mock(DBCStatement.class);
+        transformer.transformStatement(statement, 0);
+        verifyNoInteractions(statement);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {" /* trailing comment */", " -- trailing comment", "; -- trailing comment"})
+    void preservesCommentsAfterOptimizerHint(@NotNull String suffix) throws Exception {
+        String query = "SELECT * FROM students";
+        String hint = "/*+ SecondaryIndex(age) */";
+        assertEquals(query + "\nLIMIT 1000, 200\nOPTION max_matches=1200\n" + hint + suffix,
+            transformer(1000, 200).transformQueryString(new SQLQuery(null, query + " " + hint + suffix)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "SELECT '/*+ SecondaryIndex(age) */' FROM students",
+        "SELECT * FROM students -- /*+ SecondaryIndex(age) */",
+        "SELECT * FROM students /* ordinary /*+ SecondaryIndex(age) */"
+    })
+    void doesNotRelocateHintLikeText(@NotNull String sql) throws Exception {
+        assertEquals(sql + "\nLIMIT 1000, 200\nOPTION max_matches=1200",
+            transformer(1000, 200).transformQueryString(new SQLQuery(session().getDataSource(), sql)));
+    }
+
+    @Test
+    void preservesExplicitLimitWithOptimizerHint() throws Exception {
+        String sql = "SELECT * FROM students LIMIT 10 /*+ SecondaryIndex(age) */";
+        assertEquals(sql, transformer(1000, 200).transformQueryString(new SQLQuery(null, sql)));
+    }
+
     @Test
     void sharedStatementCreationUsesTheExpandedWindow() throws Exception {
         DBCSession session = session();
@@ -129,6 +169,21 @@ class ManticoreQueryTransformerLimitTest extends DBeaverUnitTest {
 
         assertSame(statement, DBUtils.makeStatement(null, session, DBCStatementType.QUERY,
             new SQLQuery(session.getDataSource(), "SELECT * FROM test"), 1000, 200));
+
+        verify(session).prepareStatement(DBCStatementType.QUERY, sql, false, false, false);
+        verify(statement, never()).setLimit(anyLong(), anyLong());
+    }
+
+    @Test
+    void sharedStatementCreationPlacesPaginationBeforeOptimizerHint() throws Exception {
+        DBCSession session = session();
+        DBCStatement statement = mock(DBCStatement.class);
+        String hint = "/*+ SecondaryIndex(age) */";
+        String sql = "SELECT * FROM students WHERE age > 21\nLIMIT 1000, 200\nOPTION max_matches=1200\n" + hint;
+        when(session.prepareStatement(DBCStatementType.QUERY, sql, false, false, false)).thenReturn(statement);
+
+        assertSame(statement, DBUtils.makeStatement(null, session, DBCStatementType.QUERY,
+            new SQLQuery(session.getDataSource(), "SELECT * FROM students WHERE age > 21 " + hint), 1000, 200));
 
         verify(session).prepareStatement(DBCStatementType.QUERY, sql, false, false, false);
         verify(statement, never()).setLimit(anyLong(), anyLong());
