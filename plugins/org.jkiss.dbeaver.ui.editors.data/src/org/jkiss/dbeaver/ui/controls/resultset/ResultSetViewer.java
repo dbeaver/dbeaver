@@ -181,6 +181,8 @@ public class ResultSetViewer extends Viewer
     private Composite filtersPanelComposite;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
+    @Nullable
+    private FilterSettingsDialog filterSettingsDialog;
     private final CustomSashForm viewerSash;
 
     private final VerticalFolder panelSwitchFolder;
@@ -675,7 +677,22 @@ public class ResultSetViewer extends Viewer
     }
 
     public void showFilterSettingsDialog() {
-        new FilterSettingsDialog(ResultSetViewer.this).open();
+        if (filterSettingsDialog != null) {
+            Shell shell = filterSettingsDialog.getShell();
+            if (shell != null && !shell.isDisposed()) {
+                shell.forceActive();
+            }
+            return;
+        }
+        FilterSettingsDialog dialog = new FilterSettingsDialog(this);
+        filterSettingsDialog = dialog;
+        try {
+            dialog.open();
+        } finally {
+            if (filterSettingsDialog == dialog) {
+                filterSettingsDialog = null;
+            }
+        }
     }
 
     public void saveDataFilter() {
@@ -790,7 +807,7 @@ public class ResultSetViewer extends Viewer
         return model.getDataFilter();
     }
 
-    public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
+    public void setDataFilter(@NotNull final DBDDataFilter dataFilter, boolean refreshData)
     {
         //if (!model.getDataFilter().equals(dataFilter))
         {
@@ -798,6 +815,7 @@ public class ResultSetViewer extends Viewer
             if (refreshData) {
                 refreshWithFilter(dataFilter);
             } else {
+                fireResultSetRefresh();
                 model.setDataFilter(dataFilter);
                 activePresentation.refreshData(true, false, true);
                 updateFiltersText();
@@ -2242,7 +2260,8 @@ public class ResultSetViewer extends Viewer
         return curState != null ? curState.dataContainer : container.getDataContainer();
     }
 
-    public void setDataContainer(DBSDataContainer targetEntity, DBDDataFilter newFilter) {
+    public void setDataContainer(@NotNull DBSDataContainer targetEntity, @NotNull DBDDataFilter newFilter) {
+        fireResultSetRefresh();
         // Workaround for script results
         // In script mode history state isn't updated so we check for it here
         if (curState == null) {
@@ -2788,6 +2807,7 @@ public class ResultSetViewer extends Viewer
      */
     void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] attributes)
     {
+        fireResultSetRefresh();
         UIUtils.syncExec(undoRedoManager::clear);
         model.setMetaData(resultSet, attributes);
         activePresentation.clearMetaData();
@@ -3051,6 +3071,7 @@ public class ResultSetViewer extends Viewer
                     viewerPanel.getShell(),
                     ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
                     ConfirmationDialog.CONFIRM,
+                    null,
                     curAttribute.getName()) != IDialogConstants.OK_ID)
                 {
                     return;
@@ -3933,14 +3954,12 @@ public class ResultSetViewer extends Viewer
                 }
                 filtersMenu.add(new Separator());
 
-/*
                 // Operators with multiple inputs
                 for (DBCLogicalOperator operator : operators) {
                     if (operator.getArgumentCount() < 0) {
-                        filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.INPUT, attribute));
+                        filtersMenu.add(new FilterByAttributeAction(this, operator, FilterByAttributeType.INPUT, attribute));
                     }
                 }
-*/
 
                 // Operators with no inputs
                 for (DBCLogicalOperator operator : operators) {
@@ -4601,6 +4620,9 @@ public class ResultSetViewer extends Viewer
         final boolean refresh, // Refresh. Nothing was changed but refresh from server or scroll happened
         @Nullable final Runnable finalizer)
     {
+        if (!scroll) {
+            fireResultSetRefresh();
+        }
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null || dataContainer.getDataSource() != executionContext.getDataSource()) {
             // This may happen during cross-database entity navigation
@@ -4717,6 +4739,7 @@ public class ResultSetViewer extends Viewer
 
     public void clearData(boolean clearMetaData)
     {
+        fireResultSetRefresh();
         undoRedoManager.clear();
         this.model.releaseAllData();
         this.model.clearData();
@@ -5331,6 +5354,14 @@ public class ResultSetViewer extends Viewer
             listenersCopy = listeners.toArray(new IResultSetListener[0]);
         }
         return listenersCopy;
+    }
+
+    private void fireResultSetRefresh() {
+        UIUtils.syncExec(() -> {
+            for (IResultSetListener listener : getListenersCopy()) {
+                listener.onResultSetRefresh();
+            }
+        });
     }
 
     void fireResultSetChange() {

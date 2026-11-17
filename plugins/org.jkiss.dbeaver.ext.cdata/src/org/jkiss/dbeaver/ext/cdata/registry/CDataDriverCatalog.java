@@ -42,6 +42,8 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +56,7 @@ public final class CDataDriverCatalog {
     private static final String CATALOG_URL = "https://www.cdata.com/order/dbeavercatalog.rsb?@json&@authtoken=" + CATALOG_AUTH_TOKEN;
     private static final String CATALOG_URL_PROPERTY = "cdataDriversURL";
     private static final int CONNECTION_TIMEOUT = 10_000;
+    private static final long CACHE_MAX_AGE = Duration.ofDays(7).toMillis();
     private static final int LEGACY_SCHEMA_VERSION = 2;
     private static final String ARTIFACT_SUFFIX = "-jdbc";
     private static volatile List<CDataDriverInfo> drivers;
@@ -197,6 +200,7 @@ public final class CDataDriverCatalog {
             checkCanceled(monitor);
             Path etagFile = cacheFile.resolveSibling(cacheFile.getFileName() + ".etag");
             String etag = null;
+            boolean sameSource = false;
             if (Files.isRegularFile(etagFile)) {
                 try {
                     CatalogETag saved = JSONUtils.GSON.fromJson(Files.readString(etagFile), CatalogETag.class);
@@ -204,11 +208,15 @@ public final class CDataDriverCatalog {
                         Files.deleteIfExists(etagFile);
                     } else if (hasCachedCatalog && catalogHash.equals(saved.urlHash())) {
                         etag = saved.etag();
+                        sameSource = true;
                     }
                 } catch (IOException | JsonParseException e) {
                     log.debug("Error reading CData catalog ETag (" + e.getClass().getSimpleName() + ")");
                     Files.deleteIfExists(etagFile);
                 }
+            }
+            if (hasCachedCatalog && sameSource && isCacheFresh(cacheFile)) {
+                return cachedDrivers;
             }
             URLConnection connection = connectionFactory.apply(etag == null ? Map.of() : Map.of("If-None-Match", etag));
             try {
@@ -217,6 +225,7 @@ public final class CDataDriverCatalog {
                     if (etag == null || cachedDrivers.isEmpty()) {
                         throw new IOException("CData catalog returned HTTP 304 without a valid cache");
                     }
+                    Files.setLastModifiedTime(cacheFile, FileTime.fromMillis(System.currentTimeMillis()));
                     return cachedDrivers;
                 }
                 return download(monitor, cacheFile, etagFile, catalogHash, connection, settings);
@@ -227,6 +236,11 @@ public final class CDataDriverCatalog {
             log.warn("Error updating CData driver catalog; using the cached catalog (" + e.getClass().getSimpleName() + ")");
             return cachedDrivers;
         }
+    }
+
+    static boolean isCacheFresh(@NotNull Path file) throws IOException {
+        long age = System.currentTimeMillis() - Files.getLastModifiedTime(file).toMillis();
+        return age >= 0 && age < CACHE_MAX_AGE;
     }
 
     @NotNull
@@ -259,12 +273,12 @@ public final class CDataDriverCatalog {
                 Files.move(temporary, cacheFile, StandardCopyOption.REPLACE_EXISTING);
             }
             String etag = connection.getHeaderField("ETag");
-            if (etag != null && !etag.isBlank()) {
-                try {
-                    Files.writeString(etagFile, JSONUtils.GSON.toJson(new CatalogETag(catalogHash, etag)));
-                } catch (IOException e) {
-                    log.debug("Error saving CData catalog ETag", e);
-                }
+            try {
+                // Track the source even when the server does not supply a conditional request validator.
+                Files.writeString(etagFile, JSONUtils.GSON.toJson(
+                    new CatalogETag(catalogHash, etag == null || etag.isBlank() ? null : etag)));
+            } catch (IOException e) {
+                log.debug("Error saving CData catalog ETag", e);
             }
             return downloadedDrivers;
         } finally {
@@ -390,7 +404,7 @@ public final class CDataDriverCatalog {
         }
     }
 
-    private record CatalogETag(@NotNull String urlHash, @NotNull String etag) {
+    private record CatalogETag(@NotNull String urlHash, @Nullable String etag) {
     }
 
     private static final class CatalogFile {
