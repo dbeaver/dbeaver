@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -32,9 +33,13 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
+import org.jkiss.dbeaver.ui.BaseEditorColors;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.datadam.internal.DDManagementMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -59,6 +64,7 @@ public class DDTrackingView extends ViewPart {
         Table table = viewer.getTable();
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
+        BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_ERROR, settings -> viewer.refresh(), table);
         createColumn(DDManagementMessages.event_time, 190, event -> TIME_FORMAT.format(event.time()));
         createColumn(DDManagementMessages.event_type, 170, event -> eventLabel(event.type()));
         createColumn(DDManagementMessages.event_details, 600, DDConnectionMonitor.Event::details);
@@ -83,6 +89,20 @@ public class DDTrackingView extends ViewPart {
         column.getColumn().setText(title);
         column.getColumn().setWidth(width);
         column.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            @Nullable
+            public Color getBackground(@NotNull Object element) {
+                return ((DDConnectionMonitor.Event) element).type() == DDConnectionMonitor.EventType.ERROR
+                    ? BaseThemeSettings.instance.colorError : null;
+            }
+
+            @Override
+            @Nullable
+            public Color getForeground(@NotNull Object element) {
+                Color background = getBackground(element);
+                return background == null ? null : UIStyles.getContrastColor(background);
+            }
+
             @Override
             @NotNull
             public String getText(@NotNull Object element) {

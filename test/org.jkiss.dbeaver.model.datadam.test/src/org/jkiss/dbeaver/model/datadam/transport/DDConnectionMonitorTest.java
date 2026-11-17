@@ -49,6 +49,20 @@ class DDConnectionMonitorTest {
     }
 
     @Test
+    void recoveryClearsOnlyTheMatchingErrorAndKeepsHistoricalEvents() {
+        var monitor = new DDConnectionMonitor();
+        monitor.failed("RPC initialization failed");
+        monitor.clearError("RPC initialization failed");
+        Assertions.assertNull(monitor.snapshot().error());
+        Assertions.assertEquals(1, monitor.getEvents().size());
+
+        monitor.failed("WebSocket closed");
+        monitor.clearError("RPC initialization failed");
+        Assertions.assertEquals("WebSocket closed", monitor.snapshot().error());
+        Assertions.assertEquals(2, monitor.getEvents().size());
+    }
+
+    @Test
     void boundsEventsAndDetailsAndReturnsImmutableSnapshots() {
         var monitor = new DDConnectionMonitor();
         monitor.record(DDConnectionMonitor.EventType.SIGNED_IN, "oldest");

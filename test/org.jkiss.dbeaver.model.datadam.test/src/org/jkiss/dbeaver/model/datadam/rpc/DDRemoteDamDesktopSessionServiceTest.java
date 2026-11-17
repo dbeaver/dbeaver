@@ -159,6 +159,27 @@ class DDRemoteDamDesktopSessionServiceTest {
     }
 
     @Test
+    void successfulRpcInitializationRetryClearsItsErrorWithoutReconnect() throws Exception {
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        ready("session");
+        var observer = new AtomicReference<Consumer<DDRemoteDamChannelStatus>>();
+        Mockito.when(channel.observeState(Mockito.any())).thenAnswer(invocation -> {
+            observer.set(invocation.getArgument(0));
+            return (DDRemoteDamSubscription) () -> {};
+        });
+        Mockito.doThrow(new DBException("Registration failed")).doNothing()
+            .when(registrations).registerEndpoint(Mockito.any(), Mockito.any());
+        service.start();
+
+        observer.get().accept(status.get());
+        Assertions.assertNotNull(channel.getMonitor().snapshot().error());
+        observer.get().accept(status.get());
+        Assertions.assertNull(channel.getMonitor().snapshot().error());
+        Assertions.assertTrue(channel.getMonitor().getEvents().stream()
+            .anyMatch(event -> event.type() == DDConnectionMonitor.EventType.ERROR));
+    }
+
+    @Test
     void retriesInitialRegistrationFailureWhileTheChannelStaysReady() throws Exception {
         Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
         ready("session");

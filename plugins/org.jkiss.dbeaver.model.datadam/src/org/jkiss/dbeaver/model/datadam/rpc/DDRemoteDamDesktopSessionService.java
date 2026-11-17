@@ -49,6 +49,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
 
     private static final String APP_INSTANCE_ID = UUID.randomUUID().toString();
     private static final long RPC_RETRY_DELAY = 1_000;
+    private static final String RPC_INITIALIZATION_ERROR = "Cannot open DataDam RPC endpoint";
 
     private static DDRemoteDamDesktopSessionService instance;
 
@@ -89,11 +90,14 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
                 accessStatus = next;
                 accessIdentity = identity;
                 DDConnectionMonitor monitor = channel.getMonitor();
-                switch (next) {
-                    case SIGNED_IN -> monitor.record(DDConnectionMonitor.EventType.SIGNED_IN, identity);
-                    case SIGNED_OUT -> monitor.record(DDConnectionMonitor.EventType.SIGNED_OUT, "");
-                    case INVALID_TOKEN -> monitor.record(DDConnectionMonitor.EventType.INVALID_TOKEN, "");
-                    case UNLOADED -> { }
+                var type = switch (next) {
+                    case SIGNED_IN -> DDConnectionMonitor.EventType.SIGNED_IN;
+                    case SIGNED_OUT -> DDConnectionMonitor.EventType.SIGNED_OUT;
+                    case INVALID_TOKEN -> DDConnectionMonitor.EventType.INVALID_TOKEN;
+                    case UNLOADED -> null;
+                };
+                if (type != null) {
+                    monitor.record(type, identity);
                 }
             }
             updateAccess(false);
@@ -177,9 +181,10 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
         }
         try {
             rpc.getRpc();
+            channel.getMonitor().clearError(RPC_INITIALIZATION_ERROR);
         } catch (DBException e) {
             log.warn("Cannot open desktop DataDam RPC endpoint", e);
-            channel.getMonitor().failed("Cannot open DataDam RPC endpoint");
+            channel.getMonitor().failed(RPC_INITIALIZATION_ERROR);
             if (!closed.get() && channel.getStatus().isReady() && access.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
                 rpcInitializationRetry.schedule(RPC_RETRY_DELAY);
             }

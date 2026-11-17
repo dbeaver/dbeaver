@@ -265,6 +265,9 @@
               class="org.jkiss.dbeaver.ui.datadam.management.DDTrackingView"
               icon="icons/project_datadam.svg" restorable="true"/>
     </extension>
+    <extension id="org.jkiss.dbeaver.ui.datadam.fragment" point="org.eclipse.e4.workbench.model">
+        <fragment apply="always" uri="fragment.e4xmi"/>
+    </extension>
     <extension point="org.eclipse.ui.perspectiveExtensions">
         <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
             <view id="org.jkiss.dbeaver.ui.datadam.tracking" relative="org.eclipse.pde.runtime.LogView"

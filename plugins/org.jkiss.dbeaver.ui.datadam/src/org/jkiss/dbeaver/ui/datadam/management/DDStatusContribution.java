@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.datadam.management;
 
-import org.eclipse.jface.action.ContributionItem;
+import jakarta.annotation.PostConstruct;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.StatusLineLayoutData;
-import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -28,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -44,61 +44,63 @@ import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-public class DDStatusContribution extends ContributionItem implements IWorkbenchWindowInitializer {
+public class DDStatusContribution implements IWorkbenchWindowInitializer {
+    private static final String STATUS_ID = "org.jkiss.dbeaver.ui.datadam.status";
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         .withZone(ZoneId.systemDefault());
     @Nullable
     private Composite control;
     private Label statusIcon;
 
-    public DDStatusContribution() {
-        super("org.jkiss.dbeaver.ui.datadam.status");
-    }
-
-    @Override
-    public boolean isVisible() {
-        return DDProductConfig.isIntegrationEnabled();
-    }
-
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
-        if (DDProductConfig.isIntegrationAvailable()) {
-            var manager = configurer.getActionBarConfigurer().getStatusLineManager();
-            // The status-line layout clips trailing contributions when an editor adds its own fields.
-            manager.prependToGroup(StatusLineManager.BEGIN_GROUP, this);
-            manager.update(true);
-            var store = DBWorkbench.getPlatform().getPreferenceStore();
-            var shell = configurer.getWindow().getShell();
-            // Eclipse recreates status-line controls on part changes. Keep polling owned by the window.
-            Runnable refreshTask = new Runnable() {
-                @Override
-                public void run() {
-                    if (!shell.isDisposed()) {
-                        refresh();
-                        shell.getDisplay().timerExec(1_000, this);
-                    }
-                }
-            };
-            DBPPreferenceListener listener = event -> {
-                if (DDProductConfig.INTEGRATION_ENABLED.equals(event.getProperty())) {
-                    UIUtils.asyncExec(() -> {
-                        if (!shell.isDisposed()) {
-                            manager.update(true);
-                        }
-                    });
-                }
-            };
-            store.addPropertyChangeListener(listener);
-            shell.addDisposeListener(event -> {
-                store.removePropertyChangeListener(listener);
-                shell.getDisplay().timerExec(-1, refreshTask);
-            });
-            refreshTask.run();
+        if (!(configurer.getWindow() instanceof WorkbenchWindow window)) {
+            return;
         }
+        var modelService = window.getService(EModelService.class);
+        var contribution = modelService.find(STATUS_ID, window.getModel());
+        if (contribution == null) {
+            return;
+        }
+        var store = DBWorkbench.getPlatform().getPreferenceStore();
+        var shell = window.getShell();
+        Runnable updateVisibility = () -> {
+            if (!shell.isDisposed()) {
+                contribution.setVisible(DDProductConfig.isIntegrationEnabled());
+                shell.layout(true, true);
+            }
+        };
+        DBPPreferenceListener listener = event -> {
+            if (DDProductConfig.INTEGRATION_ENABLED.equals(event.getProperty())) {
+                UIUtils.asyncExec(updateVisibility);
+            }
+        };
+        store.addPropertyChangeListener(listener);
+        shell.addDisposeListener(event -> store.removePropertyChangeListener(listener));
+        updateVisibility.run();
     }
 
-    @Override
-    public void fill(@NotNull Composite parent) {
+    @PostConstruct
+    public void createControls(@NotNull Composite parent) {
+        Composite widget = createWidget(parent);
+        var display = widget.getDisplay();
+        Runnable refreshTask = new Runnable() {
+            @Override
+            public void run() {
+                if (!widget.isDisposed()) {
+                    if (DDProductConfig.isIntegrationEnabled()) {
+                        refresh();
+                    }
+                    display.timerExec(1_000, this);
+                }
+            }
+        };
+        widget.addDisposeListener(event -> display.timerExec(-1, refreshTask));
+        refreshTask.run();
+    }
+
+    @NotNull
+    private Composite createWidget(@NotNull Composite parent) {
         control = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(2, false);
         layout.marginWidth = 0;
@@ -120,9 +122,7 @@ public class DDStatusContribution extends ContributionItem implements IWorkbench
         }
         control.addDisposeListener(event -> menu.dispose());
         refresh();
-        StatusLineLayoutData data = new StatusLineLayoutData();
-        data.widthHint = control.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-        control.setLayoutData(data);
+        return control;
     }
 
     private void refresh() {
@@ -137,17 +137,16 @@ public class DDStatusContribution extends ContributionItem implements IWorkbench
             status = DDManagementMessages.status_disabled;
         } else if (monitor != null) {
             var snapshot = monitor.snapshot();
-            switch (snapshot.state()) {
-                case CONNECTED -> {
-                    status = DDManagementMessages.status_connected;
-                    icon = UIIcon.BULLET_GREEN;
-                }
-                case CONNECTING -> status = DDManagementMessages.status_connecting;
-                case DISCONNECTED, CLOSED -> {
-                    status = DDManagementMessages.status_disconnected;
-                    icon = UIIcon.BULLET_RED;
-                }
-            }
+            status = switch (snapshot.state()) {
+                case CONNECTED -> DDManagementMessages.status_connected;
+                case CONNECTING -> DDManagementMessages.status_connecting;
+                case DISCONNECTED, CLOSED -> DDManagementMessages.status_disconnected;
+            };
+            icon = switch (snapshot.state()) {
+                case CONNECTED -> UIIcon.BULLET_GREEN;
+                case CONNECTING -> DDTrackingUIIcons.STATUS_UNKNOWN;
+                case DISCONNECTED, CLOSED -> UIIcon.BULLET_RED;
+            };
             if (snapshot.connectedAt() != null) {
                 details += "\n" + NLS.bind(DDManagementMessages.connected_at, TIME_FORMAT.format(snapshot.connectedAt()));
                 details += "\n" + NLS.bind(DDManagementMessages.connection_duration, snapshot.duration().toSeconds());

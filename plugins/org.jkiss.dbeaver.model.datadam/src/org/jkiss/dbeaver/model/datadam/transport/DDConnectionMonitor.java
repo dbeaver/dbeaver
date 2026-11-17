@@ -101,6 +101,12 @@ public final class DDConnectionMonitor {
         record(EventType.ERROR, error);
     }
 
+    public synchronized void clearError(@NotNull String expectedError) {
+        if (expectedError.equals(error)) {
+            error = null;
+        }
+    }
+
     public synchronized void record(@NotNull EventType type, @NotNull String details) {
         if (events.size() == MAX_EVENTS) {
             events.removeFirst();
