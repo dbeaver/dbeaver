@@ -16,21 +16,110 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.event.actions;
 
+import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectListing;
+import org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectImportHandler;
+import org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectSyncAllHandler;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.util.List;
 
 public class SyncAllJob extends Job {
-    public SyncAllJob() {
+    private static final Log log = Log.getLog(SyncAllJob.class);
+    private final DDProjectUIManager uiManager;
+
+    public SyncAllJob(@NotNull DDProjectUIManager uiManager) {
         super(DDTrackingUIMessages.projects_sync_all);
+        this.uiManager = uiManager;
     }
 
     @NotNull
     @Override
     protected IStatus run(@NotNull IProgressMonitor monitor) {
-        return Status.OK_STATUS;
+        log.debug("DataDam full project sync started");
+        IStatus outcome = null;
+        DBRProgressMonitor progress = RuntimeUtils.makeMonitor(monitor);
+        try {
+            List<ProjectListing> listings = uiManager.loadProjectListings(progress);
+            if (listings == null || progress.isCanceled()) {
+                return outcome = Status.CANCEL_STATUS;
+            }
+            log.debug("Importing missing DataDam projects");
+            List<DDSharedProject> missingLocal = listings.stream()
+                .filter(listing -> listing.localProject() == null && listing.remoteProject() != null)
+                .map(ProjectListing::remoteProject).toList();
+            if (!missingLocal.isEmpty()) {
+                IStatus result = new DDProjectImportHandler().importProjects(missingLocal, progress);
+                if (!result.isOK()) {
+                    return outcome = result;
+                }
+            }
+            if (progress.isCanceled()) {
+                return outcome = Status.CANCEL_STATUS;
+            }
+            log.debug("Synchronizing existing DataDam projects");
+            List<DBPProject> existing = listings.stream()
+                .filter(listing -> listing.localProject() != null && listing.remoteProject() != null)
+                .map(listing -> listing.localProject().project()).toList();
+            if (!existing.isEmpty()) {
+                Shell shell = UIUtils.syncExec(new RunnableWithResult<>() {
+                    @Nullable
+                    @Override
+                    public Shell runWithResult() {
+                        return UIUtils.getActiveWorkbenchShell();
+                    }
+                });
+                if (shell == null) {
+                    return outcome = Status.CANCEL_STATUS;
+                }
+                IStatus result = new DDProjectSyncAllHandler().synchronizeProjects(existing, progress, shell);
+                if (!result.isOK()) {
+                    return outcome = result;
+                }
+            }
+            if (progress.isCanceled()) {
+                return outcome = Status.CANCEL_STATUS;
+            }
+            log.debug("Checking deleted DataDam projects");
+            List<ProjectListing> current = uiManager.loadProjectListings(progress);
+            if (current == null || progress.isCanceled()) {
+                return outcome = Status.CANCEL_STATUS;
+            }
+            for (ProjectListing listing : current) {
+                if (progress.isCanceled()) {
+                    return outcome = Status.CANCEL_STATUS;
+                }
+                if (listing.localProject() != null && listing.localProject().remoteProjectId() != null
+                    && listing.remoteProject() == null) {
+                    IStatus result = new ProjectDeletedAction(uiManager, listing.localProject().remoteProjectId())
+                        .runDirectly(progress);
+                    if (result.getSeverity() == IStatus.ERROR) {
+                        return outcome = result;
+                    }
+                }
+            }
+            return outcome = Status.OK_STATUS;
+        } catch (DBException e) {
+            return outcome = Status.error(DDTrackingUIMessages.projects_sync_all_load_failed, e);
+        } finally {
+            String result = outcome == null ? "failed"
+                : outcome.isOK() ? "completed" : outcome.matches(IStatus.CANCEL) ? "canceled" : "failed";
+            log.debug("DataDam full project sync finished: " + result);
+        }
     }
 }

@@ -59,20 +59,7 @@ public class DDProjectSyncAllHandler extends AbstractHandler {
                     if (projects == null || projects.isEmpty()) {
                         return Status.CANCEL_STATUS;
                     }
-                    ProjectJobBatchResult<SyncResult> result = uiManager.synchronizeProjects(projects, monitor);
-                    if (result.canceled()) {
-                        return Status.CANCEL_STATUS;
-                    }
-                    int updated = (int) result.results().stream()
-                        .filter(sync -> sync.status() == ProjectStatus.UP_TO_DATE).count();
-                    List<String> errors = result.failures().stream()
-                        .map(failure -> failure.projectName() + ": " + failure.error().getMessage()).toList();
-                    List<DBPProject> conflicts = result.results().stream()
-                        .filter(sync -> sync.status() == ProjectStatus.CONFLICT)
-                        .map(SyncResult::project).toList();
-                    UIUtils.syncExec(() -> showResults(updated, errors));
-                    resolveConflicts(conflicts, monitor, shell);
-                    return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+                    return synchronizeProjects(projects, monitor, shell);
                 } catch (DBException e) {
                     UIUtils.asyncExec(() -> DDUIUtils.showNotification(
                         DDTrackingUIMessages.project_sync_title, DDTrackingUIMessages.projects_sync_all_load_failed,
@@ -96,6 +83,26 @@ public class DDProjectSyncAllHandler extends AbstractHandler {
             .filter(listing -> listing.localProject() != null && listing.remoteProject() != null)
             .map(listing -> listing.localProject().project())
             .toList();
+    }
+
+    @NotNull
+    public IStatus synchronizeProjects(
+        @NotNull List<DBPProject> projects, @NotNull DBRProgressMonitor monitor, @NotNull Shell shell
+    ) {
+        ProjectJobBatchResult<SyncResult> result = uiManager.synchronizeProjects(projects, monitor);
+        if (result.canceled()) {
+            return Status.CANCEL_STATUS;
+        }
+        int updated = (int) result.results().stream()
+            .filter(sync -> sync.status() == ProjectStatus.UP_TO_DATE).count();
+        List<String> errors = result.failures().stream()
+            .map(failure -> failure.projectName() + ": " + failure.error().getMessage()).toList();
+        List<DBPProject> conflicts = result.results().stream()
+            .filter(sync -> sync.status() == ProjectStatus.CONFLICT)
+            .map(SyncResult::project).toList();
+        UIUtils.syncExec(() -> showResults(updated, errors));
+        resolveConflicts(conflicts, monitor, shell);
+        return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
     }
 
     private void resolveConflicts(

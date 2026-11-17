@@ -50,6 +50,7 @@ public class DDProjectEventListener implements DDSharedProjectEventSource.Subscr
             return;
         }
         state = State.SYNCHRONIZING;
+        log.debug("Started DataDam project stream sync");
         if (!syncRunning) {
             startSynchronization();
         }
@@ -57,6 +58,9 @@ public class DDProjectEventListener implements DDSharedProjectEventSource.Subscr
 
     @Override
     public synchronized void stop() {
+        if (state != State.STOPPED) {
+            log.debug("Stopped DataDam project stream sync");
+        }
         state = State.STOPPED;
         pendingEvents.clear();
     }
@@ -64,7 +68,8 @@ public class DDProjectEventListener implements DDSharedProjectEventSource.Subscr
     @Override
     public synchronized void onEvent(@NotNull DDSharedProjectEvent event) throws DBException {
         switch (state) {
-            case STOPPED -> { }
+            case STOPPED -> log.debug("Ignoring shared project event " + event.change()
+                + " for project " + event.projectId() + ": stream sync stopped");
             case SYNCHRONIZING -> pendingEvents.add(event);
             case LISTENING -> DDSharedProjectEventSource.Subscriber.super.onEvent(event);
         }
@@ -72,7 +77,7 @@ public class DDProjectEventListener implements DDSharedProjectEventSource.Subscr
 
     private void startSynchronization() {
         syncRunning = true;
-        SyncAllJob job = new SyncAllJob();
+        SyncAllJob job = new SyncAllJob(uiManager);
         job.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(@NotNull IJobChangeEvent event) {
