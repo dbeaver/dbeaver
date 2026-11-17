@@ -91,6 +91,7 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
                 type, operation.operation() == SQLObjectOperation.Operation.CREATE);
         }
         if (statement instanceof CreateTable create) {
+            // TODO: Verify partition parents for CREATE TABLE ... PARTITION OF.
             if (create.getSelect() != null) {
                 verifyStatementObjects(context, executionContext, create.getSelect());
             }
@@ -223,6 +224,7 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
                 end = extra.end();
             }
         }
+        // TODO: Include PARTITION OF parents in DDL dependency checks.
         Set<String> prefixes = new HashSet<>(Set.of("FROM", "JOIN", "REFERENCES"));
         if (type.equals("TABLE") && command.equals("CREATE")) {
             prefixes.add("LIKE");
