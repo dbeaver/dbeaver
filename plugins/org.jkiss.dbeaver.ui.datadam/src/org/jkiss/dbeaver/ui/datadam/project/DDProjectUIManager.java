@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
 import org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectEventsServiceDesktop;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
@@ -65,6 +66,7 @@ public class DDProjectUIManager {
 
     private DDProjectUIManager() {
         DDSharedProjectEventsServiceDesktop.getInstance().subscribe(new DDProjectEventListener(this));
+        DDRemoteDamSettingsStore.getInstance().addListener(settings -> DDProjectSyncPropertyTester.firePropertyChange());
         accessService.addKeyBundleListener(this::refreshProjectVisibility);
         accessService.addAccessListener(new DDDesktopAccessListener() {
             @Override
