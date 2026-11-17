@@ -178,6 +178,7 @@
             purpose="MCP"
             class="org.jkiss.dbeaver.model.ai.functions.ExecuteDQLFunction"
             categoryId="execute.sql"
+            defaultAllowMode="ASK"
             description="Executes read-only SELECT-like SQL queries and returns the results in the specified format. Use executeDML for data changes and executeDDL for schema changes.">
             <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the query in. Must be specified if the database supports multiple catalogs."/>
             <parameter name="sqlQuery" required="true" type="string" description="Read-only SELECT-like SQL query. Use fully qualified table names."/>
