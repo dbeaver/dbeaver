@@ -588,7 +588,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         addButton.setEnabled(editable);
         addQueryButton.setEnabled(editable);
         DBSObject selectedSource = (DBSObject) ((IStructuredSelection) inputsTable.getSelection()).getFirstElement();
-        boolean querySelected = selectedSource != null && DBUtils.getAdapter(SQLQueryContainer.class, selectedSource) != null;
+        boolean querySelected = selectedSource instanceof SQLQueryDataContainer;
         editQueryButton.setEnabled(editable && querySelected);
         removeButton.setEnabled(editable && !inputsTable.getSelection().isEmpty());
         addButton.setToolTipText(editable ? DTUIMessages.data_transfer_task_configurator_dialog_button_label_add_table :
