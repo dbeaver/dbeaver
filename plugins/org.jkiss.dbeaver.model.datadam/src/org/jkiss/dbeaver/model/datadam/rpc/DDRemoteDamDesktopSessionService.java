@@ -125,8 +125,10 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
         if (!closed.get()) {
             DDRemoteDamSubscription observation = channel.observeState(status -> {
                 if (status.isReady() && !closed.get()) {
+                    DDRemoteDamSettingsStore.getInstance().updateSettings(status.session().settings());
                     initializeRpc();
                 } else {
+                    DDRemoteDamSettingsStore.getInstance().updateSettings(null);
                     rpcInitializationRetry.cancel();
                 }
             });
@@ -172,6 +174,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     @Override
     public void close() {
         if (closed.compareAndSet(false, true)) {
+            DDRemoteDamSettingsStore.getInstance().updateSettings(null);
             rpcInitializationRetry.cancel();
             access.removeAccessListener(accessListener);
             DDRemoteDamSubscription observation = readyObservation.getAndSet(null);

@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project;
 
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -41,6 +43,8 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
@@ -52,6 +56,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
 import org.jkiss.dbeaver.ui.datadam.DDUIConstants;
 import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
@@ -79,6 +84,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private final DDProjectUIManager uiManager = DDProjectUIManager.getInstance();
     private final DDProjectConflictResolver conflictResolver = new DDProjectConflictResolver(uiManager);
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+    private final DDRemoteDamSettingsStore settingsStore = DDRemoteDamSettingsStore.getInstance();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private Composite content;
@@ -86,6 +92,12 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private Text accountText;
     private Button importKeysButton;
     private Button forgetKeysButton;
+    private Button streamSyncCheck;
+    private Control streamSyncInfo;
+    @Nullable
+    private AbstractJob streamSyncJob;
+    private boolean streamSyncUpdating;
+    private boolean streamSyncEnabled;
     private Label projectsDescription;
     private Control projectsHelp;
     private AbstractJob accountViewJob;
@@ -102,6 +114,11 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private Button syncAllButton;
     private Button importAllButton;
     private boolean operationRunning;
+    private final DDRemoteDamSettingsStore.Listener settingsListener = settings -> UIUtils.asyncExec(() -> {
+        if (streamSyncCheck != null && !streamSyncCheck.isDisposed()) {
+            showStreamSyncStatus(settings);
+        }
+    });
 
     public DDProjectsPreferencePage() {
         noDefaultAndApplyButton();
@@ -159,6 +176,11 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             keysGroup, DDTrackingUIMessages.projects_page_sign_in_help, GridData.HORIZONTAL_ALIGN_BEGINNING, 2);
         ((GridData) projectsHelp.getLayoutData()).verticalIndent = 5;
 
+        streamSyncCheck = UIUtils.createCheckbox(content, DDTrackingUIMessages.projects_stream_sync_checkbox,
+            DDTrackingUIMessages.projects_stream_sync_description, false, 1);
+        streamSyncCheck.setEnabled(false);
+        streamSyncCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateStreamSyncStatus()));
+
         Composite projectsSection = UIUtils.createPlaceholder(content, 1);
         GridData projectsLayout = new GridData(SWT.FILL, SWT.FILL, true, true);
         projectsLayout.verticalIndent = 3;
@@ -174,6 +196,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             updateTableHeight();
             updateSelectionActions();
         }));
+        streamSyncInfo = UIUtils.createInfoLabel(controlsRow, DDTrackingUIMessages.projects_stream_sync_active);
+        streamSyncInfo.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, true, false));
         refreshButton = iconButton(controlsRow, UIIcon.REFRESH, DDTrackingUIMessages.projects_refresh, this::loadProjects);
         refreshButton.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 
@@ -195,7 +219,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         viewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(@NotNull Viewer viewer, @Nullable Object parentElement, @NotNull Object element) {
-                return showRemote.getSelection() || ((DDProjectView) element).localProject() != null;
+                return !streamSyncEnabled && showRemote.getSelection() || ((DDProjectView) element).localProject() != null;
             }
         });
         addNameColumn();
@@ -242,6 +266,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         importAllButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         importAllButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> importAll()));
 
+        settingsStore.addListener(settingsListener);
         refreshKeys();
         return content;
     }
@@ -256,6 +281,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
     @Override
     public void dispose() {
+        settingsStore.removeListener(settingsListener);
+        if (streamSyncJob != null) {
+            streamSyncJob.cancel();
+        }
         if (accountViewJob != null) {
             accountViewJob.cancel();
         }
@@ -332,7 +361,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         boolean available = !operationRunning && uiManager.isProjectSyncReady();
         refreshButton.setEnabled(available);
         editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
-        syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
+        syncButton.setEnabled(available && !streamSyncEnabled && syncAction != SelectionSyncAction.NONE);
         boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
         syncButton.setImage(DBeaverIcons.getImage(download ? DDTrackingUIIcons.IMPORT_PROJECT : DDTrackingUIIcons.PROJECT_SYNC));
         syncButton.setToolTipText(download ? DDTrackingUIMessages.projects_download : DDTrackingUIMessages.projects_sync);
@@ -352,12 +381,65 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         }
         syncAllButton.setEnabled(available && hasLocal);
         importAllButton.setEnabled(available && hasRemote);
-        boolean showImportAll = showRemote.getSelection();
+        boolean showImportAll = !streamSyncEnabled && showRemote.getSelection();
         if (importAllButton.getVisible() != showImportAll) {
             importAllButton.setVisible(showImportAll);
             ((GridData) importAllButton.getLayoutData()).exclude = !showImportAll;
             importAllButton.getParent().getParent().layout(true, true);
         }
+    }
+
+    private void updateStreamSyncStatus() {
+        UUID accountId = accessService.getAccountId();
+        DDRemoteDamSettings settings = settingsStore.getSettings();
+        if (accountId == null || settings == null) {
+            showStreamSyncStatus(settings);
+            return;
+        }
+        if (streamSyncJob != null) {
+            streamSyncJob.cancel();
+        }
+        boolean enabled = streamSyncCheck.getSelection();
+        streamSyncUpdating = true;
+        streamSyncCheck.setEnabled(false);
+        streamSyncJob = DDDesktopDamService.getInstance().createJob(
+            "Update DataDam project stream sync setting",
+            account -> account.setDamSetting(
+                DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.PROJECTS_STREAM_SYNC,
+                Boolean.toString(enabled), accountId),
+            ignored -> {
+                if (!streamSyncCheck.isDisposed() && Objects.equals(accountId, accessService.getAccountId())) {
+                    streamSyncUpdating = false;
+                    showStreamSyncStatus(settingsStore.getSettings());
+                }
+            },
+            error -> {
+                if (!streamSyncCheck.isDisposed() && Objects.equals(accountId, accessService.getAccountId())) {
+                    streamSyncUpdating = false;
+                    showStreamSyncStatus(settingsStore.getSettings());
+                    DDUIUtils.showError(DDTrackingUIMessages.project_sync_title,
+                        DDTrackingUIMessages.projects_stream_sync_update_failed, error);
+                }
+            });
+    }
+
+    private void showStreamSyncStatus(@Nullable DDRemoteDamSettings settings) {
+        boolean ready = uiManager.isProjectSyncReady();
+        streamSyncEnabled = settings != null && ready
+            && settings.isDamEnabled(DDRemoteDamSettingKeys.PROJECTS_STREAM_SYNC, false);
+        streamSyncCheck.setSelection(streamSyncEnabled);
+        streamSyncCheck.setEnabled(settings != null && ready && !streamSyncUpdating);
+        streamSyncInfo.setVisible(streamSyncEnabled);
+        ((GridData) streamSyncInfo.getLayoutData()).exclude = !streamSyncEnabled;
+        boolean showRemoteProjects = !streamSyncEnabled;
+        showRemote.setVisible(showRemoteProjects);
+        ((GridData) showRemote.getLayoutData()).exclude = !showRemoteProjects;
+        syncAllButton.setText(streamSyncEnabled
+            ? DDTrackingUIMessages.projects_push_changes : DDTrackingUIMessages.projects_sync_all);
+        viewer.refresh();
+        updateTableHeight();
+        updateSelectionActions();
+        content.layout(true, true);
     }
 
     private void refreshKeys() {
@@ -383,6 +465,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
         if (!Objects.equals(displayedAccountId, accountId)) {
             displayedAccountId = accountId;
+            if (streamSyncJob != null) {
+                streamSyncJob.cancel();
+            }
+            streamSyncUpdating = false;
             accountText.setText(present ? accountId.toString() : DDTrackingUIMessages.sync_preference_page_unknown);
             if (accountViewJob != null) {
                 accountViewJob.cancel();
@@ -395,6 +481,13 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
                 updateTableHeight();
             }
         }
+        if (!present || !signedIn) {
+            if (streamSyncJob != null) {
+                streamSyncJob.cancel();
+            }
+            streamSyncUpdating = false;
+        }
+        showStreamSyncStatus(settingsStore.getSettings());
         updateSelectionActions();
     }
 

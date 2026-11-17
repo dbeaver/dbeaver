@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.DDWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDShareClient;
@@ -124,7 +125,7 @@ public class DDProjectManager {
     @NotNull
     public List<LocalProjectInfo> getLocalProjects() throws DBException {
         List<LocalProjectInfo> result = new ArrayList<>();
-        for (DBPProject project : workspace.getProjects()) {
+        for (DBPProject project : DDWorkspace.getInstance().getProjects()) {
             result.add(getLocalProject(project));
         }
         return result;

@@ -105,6 +105,11 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_edit_failed;
 
     public static String projects_show_remote;
+    public static String projects_stream_sync_checkbox;
+    public static String projects_stream_sync_description;
+    public static String projects_stream_sync_active;
+    public static String projects_stream_sync_update_failed;
+    public static String projects_push_changes;
     public static String projects_refresh;
     public static String projects_page_description;
     public static String projects_page_about_link;
