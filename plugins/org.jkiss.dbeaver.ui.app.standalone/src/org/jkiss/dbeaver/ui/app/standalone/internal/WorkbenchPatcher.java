@@ -33,6 +33,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor;
+import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.eclipse.ui.internal.menus.MenuHelper;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.jkiss.code.NotNull;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -60,7 +62,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -71,6 +75,8 @@ import javax.xml.transform.stream.StreamResult;
 
 public final class WorkbenchPatcher {
     private static final Log log = Log.getLog(WorkbenchPatcher.class);
+    private static final String NL_STATE_FILENAME = "last_nl.properties";
+    private static final String NL_STATE_KEY = "eclipse.last.nl";
     private static final String ERROR_LOG_ICON_URI = DBIcon.SMALL_ERROR.getLocation();
     private static final String DEBUG_VIEW_ICON_URI = RuntimeUtils.makePlatformResourceUrl(
         IActionConstants.DEBUG_UI_PLUGIN_ID, "icons/debug_config.png");
@@ -227,6 +233,93 @@ public final class WorkbenchPatcher {
         }
     }
 
+    public static void patchWorkbenchLocale(@NotNull Location instance) {
+        Path path = getWorkbenchSaveLocation(instance);
+        if (path == null || !Files.isRegularFile(path)) {
+            return;
+        }
+
+        try {
+            Path nlFile = path.resolveSibling(NL_STATE_FILENAME);
+            Properties properties = new Properties();
+            if (Files.isRegularFile(nlFile)) {
+                try (var input = Files.newInputStream(nlFile)) {
+                    properties.load(input);
+                }
+            }
+            String locale = Platform.getNL();
+            if (locale.equals(properties.getProperty(NL_STATE_KEY))) {
+                return;
+            }
+
+            Map<String, String> labels = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_VIEWS)
+                .map(IExtension::getConfigurationElements).flatMap(Stream::of)
+                .filter(element -> element.getName().equals(IWorkbenchRegistryConstants.TAG_VIEW))
+                .collect(Collectors.toMap(
+                    element -> element.getAttribute(IWorkbenchRegistryConstants.ATT_ID),
+                    element -> element.getAttribute(IWorkbenchRegistryConstants.ATT_NAME),
+                    (first, second) -> second
+                ));
+            Document document = XMLUtils.parseDocument(path);
+            Map<String, String> previousLabels = new HashMap<>();
+            NodeList descriptors = document.getElementsByTagName("descriptors");
+            for (int index = 0; index < descriptors.getLength(); index++) {
+                Element descriptor = (Element) descriptors.item(index);
+                previousLabels.put(descriptor.getAttribute("elementId"), descriptor.getAttribute("label"));
+            }
+            if (patchViewLabelsRecursively(document, labels, previousLabels)) {
+                saveWorkbenchXmi(path, document);
+            }
+
+            // eclipse clears the entire model on a locale change; acknowledge it only after updating the saved labels
+            properties.setProperty(NL_STATE_KEY, locale);
+            Path patch = Files.createTempFile(nlFile.getParent(), NL_STATE_FILENAME, ".patch");
+            try {
+                try (var output = Files.newOutputStream(patch)) {
+                    properties.store(output, "Eclipse last used NL locale");
+                }
+                Files.move(patch, nlFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } finally {
+                Files.deleteIfExists(patch);
+            }
+        } catch (Exception e) {
+            log.error("Failed to update workbench locale: " + path, e);
+        }
+    }
+
+    private static boolean patchViewLabelsRecursively(
+        @NotNull Node node,
+        @NotNull Map<String, String> labels,
+        @NotNull Map<String, String> previousLabels
+    ) {
+        boolean modified = false;
+        NodeList children = node.getChildNodes();
+        for (int index = 0; index < children.getLength(); index++) {
+            if (!(children.item(index) instanceof Element child)) {
+                continue;
+            }
+            if (CompatibilityPart.COMPATIBILITY_VIEW_URI.equals(child.getAttribute("contributionURI"))) {
+                String viewId = child.getAttribute("elementId");
+                int separator = viewId.indexOf(':');
+                viewId = separator < 0 ? viewId : viewId.substring(0, separator);
+                String label = labels.get(viewId);
+                String oldLabel = child.getAttribute("label");
+                String previousLabel = previousLabels.get(viewId);
+                // views can have instance-specific titles, such as a database object name
+                boolean defaultLabel = child.getTagName().equals("descriptors") || previousLabel == null || previousLabel.equals(oldLabel);
+                if (label != null && defaultLabel && !label.equals(oldLabel)) {
+                    child.setAttribute("label", label);
+                    if (child.hasAttribute("tooltip") && oldLabel.equals(child.getAttribute("tooltip"))) {
+                        child.setAttribute("tooltip", label);
+                    }
+                    modified = true;
+                }
+            }
+            modified |= patchViewLabelsRecursively(child, labels, previousLabels);
+        }
+        return modified;
+    }
+
     /**
      * Patches the {@code workbench.xmi} file, updating all view and editor
      * parts' icons to their actual values taken directly from contributed
@@ -263,23 +356,22 @@ public final class WorkbenchPatcher {
 
         var document = XMLUtils.parseDocument(workbenchXmi);
         if (patchPartIconsRecursively(document, parts)) {
-            var transformerFactory = XMLUtils.newSecureTransformerFactory();
-            var transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
+            saveWorkbenchXmi(workbenchXmi, document);
+        }
+    }
 
-            Path workbenchXmiPatch = workbenchXmi.resolveSibling(workbenchXmi.getFileName() + ".patch");
-
-            // Write to a temporary file first
-            try (OutputStream os = Files.newOutputStream(workbenchXmiPatch)) {
-                var source = new DOMSource(document);
-                var result = new StreamResult(os);
-
-                transformer.transform(source, result);
+    private static void saveWorkbenchXmi(@NotNull Path workbenchXmi, @NotNull Document document) throws Exception {
+        var transformer = XMLUtils.newSecureTransformerFactory().newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
+        Path workbenchXmiPatch = Files.createTempFile(workbenchXmi.getParent(), "workbench", ".patch");
+        try {
+            try (OutputStream output = Files.newOutputStream(workbenchXmiPatch)) {
+                transformer.transform(new DOMSource(document), new StreamResult(output));
             }
-
-            // Then replace the original file with the patched one
             Files.move(workbenchXmiPatch, workbenchXmi, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } finally {
+            Files.deleteIfExists(workbenchXmiPatch);
         }
     }
 

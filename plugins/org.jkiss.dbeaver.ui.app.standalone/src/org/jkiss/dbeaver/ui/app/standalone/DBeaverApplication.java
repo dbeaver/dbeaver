@@ -312,6 +312,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
         log.debug("\tPatch workbench configuration");
+        WorkbenchPatcher.patchWorkbenchLocale(instanceLoc);
         WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
 
         // Run instance server
