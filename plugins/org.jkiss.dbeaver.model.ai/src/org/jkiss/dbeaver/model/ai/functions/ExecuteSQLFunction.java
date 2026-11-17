@@ -165,6 +165,24 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         }
     }
 
+    protected final void verifyQueries(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<SQLQuery> queries,
+        @Nullable DataTransferProcessorDescriptor processor
+    ) throws DBException {
+        if (queries.isEmpty()) {
+            throw new DBException("No SQL statements to execute");
+        }
+        // File-append support does not make separately exported result sets one valid inline document.
+        if (processor != null && queries.size() > 1) {
+            throw new DBException("Format '" + processor.getAIFormatId() + "' supports only one statement per call");
+        }
+        for (SQLQuery query : queries) {
+            verifyQuery(context, executionContext, query);
+        }
+    }
+
     @NotNull
     private ExecutionResult executeVerifiedQueries(
         @NotNull AIFunctionContext context,
@@ -176,15 +194,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         DBPDataSource dataSource = executionContext.getDataSource();
         List<SQLQuery> queries = SQLScriptParser.parseScript(dataSource, sql).stream()
             .filter(SQLQuery.class::isInstance).map(SQLQuery.class::cast).toList();
-        if (queries.isEmpty()) {
-            throw new DBException("No SQL statements to execute");
-        }
-        if (processor != null && queries.size() > 1 && !processor.isAppendable()) {
-            throw new DBException("Format '" + processor.getAIFormatId() + "' supports only one statement per call");
-        }
-        for (SQLQuery query : queries) {
-            verifyQuery(context, executionContext, query);
-        }
+        verifyQueries(context, executionContext, queries, processor);
         SQLScriptContext scriptContext = new SQLScriptContext(null, () -> executionContext, null, new LogOutputWriter(), null);
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         DBCStatistics statistics = new DBCStatistics();

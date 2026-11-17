@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -108,6 +109,21 @@ class SQLExecutionFunctionsTest {
         fixture.assertRestricted(function, "WITH x AS (TABLE private.orders) SELECT * FROM x");
         fixture.assertRestricted(function, "SELECT private.read_payroll()");
         fixture.assertRestricted(function, "SELECT public.orders()");
+    }
+
+    @Test
+    void inlineExportsRejectMultipleStatementsEvenForAppendableFormats() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        DataTransferProcessorDescriptor processor = Mockito.mock(DataTransferProcessorDescriptor.class);
+        Mockito.when(processor.getAIFormatId()).thenReturn("csv");
+        Mockito.when(processor.isAppendable()).thenReturn(true);
+        DBException error = Assertions.assertThrows(DBException.class,
+            () -> new ExecuteDQLFunction().verifyQueries(fixture.context, fixture.executionContext,
+                List.of(new SQLQuery(null, "SELECT 1"), new SQLQuery(null, "SELECT 2")), processor));
+        Assertions.assertEquals("Format 'csv' supports only one statement per call", error.getMessage());
+        Mockito.verify(processor, Mockito.never()).getInstance();
+        Assertions.assertDoesNotThrow(() -> new ExecuteDMLFunction().verifyQueries(fixture.context, fixture.executionContext,
+            List.of(new SQLQuery(null, "UPDATE public.orders SET id=1"), new SQLQuery(null, "DELETE FROM public.orders")), null));
     }
 
     @Test
