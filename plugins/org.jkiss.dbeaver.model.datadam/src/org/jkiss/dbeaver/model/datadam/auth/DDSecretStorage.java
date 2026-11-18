@@ -41,7 +41,8 @@ public final class DDSecretStorage implements DBSSecretController {
 
     private DDSecretStorage() {
         String nativeProviderId = DBSecurityUtils.findNativeOSProvider();
-        nativeController = nativeProviderId == null ? null : SecurePreferencesSecretController.create(NODE, nativeProviderId);
+        nativeController = nativeProviderId == null ? null
+            : SecurePreferencesSecretController.createWithoutEquinoxPrompts(NODE, nativeProviderId);
         if (nativeController == null) {
             log.warn("DataDam native secure storage provider not found; using the configured default provider");
         } else {
