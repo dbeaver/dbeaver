@@ -537,27 +537,30 @@ public final class RuntimeUtils {
 
     @Nullable
     public static byte[] selectMacAddress() throws SocketException {
-        byte[] selectedAddress = null;
-        String selectedName = "";
-        int selectedPriority = Integer.MAX_VALUE;
+        List<MacCandidate> candidates = new ArrayList<>();
         for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
             try {
                 byte[] address = networkInterface.getHardwareAddress();
-                if (address == null || !isUsableMacAddress(address)) {
+                if (address == null) {
                     continue;
                 }
-                int priority = macInterfacePriority(networkInterface);
-                String name = networkInterface.getName();
-                if (priority < selectedPriority || priority == selectedPriority && name.compareTo(selectedName) < 0) {
-                    selectedAddress = address;
-                    selectedName = name;
-                    selectedPriority = priority;
-                }
+                String displayName = IS_WINDOWS ? networkInterface.getDisplayName() : null;
+                boolean fallback = networkInterface.isVirtual() || networkInterface.isPointToPoint() || networkInterface.isLoopback();
+                candidates.add(new MacCandidate(networkInterface.getName(), displayName, fallback, address));
             } catch (SocketException e) {
                 log.debug("Cannot read network interface " + networkInterface.getName(), e);
             }
         }
-        return selectedAddress;
+        return selectMacAddress(candidates);
+    }
+
+    @Nullable
+    public static byte[] selectMacAddress(@NotNull List<MacCandidate> candidates) {
+        return candidates.stream()
+            .filter(candidate -> isUsableMacAddress(candidate.address()))
+            .min(Comparator.comparingInt(RuntimeUtils::macInterfacePriority).thenComparing(MacCandidate::name))
+            .map(MacCandidate::address)
+            .orElse(null);
     }
 
     private static boolean isUsableMacAddress(@NotNull byte[] address) {
@@ -570,19 +573,21 @@ public final class RuntimeUtils {
         return !allZero && !allOnes && !Arrays.equals(address, PLACEHOLDER_MAC_ADDRESS);
     }
 
-    private static int macInterfacePriority(@NotNull NetworkInterface networkInterface) throws SocketException {
-        String name = networkInterface.getName();
-        if (PEER_INTERFACE.matcher(name).matches()) {
+    private static int macInterfacePriority(@NotNull MacCandidate candidate) {
+        if (PEER_INTERFACE.matcher(candidate.name()).matches()) {
             return 2;
         }
-        String displayName = IS_WINDOWS ? networkInterface.getDisplayName() : null;
+        String displayName = candidate.windowsDisplayName();
         boolean windowsVirtual = displayName != null && WINDOWS_VIRTUAL_INTERFACE.matcher(displayName).find();
-        if (networkInterface.isVirtual() || VIRTUAL_INTERFACE.matcher(name).matches()
-            || windowsVirtual || networkInterface.isPointToPoint() || networkInterface.isLoopback()
-        ) {
-            return 1;
-        }
-        return 0;
+        return candidate.fallback() || VIRTUAL_INTERFACE.matcher(candidate.name()).matches() || windowsVirtual ? 1 : 0;
+    }
+
+    public record MacCandidate(
+        @NotNull String name,
+        @Nullable String windowsDisplayName,
+        boolean fallback,
+        @NotNull byte[] address
+    ) {
     }
 
     @NotNull

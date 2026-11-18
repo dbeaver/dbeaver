@@ -17,6 +17,7 @@
 package org.jkiss.utils;
 
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils.MacCandidate;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public class RuntimeUtilsTest extends DBeaverUnitTest {
 
@@ -31,6 +33,19 @@ public class RuntimeUtilsTest extends DBeaverUnitTest {
     public void testHashMacAddressKeepsExistingFormat() throws NoSuchAlgorithmException {
         byte[] macAddress = {2, 1, 2, 3, 4, 5};
         Assertions.assertEquals("1UJA5Y1Q1JG8P", RuntimeUtils.hashMacAddress(macAddress));
+    }
+
+    @Test
+    public void testSelectMacAddressIgnoresInterfaceOrder() {
+        byte[] macAddress = {2, 1, 2, 3, 4, 5};
+        var first = new MacCandidate("enp3s0", null, false, macAddress);
+        var second = new MacCandidate("wlp2s0", null, false, new byte[] {2, 1, 2, 3, 4, 6});
+        var bridge = new MacCandidate("br-4f3f05bcacc1", null, false, new byte[] {2, 1, 2, 3, 4, 7});
+        var peers = new MacCandidate("awdl0", null, false, new byte[] {2, 1, 2, 3, 4, 8});
+        var candidates = List.of(bridge, second, peers, first);
+
+        Assertions.assertArrayEquals(macAddress, RuntimeUtils.selectMacAddress(candidates));
+        Assertions.assertArrayEquals(macAddress, RuntimeUtils.selectMacAddress(candidates.reversed()));
     }
 
     @Test
