@@ -46,6 +46,7 @@ public final class LocalNetworkProfileUsageProvider implements DBWNetworkProfile
         Map<String, String> result = new LinkedHashMap<>();
         for (var project : workspace.getProjects()) {
             if (CommonUtils.toBoolean(project.getProjectProperty(SECURE_PROJECT_PROPERTY)) &&
+                // isEncryptedProject is always false in CE
                 !project.isEncryptedProject()) {
                 continue;
             }
