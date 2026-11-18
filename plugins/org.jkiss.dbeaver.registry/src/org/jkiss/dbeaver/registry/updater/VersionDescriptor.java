@@ -111,6 +111,10 @@ public class VersionDescriptor {
         return hasSameBaseVersion(installedVersion) && getPatchNumber() > installedPatch;
     }
 
+    public boolean isMajorUpdate() {
+        return programVersion.getMicro() == 0;
+    }
+
     public boolean isNewerThan(@NotNull Version installedVersion, int installedPatch) {
         int patchNumber = getPatchNumber();
         // Build qualifiers are not patch numbers. Preserve OSGi ordering for ordinary releases.

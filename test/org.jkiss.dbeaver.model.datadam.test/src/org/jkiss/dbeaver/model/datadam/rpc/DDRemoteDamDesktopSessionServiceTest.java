@@ -26,6 +26,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDLoggedUserView;
+import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,6 +36,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -54,6 +57,8 @@ class DDRemoteDamDesktopSessionServiceTest {
 
     @BeforeEach
     void configureChannel() {
+        Mockito.when(access.getLoggedUserIdentity()).thenReturn(new DDLoggedUserView(null, null, null, null));
+        Mockito.when(channel.getMonitor()).thenReturn(new DDConnectionMonitor());
         Mockito.when(channel.getStatus()).thenAnswer(invocation -> status.get());
         Mockito.doAnswer(invocation -> {
             setStatus(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
@@ -64,6 +69,50 @@ class DDRemoteDamDesktopSessionServiceTest {
     @AfterEach
     void close() {
         service.close();
+    }
+
+    @Test
+    void recordsLoginIdentityWithoutDuplicatingTokenRefreshAndDetectsUserChanges() {
+        var firstId = UUID.randomUUID();
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        Mockito.when(access.getLoggedUserIdentity()).thenReturn(new DDLoggedUserView(firstId, "user@example.com", null, null));
+        service.start();
+        listener().accessChanged();
+        listener().accessChanged();
+        var events = channel.getMonitor().getEvents();
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(DDConnectionMonitor.EventType.SIGNED_IN, events.getFirst().type());
+        Assertions.assertEquals("user@example.com", events.getFirst().details());
+
+        var secondId = UUID.randomUUID();
+        Mockito.when(access.getLoggedUserIdentity()).thenReturn(new DDLoggedUserView(secondId, null, null, null));
+        listener().accessChanged();
+        Assertions.assertEquals(2, channel.getMonitor().getEvents().size());
+        Assertions.assertEquals("", channel.getMonitor().getEvents().getLast().details());
+        Assertions.assertFalse(channel.getMonitor().getEvents().toString().contains(firstId.toString()));
+        Assertions.assertFalse(channel.getMonitor().getEvents().toString().contains(secondId.toString()));
+        Mockito.verify(access, Mockito.never()).getLoggedUserView();
+    }
+
+    @Test
+    void disablingConnectionPausesRpcAndCannotBeUndoneByAnAccessChange() throws Exception {
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        service.start();
+        Mockito.verify(channel).start();
+        service.setConnectionEnabled(false);
+        listener().accessChanged();
+        Mockito.verify(channel, Mockito.times(1)).start();
+        Mockito.verify(channel, Mockito.atLeastOnce()).pause();
+        service.setConnectionEnabled(true);
+        Mockito.verify(channel, Mockito.times(2)).start();
+    }
+
+    @Test
+    void disabledConnectionDoesNotStartAtStartup() {
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        service.setConnectionEnabled(false);
+        service.start();
+        Mockito.verify(channel, Mockito.never()).start();
     }
 
     @Test
@@ -107,6 +156,27 @@ class DDRemoteDamDesktopSessionServiceTest {
         Assertions.assertTrue(failed.get().isCloseComplete());
         Assertions.assertNotSame(failed.get(), service.getRpc());
         Mockito.verify(registrations, Mockito.times(2)).registerEndpoint(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void successfulRpcInitializationRetryClearsItsErrorWithoutReconnect() throws Exception {
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        ready("session");
+        var observer = new AtomicReference<Consumer<DDRemoteDamChannelStatus>>();
+        Mockito.when(channel.observeState(Mockito.any())).thenAnswer(invocation -> {
+            observer.set(invocation.getArgument(0));
+            return (DDRemoteDamSubscription) () -> {};
+        });
+        Mockito.doThrow(new DBException("Registration failed")).doNothing()
+            .when(registrations).registerEndpoint(Mockito.any(), Mockito.any());
+        service.start();
+
+        observer.get().accept(status.get());
+        Assertions.assertNotNull(channel.getMonitor().snapshot().error());
+        observer.get().accept(status.get());
+        Assertions.assertNull(channel.getMonitor().snapshot().error());
+        Assertions.assertTrue(channel.getMonitor().getEvents().stream()
+            .anyMatch(event -> event.type() == DDConnectionMonitor.EventType.ERROR));
     }
 
     @Test

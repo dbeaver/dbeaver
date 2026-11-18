@@ -27,6 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -50,7 +51,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         @NotNull Runnable propertyChangeListener
     ) {
         DBPDataSourceContainer connection = page.getConnection();
-        if (connection == null) {
+        if (connection == null || !DDProductConfig.isIntegrationEnabled()) {
             return;
         }
         Label loading = new Label(parent, SWT.NONE);
@@ -82,7 +83,8 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
             return;
         }
         loading.dispose();
-        if (status != null && status.settings().isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false)) {
+        if (DDProductConfig.isIntegrationEnabled()
+            && status != null && status.settings().isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false)) {
             Composite group = UIUtils.createTitledComposite(
                 parent, DDMcpMessages.mcp_connection_settings_group, 1, GridData.FILL_HORIZONTAL);
             enableCheck = UIUtils.createCheckbox(

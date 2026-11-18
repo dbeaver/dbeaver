@@ -266,7 +266,7 @@ public class ContextComposite extends Composite {
             this.contextName.setText(completionSettings.getDataSourceContainer().getName());
             this.contextIcon.setImage(DBeaverIcons.getImage(completionSettings.getDataSourceContainer().getDriver().getIcon()));
         } else {
-            this.contextName.setText("No connection");
+            this.contextName.setText(AIChatMessagesUI.ai_chat_context_menu_no_connection);
             this.contextIcon.setImage(DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT));
         }
 
@@ -638,7 +638,8 @@ public class ContextComposite extends Composite {
             DBPDataSourceContainer dataSourceContainer = chat.getDataSourceContainer();
             if (dataSourceContainer == null) {
                 DBWorkbench.getPlatformUI().showError(
-                    "No connection", "Cannot change context level when no connection is selected");
+                    AIChatMessagesUI.ai_chat_context_menu_no_connection,
+                    AIChatMessagesUI.ai_chat_context_menu_no_database_connection);
                 return;
             }
             AIContextSettings currentSettings = chat.getChatSession().getConversationSettings(chat.getActiveConversation());

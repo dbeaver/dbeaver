@@ -136,6 +136,10 @@ public interface SQLDialect {
 
     @NotNull
     Collection<String> getFunctions();
+
+    /** Whether a function is registered by this dialect, regardless of identifier case. */
+    boolean isFunction(@NotNull String name);
+
     @NotNull
     Collection<String> getDataTypes(@Nullable DBPDataSource dataSource);
     @Nullable

@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public record CDataDriverInfo(
     @SerializedName("datasource") @NotNull String dataSource,
@@ -32,9 +33,30 @@ public record CDataDriverInfo(
     @SerializedName("datatype_id") @NotNull String dataTypeId,
     @SerializedName("order_sku") @Nullable String orderSku,
     @SerializedName("annual_price_usd") @Nullable BigDecimal annualPriceUsd,
-    @Nullable String iconDriver
+    @Nullable String iconDriver,
+    @NotNull List<String> categories
 ) {
     private static final String DOCUMENTATION_URL_PREFIX = "https://cdn.cdata.com/help/";
+
+    public CDataDriverInfo {
+        categories = categories == null ? List.of() : List.copyOf(categories);
+    }
+
+    public CDataDriverInfo(
+        @NotNull String dataSource,
+        @NotNull String objectName,
+        @NotNull String driverName,
+        int versionYear,
+        @NotNull CDataDriverTier tier,
+        @NotNull String purchaseUrl,
+        @NotNull String dataTypeId,
+        @Nullable String orderSku,
+        @Nullable BigDecimal annualPriceUsd,
+        @Nullable String iconDriver
+    ) {
+        this(dataSource, objectName, driverName, versionYear, tier, purchaseUrl, dataTypeId, orderSku, annualPriceUsd,
+            iconDriver, List.of());
+    }
 
     public CDataDriverInfo(
         @NotNull String dataSource,
@@ -67,7 +89,8 @@ public record CDataDriverInfo(
     CDataDriverInfo withSettings(@Nullable CDataDriverSettings settings) {
         return new CDataDriverInfo(dataSource, objectName, driverName, versionYear, tier, purchaseUrl,
             settings == null ? dataSource : settings.dataTypeId(), orderSku, annualPriceUsd,
-            settings == null ? null : settings.iconDriver());
+            settings == null ? null : settings.iconDriver(),
+            settings == null || settings.categories() == null ? List.of() : settings.categories());
     }
 
     @Nullable
