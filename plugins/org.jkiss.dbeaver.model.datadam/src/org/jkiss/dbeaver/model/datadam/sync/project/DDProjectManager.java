@@ -125,8 +125,10 @@ public class DDProjectManager {
     @NotNull
     public List<LocalProjectInfo> getLocalProjects() throws DBException {
         List<LocalProjectInfo> result = new ArrayList<>();
-        for (DBPProject project : DDWorkspace.getInstance().getProjects()) {
-            result.add(getLocalProject(project));
+        for (DBPProject project : workspace.getProjects()) {
+            if (DDWorkspace.getInstance().isVisibleInCurrentAccount(project)) {
+                result.add(getLocalProject(project));
+            }
         }
         return result;
     }
