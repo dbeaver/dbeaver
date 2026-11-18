@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.datadam.auth;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.app.SecurePreferencesSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretObject;
@@ -29,6 +30,7 @@ import java.util.List;
 
 /** Selects an OS-backed provider for DataDam without changing the application's default controller. */
 public final class DDSecretStorage implements DBSSecretController {
+    private static final Log log = Log.getLog(DDSecretStorage.class);
     private static final String NODE = "datadam";
     private static final DDSecretStorage INSTANCE = new DDSecretStorage();
 
@@ -40,6 +42,11 @@ public final class DDSecretStorage implements DBSSecretController {
     private DDSecretStorage() {
         String nativeProviderId = DBSecurityUtils.findNativeOSProvider();
         nativeController = nativeProviderId == null ? null : SecurePreferencesSecretController.create(NODE, nativeProviderId);
+        if (nativeController == null) {
+            log.warn("DataDam native secure storage provider not found; using the configured default provider");
+        } else {
+            log.info("DataDam using native secure storage provider '" + nativeProviderId + "'");
+        }
     }
 
     @NotNull
@@ -55,20 +62,25 @@ public final class DDSecretStorage implements DBSSecretController {
     @Nullable
     @Override
     public String getPrivateSecretValue(@NotNull String secretId) throws DBException {
+        log.debug("Reading DataDam secret through Equinox secure storage");
         return defaultController.getPrivateSecretValue(secretId);
     }
 
     @Override
     public void setPrivateSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException {
         if (nativeController != null && secretValue != null) {
+            log.debug("Writing DataDam secret with native secure storage provider");
             nativeController.setPrivateSecretValue(secretId, secretValue);
             if (nativeController.isPrivateSecretEncrypted(secretId)) {
+                log.debug("DataDam secret encrypted with native secure storage provider");
                 return;
             }
             // Equinox can silently store plaintext when the OS provider cannot supply a password.
             nativeController.setPrivateSecretValue(secretId, null);
+            log.warn("DataDam native secure storage did not encrypt the secret; unencrypted value removed");
             throw new DBException("Native secure storage did not encrypt DataDam secret");
         }
+        log.debug(secretValue == null ? "Removing DataDam secret" : "Writing DataDam secret with configured default provider");
         defaultController.setPrivateSecretValue(secretId, secretValue);
     }
 

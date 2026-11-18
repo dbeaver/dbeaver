@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.model.datadam.auth.desktop;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.datadam.auth.DDSecretStorage;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 
 class DDDesktopTokenStore {
+    private static final Log log = Log.getLog(DDDesktopTokenStore.class);
     private static final String SECRET_ID = "datadam.desktop.access-token";
     static final DDDesktopTokenStore INSTANCE = new DDDesktopTokenStore(DDSecretStorage.getInstance());
 
@@ -39,6 +41,7 @@ class DDDesktopTokenStore {
 
     @Nullable
     DDDesktopUserToken load() throws DBException {
+        log.debug("Reading stored DataDam desktop token");
         String value = secretStorage.getPrivateSecretValue(SECRET_ID);
         if (value == null || value.isBlank()) {
             return null;
@@ -58,6 +61,7 @@ class DDDesktopTokenStore {
         } catch (RuntimeException e) {
             throw new DBException("Could not serialize DataDam desktop token (" + e.getClass().getName() + ")");
         }
+        log.debug("Saving DataDam desktop token");
         secretStorage.setPrivateSecretValue(SECRET_ID, value);
         secretStorage.flushChanges();
     }

@@ -31,6 +31,7 @@ public final class DBSecurityUtils {
     @Nullable
     public static String findNativeOSProvider() {
         if (Platform.getExtensionRegistry() == null) {
+            log.debug("Native secure storage provider lookup skipped: extension registry is unavailable");
             return null;
         }
         String providerId = switch (Platform.getOS()) {
@@ -40,12 +41,15 @@ public final class DBSecurityUtils {
             default -> null;
         };
         if (providerId == null) {
-            log.error("Cannot determine current OS");
+            log.error("Cannot determine native secure storage provider for OS '" + Platform.getOS() + "'");
             return null;
         }
+        log.debug("Looking for native secure storage provider '" + providerId + "'");
         try {
             // The extension can be installed but unusable (notably a missing Linux keyring).
-            return PasswordProviderSelector.getInstance().findStorageModule(providerId).getID();
+            String selectedProviderId = PasswordProviderSelector.getInstance().findStorageModule(providerId).getID();
+            log.debug("Found native secure storage provider '" + selectedProviderId + "'");
+            return selectedProviderId;
         } catch (StorageException e) {
             log.error("Cannot find local OS integrated security password provider '" + providerId + "'", e);
             return null;
