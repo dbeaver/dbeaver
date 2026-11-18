@@ -125,30 +125,16 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         String queryText = query.getText();
         SQLDialect dialect = null;
         SQLQuery validationQuery = query;
+        SQLUtils.PreparedQuery prepared = null;
         if (hasBackslashQuote(queryText)) {
             dialect = executionContext.getDataSource().getSQLDialect();
             if (!dialect.getExecutableCommentPrefixes().isEmpty()) {
                 String sqlMode = verifySqlMode(context, executionContext);
                 boolean ansiQuotes = sqlMode.contains("ANSI_QUOTES");
-                if (sqlMode.contains("NO_BACKSLASH_ESCAPES")) {
-                    SQLUtils.verifyNoBackslashEscapes(dialect, queryText, ansiQuotes);
-                }
-                if (queryText.contains("\\\"")) {
-                    if (ansiQuotes) {
-                        SQLUtils.prepareQueryForParsing(dialect, queryText, false, true);
-                    } else {
-                        String doubleQuoted = SQLUtils.prepareQueryForParsing(dialect, queryText, true);
-                        String prepared;
-                        try {
-                            prepared = SQLUtils.prepareQueryForParsing(dialect, queryText);
-                        } catch (DBCException e) {
-                            // the baseline scan can reject a comment hidden by a double-quoted string
-                            prepared = null;
-                        }
-                        if (!doubleQuoted.equals(prepared)) {
-                            validationQuery = new SQLQuery(executionContext.getDataSource(), doubleQuoted, query);
-                        }
-                    }
+                prepared = SQLUtils.prepareQueryForParsing(dialect, queryText, !ansiQuotes, ansiQuotes,
+                    sqlMode.contains("NO_BACKSLASH_ESCAPES"));
+                if (!ansiQuotes && queryText.contains("\\\"")) {
+                    validationQuery = new SQLQuery(executionContext.getDataSource(), prepared.sql(), query);
                 }
             }
         }
@@ -157,9 +143,13 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             if (dialect == null) {
                 dialect = executionContext.getDataSource().getSQLDialect();
             }
-            if (!dialect.getExecutableCommentPrefixes().isEmpty()
-                && SQLUtils.hasActiveExecutableComment(dialect, queryText, validationQuery != query)) {
-                throw new DBException("Cannot verify database object scope in an unparsed SQL statement containing executable comments");
+            if (!dialect.getExecutableCommentPrefixes().isEmpty()) {
+                if (prepared == null) {
+                    prepared = SQLUtils.prepareQueryForParsing(dialect, queryText, false, false, false);
+                }
+                if (prepared.activeExecutableComment()) {
+                    throw new DBException("Cannot verify database object scope in an unparsed SQL statement containing executable comments");
+                }
             }
             verifyQueryText(context, executionContext, validationQuery.getText());
         } else {

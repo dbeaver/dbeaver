@@ -176,48 +176,23 @@ public final class SQLUtils {
 
     @NotNull
     public static String prepareQueryForParsing(@NotNull SQLDialect dialect, @NotNull String sql) throws DBCException {
-        return prepareQueryForParsing(dialect, sql, false, false);
+        return prepareQueryForParsing(dialect, sql, false, false, false).sql();
+    }
+
+    public record PreparedQuery(@NotNull String sql, boolean activeExecutableComment) {
     }
 
     @NotNull
-    public static String prepareQueryForParsing(
-        @NotNull SQLDialect dialect, @NotNull String sql, boolean doubleQuotedStrings
-    ) throws DBCException {
-        return prepareQueryForParsing(dialect, sql, doubleQuotedStrings, false);
-    }
-
-    @NotNull
-    public static String prepareQueryForParsing(
-        @NotNull SQLDialect dialect, @NotNull String sql, boolean doubleQuotedStrings, boolean rejectDoubleQuoteEscapes
-    ) throws DBCException {
-        return prepareQueryForParsing(dialect, sql, doubleQuotedStrings, rejectDoubleQuoteEscapes, false, null);
-    }
-
-    public static boolean hasActiveExecutableComment(
-        @NotNull SQLDialect dialect, @NotNull String sql, boolean doubleQuotedStrings
-    ) throws DBCException {
-        boolean[] active = new boolean[1];
-        prepareQueryForParsing(dialect, sql, doubleQuotedStrings, false, false, active);
-        return active[0];
-    }
-
-    public static void verifyNoBackslashEscapes(
-        @NotNull SQLDialect dialect, @NotNull String sql, boolean ansiQuotes
-    ) throws DBCException {
-        prepareQueryForParsing(dialect, sql, !ansiQuotes, ansiQuotes, true, null);
-    }
-
-    @NotNull
-    private static String prepareQueryForParsing(
+    public static PreparedQuery prepareQueryForParsing(
         @NotNull SQLDialect dialect, @NotNull String sql, boolean doubleQuotedStrings,
-        boolean rejectDoubleQuoteEscapes, boolean noBackslashEscapes, @Nullable boolean[] activeComment
+        boolean rejectDoubleQuoteEscapes, boolean noBackslashEscapes
     ) throws DBCException {
         List<String> lineComments = ArrayUtils.safeArray(dialect.getSingleLineComments());
         List<String> executablePrefixes = dialect.getExecutableCommentPrefixes();
         if (!doubleQuotedStrings && !rejectDoubleQuoteEscapes && executablePrefixes.isEmpty()
             && lineComments.stream().allMatch(prefix -> prefix.startsWith(SQLConstants.SL_COMMENT))) {
             // let jsqlparser handle standard comments and dialect literals, including dollar-quoted strings
-            return sql;
+            return new PreparedQuery(sql, false);
         }
         Pair<String, String> blockComment = dialect.getMultiLineComments();
         String[][] stringQuotes = dialect.getStringQuoteStrings();
@@ -226,6 +201,7 @@ public final class SQLUtils {
         StringBuilder result = new StringBuilder(sql);
         List<Integer> subtractionSeparators = new ArrayList<>();
         boolean executableComment = false;
+        boolean activeComment = false;
         int pos = 0;
         while (pos < result.length()) {
             String[] stringQuote = quoteStartingAt(result, pos, stringQuotes);
@@ -292,9 +268,7 @@ public final class SQLUtils {
                         throw new DBCException("Cannot determine whether an executable comment applies to this server");
                     }
                     if (active) {
-                        if (activeComment != null) {
-                            activeComment[0] = true;
-                        }
+                        activeComment = true;
                         maskCommentRange(result, pos, versionEnd);
                         pos = versionEnd;
                         executableComment = true;
@@ -346,7 +320,7 @@ public final class SQLUtils {
         for (int index = subtractionSeparators.size() - 1; index >= 0; index--) {
             result.insert(subtractionSeparators.get(index).intValue(), ' ');
         }
-        return result.toString();
+        return new PreparedQuery(result.toString(), activeComment);
     }
 
     private static void maskCommentRange(@NotNull StringBuilder sql, int start, int end) {
