@@ -101,6 +101,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -161,6 +162,47 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private SQLSymbolInserter sqlSymbolInserter;
 
     private int lastQueryErrorPosition = -1;
+    private IDocument bigDocumentListenerDocument;
+    private volatile boolean bigDocument;
+    private volatile long bigDocumentTransitionGeneration;
+    private volatile long bigDocumentByteLength = -1;
+    private volatile IDocument bigDocumentByteLengthDocument;
+    private volatile Charset bigDocumentCharset;
+    private final IDocumentListener bigDocumentListener = new IDocumentListener() {
+        @Override
+        public void documentAboutToBeChanged(DocumentEvent event) {
+            if (bigDocumentByteLength >= 0 && event.getDocument() == bigDocumentByteLengthDocument) {
+                if (event.getDocument().getLength() > getBigScriptFileLengthBoundary()) {
+                    // Already above the threshold by character count, so the exact encoded length
+                    // is not needed. Do not encode a huge range being replaced or deleted.
+                    bigDocumentByteLength = -1;
+                    return;
+                }
+                try {
+                    bigDocumentByteLength -= getEncodedLength(
+                        event.getDocument().get(event.getOffset(), event.getLength()),
+                        bigDocumentCharset
+                    );
+                } catch (BadLocationException e) {
+                    bigDocumentByteLength = -1;
+                }
+            }
+        }
+
+        @Override
+        public void documentChanged(DocumentEvent event) {
+            if (bigDocumentByteLength >= 0 && event.getDocument() == bigDocumentByteLengthDocument) {
+                if (event.getDocument().getLength() > getBigScriptFileLengthBoundary()) {
+                    // The character count already exceeds the threshold; the cache is rebuilt
+                    // if the document shrinks back into the ambiguous range.
+                    bigDocumentByteLength = -1;
+                } else {
+                    bigDocumentByteLength += getEncodedLength(event.getText(), bigDocumentCharset);
+                }
+            }
+            checkBigDocumentTransition();
+        }
+    };
 
     public SQLEditorBase() {
         super();
@@ -204,9 +246,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private void refreshSyntaxColors() {
         ISourceViewer sourceViewer = getSourceViewer();
         if (sourceViewer != null && !sourceViewer.getTextWidget().isDisposed()) {
+            // Reloading syntax rules also refreshes the presentation reconciler without
+            // resetting undo history or the folding strategy cache.
             reloadSyntaxRules();
-            // Reconfigure to let comments/strings colors to take effect
-            sourceViewer.configure(getSourceViewerConfiguration());
         }
     }
 
@@ -260,11 +302,151 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public static boolean isBigScript(@Nullable IEditorInput editorInput) {
+        return isBigScript(editorInput, getBigScriptFileLengthBoundary());
+    }
+
+    private static boolean isBigScript(@Nullable IEditorInput editorInput, long boundary) {
         if (editorInput != null) {
             File file = EditorUtils.getLocalFileFromInput(editorInput);
-            return file != null && file.length() > getBigScriptFileLengthBoundary();
+            return file != null && file.length() > boundary;
         }
         return false;
+    }
+
+    /**
+     * Checks whether the editor document is large enough to disable expensive SQL editor services.
+     * Unlike {@link #isBigScript(IEditorInput)}, this also covers SQL consoles and unsaved scripts
+     * which have no associated file.
+     * <p>
+     * When a document is installed it is the only source of truth: the on-disk file size may be stale
+     * (unsaved edits) and must not keep the editor in large-document mode after most of the content is
+     * deleted. {@link #isBigScript(IEditorInput)} is used only while the editor has no document yet.
+     */
+    public boolean isBigDocument() {
+        long boundary = getBigScriptFileLengthBoundary();
+        IDocument document = getDocument();
+        if (document == null) {
+            // The editor is not initialized yet; the only available estimate is the on-disk size.
+            return isBigScript(getEditorInput(), boundary);
+        }
+        long documentLength = document.getLength();
+        if (documentLength > boundary) {
+            return true;
+        }
+        // The boundary is expressed in bytes. For the ambiguous range (above boundary/4 even an
+        // encoding with 4 bytes per character cannot exceed the boundary) measure the encoded
+        // length of the current document.
+        return documentLength > boundary / 4 && getDocumentByteLength(document) > boundary;
+    }
+
+    private long getDocumentByteLength(@NotNull IDocument document) {
+        if (document != bigDocumentByteLengthDocument) {
+            bigDocumentByteLengthDocument = document;
+            bigDocumentByteLength = -1;
+            bigDocumentCharset = null;
+        }
+        if (bigDocumentByteLength < 0) {
+            try {
+                bigDocumentCharset = getDocumentCharset();
+                bigDocumentByteLength = getEncodedLength(document.get(), bigDocumentCharset);
+            } catch (Exception e) {
+                log.debug("Error calculating document byte length", e);
+                return -1;
+            }
+        }
+        return bigDocumentByteLength;
+    }
+
+    @NotNull
+    private Charset getDocumentCharset() {
+        IEditorInput editorInput = getEditorInput();
+        if (editorInput instanceof StringEditorInput stringInput) {
+            try {
+                return Charset.forName(stringInput.getStorage().getCharset());
+            } catch (Exception e) {
+                log.debug("Error detecting document charset", e);
+            }
+        } else {
+            // Measure file-backed documents with the charset used to load/save them, not with the
+            // platform default, so that the byte length matches the size the file will have.
+            IFile file = EditorUtils.getFileFromInput(editorInput);
+            if (file != null) {
+                try {
+                    return Charset.forName(file.getCharset());
+                } catch (Exception e) {
+                    log.debug("Error detecting file charset", e);
+                }
+            }
+        }
+        return Charset.forName(GeneralUtils.getDefaultFileEncoding());
+    }
+
+    private static long getEncodedLength(@Nullable CharSequence text, @Nullable Charset charset) {
+        if (text == null || charset == null) {
+            return 0;
+        }
+        return text.toString().getBytes(charset).length;
+    }
+
+    private void attachBigDocumentListener() {
+        IDocument document = getDocument();
+        if (document != bigDocumentListenerDocument) {
+            if (bigDocumentListenerDocument != null) {
+                bigDocumentListenerDocument.removeDocumentListener(bigDocumentListener);
+            }
+            bigDocumentListenerDocument = document;
+            if (document != null) {
+                document.addDocumentListener(bigDocumentListener);
+            }
+        }
+        bigDocumentByteLengthDocument = document;
+        bigDocumentByteLength = -1;
+        bigDocumentCharset = null;
+        bigDocument = isBigDocument();
+        // A pending transition callback belongs to the previous document and must not reconfigure
+        // services of the newly installed one.
+        bigDocumentTransitionGeneration++;
+    }
+
+    private void detachBigDocumentListener() {
+        if (bigDocumentListenerDocument != null) {
+            bigDocumentListenerDocument.removeDocumentListener(bigDocumentListener);
+            bigDocumentListenerDocument = null;
+        }
+        bigDocumentByteLengthDocument = null;
+        bigDocumentByteLength = -1;
+        bigDocumentCharset = null;
+        bigDocumentTransitionGeneration++;
+    }
+
+    private void checkBigDocumentTransition() {
+        boolean isBig = isBigDocument();
+        if (isBig == bigDocument) {
+            return;
+        }
+        bigDocument = isBig;
+        final long transitionGeneration = ++bigDocumentTransitionGeneration;
+        // Services which are configured eagerly (parser, syntax rules, auto-activation) must be re-applied
+        // when the document crosses the large-document threshold. Defer this because reloading the syntax
+        // rules must not run inside a document change notification.
+        UIUtils.asyncExec(() -> {
+            if (isDisposed() || getDocument() == null
+                || transitionGeneration != bigDocumentTransitionGeneration
+                || isBigDocument() != bigDocument) {
+                // The editor is closing, the document was replaced or the document size crossed the
+                // threshold again; only the callback of the latest transition must do the work.
+                return;
+            }
+            if (occurrencesHighlighter != null) {
+                occurrencesHighlighter.updateInput(getEditorInput());
+            }
+            reloadSyntaxRules();
+            refreshAdvancedServices();
+            if (this instanceof SQLEditor sqlEditor) {
+                sqlEditor.refreshEditorIconAndTitle();
+            }
+            SQLEditorUtils.refreshSQLSyntaxParserCommandState();
+        });
     }
 
     static long getBigScriptFileLengthBoundary() {
@@ -284,7 +466,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public boolean isAdvancedHighlightingEnabled() {
-        return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE);
+        return !isBigDocument()
+            && this.getActivePreferenceStore().getBoolean(SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE);
     }
 
     private void handleInputChange(IEditorInput input) {
@@ -606,6 +789,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         }
 
         super.doSetInput(input);
+        // The pre-switch call above used the new input but the old document. Re-evaluate after the
+        // input switch so occurrence setup sees the document that is actually installed.
+        handleInputChange(getEditorInput());
+        attachBigDocumentListener();
     }
 
     @Override
@@ -617,10 +804,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         }
 
         handleInputChange(getEditorInput());
+        // The saved file size may have crossed the large-document threshold.
+        checkBigDocumentTransition();
     }
 
     protected void doTextEditorSave(DBRProgressMonitor monitor) {
         super.doSave(monitor.getNestedMonitor());
+        // Auto-save bypasses doSave(), so the on-disk size must be re-checked here as well.
+        checkBigDocumentTransition();
     }
 
     @Override
@@ -761,6 +952,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         if (this.backgroundParsingJob != null) {
             this.backgroundParsingJob.dispose();
         }
+        detachBigDocumentListener();
         this.occurrencesHighlighter.dispose();
 /*
         if (this.activationListener != null) {
@@ -881,7 +1073,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public void reloadSyntaxRules() {
-        if (SQLEditorUtils.isSQLSyntaxParserApplied(this.getEditorInput()) && this.isAdvancedHighlightingEnabled()) {
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(this) && this.isAdvancedHighlightingEnabled()) {
             if (this.backgroundParsingJob == null) {
                 this.backgroundParsingJob = new SQLBackgroundParsingJob(this);
             }
@@ -908,7 +1100,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         IDocument document = getDocument();
         syntaxManager.init(dialect, getActivePreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(getDataSourceContainerForSyntaxRuleReloading(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
+        ruleManager.loadRules(getDataSourceContainerForSyntaxRuleReloading(), !SQLEditorUtils.isSQLSyntaxParserApplied(this));
         ruleScanner.refreshRules(getDataSourceContainerForSyntaxRuleReloading(), ruleManager, this);
         if (getDataSource() != null) {
             parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
@@ -966,9 +1158,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             this.backgroundParsingJob.setup();
         }
         // Update configuration
-        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
-            ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
+        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration configuration) {
+            configuration.onDataSourceChange();
+            configuration.refreshAutoActivation();
         }
+        // Rebuild only the presentation reconciler to apply the refreshed syntax rules and
+        // the size-dependent string/quoted repairers without resetting undo history.
+        refreshPresentationReconciler();
         if (verticalRuler != null) {
             verticalRuler.update();
         }
@@ -1335,7 +1531,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public boolean isFoldingEnabled() {
-        return SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput())
+        return SQLEditorUtils.isSQLSyntaxParserApplied(this)
             && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
@@ -1406,6 +1602,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS:
                 this.reloadSyntaxRules();
                 return;
+            case SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY:
+                checkBigDocumentTransition();
+                return;
             case SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE:
                 this.reloadSourceViewerConfiguration();
                 this.reloadSyntaxRules();
@@ -1430,6 +1629,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) this.getSourceViewer();
         sourceViewer.unconfigure();
         sourceViewer.configure(configuration);
+    }
+
+    private void refreshPresentationReconciler() {
+        if (getSourceViewer() instanceof SQLEditorSourceViewer sourceViewer
+            && getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration configuration) {
+            sourceViewer.refreshPresentationReconciler(configuration);
+        }
     }
 
     void setLastQueryErrorPosition(int lastQueryErrorPosition) {

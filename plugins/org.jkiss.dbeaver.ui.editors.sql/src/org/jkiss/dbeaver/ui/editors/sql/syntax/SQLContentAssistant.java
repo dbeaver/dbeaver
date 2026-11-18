@@ -178,8 +178,8 @@ public class SQLContentAssistant extends ContentAssistant {
     private class SQLAutoAssistListener extends AutoAssistListener {
         @Override
         protected void showAssist(int showStyle) {
-            if (showStyle == 1 && !(SQLEditorUtils.isSQLSyntaxParserApplied(editor.getEditorInput())
-                && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION))
+            if (showStyle == 1 && (!SQLEditorUtils.isSQLSyntaxParserApplied(editor)
+                || !editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION))
             ) {
                 return;
             }

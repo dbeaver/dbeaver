@@ -16,6 +16,7 @@
  */
 package org.jkiss.utils;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -23,6 +24,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class RuntimeUtilsTest extends DBeaverUnitTest {
 
@@ -52,5 +57,46 @@ public class RuntimeUtilsTest extends DBeaverUnitTest {
     public void testBackslashEscape() {
         Assertions.assertEquals(Arrays.asList("ls", "-l", "/home/folder with spaces"), RuntimeUtils.splitCommandLine("ls -l /home/folder\\ with\\ spaces", true));
         Assertions.assertEquals(Arrays.asList("ls", "-l", "/home/\"folder with quotes\""), RuntimeUtils.splitCommandLine("ls -l /home/\\\"folder\\ with\\ quotes\\\"", true));
+    }
+
+    @Test
+    public void testWaitForFutureReturnsResult() throws ExecutionException, InterruptedException {
+        CompletableFuture<String> future = CompletableFuture.completedFuture("result");
+
+        Assertions.assertEquals(
+            "result",
+            RuntimeUtils.waitForFuture(future, new NullProgressMonitor(), 1, TimeUnit.SECONDS)
+        );
+    }
+
+    @Test
+    public void testWaitForFutureReturnsNullOnTimeout() throws ExecutionException, InterruptedException {
+        // A never-completing future must not block the caller forever: the caller needs
+        // the timeout to re-check whether the parser is still running.
+        Assertions.assertNull(
+            RuntimeUtils.waitForFuture(new CompletableFuture<>(), new NullProgressMonitor(), 10, TimeUnit.MILLISECONDS)
+        );
+    }
+
+    @Test
+    public void testWaitForFutureCancelsOnMonitor() {
+        NullProgressMonitor monitor = new NullProgressMonitor();
+        monitor.setCanceled(true);
+
+        Assertions.assertThrows(
+            CancellationException.class,
+            () -> RuntimeUtils.waitForFuture(new CompletableFuture<>(), monitor, 1, TimeUnit.SECONDS)
+        );
+    }
+
+    @Test
+    public void testWaitForFuturePropagatesFailure() {
+        CompletableFuture<String> future = new CompletableFuture<>();
+        future.completeExceptionally(new IllegalStateException("failure"));
+
+        Assertions.assertThrows(
+            ExecutionException.class,
+            () -> RuntimeUtils.waitForFuture(future, new NullProgressMonitor(), 1, TimeUnit.SECONDS)
+        );
     }
 }

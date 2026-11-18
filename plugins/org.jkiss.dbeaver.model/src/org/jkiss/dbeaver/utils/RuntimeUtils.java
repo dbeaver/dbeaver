@@ -48,6 +48,11 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * RuntimeUtils
@@ -261,6 +266,28 @@ public final class RuntimeUtils {
         } catch (URISyntaxException e) {
             throw new IOException("Bad local file path: " + fileURL, e);
         }
+    }
+
+    /**
+     * Waits for the future to complete while checking the monitor for cancellation.
+     *
+     * @return the future result, or {@code null} if the wait timed out
+     */
+    @Nullable
+    public static <T> T waitForFuture(
+        @NotNull Future<T> future,
+        @NotNull IProgressMonitor monitor,
+        long timeout,
+        @NotNull TimeUnit timeUnit
+    ) throws ExecutionException, InterruptedException {
+        while (!monitor.isCanceled()) {
+            try {
+                return future.get(timeout, timeUnit);
+            } catch (TimeoutException e) {
+                return null;
+            }
+        }
+        throw new CancellationException();
     }
 
     public static boolean runTask(@NotNull DBRRunnableWithProgress task, @NotNull String taskName, final long waitTime) {

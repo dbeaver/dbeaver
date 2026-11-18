@@ -848,7 +848,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean isFoldingEnabled() {
-        return SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput())
+        return SQLEditorUtils.isSQLSyntaxParserApplied(this)
             && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
@@ -2672,6 +2672,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = baseEditorImage;
+        // The document may already be above the large-document threshold at input initialization.
+        refreshEditorIconAndTitle();
     }
 
     private void accomplishEditorInputInitialization(@NotNull IEditorInput editorInput) {
@@ -3711,7 +3713,7 @@ public class SQLEditor extends SQLEditorBase implements
             bottomRight = DBIcon.OVER_SUCCESS;
         }
 
-        if (SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput())) {
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(this)) {
             bottomLeft = null;
         } else {
             bottomLeft = DBIcon.OVER_RED_LAMP;
