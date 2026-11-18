@@ -85,7 +85,7 @@ final class DiagnosticInfoSanitizer {
     );
     private static final Pattern DEBIAN_VERSION = Pattern.compile("\\bDebian[\\t ]+\\d+(?:\\.\\d+)+(?:[-+~][\\w.+~:-]+)*");
     private static final Pattern OBJECT_LABEL = Pattern.compile(
-        "([\\p{L}_$][\\p{L}\\p{N}_$]*(?:\\.[\\p{L}_$][\\p{L}\\p{N}_$]*)*)(?: \\[[^\"]*\\])?"
+        "([\\p{L}_$][\\p{L}\\p{N}_$]*(?:\\.[\\p{L}_$][\\p{L}\\p{N}_$]*)*)(?: \\[(Existing|Create|Recreate|Alter)\\])?"
     );
 
     private final List<Pattern> environmentValues;
@@ -232,7 +232,9 @@ final class DiagnosticInfoSanitizer {
                     String label = matcher.group(group);
                     int connection = label.indexOf('@');
                     Matcher object = OBJECT_LABEL.matcher(connection < 0 ? label : label.substring(0, connection));
-                    if (object.matches() && matcher.start(group) <= start - lineStart
+                    // Stream transfers use the same task format. Require database-specific label metadata.
+                    if (object.matches() && (group == 1 ? connection >= 0 : object.group(2) != null)
+                        && matcher.start(group) <= start - lineStart
                         && matcher.start(group) + object.end(1) >= end - lineStart) {
                         return true;
                     }

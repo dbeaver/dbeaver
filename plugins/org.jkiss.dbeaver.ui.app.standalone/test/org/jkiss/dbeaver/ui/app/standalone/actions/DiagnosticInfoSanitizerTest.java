@@ -100,7 +100,7 @@ public class DiagnosticInfoSanitizerTest {
                 + "Transfer data from \"public.[REDACTED]@postgres\" into \"archive.orders [Existing]\"");
         check(sanitizer,
             "Transfer data from \"SELECT * FROM jobs WHERE endpoint = 'private.customer.example'\" into \"archive.orders\"",
-            "Transfer data from \"SELECT * FROM jobs WHERE endpoint = '[REDACTED]'\" into \"archive.orders\"");
+            "Transfer data from \"SELECT * FROM jobs WHERE endpoint = '[REDACTED]'\" into \"[REDACTED]\"");
         check(sanitizer,
             "org.osgi.framework.system.capabilities.extra=com.acme.feature;endpoint=private.customer.example;"
                 + "com.acme.key=\"value;private.customer.example,other.customer.example\",com.acme.other",
@@ -114,13 +114,21 @@ public class DiagnosticInfoSanitizerTest {
         check(localized,
             "Transférer les données de « public.orders@db.example.test » vers « archive.orders [Existing] »",
             "Transférer les données de « public.orders@[REDACTED] » vers « archive.orders [Existing] »");
-        check(localized, "Преобразовать данные из \"public.orders\" в \"archive.orders\"",
-            "Преобразовать данные из \"public.orders\" в \"archive.orders\"");
-        check(localized, "「public.orders」から「archive.orders」にデータを転送",
-            "「public.orders」から「archive.orders」にデータを転送");
+        check(localized, "Преобразовать данные из \"public.orders@postgres\" в \"archive.orders [Existing]\"",
+            "Преобразовать данные из \"public.orders@postgres\" в \"archive.orders [Existing]\"");
+        check(localized, "「public.orders@postgres」から「archive.orders [Create]」にデータを転送",
+            "「public.orders@postgres」から「archive.orders [Create]」にデータを転送");
         check(localized,
-            "Transférer les données de « SELECT * FROM jobs WHERE endpoint = 'private.customer.example' » vers « archive.orders »",
-            "Transférer les données de « SELECT * FROM jobs WHERE endpoint = '[REDACTED]' » vers « archive.orders »");
+            "Transférer les données de « SELECT * FROM jobs WHERE endpoint = 'private.customer.example'@postgres » "
+                + "vers « archive.orders [Existing] »",
+            "Transférer les données de « SELECT * FROM jobs WHERE endpoint = '[REDACTED]'@postgres » "
+                + "vers « archive.orders [Existing] »");
+        check(sanitizer,
+            "Transfer data from \"private.customer.example\" into \"archive.orders [Existing]\"",
+            "Transfer data from \"[REDACTED]\" into \"archive.orders [Existing]\"");
+        check(sanitizer,
+            "Transfer data from \"public.orders@postgres\" into \"private.customer.example\"",
+            "Transfer data from \"public.orders@postgres\" into \"[REDACTED]\"");
     }
 
     private static void check(@NotNull DiagnosticInfoSanitizer sanitizer, @NotNull String input, @NotNull String expected) {
