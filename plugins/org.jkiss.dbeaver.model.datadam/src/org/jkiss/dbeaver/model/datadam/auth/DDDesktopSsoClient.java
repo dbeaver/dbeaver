@@ -98,22 +98,10 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
 
     @NotNull
     public DDSsoTokenResponse refresh(@NotNull String refreshToken, @NotNull String scope) throws DBException {
-        return refresh(refreshToken, scope, null);
-    }
-
-    @NotNull
-    public DDSsoTokenResponse refresh(
-        @NotNull String refreshToken, @NotNull String scope, @Nullable String nextRefreshToken
-    ) throws DBException {
-        Map<String, String> parameters = new HashMap<>(Map.of(
+        DDSsoTokenResponse tokens = executePostRequest(CommonUtils.removeLeadingSlash(DDSsoConstants.TOKEN_PATH), Map.of(), Map.of(
             OAuthConstants.PARAM_GRANT_TYPE, OAuthConstants.GRANT_TYPE_REFRESH_TOKEN,
             OAuthConstants.AUTH_PROP_CLIENT_ID, DDSsoConstants.DESKTOP_CLIENT_ID,
-            OAuthConstants.RESPONSE_PARAM_REFRESH_TOKEN, refreshToken));
-        if (nextRefreshToken != null) {
-            parameters.put(DDSsoConstants.PARAM_NEXT_REFRESH_TOKEN, nextRefreshToken);
-        }
-        DDSsoTokenResponse tokens = executePostRequest(CommonUtils.removeLeadingSlash(DDSsoConstants.TOKEN_PATH), Map.of(),
-            parameters, MediaType.FORM_URLENCODED, DDSsoTokenResponse.class);
+            OAuthConstants.RESPONSE_PARAM_REFRESH_TOKEN, refreshToken), MediaType.FORM_URLENCODED, DDSsoTokenResponse.class);
         validateTokens(tokens, scope);
         if (tokens.refreshToken() == null) {
             throw new DBException("Missing rotated DataDam refresh token. Sign in again");

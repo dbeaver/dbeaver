@@ -27,16 +27,8 @@ public record DDDesktopUserToken(
     @NotNull String issuer,
     @NotNull Set<String> endpoints,
     @NotNull Set<String> scopes,
-    @Nullable String refreshToken,
-    @Nullable String nextRefreshToken
+    @Nullable String refreshToken
 ) {
-    public DDDesktopUserToken(
-        @NotNull String accessToken, @NotNull String issuer, @NotNull Set<String> endpoints, @NotNull Set<String> scopes,
-        @Nullable String refreshToken
-    ) {
-        this(accessToken, issuer, endpoints, scopes, refreshToken, null);
-    }
-
     public DDDesktopUserToken(
         @NotNull String accessToken, @NotNull String issuer, @NotNull Set<String> endpoints, @NotNull Set<String> scopes
     ) {

@@ -53,10 +53,11 @@ import java.util.concurrent.atomic.AtomicReference;
 @Timeout(5)
 class DDDesktopTokenManagerTest {
     private static final URI RESOURCE = URI.create("https://storage.example.test");
+    private static final String REFRESH_TOKEN = "A".repeat(43);
+    private static final String ROTATED_REFRESH_TOKEN = "B".repeat(43);
     private final AtomicReference<String> secret = new AtomicReference<>();
     private final AtomicReference<String> error = new AtomicReference<>();
     private final AtomicReference<Map<String, String>> form = new AtomicReference<>();
-    private final AtomicReference<String> successor = new AtomicReference<>();
     private final AtomicInteger requests = new AtomicInteger();
     private final AtomicInteger responseStatus = new AtomicInteger();
     private final AtomicReference<Instant> now = new AtomicReference<>(Instant.now());
@@ -103,9 +104,7 @@ class DDDesktopTokenManagerTest {
             }
             Map<String, Object> body;
             if (status == 200) {
-                successor.compareAndSet(null, parameters.get("next_refresh_token"));
-                Assertions.assertEquals(successor.get(), parameters.get("next_refresh_token"));
-                body = Map.of("access_token", accessToken(now.get().plusSeconds(3600)), "refresh_token", successor.get(),
+                body = Map.of("access_token", accessToken(now.get().plusSeconds(3600)), "refresh_token", ROTATED_REFRESH_TOKEN,
                     "scope", "account:full_access", "token_type", "Bearer", "expires_in", 3600);
             } else {
                 body = Map.of("error", error.get());
@@ -118,7 +117,7 @@ class DDDesktopTokenManagerTest {
         });
         server.start();
         store.save(new DDDesktopUserToken(accessToken(now.get().minusSeconds(60)), issuer,
-            Set.of(RESOURCE.toString()), Set.of("account:full_access"), "A".repeat(43)));
+            Set.of(RESOURCE.toString()), Set.of("account:full_access"), REFRESH_TOKEN));
     }
 
     @AfterEach
@@ -129,27 +128,34 @@ class DDDesktopTokenManagerTest {
         workbench.close();
     }
 
-    @Test
-    void serverFailurePreservesCredentialsAcrossRestartAndThenRefreshes() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void serverFailurePreservesCredentialsAndThenRefreshes(boolean restart) throws Exception {
         error.set("temporarily_unavailable");
         DDDesktopTokenManager manager = manager();
         manager.load(RESOURCE);
+        String saved = secret.get();
         Assertions.assertThrows(DBException.class, () -> manager.getAccessTokenForResource(RESOURCE));
-        DDDesktopUserToken pending = store.load();
-        Assertions.assertEquals("A".repeat(43), pending.refreshToken());
-        Assertions.assertNotNull(pending.nextRefreshToken());
+        Assertions.assertEquals(saved, secret.get());
+        Assertions.assertEquals(REFRESH_TOKEN, store.load().refreshToken());
         Assertions.assertEquals(DDDesktopTokenManager.Status.SIGNED_IN, manager.getStatus());
         Assertions.assertEquals(now.get().plusMillis(1000), manager.getRefreshAt());
         Assertions.assertThrows(DBException.class, () -> manager.getAccessTokenForResource(RESOURCE));
         Assertions.assertEquals(1, requests.get());
 
         error.set(null);
-        DDDesktopTokenManager restarted = manager();
-        restarted.load(RESOURCE);
-        Assertions.assertEquals(accessToken(now.get().plusSeconds(3600)), restarted.getAccessTokenForResource(RESOURCE));
-        Assertions.assertEquals(pending.nextRefreshToken(), store.load().refreshToken());
-        Assertions.assertNull(store.load().nextRefreshToken());
-        Assertions.assertEquals(pending.nextRefreshToken(), form.get().get("next_refresh_token"));
+        DDDesktopTokenManager recovered;
+        if (restart) {
+            recovered = manager();
+            recovered.load(RESOURCE);
+        } else {
+            now.set(manager.getRefreshAt());
+            recovered = manager;
+        }
+        Assertions.assertEquals(accessToken(now.get().plusSeconds(3600)), recovered.getAccessTokenForResource(RESOURCE));
+        Assertions.assertEquals(ROTATED_REFRESH_TOKEN, store.load().refreshToken());
+        Assertions.assertEquals(Map.of("grant_type", "refresh_token", "client_id", "dbeaver-desktop", "refresh_token", REFRESH_TOKEN),
+            form.get());
     }
 
     @Test
@@ -157,8 +163,10 @@ class DDDesktopTokenManagerTest {
         server.stop(0);
         DDDesktopTokenManager manager = manager();
         manager.load(RESOURCE);
+        String saved = secret.get();
         Assertions.assertThrows(DBException.class, () -> manager.getAccessTokenForResource(RESOURCE));
-        Assertions.assertEquals("A".repeat(43), store.load().refreshToken());
+        Assertions.assertEquals(saved, secret.get());
+        Assertions.assertEquals(REFRESH_TOKEN, store.load().refreshToken());
         Assertions.assertEquals(DDDesktopTokenManager.Status.SIGNED_IN, manager.getStatus());
     }
 
@@ -184,20 +192,7 @@ class DDDesktopTokenManagerTest {
         manager.load(RESOURCE);
         Assertions.assertThrows(DBException.class, () -> manager.getAccessTokenForResource(RESOURCE));
         Assertions.assertEquals(DDDesktopTokenManager.Status.SIGNED_IN, manager.getStatus());
-        Assertions.assertEquals("A".repeat(43), store.load().refreshToken());
-    }
-
-    @Test
-    void persistenceFailureBeforeRotationDoesNotSendAnUnrecoverableRequest() throws Exception {
-        DDDesktopTokenManager manager = manager();
-        manager.load(RESOURCE);
-        Mockito.doThrow(new DBException("Secret storage unavailable")).doNothing().when(secrets).flushChanges();
-        Assertions.assertThrows(DBException.class, () -> manager.getAccessTokenForResource(RESOURCE));
-        Assertions.assertEquals(0, requests.get());
-        now.set(manager.getRefreshAt());
-        manager.getAccessTokenForResource(RESOURCE);
-        Assertions.assertEquals(1, requests.get());
-        Assertions.assertEquals(successor.get(), store.load().refreshToken());
+        Assertions.assertEquals(REFRESH_TOKEN, store.load().refreshToken());
     }
 
     @Test
@@ -222,30 +217,13 @@ class DDDesktopTokenManagerTest {
     void failedPersistenceAfterRotationRetainsTheNewTokenAndRetriesSavingIt() throws Exception {
         DDDesktopTokenManager manager = manager();
         manager.load(RESOURCE);
-        Mockito.doNothing().doThrow(new DBException("Secret storage unavailable")).doNothing().when(secrets).flushChanges();
+        Mockito.doThrow(new DBException("Secret storage unavailable")).doNothing().when(secrets).flushChanges();
         Assertions.assertThrows(DBException.class, () -> manager.getAccessTokenForResource(RESOURCE));
         Assertions.assertEquals(DDDesktopTokenManager.Status.SIGNED_IN, manager.getStatus());
         now.set(manager.getRefreshAt());
         Assertions.assertNotNull(manager.getAccessTokenForResource(RESOURCE));
-        Assertions.assertEquals(successor.get(), store.load().refreshToken());
+        Assertions.assertEquals(ROTATED_REFRESH_TOKEN, store.load().refreshToken());
         Assertions.assertEquals(1, requests.get());
-    }
-
-    @Test
-    void persistedPendingRotationIsReusedAfterItsResponseWasLost() throws Exception {
-        DDDesktopTokenManager manager = manager();
-        manager.load(RESOURCE);
-        // A committed rotation whose response was lost leaves this durable request on the client.
-        String next = "B".repeat(43);
-        DDDesktopUserToken saved = store.load();
-        store.save(new DDDesktopUserToken(saved.accessToken(), saved.issuer(), saved.endpoints(), saved.scopes(),
-            saved.refreshToken(), next));
-        successor.set(next);
-        DDDesktopTokenManager restarted = manager();
-        restarted.load(RESOURCE);
-        restarted.getAccessTokenForResource(RESOURCE);
-        Assertions.assertEquals(next, form.get().get("next_refresh_token"));
-        Assertions.assertEquals(next, store.load().refreshToken());
     }
 
     @NotNull

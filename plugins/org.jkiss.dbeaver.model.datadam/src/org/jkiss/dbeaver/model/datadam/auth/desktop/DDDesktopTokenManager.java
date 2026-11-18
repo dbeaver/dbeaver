@@ -33,10 +33,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.net.URI;
-import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Set;
 
 /**
@@ -50,7 +48,6 @@ class DDDesktopTokenManager {
     private static final String PREF_LOGGED_IN = "datadam.desktop.sso.logged-in";
     private static final long MIN_RETRY_MILLIS = 1_000;
     private static final long MAX_RETRY_MILLIS = 60_000;
-    private static final SecureRandom RANDOM = new SecureRandom();
     private static final DDDesktopTokenManager INSTANCE = new DDDesktopTokenManager(
         DDDesktopTokenStore.INSTANCE, new DDDesktopTokenValidator(), new DDDesktopSsoLogin());
 
@@ -205,16 +202,8 @@ class DDDesktopTokenManager {
             throw new DBException("DataDam authorization cannot be refreshed. Sign in again");
         }
         log.debug("Refreshing DataDam desktop token");
-        if (current.nextRefreshToken() == null) {
-            byte[] bytes = new byte[DDSsoConstants.OPAQUE_VALUE_BYTES];
-            RANDOM.nextBytes(bytes);
-            current = new DDDesktopUserToken(current.accessToken(), current.issuer(), current.endpoints(), current.scopes(),
-                refreshToken, Base64.getUrlEncoder().withoutPadding().encodeToString(bytes));
-            // Persist both secrets before sending: a response lost after rotation must survive restart.
-            saveToken(current);
-        }
         try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(DDEndpoints.getSsoBaseUrl()))) {
-            var response = client.refresh(refreshToken, DDSsoScopes.format(current.scopes()), current.nextRefreshToken());
+            var response = client.refresh(refreshToken, DDSsoScopes.format(current.scopes()));
             DDDesktopUserToken rotated = new DDDesktopUserToken(
                 response.accessToken(), validator.getIssuer(response.accessToken()), current.endpoints(), current.scopes(), response.refreshToken());
             if (!validator.matchesIssuer(rotated)) {
