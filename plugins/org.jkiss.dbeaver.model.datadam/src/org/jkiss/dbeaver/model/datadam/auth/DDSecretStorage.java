@@ -47,6 +47,11 @@ public final class DDSecretStorage implements DBSSecretController {
         return INSTANCE;
     }
 
+    /** Checks the secure-storage index without decrypting a value. */
+    public static boolean hasStoredSecret(@NotNull String secretId) throws DBException {
+        return INSTANCE.defaultController.listSecrets(null).stream().anyMatch(secret -> secretId.equals(secret.getName()));
+    }
+
     @Nullable
     @Override
     public String getPrivateSecretValue(@NotNull String secretId) throws DBException {

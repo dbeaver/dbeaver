@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoLogin;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.net.URI;
 import java.time.Instant;
@@ -43,13 +42,13 @@ class DDDesktopTokenManager {
     public enum Status { SIGNED_OUT, SIGNED_IN, INVALID_TOKEN }
 
     private static final Log log = Log.getLog(DDDesktopTokenManager.class);
-    private static final String PREF_LOGGED_IN = "datadam.desktop.sso.logged-in";
     private static final DDDesktopTokenManager INSTANCE = new DDDesktopTokenManager(
         DDDesktopTokenStore.INSTANCE, new DDDesktopTokenValidator(), new DDDesktopSsoLogin());
 
     private final DDDesktopTokenStore store;
     private final DDDesktopTokenValidator validator;
     private final DDDesktopSsoLogin login;
+    private volatile boolean sessionPresent;
     @Nullable
     private volatile DDDesktopUserToken token;
 
@@ -69,12 +68,11 @@ class DDDesktopTokenManager {
 
     @NotNull
     Status getStatus() {
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
-            return Status.SIGNED_OUT;
-        }
         var current = token;
-        return current == null || (validator.isExpired(current) && current.refreshToken() == null)
-            ? Status.INVALID_TOKEN : Status.SIGNED_IN;
+        if (current == null) {
+            return sessionPresent ? Status.INVALID_TOKEN : Status.SIGNED_OUT;
+        }
+        return validator.isExpired(current) && current.refreshToken() == null ? Status.INVALID_TOKEN : Status.SIGNED_IN;
     }
 
     @Nullable
@@ -91,7 +89,9 @@ class DDDesktopTokenManager {
     }
 
     synchronized void load(@NotNull URI resource) throws DBException {
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
+        // The token is shared by workspaces; checking its key does not decrypt its value.
+        sessionPresent = store.hasSavedToken();
+        if (!sessionPresent) {
             return;
         }
         log.debug("Loading DataDam desktop token");
@@ -129,12 +129,10 @@ class DDDesktopTokenManager {
 
     @NotNull
     private DDDesktopUserToken requireSignedInToken() throws DBException {
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
-            throw new DBException("Sign in to DataDam first");
-        }
         DDDesktopUserToken current = token;
         if (current == null) {
-            throw new DBException("DataDam authorization is invalid. Sign in again");
+            throw new DBException(sessionPresent
+                ? "DataDam authorization is invalid. Sign in again" : "Sign in to DataDam first");
         }
         return current;
     }
@@ -200,16 +198,16 @@ class DDDesktopTokenManager {
     private synchronized void saveToken(@NotNull DDDesktopUserToken saved) throws DBException {
         store.save(saved);
         token = saved;
+        sessionPresent = true;
         log.debug("Stored DataDam desktop token");
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, true);
     }
 
     synchronized void signOut() throws DBException {
         log.debug("Signing out of DataDam desktop access");
         DDDesktopUserToken previous = token;
         try {
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
             token = null;
+            sessionPresent = false;
             store.clear();
             log.debug("Cleared DataDam desktop token");
         } finally {
