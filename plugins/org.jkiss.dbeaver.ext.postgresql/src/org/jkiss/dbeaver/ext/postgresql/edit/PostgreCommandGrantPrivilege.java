@@ -249,8 +249,9 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
      * The PUBLIC pseudo-role is a PostgreSQL keyword and must never be quoted:
      * {@code GRANT SELECT ON TABLE mytab TO PUBLIC}.
      * Role names come from the catalog and are compared case-sensitively. The pseudo-role is
-     * always {@code public} there (lowercase {@code public} is reserved for real roles), while a real
-     * role named {@code PUBLIC} is quoted: {@code GRANT SELECT ON TABLE mytab TO "PUBLIC"}.
+     * always {@code public} there (PostgreSQL reserves that name, so no real role can have it), while a
+     * real role named {@code PUBLIC} is quoted: {@code GRANT SELECT ON TABLE mytab TO "PUBLIC"}.
+     * The keyword is written in uppercase, as pg_dump does; unquoted, {@code public} would work too.
      */
     @NotNull
     private static String getGranteeName(@NotNull PostgrePrivilegeOwner object, @Nullable String roleName) {
