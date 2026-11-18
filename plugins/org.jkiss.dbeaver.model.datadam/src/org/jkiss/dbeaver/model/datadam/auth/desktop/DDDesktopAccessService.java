@@ -93,6 +93,10 @@ public class DDDesktopAccessService {
         }
     }
 
+    public boolean hasKeyBundle() {
+        return getStatus() == Status.SIGNED_IN && keyBundle != null;
+    }
+
     @Nullable
     public UUID getAccountId() {
         DDKeyBundle bundle = getKeyBundle();
