@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.time.Duration;
+import java.util.Map;
 
 public record QMAIMessageMeta(
     @NotNull String type,
@@ -30,6 +31,25 @@ public record QMAIMessageMeta(
     int totalInputTokens,
     int cachedTokens,
     int totalOutputTokens,
-    int reasoningTokens
+    int reasoningTokens,
+    @NotNull Map<String, String> responseMetadata
 ) {
+    public QMAIMessageMeta {
+        responseMetadata = responseMetadata == null ? Map.of() : Map.copyOf(responseMetadata);
+    }
+
+    public QMAIMessageMeta(
+        @NotNull String type,
+        @NotNull String engineId,
+        @Nullable String modelId,
+        int systemPromptLength,
+        @NotNull Duration timeSpent,
+        int totalInputTokens,
+        int cachedTokens,
+        int totalOutputTokens,
+        int reasoningTokens
+    ) {
+        this(type, engineId, modelId, systemPromptLength, timeSpent, totalInputTokens, cachedTokens, totalOutputTokens,
+            reasoningTokens, Map.of());
+    }
 }

@@ -8,6 +8,9 @@
     <extension point="org.jkiss.dbeaver.model.datadam.desktopMcpFunction">
         <function
             id="listDatasources"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
             name="List datasources"
             description="Lists database connections allowed for DataDam MCP calls. requires_manual_connection is an advisory hint that authentication may be needed if a database call fails; calls can still be attempted."
             class="org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListDatasourcesFunction"/>

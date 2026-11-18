@@ -86,6 +86,7 @@ public final class DBUtils {
                     }
                 } else {
                     log.debug("Path index item " + indexItem.index() + " is out of range for " + arg);
+                    return DBDVoid.INSTANCE;
                 }
             } else {
                 log.debug("Cannot apply path index item to " + arg);
@@ -891,6 +892,9 @@ public final class DBUtils {
         int i = 1;
         while (value != null && i < valuePath.pathItems().size()) {
             value = valuePath.pathItems().get(i).apply(RSV_PATH_ITEM_VALUE_RESOLVER, value);
+            if (value == DBDVoid.INSTANCE) {
+                return value;
+            }
             i++;
         }
         if (i < valuePath.pathItems().size()) {
@@ -2948,7 +2952,8 @@ public final class DBUtils {
         StringTokenizer st = new StringTokenizer(arrayString, ",", false);
         while (st.hasMoreTokens()) {
             String token = st.nextToken().trim();
-            if (token.startsWith("\"") && token.endsWith("\"")) {
+            // A lone quote (e.g. left after splitting a quoted element that contains a comma) must stay as is
+            if (token.length() > 1 && token.startsWith("\"") && token.endsWith("\"")) {
                 token = token.substring(1, token.length() - 1);
             }
             items.add(token);

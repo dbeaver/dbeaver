@@ -175,6 +175,12 @@ public class SQLQueryModelRecognizer {
     @Nullable
     public SQLQueryModelContent recognizeQueryBody(@NotNull STMTreeNode queryBodyNode) {
         STMTreeNode queryNode = queryBodyNode.findFirstNonErrorChild();
+        if (queryNode != null && queryNode.getNodeKindId() == SQLStandardParser.RULE_explainStatement) {
+            queryNode = queryNode.findFirstChildOfName(STMKnownRuleNames.explainableSqlQueryBody);
+        }
+        if (queryNode != null && queryNode.getNodeKindId() == SQLStandardParser.RULE_explainableSqlQueryBody) {
+            queryNode = queryNode.findFirstNonErrorChild();
+        }
         if (queryNode == null) {
             return null;
         }
@@ -186,7 +192,7 @@ public class SQLQueryModelRecognizer {
                     case SQLStandardParser.RULE_deleteStatement -> SQLQueryDeleteModel.recognize(this, stmtBodyNode);
                     case SQLStandardParser.RULE_insertStatement -> SQLQueryInsertModel.recognize(this, stmtBodyNode);
                     case SQLStandardParser.RULE_updateStatement -> SQLQueryUpdateModel.recognize(this, stmtBodyNode);
-                    default -> this.collectQueryExpression(queryBodyNode);
+                    default -> this.collectQueryExpression(queryNode);
                 };
             }
             case SQLStandardParser.RULE_sqlSchemaStatement -> {
@@ -210,7 +216,9 @@ public class SQLQueryModelRecognizer {
                 SQLQueryProgrammaticalStatementModel.recognize(this, queryNode);
             case SQLStandardParser.RULE_localRelationDeclaration, SQLStandardParser.RULE_cursorDeclaration,
                 SQLStandardParser.RULE_cursorOperation -> SQLQueryStatementModel.recognize(this, queryNode);
-            case SQLStandardParser.RULE_selectStatementSingleRow -> this.collectQueryExpression(queryBodyNode);
+            case SQLStandardParser.RULE_selectStatementSingleRow -> this.collectQueryExpression(queryNode);
+            case SQLStandardParser.RULE_explicitTable, SQLStandardParser.RULE_tableValueConstructor ->
+                this.collectQueryExpression(queryNode);
             case SQLStandardParser.RULE_callStatement -> SQLQueryCallModel.recognize(this, queryNode);
             default -> null;
         };

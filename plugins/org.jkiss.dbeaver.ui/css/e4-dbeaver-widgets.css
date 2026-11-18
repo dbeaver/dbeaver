@@ -1,3 +1,6 @@
-Label.dbeaverFormHint {
+Label.dbeaverFormHint,
+.dbeaverFormHint Label,
+.dbeaverFormHint CLabel,
+.dbeaverFormHint StyledText {
     color: #666666;
 }

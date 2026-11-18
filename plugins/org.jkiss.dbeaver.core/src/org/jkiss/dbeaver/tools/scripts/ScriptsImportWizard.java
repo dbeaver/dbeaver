@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,10 +42,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 
 public class ScriptsImportWizard extends Wizard implements IImportWizard {
 
@@ -97,13 +99,13 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
 
     private int importScripts(DBRProgressMonitor monitor, ScriptsImportData importData) throws IOException, CoreException
     {
-        List<Pattern> masks = new ArrayList<>();
+        List<PathMatcher> masks = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(importData.getFileMasks(), ",; "); //$NON-NLS-1$
         while (st.hasMoreTokens()) {
             String mask = st.nextToken().trim();
             if (!CommonUtils.isEmpty(mask)) {
-                mask = mask.replace("*", ".*"); //$NON-NLS-1$ //$NON-NLS-2$
-                masks.add(Pattern.compile(mask));
+                // Masks are file name wildcards, not regular expressions (e.g. '.' in "*.sql" is a literal dot)
+                masks.add(FileSystems.getDefault().getPathMatcher("glob:" + mask)); //$NON-NLS-1$
             }
         }
         List<File> filesToImport = new ArrayList<>();
@@ -169,7 +171,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         return imported;
     }
 
-    private void collectFiles(File inputDir, List<Pattern> masks, List<File> filesToImport)
+    private void collectFiles(File inputDir, List<PathMatcher> masks, List<File> filesToImport)
     {
         File[] listFiles = inputDir.listFiles();
         if (listFiles == null) {
@@ -181,8 +183,9 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
                 collectFiles(file, masks, filesToImport);
             } else {
                 boolean matched = false;
-                for (Pattern mask : masks) {
-                    if (mask.matcher(file.getName()).matches()) {
+                Path fileName = Path.of(file.getName());
+                for (PathMatcher mask : masks) {
+                    if (mask.matches(fileName)) {
                         matched = true;
                         break;
                     }

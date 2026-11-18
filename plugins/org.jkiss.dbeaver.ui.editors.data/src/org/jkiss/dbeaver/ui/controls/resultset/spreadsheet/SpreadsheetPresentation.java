@@ -17,9 +17,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -116,6 +114,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private static final int MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH = 1000;
 
     private Spreadsheet spreadsheet;
+    private final ResultSetColumnFilter columnFilter = new ResultSetColumnFilter();
 
     private SpreadsheetFindReplaceTarget findReplaceTarget;
     private ResultsetFindReplaceOverlay findReplaceOverlay;
@@ -165,6 +164,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return spreadsheet;
     }
 
+    @NotNull
+    ResultSetColumnFilter getColumnFilter() {
+        return columnFilter;
+    }
+
+    public void resetColumnFilter() {
+        columnFilter.disable();
+        columnFilter.restore(controller.getModel());
+        SpreadsheetColumnFilterHandler.refreshElements(controller);
+    }
+
     @Override
     public boolean isDirty() {
         return activeInlineEditor != null &&
@@ -204,6 +214,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
             new GridLabelProvider(),
             this);
         this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        ResultSetListenerAdapter columnFilterListener = new ResultSetListenerAdapter() {
+            @Override
+            public void handleResultSetChange() {
+                if (!spreadsheet.isDisposed() && columnFilter.apply(controller.getModel())) {
+                    refreshGrid(true, true);
+                }
+            }
+        };
+        controller.addListener(columnFilterListener);
+        spreadsheet.addDisposeListener(e -> controller.removeListener(columnFilterListener));
 
         this.spreadsheet.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN && e.data != null) {
@@ -959,6 +980,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (spreadsheet.isDisposed()) {
             return;
         }
+        // Includes fetched segments and quick-filter changes, which can alter whether a column contains data.
+        refreshMetadata |= columnFilter.apply(controller.getModel());
+        refreshGrid(refreshMetadata, keepState);
+    }
+
+    private void refreshGrid(boolean refreshMetadata, boolean keepState) {
         isHighContrastTheme = UIStyles.isHighContrastTheme();
 
         // Cache preferences
@@ -1032,6 +1059,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     @Override
     public void clearMetaData() {
+        columnFilter.restore(controller.getModel());
         this.curAttribute = null;
         if (this.columnOrder != SWT.NONE) {
             this.columnOrder = SWT.DEFAULT;
@@ -1164,7 +1192,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 {
                     // Hide/show
-                    if (getController().getModel().getDataFilter().hasHiddenAttributes()) {
+                    if (getController().getModel().getDataFilter().hasHiddenAttributes() || columnFilter.hasHiddenColumns()) {
                         manager.insertAfter(
                             IResultSetController.MENU_GROUP_ADDITIONS,
                             ActionUtils.makeCommandContribution(
@@ -1183,15 +1211,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     } else {
                         hideTitle = NLS.bind(ResultSetMessages.controls_resultset_viewer_hide_columns_x, selectedColumns.size());
                     }
-                    manager.insertAfter(
-                        IResultSetController.MENU_GROUP_ADDITIONS, 
-                        ActionUtils.makeCommandContribution(
-                            controller.getSite(),
-                            SpreadsheetCommandHandler.CMD_HIDE_COLUMNS,
-                            hideTitle,
-                            null
-                        )
+                    CommandContributionItem hideColumns = ActionUtils.makeCommandContribution(
+                        controller.getSite(),
+                        SpreadsheetCommandHandler.CMD_HIDE_COLUMNS,
+                        hideTitle,
+                        null
                     );
+                    hideColumns.setId(SpreadsheetCommandHandler.CMD_HIDE_COLUMNS);
+                    manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, hideColumns);
                 }
             }
         }
@@ -1220,13 +1247,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
         }
-        if (rowObject == null) {
+        if (rowObject == null || controller.getModel().getVisibleAttributes().isEmpty()) {
+            var hideEmptyMenu = new MenuManager(
+                ActionUtils.findCommandName(SpreadsheetCommandHandler.CMD_COLUMNS_HIDE_EMPTY),
+                SpreadsheetCommandHandler.CMD_COLUMNS_HIDE_EMPTY);
+            var hideEmptyAnchor = manager.find(SpreadsheetCommandHandler.CMD_HIDE_COLUMNS) == null
+                ? IResultSetController.MENU_GROUP_ADDITIONS
+                : SpreadsheetCommandHandler.CMD_HIDE_COLUMNS;
+            manager.insertAfter(hideEmptyAnchor, hideEmptyMenu);
             if (!controller.getModel().getVisibleAttributes().isEmpty()) {
-                manager.insertAfter(
-                    IResultSetController.MENU_GROUP_ADDITIONS,
-                    ActionUtils.makeCommandContribution(
-                        controller.getSite(),
-                        SpreadsheetCommandHandler.CMD_COLUMNS_HIDE_EMPTY));
                 manager.insertAfter(
                     IResultSetController.MENU_GROUP_ADDITIONS,
                     ActionUtils.makeCommandContribution(

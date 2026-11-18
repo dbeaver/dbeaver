@@ -217,8 +217,12 @@ options {
 // root rule for script
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
 sqlQuery: (variableStatement+ sqlQueryBody?|sqlQueryBody) anyWord??;
-sqlQueryBody: directSqlDataStatement|anonymousBlockStatement|localRelationDeclaration|cursorDeclaration|cursorOperation|
-    callStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow;
+sqlQueryBody: explainableSqlQueryBody|explainStatement|anonymousBlockStatement|localRelationDeclaration|cursorOperation|
+    sqlTransactionStatement|sqlSessionStatement;
+// Keep the explainable subset separate from session and transaction statements. The wrapper
+// preserves EXPLAIN as a statement while retaining the explained SQL for semantic analysis.
+explainableSqlQueryBody: directSqlDataStatement|callStatement|sqlSchemaStatement|cursorDeclaration|
+    selectStatementSingleRow|explicitTable|tableValueConstructor;
 variableStatement: {!isProceduralDeclarationAhead()}? variableDeclarationStatement|variableAssignmentStatement;
 variableDeclarationStatement: DECLARE (OR REPLACE)? VARIABLE? variableDeclaration (Comma variableDeclaration)*;
 variableDeclaration: variableName dataType? variableInitializer?;
@@ -654,11 +658,11 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     INDEX | MATERIALIZED | ROLE | SEQUENCE | SYNONYM | AFTER | BEFORE | ATOMIC | BLOCK |
     CATCH | CLOSE | CURSOR | DEALLOCATE | DEFINER | EACH | ELSIF | FETCH | FIRST | FOR | HANDLER |
     INSTEAD | LANGUAGE | LAST | NEXT | OPEN | PRIOR | PROC | RECREATE | RELATIVE |
-    NEW | OLD | REFERENCING | RETURN | RETURNS | ROW | SIGNAL | TRIGGER | TRY |
+    NEW | OLD | REFERENCING | RETURN | RETURNS | ROW | SIGNAL | TRIGGER | TRY | EXPLAIN | QUERY | PLAN |
     TRIM | BOTH | LEADING | TRAILING
 ;
 
-// Keep new rules below the existing ones so their generated rule ids remain stable.
+// Keep the procedural rules below in their existing relative order.
 routineArgument: {namedRoutineArgumentAhead()}? signatureModifier* identifier signatureModifier* dataType typeModifier* signatureModifier* routineParameterDefault?
     | signatureModifier* dataType typeModifier*;
 // Routine options can precede or follow the body; return declarations belong only to the preamble.
@@ -774,6 +778,20 @@ routineResultField: {namedRoutineArgumentAhead()}? identifier dataType typeModif
 routineTrailing: routineBody routineDefinitionExtension*;
 // A declaration section cannot consume the BEGIN block it is supposed to precede.
 proceduralDeclaration: localVariableDeclaration|cursorDeclaration|localRelationDeclaration|localRoutineDeclaration;
+explainStatement: EXPLAIN explainOption* (explainableSqlQueryBody|explainTarget);
+explainOption: QUERY PLAN                        // SQLite
+    | PLAN                                      // Oracle, DB2, HANA, ClickHouse
+    | FOR (SCHEMA|DATABASE) identifier          // MySQL
+    | FOR                                       // Oracle, DB2, HANA, H2
+    | SET anyWord EqualsOperator explainOptionValue // Oracle, DB2
+    | INTO (qualifiedName|variableExpression)  // Oracle, MySQL
+    | USING anyWord                             // Snowflake
+    | LeftParen explainOptionItem (Comma explainOptionItem)* RightParen // PostgreSQL, Trino, CockroachDB
+    | explainOptionItem;                        // MySQL, MariaDB, Hive, Spark, ClickHouse, etc.
+explainOptionItem: anyWord (EqualsOperator? explainOptionValue)?;
+explainOptionValue: anyWord|literal|TRUE|FALSE|ON;
+explainTarget: qualifiedName (identifier|StringLiteralContent|Asterisk)? // EXPLAIN table [column or wildcard]
+    | FOR anyWord UnsignedInteger;              // MySQL/MariaDB/TiDB FOR CONNECTION
 
 // TRIM specification words became tokens, but parameter and attribute names after a colon may still use them.
 colonIdentifier: Identifier|TRIM|BOTH|LEADING|TRAILING;

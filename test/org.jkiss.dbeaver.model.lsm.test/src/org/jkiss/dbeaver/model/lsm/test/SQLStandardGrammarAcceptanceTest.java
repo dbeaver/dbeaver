@@ -50,6 +50,32 @@ import java.util.stream.Stream;
 
 public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
     private static final List<GrammarCase> CASES = List.of(
+        new GrammarCase("dbeaver/pro#11759 SQLite query plan", "EXPLAIN QUERY PLAN SELECT * FROM Album;"),
+        new GrammarCase("dbeaver/pro#11759 SQLite explain", "EXPLAIN SELECT * FROM Album;"),
+        new GrammarCase("dbeaver/pro#11759 query plan identifiers", "SELECT query, plan, explain FROM Album;"),
+        new GrammarCase("PostgreSQL options", "EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON, TIMING OFF) SELECT * FROM Album;"),
+        new GrammarCase("PostgreSQL legacy", "EXPLAIN ANALYZE VERBOSE SELECT * FROM Album;"),
+        new GrammarCase("Oracle plan", "EXPLAIN PLAN SET STATEMENT_ID = 'album' INTO plan_table FOR SELECT * FROM Album;"),
+        new GrammarCase("DB2 plan", "EXPLAIN PLAN SET QUERYNO = 42 FOR SELECT * FROM Album;"),
+        new GrammarCase("HANA and H2 plan", "EXPLAIN PLAN FOR SELECT * FROM Album;"),
+        new GrammarCase("MySQL format and schema", "EXPLAIN FORMAT=JSON FOR SCHEMA music SELECT * FROM Album;"),
+        new GrammarCase("MySQL JSON variable", "EXPLAIN FORMAT=JSON INTO @plan SELECT * FROM Album;"),
+        new GrammarCase("MySQL analyze", "EXPLAIN ANALYZE FORMAT=TREE SELECT * FROM Album;"),
+        new GrammarCase("MySQL connection", "EXPLAIN FORMAT=JSON FOR CONNECTION 42;"),
+        new GrammarCase("MySQL table description", "EXPLAIN Album title;"),
+        new GrammarCase("MariaDB partitions", "EXPLAIN PARTITIONS SELECT * FROM Album;"),
+        new GrammarCase("Snowflake output", "EXPLAIN USING TABULAR SELECT * FROM Album;"),
+        new GrammarCase("ClickHouse plan", "EXPLAIN PLAN json=1 SELECT * FROM Album;"),
+        new GrammarCase("ClickHouse pipeline", "EXPLAIN PIPELINE graph=1 SELECT * FROM Album;"),
+        new GrammarCase("TiDB format", "EXPLAIN FORMAT = \"brief\" SELECT * FROM Album;"),
+        new GrammarCase("Vertica verbose", "EXPLAIN VERBOSE JSON SELECT * FROM Album;"),
+        new GrammarCase("Hive formatted", "EXPLAIN FORMATTED SELECT * FROM Album;"),
+        new GrammarCase("Spark extended", "EXPLAIN EXTENDED SELECT * FROM Album;"),
+        new GrammarCase("Trino distributed", "EXPLAIN (TYPE DISTRIBUTED, FORMAT JSON) SELECT * FROM Album;"),
+        new GrammarCase("Redshift verbose", "EXPLAIN VERBOSE SELECT * FROM Album;"),
+        new GrammarCase("SQLite explained DML", "EXPLAIN QUERY PLAN UPDATE Album SET title = 'new';"),
+        new GrammarCase("Oracle explained DDL", "EXPLAIN PLAN FOR CREATE TABLE Album (id integer);"),
+        new GrammarCase("PostgreSQL explained CTE", "EXPLAIN (FORMAT JSON) WITH a AS (SELECT * FROM Album) SELECT * FROM a;"),
         new GrammarCase("dbeaver#37939 GENERATED identity with UNIQUE", """
             CREATE TABLE IF NOT EXISTS requirements (
               id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

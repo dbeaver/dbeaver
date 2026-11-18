@@ -50,7 +50,7 @@ public class DDDesktopAccessService {
     private final List<DDDesktopAccessListener> accessListeners = new CopyOnWriteArrayList<>();
     private final URI accountUrl = URI.create(DDEndpoints.getAccountBaseUrl());
     private final URI storageUrl = URI.create(DDEndpoints.getStorageBaseUrl());
-    private final DDAccountClient accountClient = new DDAccountClient(accountUrl);
+    private final DDAccountClient accountClient = new DDAccountClient(accountUrl, this);
     private final DDDesktopUserService userService;
     private volatile boolean loaded;
     @Nullable
