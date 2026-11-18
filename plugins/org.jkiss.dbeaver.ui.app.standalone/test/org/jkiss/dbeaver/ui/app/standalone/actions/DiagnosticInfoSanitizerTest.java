@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.app.standalone.actions;
 
 import org.jkiss.code.NotNull;
 
-import java.util.List;
 import java.util.Map;
 
 /** Standalone regression checks; compile alongside the sanitizer and run without an Eclipse application. */
@@ -83,10 +82,10 @@ public class DiagnosticInfoSanitizerTest {
             "Initiate connection pool with management database (H2 Embedded; [REDACTED])");
         check(sanitizer,
             "Transfer data from \"public.orders@postgres (2)\" into \"archive.orders [Existing]\"",
-            "Transfer data from \"public.orders@postgres (2)\" into \"archive.orders [Existing]\"");
+            "Transfer data from \"[REDACTED]@postgres (2)\" into \"[REDACTED] [Existing]\"");
         check(sanitizer,
             "Transfer data from \"public.orders@db.example.test\" into \"archive.orders [Existing]\" host=db.example.test",
-            "Transfer data from \"public.orders@[REDACTED]\" into \"archive.orders [Existing]\" host=[REDACTED]");
+            "Transfer data from \"[REDACTED]@[REDACTED]\" into \"[REDACTED] [Existing]\" host=[REDACTED]");
         check(sanitizer,
             "password=secret token=private host=192.168.1.10 https://user:pass@db.example.test/db /home/bob/workspace",
             "password=[REDACTED] token=[REDACTED] host=[REDACTED] [REDACTED] [REDACTED]");
@@ -97,7 +96,7 @@ public class DiagnosticInfoSanitizerTest {
             "org.osgi.framework.system.packages=java.lang,private_token\n"
                 + "Transfer data from \"public.private_token@postgres\" into \"archive.orders [Existing]\"",
             "org.osgi.framework.system.packages=java.lang,[REDACTED]\n"
-                + "Transfer data from \"public.[REDACTED]@postgres\" into \"archive.orders [Existing]\"");
+                + "Transfer data from \"public.[REDACTED]@postgres\" into \"[REDACTED] [Existing]\"");
         check(sanitizer,
             "Transfer data from \"SELECT * FROM jobs WHERE endpoint = 'private.customer.example'\" into \"archive.orders\"",
             "Transfer data from \"SELECT * FROM jobs WHERE endpoint = '[REDACTED]'\" into \"[REDACTED]\"");
@@ -106,29 +105,20 @@ public class DiagnosticInfoSanitizerTest {
                 + "com.acme.key=\"value;private.customer.example,other.customer.example\",com.acme.other",
             "org.osgi.framework.system.capabilities.extra=com.acme.feature;endpoint=[REDACTED];"
                 + "com.acme.key=\"value;[REDACTED],[REDACTED]\",com.acme.other");
-        DiagnosticInfoSanitizer localized = new DiagnosticInfoSanitizer(Map.of(), List.of(
-            "Transférer les données de « {0} » vers « {1} »",
-            "Преобразовать данные из \"{0}\" в \"{1}\"",
-            "「{0}」から「{1}」にデータを転送"
-        ));
-        check(localized,
-            "Transférer les données de « public.orders@db.example.test » vers « archive.orders [Existing] »",
-            "Transférer les données de « public.orders@[REDACTED] » vers « archive.orders [Existing] »");
-        check(localized, "Преобразовать данные из \"public.orders@postgres\" в \"archive.orders [Existing]\"",
-            "Преобразовать данные из \"public.orders@postgres\" в \"archive.orders [Existing]\"");
-        check(localized, "「public.orders@postgres」から「archive.orders [Create]」にデータを転送",
-            "「public.orders@postgres」から「archive.orders [Create]」にデータを転送");
-        check(localized,
+        check(sanitizer,
             "Transférer les données de « SELECT * FROM jobs WHERE endpoint = 'private.customer.example'@postgres » "
                 + "vers « archive.orders [Existing] »",
             "Transférer les données de « SELECT * FROM jobs WHERE endpoint = '[REDACTED]'@postgres » "
-                + "vers « archive.orders [Existing] »");
+                + "vers « [REDACTED] [Existing] »");
         check(sanitizer,
             "Transfer data from \"private.customer.example\" into \"archive.orders [Existing]\"",
-            "Transfer data from \"[REDACTED]\" into \"archive.orders [Existing]\"");
+            "Transfer data from \"[REDACTED]\" into \"[REDACTED] [Existing]\"");
         check(sanitizer,
             "Transfer data from \"public.orders@postgres\" into \"private.customer.example\"",
-            "Transfer data from \"public.orders@postgres\" into \"[REDACTED]\"");
+            "Transfer data from \"[REDACTED]@postgres\" into \"[REDACTED]\"");
+        check(sanitizer,
+            "Transfer data from \"private.customer.example@backup\" into \"private.customer.example [Existing]\"",
+            "Transfer data from \"[REDACTED]@backup\" into \"[REDACTED] [Existing]\"");
     }
 
     private static void check(@NotNull DiagnosticInfoSanitizer sanitizer, @NotNull String input, @NotNull String expected) {

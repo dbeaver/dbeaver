@@ -60,7 +60,6 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
-import org.osgi.framework.Bundle;
 
 import java.io.BufferedReader;
 import java.io.FilterInputStream;
@@ -76,7 +75,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -141,8 +139,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         checkCanceled(monitor);
         ProgressPlan plan = planProgress(entries);
         monitor.beginTask(CoreApplicationMessages.collect_diagnostic_info_progress_title, plan.totalWork());
-        DiagnosticInfoSanitizer sanitizer = sanitizeLogs
-            ? new DiagnosticInfoSanitizer(System.getenv(), getTransferTaskFormats()) : null;
+        DiagnosticInfoSanitizer sanitizer = sanitizeLogs ? new DiagnosticInfoSanitizer() : null;
         boolean completed = false;
         boolean archiveCreated = false;
         try {
@@ -212,31 +209,6 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
                 Files.deleteIfExists(archive);
             }
         }
-    }
-
-    @NotNull
-    private static List<String> getTransferTaskFormats() {
-        List<String> formats = new ArrayList<>();
-        Bundle bundle = Platform.getBundle("org.jkiss.dbeaver.data.transfer");
-        if (bundle != null) {
-            // Read all locales because task logs may predate a change of the application's language.
-            var resources = bundle.findEntries("org/jkiss/dbeaver/tools/transfer/internal", "DTMessages*.properties", false);
-            if (resources != null) {
-                while (resources.hasMoreElements()) {
-                    try (var reader = new InputStreamReader(resources.nextElement().openStream(), StandardCharsets.UTF_8)) {
-                        Properties messages = new Properties();
-                        messages.load(reader);
-                        String format = messages.getProperty("data_transfer_wizard_job_container_name");
-                        if (format != null && format.indexOf("{0}") >= 0 && format.indexOf("{1}") > format.indexOf("{0}")) {
-                            formats.add(format);
-                        }
-                    } catch (IOException e) {
-                        log.debug("Cannot read data transfer diagnostic task format", e);
-                    }
-                }
-            }
-        }
-        return formats;
     }
 
     @NotNull

@@ -84,29 +84,14 @@ final class DiagnosticInfoSanitizer {
         "^[\\t ]*org\\.osgi\\.framework\\.system\\.(?:packages(?:\\.extra)?|capabilities(?:\\.extra)?)\\s*="
     );
     private static final Pattern DEBIAN_VERSION = Pattern.compile("\\bDebian[\\t ]+\\d+(?:\\.\\d+)+(?:[-+~][\\w.+~:-]+)*");
-    private static final Pattern OBJECT_LABEL = Pattern.compile(
-        "([\\p{L}_$][\\p{L}\\p{N}_$]*(?:\\.[\\p{L}_$][\\p{L}\\p{N}_$]*)*)(?: \\[(Existing|Create|Recreate|Alter)\\])?"
-    );
 
     private final List<Pattern> environmentValues;
-    private final List<Pattern> transferObjects;
 
     DiagnosticInfoSanitizer() {
         this(System.getenv());
     }
 
     DiagnosticInfoSanitizer(@NotNull Map<String, String> environment) {
-        this(environment, List.of("Transfer data from \"{0}\" into \"{1}\""));
-    }
-
-    DiagnosticInfoSanitizer(@NotNull Map<String, String> environment, @NotNull List<String> transferTaskFormats) {
-        transferObjects = transferTaskFormats.stream().distinct().map(format -> {
-            int source = format.indexOf("{0}");
-            int target = format.indexOf("{1}");
-            return Pattern.compile(Pattern.quote(format.substring(0, source)) + "([^\\r\\n]*?)"
-                + Pattern.quote(format.substring(source + 3, target)) + "([^\\r\\n]*?)"
-                + Pattern.quote(format.substring(target + 3)));
-        }).toList();
         // Longer values first so a short value cannot split a longer secret.
         environmentValues = environment.entrySet().stream()
             // Build numbers, version strings and shell counters are not secrets; replacing them destroys support information.
@@ -180,8 +165,7 @@ final class DiagnosticInfoSanitizer {
                 || isWithin(LAUNCHER_ARGUMENT, beforeDomains, m.start(), m.end())
                 || isWithin(BUNDLE_IDENTIFIER, beforeDomains, m.start(), m.end())
                 || isSystemMetadataIdentifier(beforeDomains, m.start(), m.end())
-                || isWithin(DEBIAN_VERSION, beforeDomains, m.start(), m.end())
-                || isTransferObject(beforeDomains, m.start(), m.end());
+                || isWithin(DEBIAN_VERSION, beforeDomains, m.start(), m.end());
             return isStackFrame(beforeDomains, m.start()) || bundle || propertyName || identifier || metadata
                 ? Matcher.quoteReplacement(m.group()) : REDACTED;
         });
@@ -217,28 +201,6 @@ final class DiagnosticInfoSanitizer {
         while (matcher.find()) {
             if (matcher.start() <= start - lineStart && matcher.end() >= end - lineStart) {
                 return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isTransferObject(@NotNull String text, int start, int end) {
-        String line = lineAt(text, start);
-        int lineStart = text.lastIndexOf('\n', start - 1) + 1;
-        for (Pattern pattern : transferObjects) {
-            Matcher matcher = pattern.matcher(line);
-            while (matcher.find()) {
-                for (int group = 1; group <= matcher.groupCount(); group++) {
-                    String label = matcher.group(group);
-                    int connection = label.indexOf('@');
-                    Matcher object = OBJECT_LABEL.matcher(connection < 0 ? label : label.substring(0, connection));
-                    // Stream transfers use the same task format. Require database-specific label metadata.
-                    if (object.matches() && (group == 1 ? connection >= 0 : object.group(2) != null)
-                        && matcher.start(group) <= start - lineStart
-                        && matcher.start(group) + object.end(1) >= end - lineStart) {
-                        return true;
-                    }
-                }
             }
         }
         return false;
