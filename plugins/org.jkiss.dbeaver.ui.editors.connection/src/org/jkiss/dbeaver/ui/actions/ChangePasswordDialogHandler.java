@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -29,6 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -48,49 +47,42 @@ public class ChangePasswordDialogHandler extends AbstractHandler {
     @Override
     @Nullable
     public Object execute(@NotNull ExecutionEvent executionEvent) throws ExecutionException {
-        final ISelection selection = HandlerUtil.getCurrentSelection(executionEvent);
-        if (!(selection instanceof IStructuredSelection)) {
+        ISelection selection = HandlerUtil.getCurrentSelection(executionEvent);
+        if (selection == null) {
             return null;
         }
-        final DBNNode node = NavigatorUtils.getSelectedNode(selection);
-        if (node instanceof DBNDataSource) {
-            DBNDataSource dataSource = (DBNDataSource) node;
-            DBPDataSourceContainer dataSourceContainer = dataSource.getDataSourceContainer();
-            if (!DBAuthUtils.canChangeCurrentUserPassword(dataSourceContainer)) {
-                return null;
-            }
-            DBPDataSource dbpDataSource = dataSourceContainer.getDataSource();
-            if (dbpDataSource instanceof IAdaptable) {
-                DBAUserPasswordManager changePassword = ((IAdaptable) dbpDataSource).getAdapter(DBAUserPasswordManager.class);
-                if (changePassword != null) {
-                    DBPConnectionConfiguration originalConfiguration =
-                        new DBPConnectionConfiguration(dataSourceContainer.getConnectionConfiguration());
-                    DBPConnectionConfiguration originalActualConfiguration =
-                        new DBPConnectionConfiguration(dataSourceContainer.getActualConnectionConfiguration());
-                    try {
-                        UIUtils.runInProgressService(monitor ->
-                            DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, dataSourceContainer,
-                                (passwordMonitor, userName, newPassword, oldPassword) -> {
-                                    DBPDataSourceContainer registeredDataSource =
-                                        dataSourceContainer.getRegistry().getDataSource(dataSourceContainer.getId());
-                                    if (dataSourceContainer.getDataSource() != dbpDataSource
-                                        || registeredDataSource != dataSourceContainer
-                                        || !DBAuthUtils.canChangeCurrentUserPassword(dataSourceContainer)
-                                        || !originalConfiguration.equals(dataSourceContainer.getConnectionConfiguration())
-                                        || !originalActualConfiguration.equals(dataSourceContainer.getActualConnectionConfiguration())) {
-                                        throw new DBException(
-                                            "The connection or password change permissions have changed. Reopen the dialog.");
-                                    }
-                                    changePassword.changeUserPassword(passwordMonitor, userName, newPassword, oldPassword);
-                                }, !ApplicationPolicyProvider.getInstance().isPolicyEnabled(
-                                    ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT)));
-                    } catch (InvocationTargetException e) {
-                        log.error(e.getTargetException());
-                    } catch (InterruptedException e) {
-                        DBWorkbench.getPlatformUI().showError("Change user password", "User password change error", e);
+        DBNNode node = NavigatorUtils.getSelectedNode(selection);
+        if (!(node instanceof DBNDataSource dataSource)) {
+            return null;
+        }
+        DBPDataSourceContainer container = dataSource.getDataSourceContainer();
+        if (!DBAuthUtils.canChangeCurrentUserPassword(container)) {
+            return null;
+        }
+        DBPDataSource originalDataSource = container.getDataSource();
+        DBAUserPasswordManager passwordManager = DBUtils.getAdapter(DBAUserPasswordManager.class, originalDataSource);
+        if (passwordManager == null) {
+            return null;
+        }
+        DBPConnectionConfiguration originalConfiguration = new DBPConnectionConfiguration(container.getConnectionConfiguration());
+        DBPConnectionConfiguration originalActualConfiguration =
+            new DBPConnectionConfiguration(container.getActualConnectionConfiguration());
+        try {
+            UIUtils.runInProgressService(monitor -> DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, container,
+                (passwordMonitor, userName, newPassword, oldPassword) -> {
+                    if (container.getDataSource() != originalDataSource
+                        || container.getRegistry().getDataSource(container.getId()) != container
+                        || !DBAuthUtils.canChangeCurrentUserPassword(container)
+                        || !originalConfiguration.equals(container.getConnectionConfiguration())
+                        || !originalActualConfiguration.equals(container.getActualConnectionConfiguration())) {
+                        throw new DBException("The connection or password change permissions have changed. Reopen the dialog.");
                     }
-                }
-            }
+                    passwordManager.changeUserPassword(passwordMonitor, userName, newPassword, oldPassword);
+                }, !ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT)));
+        } catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        } catch (InterruptedException e) {
+            DBWorkbench.getPlatformUI().showError("Change user password", "User password change error", e);
         }
         return null;
     }

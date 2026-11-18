@@ -17,11 +17,10 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -31,23 +30,12 @@ public class ChangeUserPasswordPropertyTester extends PropertyTester {
 
     @Override
     public boolean test(@NotNull Object element, @NotNull String property, @NotNull Object[] objects, @Nullable Object expectedValue) {
-        if (!(element instanceof DBNDataSource)) {
+        if (!property.equals("canChangePassword") || !(element instanceof DBNDataSource dataSource)) {
             return false;
         }
-
-        if (property.equals("canChangePassword")) {
-            DBNDataSource dsNode = (DBNDataSource) element;
-            DBPDataSourceContainer dataSourceContainer = dsNode.getDataSourceContainer();
-            if (!DBAuthUtils.canChangeCurrentUserPassword(dataSourceContainer)) {
-                return false;
-            }
-
-            DBPDataSource dataSource = dataSourceContainer.getDataSource();
-            String userName = DBAuthUtils.getCurrentUserName(dataSourceContainer);
-            if (dataSource instanceof IAdaptable) {
-                return ((IAdaptable) dataSource).getAdapter(DBAUserPasswordManager.class) != null && CommonUtils.isNotEmpty(userName);
-            }
-        }
-        return false;
+        DBPDataSourceContainer container = dataSource.getDataSourceContainer();
+        return DBAuthUtils.canChangeCurrentUserPassword(container)
+            && CommonUtils.isNotEmpty(DBAuthUtils.getCurrentUserName(container))
+            && DBUtils.getAdapter(DBAUserPasswordManager.class, container) != null;
     }
 }

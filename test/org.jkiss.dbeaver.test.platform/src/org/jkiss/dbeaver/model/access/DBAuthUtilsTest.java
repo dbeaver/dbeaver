@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -70,6 +71,7 @@ public class DBAuthUtilsTest {
         secretControllers = Mockito.mockStatic(DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
         workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
         workbench.when(DBWorkbench::getPlatformUI).thenReturn(platformUI);
+        workbench.when(DBWorkbench::isDistributed).thenReturn(true);
         secretControllers.when(() -> DBSSecretController.getProjectSecretController(project)).thenReturn(secretController);
         Mockito.when(platform.getApplication()).thenReturn(application);
         Mockito.when(container.getProject()).thenReturn(project);
@@ -221,19 +223,8 @@ public class DBAuthUtilsTest {
 
     @Test
     public void previouslyUnsavedCredentialsAreSerializedWithActualUserAndExistingAuthProperties() throws Exception {
-        Mockito.when(platform.getPreferenceStore()).thenReturn(Mockito.mock(DBPPreferenceStore.class));
-        DBPDataSourceRegistry registry = Mockito.mock(DBPDataSourceRegistry.class);
-        Mockito.when(registry.getPreferenceStore()).thenReturn(Mockito.mock(DBPPreferenceStore.class));
-        Mockito.when(registry.getProject()).thenReturn(project);
-        Mockito.when(project.getId()).thenReturn("s_test-project");
-        DBPDriver driver = Mockito.mock(DBPDriver.class);
-        Mockito.when(driver.getDefaultConnectionProperties()).thenReturn(Map.of());
-        Mockito.when(driver.getFullId()).thenReturn("test-driver");
         configured.setAuthProperty("existing-property", "preserved");
-        DataSourceDescriptor descriptor = Mockito.spy(new DataSourceDescriptor(
-            registry, Mockito.mock(DBPDataSourceConfigurationStorage.class), DataSourceOriginLocal.INSTANCE,
-            "test-connection", driver, configured));
-        Mockito.doReturn(actual).when(descriptor).getActualConnectionConfiguration();
+        DataSourceDescriptor descriptor = createDescriptor();
         Assertions.assertFalse(descriptor.isSavePassword());
 
         Assertions.assertTrue(DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, descriptor, manager));
@@ -245,7 +236,7 @@ public class DBAuthUtilsTest {
         Assertions.assertEquals("connected-user", saved.get("user"));
         Assertions.assertEquals("new-password", saved.get("password"));
         Assertions.assertEquals(Map.of("existing-property", "preserved"), saved.get("properties"));
-        Mockito.verify(registry, Mockito.never()).updateDataSource(Mockito.any(), Mockito.anyBoolean());
+        Mockito.verify(descriptor.getRegistry(), Mockito.never()).updateDataSource(Mockito.any(), Mockito.anyBoolean());
     }
 
     @Test
@@ -325,6 +316,7 @@ public class DBAuthUtilsTest {
 
     @Test
     public void localConnectionKeepsConfigurationPersistence() throws DBException {
+        workbench.when(DBWorkbench::isDistributed).thenReturn(false);
         Mockito.when(project.isUseSecretStorage()).thenReturn(false);
         Mockito.when(container.persistConfiguration()).thenReturn(true);
         Assertions.assertTrue(changePassword());
@@ -334,6 +326,7 @@ public class DBAuthUtilsTest {
 
     @Test
     public void failedLocalSaveStillReportsDatabaseSuccess() throws DBException {
+        workbench.when(DBWorkbench::isDistributed).thenReturn(false);
         Mockito.when(project.isUseSecretStorage()).thenReturn(false);
         Assertions.assertTrue(changePassword());
         Mockito.verify(platformUI).showError(
@@ -356,6 +349,37 @@ public class DBAuthUtilsTest {
         actual.setUserPassword(null);
         Assertions.assertEquals("configured-user", DBAuthUtils.getCurrentUserName(container));
         Assertions.assertEquals("configured-password", DBAuthUtils.getCurrentUserPassword(container));
+    }
+
+    @Test
+    public void standaloneSecureStorageKeepsConfigurationPersistenceAndConfiguredUserName() throws DBException {
+        workbench.when(DBWorkbench::isDistributed).thenReturn(false);
+        Mockito.when(container.persistConfiguration()).thenReturn(true);
+        configured.setUserName("${env:DB_USER}");
+
+        Assertions.assertTrue(changePassword());
+
+        Mockito.verify(container).persistConfiguration();
+        Mockito.verify(container, Mockito.never()).persistSecrets(Mockito.any());
+        Mockito.verify(container).setSavePassword(true);
+        InOrder saveOrder = Mockito.inOrder(container, secretController);
+        saveOrder.verify(container).persistConfiguration();
+        saveOrder.verify(secretController).flushChanges();
+        Assertions.assertEquals("${env:DB_USER}", configured.getUserName());
+    }
+
+    @Test
+    public void standaloneSecretFlushFailureReportsSaveFailureAfterDatabaseSuccess() throws DBException {
+        workbench.when(DBWorkbench::isDistributed).thenReturn(false);
+        Mockito.when(container.persistConfiguration()).thenReturn(true);
+        DBException failure = new DBException("Secure storage could not be flushed");
+        Mockito.doThrow(failure).when(secretController).flushChanges();
+
+        Assertions.assertTrue(changePassword());
+
+        Mockito.verify(platformUI).showError(
+            ModelMessages.dialog_user_password_change_label, ModelMessages.dialog_user_password_change_save_error_message, failure);
+        Assertions.assertEquals("new-password", actual.getUserPassword());
     }
 
     private boolean changePassword() {

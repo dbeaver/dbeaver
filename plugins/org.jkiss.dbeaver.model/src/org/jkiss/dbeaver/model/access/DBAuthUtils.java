@@ -111,7 +111,7 @@ public class DBAuthUtils {
             try {
                 connectionInfo.setUserPassword(newPassword);
                 dataSourceContainer.setSavePassword(true);
-                if (dataSourceContainer.getProject().isUseSecretStorage()) {
+                if (DBWorkbench.isDistributed()) {
                     DBSSecretController secretController = DBSSecretController.getProjectSecretController(dataSourceContainer.getProject());
                     long requiredFeature = dataSourceContainer.isSharedCredentials()
                         ? DBSSecretController.FEATURE_SHARED_SECRETS_EDIT
@@ -121,8 +121,13 @@ public class DBAuthUtils {
                     }
                     connectionInfo.setUserName(userName);
                     dataSourceContainer.persistSecrets(secretController);
-                } else if (!dataSourceContainer.persistConfiguration()) {
-                    throw new DBException("Could not save the connection credentials");
+                } else {
+                    if (!dataSourceContainer.persistConfiguration()) {
+                        throw new DBException("Could not save the connection credentials");
+                    }
+                    if (dataSourceContainer.getProject().isUseSecretStorage()) {
+                        DBSSecretController.getProjectSecretController(dataSourceContainer.getProject()).flushChanges();
+                    }
                 }
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
