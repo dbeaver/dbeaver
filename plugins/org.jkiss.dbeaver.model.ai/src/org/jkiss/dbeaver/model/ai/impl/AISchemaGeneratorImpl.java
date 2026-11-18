@@ -125,7 +125,11 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSTableIndex index
     ) throws DBException {
-        for (DBSEntityAttributeRef reference : CommonUtils.safeCollection(index.getAttributeReferences(monitor))) {
+        List<? extends DBSEntityAttributeRef> references = index.getAttributeReferences(monitor);
+        if (references == null) {
+            return false;
+        }
+        for (DBSEntityAttributeRef reference : references) {
             DBSEntityAttribute attribute = reference.getAttribute();
             if (attribute != null && (DBUtils.isHiddenObject(attribute) || !options.includesObject(monitor, attribute))) {
                 return false;

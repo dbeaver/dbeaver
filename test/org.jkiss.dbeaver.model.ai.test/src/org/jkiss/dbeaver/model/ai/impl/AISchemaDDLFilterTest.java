@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
@@ -274,6 +275,35 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
         Assertions.assertEquals(first, second);
         Assertions.assertEquals("order index", index.getName());
         Mockito.verify(index, Mockito.times(2)).getAttributeReferences(monitor);
+    }
+
+    @Test
+    public void compactSchemaOmitsGenericIndexWhenColumnMetadataIsUnavailable() throws DBException {
+        DBSTable table = Mockito.mock(AbstractTable.class);
+        Mockito.doReturn(table("orders").getDataSource()).when(table).getDataSource();
+        Mockito.when(table.getName()).thenReturn("orders");
+        Mockito.when(table.getFullyQualifiedName(DBPEvaluationContext.DDL)).thenReturn("orders");
+        Mockito.when(table.getEntityType()).thenReturn(DBSEntityType.TABLE);
+        DBSEntityAttribute column = table("orders").getAttributes(monitor).getFirst();
+        Mockito.doReturn(List.of(column)).when(table).getAttributes(monitor);
+        DBSTableIndex index = index(table, "order index", column);
+        Mockito.doReturn(table).when(index).getTable();
+        DBSTableIndex valid = index(table, "valid_index", column);
+        Mockito.doReturn(table).when(valid).getTable();
+        Mockito.doReturn(List.of(index, valid)).when(table).getIndexes(monitor);
+        Mockito.doReturn(null).when(index).getAttributeReferences(Mockito.any());
+        SQLIndexManager<?, ?> manager = Mockito.mock(TestGenericIndexManager.class, Mockito.CALLS_REAL_METHODS);
+        DBERegistry registry = Mockito.mock(DBERegistry.class);
+        Mockito.doReturn(manager).when(registry).getObjectManager(index.getClass(), SQLObjectEditor.class);
+        Mockito.when(DBWorkbench.getPlatform().getEditorsRegistry()).thenReturn(registry);
+        AISchemaGenerationOptions options = options(false).withSendIndexes(true).build();
+
+        String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table);
+        Assertions.assertTrue(ddl.contains("CREATE TABLE"), ddl);
+        Assertions.assertFalse(ddl.contains("order index"), ddl);
+        Assertions.assertTrue(ddl.contains("CREATE INDEX \"valid_index\""), ddl);
+        Assertions.assertEquals("order index", index.getName());
+        Mockito.verify(index).getAttributeReferences(monitor);
     }
 
     @Test
