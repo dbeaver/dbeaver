@@ -474,6 +474,10 @@ public interface SQLDialect {
         return null;
     }
 
+    default int getExecutableCommentVersionLength(int digits, char following) {
+        return digits;
+    }
+
     /**
      * True if anonymous SQL blocks must be finished with delimiter
      */

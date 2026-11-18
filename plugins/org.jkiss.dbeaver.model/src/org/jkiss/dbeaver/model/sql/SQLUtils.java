@@ -220,6 +220,10 @@ public final class SQLUtils {
                     if (versionLength < 5) {
                         versionEnd = bodyStart;
                         versionLength = 0;
+                    } else if (versionLength == 6) {
+                        char following = startsWith(result, blockComment.getSecond(), versionEnd)
+                            ? 0 : versionEnd < result.length() ? result.charAt(versionEnd) : 0;
+                        versionEnd = bodyStart + dialect.getExecutableCommentVersionLength(versionLength, following);
                     }
                     int version = versionLength == 0 ? 0 : Integer.parseInt(result.substring(bodyStart, versionEnd));
                     Boolean active = dialect.isExecutableCommentActive(executablePrefix, version);

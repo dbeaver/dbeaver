@@ -16,12 +16,29 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class MySQLExecutableCommentsTest {
+    @Test
+    public void versionHeaderMatchesMySqlLexer() throws Exception {
+        String withoutSeparator = "SELECT /*!500001+(SELECT id FROM secret),*/0";
+        for (String serverVersion : new String[]{"8.0.36", "8.4.0"}) {
+            MySQLDialect dialect = dialect(false, serverVersion);
+            Assertions.assertTrue(new TablesNamesFinder<>().getTables(
+                SQLSemanticProcessor.parseQuery(dialect, withoutSeparator)).contains("secret"), serverVersion);
+        }
+        String withSeparator = "SELECT /*!500001 +(SELECT id FROM secret),*/0";
+        Assertions.assertTrue(new TablesNamesFinder<>().getTables(
+            SQLSemanticProcessor.parseQuery(dialect(false, "8.0.36"), withSeparator)).contains("secret"));
+        Assertions.assertTrue(new TablesNamesFinder<>().getTables(
+            SQLSemanticProcessor.parseQuery(dialect(false, "8.4.0"), withSeparator)).isEmpty());
+    }
+
     @Test
     public void evaluatesMySqlVersionBoundariesAndMariaDbOnlyComments() {
         MySQLDialect dialect = dialect(false, "8.0.36");

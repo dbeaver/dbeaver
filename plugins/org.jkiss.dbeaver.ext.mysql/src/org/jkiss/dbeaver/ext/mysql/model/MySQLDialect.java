@@ -420,6 +420,16 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     }
 
     @Override
+    public int getExecutableCommentVersionLength(int digits, char following) {
+        if (digits == 6 && !Boolean.TRUE.equals(mariaDb)
+            && (serverVersion == null || serverVersion.compareTo(new Version(8, 1, 0)) < 0
+                || (following != 0 && !Character.isWhitespace(following)))) {
+            return 5;
+        }
+        return digits;
+    }
+
+    @Override
     public String getTestSQL() {
         return "SELECT 1";
     }
