@@ -243,6 +243,10 @@
         <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.ai.DDAIEngine" uiClass="org.jkiss.dbeaver.ui.datadam.ai.DDAIEngineConfigurator"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer" order="100"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.statusBar">
         <item id="org.jkiss.dbeaver.ui.datadam.status" class="org.jkiss.dbeaver.ui.datadam.management.DDStatusContribution" order="200">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ui.datadam.integrationEnabled"/></enabledWhen>

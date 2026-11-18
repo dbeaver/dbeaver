@@ -28,12 +28,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IStatusBarContributor;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer;
-import org.jkiss.dbeaver.ui.datadam.internal.DDManagementMessages;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
+import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -47,7 +47,6 @@ public class DDStatusContribution implements IStatusBarContributor {
 
     @Override
     public void createControls(@NotNull Composite parent) {
-        DDDesktopInitializer.initialize();
         Composite widget = createWidget(parent);
         widget.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, true));
         var display = widget.getDisplay();
@@ -96,32 +95,36 @@ public class DDStatusContribution implements IStatusBarContributor {
         if (control == null || control.isDisposed()) {
             return;
         }
-        var monitor = DDManagementActions.getMonitor();
-        String status = DDManagementMessages.status_unknown;
+        String status = DDTrackingUIMessages.status_unknown;
         DBIcon icon = DDTrackingUIIcons.STATUS_UNKNOWN;
         String details = "";
         if (!DDProductConfig.isIntegrationEnabled()) {
-            status = DDManagementMessages.status_disabled;
-        } else if (monitor != null) {
-            var snapshot = monitor.snapshot();
-            status = switch (snapshot.state()) {
-                case CONNECTED -> DDManagementMessages.status_connected;
-                case CONNECTING -> DDManagementMessages.status_connecting;
-                case DISCONNECTED, CLOSED -> DDManagementMessages.status_disconnected;
-            };
-            icon = switch (snapshot.state()) {
-                case CONNECTED -> UIIcon.BULLET_GREEN;
-                case CONNECTING -> DDTrackingUIIcons.STATUS_UNKNOWN;
-                case DISCONNECTED, CLOSED -> UIIcon.BULLET_RED;
-            };
-            if (snapshot.connectedAt() != null) {
-                details += "\n" + NLS.bind(DDManagementMessages.connected_at, TIME_FORMAT.format(snapshot.connectedAt()));
-                details += "\n" + NLS.bind(DDManagementMessages.connection_duration, snapshot.duration().toSeconds());
-            }
-            details += "\n" + NLS.bind(DDManagementMessages.bytes_sent, snapshot.bytesSent());
-            details += "\n" + NLS.bind(DDManagementMessages.bytes_received, snapshot.bytesReceived());
-            if (snapshot.error() != null) {
-                details += "\n" + snapshot.error();
+            status = DDTrackingUIMessages.status_disabled;
+        } else if (DDDesktopAccessService.getInstance().getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+            status = DDTrackingUIMessages.status_not_logged_in;
+        } else {
+            var monitor = DDManagementActions.getMonitor();
+            if (monitor != null) {
+                var snapshot = monitor.snapshot();
+                status = switch (snapshot.state()) {
+                    case CONNECTED -> DDTrackingUIMessages.status_connected;
+                    case CONNECTING -> DDTrackingUIMessages.status_connecting;
+                    case DISCONNECTED, CLOSED -> DDTrackingUIMessages.status_disconnected;
+                };
+                icon = switch (snapshot.state()) {
+                    case CONNECTED -> UIIcon.BULLET_GREEN;
+                    case CONNECTING -> DDTrackingUIIcons.STATUS_UNKNOWN;
+                    case DISCONNECTED, CLOSED -> UIIcon.BULLET_RED;
+                };
+                if (snapshot.connectedAt() != null) {
+                    details += "\n" + NLS.bind(DDTrackingUIMessages.connected_at, TIME_FORMAT.format(snapshot.connectedAt()));
+                    details += "\n" + NLS.bind(DDTrackingUIMessages.connection_duration, snapshot.duration().toSeconds());
+                }
+                details += "\n" + NLS.bind(DDTrackingUIMessages.bytes_sent, snapshot.bytesSent());
+                details += "\n" + NLS.bind(DDTrackingUIMessages.bytes_received, snapshot.bytesReceived());
+                if (snapshot.error() != null) {
+                    details += "\n" + snapshot.error();
+                }
             }
         }
         statusIcon.setImage(DBeaverIcons.getImage(icon));

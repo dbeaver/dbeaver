@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.internal.DDManagementMessages;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.management.DDManagementActions;
 import org.jkiss.dbeaver.ui.forms.UIAlignX;
@@ -120,7 +119,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         ((GridLayout) content.getLayout()).verticalSpacing = 8;
-        Button integrationCheck = UIUtils.createCheckbox(content, DDManagementMessages.integration_enabled,
+        Button integrationCheck = UIUtils.createCheckbox(content, DDTrackingUIMessages.integration_enabled,
             DDProductConfig.isIntegrationEnabled());
         integrationCheck.setEnabled(DDProductConfig.isIntegrationAvailable());
         integrationCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {

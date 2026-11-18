@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.internal.DDManagementMessages;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 
@@ -52,7 +51,7 @@ public final class DDManagementActions {
         DDProductConfig.setIntegrationEnabled(enabled);
         ActionUtils.evaluatePropertyState(GlobalPropertyTester.NAMESPACE + "." + GlobalPropertyTester.PROP_HAS_PREFERENCE);
         DDProjectSyncPropertyTester.firePropertyChange();
-        AbstractJob job = new AbstractJob(DDManagementMessages.integration_enabled) {
+        AbstractJob job = new AbstractJob(DDTrackingUIMessages.integration_enabled) {
             @Override
             @NotNull
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {

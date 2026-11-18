@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIStandardLabel;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.internal.DDManagementMessages;
+import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.time.ZoneId;
@@ -72,13 +72,13 @@ public class DDTrackingView extends ViewPart {
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
         BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_ERROR, settings -> viewer.refresh(), table);
-        createColumn(DDManagementMessages.event_time, 190, event -> TIME_FORMAT.format(event.time()));
-        createColumn(DDManagementMessages.event_type, 170, event -> eventLabel(event.type()));
-        createColumn(DDManagementMessages.event_details, 600, event -> event.type() == DDConnectionMonitor.EventType.MCP_REQUEST
+        createColumn(DDTrackingUIMessages.event_time, 190, event -> TIME_FORMAT.format(event.time()));
+        createColumn(DDTrackingUIMessages.event_type, 170, event -> eventLabel(event.type()));
+        createColumn(DDTrackingUIMessages.event_details, 600, event -> event.type() == DDConnectionMonitor.EventType.MCP_REQUEST
             ? event.details().lines().findFirst().orElse("") : event.details());
         viewer.addOpenListener(event -> showDetails());
         table.addDisposeListener(event -> table.getDisplay().timerExec(-1, refreshTask));
-        Action clear = new Action(DDManagementMessages.clear_events, DBeaverIcons.getImageDescriptor(UIIcon.CLEAN)) {
+        Action clear = new Action(DDTrackingUIMessages.clear_events, DBeaverIcons.getImageDescriptor(UIIcon.CLEAN)) {
             @Override
             public void run() {
                 var monitor = DDManagementActions.getMonitor();
@@ -117,7 +117,7 @@ public class DDTrackingView extends ViewPart {
             details.setEnabled(selected != null);
             copy.setEnabled(selected != null && !selected.details().isEmpty());
         });
-        Action preferences = new Action(DDManagementMessages.configuration,
+        Action preferences = new Action(DDTrackingUIMessages.configuration,
             DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
             @Override
             public void run() {
@@ -199,7 +199,7 @@ public class DDTrackingView extends ViewPart {
         if (event == null) {
             return;
         }
-        new BaseDialog(viewer.getControl().getShell(), DDManagementMessages.event_details, null) {
+        new BaseDialog(viewer.getControl().getShell(), DDTrackingUIMessages.event_details, null) {
             @Override
             @NotNull
             protected Composite createDialogArea(@NotNull Composite parent) {
@@ -224,14 +224,14 @@ public class DDTrackingView extends ViewPart {
     @NotNull
     static String eventLabel(@NotNull DDConnectionMonitor.EventType type) {
         return switch (type) {
-            case CONNECTING -> DDManagementMessages.status_connecting;
-            case CONNECTED -> DDManagementMessages.status_connected;
-            case DISCONNECTED, CLOSED -> DDManagementMessages.status_disconnected;
-            case SIGNED_IN -> DDManagementMessages.signed_in;
-            case SIGNED_OUT -> DDManagementMessages.signed_out;
-            case INVALID_TOKEN -> DDManagementMessages.invalid_token;
-            case ERROR -> DDManagementMessages.error;
-            case MCP_REQUEST -> DDManagementMessages.mcp_request;
+            case CONNECTING -> DDTrackingUIMessages.status_connecting;
+            case CONNECTED -> DDTrackingUIMessages.status_connected;
+            case DISCONNECTED, CLOSED -> DDTrackingUIMessages.status_disconnected;
+            case SIGNED_IN -> DDTrackingUIMessages.signed_in;
+            case SIGNED_OUT -> DDTrackingUIMessages.signed_out;
+            case INVALID_TOKEN -> DDTrackingUIMessages.invalid_token;
+            case ERROR -> DDTrackingUIMessages.error;
+            case MCP_REQUEST -> DDTrackingUIMessages.mcp_request;
         };
     }
 

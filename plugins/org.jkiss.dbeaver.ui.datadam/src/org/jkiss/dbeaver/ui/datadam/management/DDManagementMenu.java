@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
-import org.jkiss.dbeaver.ui.datadam.internal.DDManagementMessages;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,8 +41,8 @@ public class DDManagementMenu extends CompoundContributionItem {
         boolean enabled = DDProductConfig.isIntegrationEnabled();
         boolean signedIn = DDDesktopAccessService.getInstance().getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        Action configure = action(DDManagementMessages.configuration, IAction.AS_PUSH_BUTTON, DDManagementActions::configure);
-        Action tracking = action(DDManagementMessages.tracking_title, IAction.AS_CHECK_BOX, () -> {
+        Action configure = action(DDTrackingUIMessages.configuration, IAction.AS_PUSH_BUTTON, DDManagementActions::configure);
+        Action tracking = action(DDTrackingUIMessages.tracking_title, IAction.AS_CHECK_BOX, () -> {
             var view = page.findView(DDTrackingView.ID);
             if (view != null && page.isPartVisible(view)) {
                 page.hideView(view);
