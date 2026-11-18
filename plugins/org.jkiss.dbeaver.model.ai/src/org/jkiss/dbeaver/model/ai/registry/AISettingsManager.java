@@ -199,61 +199,28 @@ public class AISettingsManager {
     }
 
     public void saveSettingsOrThrow(@NotNull AISettings settings) throws DBException {
-        boolean configurationSaved = false;
+        saveSettingsOrThrow(settings, null);
+    }
+
+    public void removeConfiguration(@NotNull AISettings settings, @NotNull AIConfigurationProfile profile) throws DBException {
+        saveSettingsOrThrow(settings, profile);
+    }
+
+    private void saveSettingsOrThrow(@NotNull AISettings settings, @Nullable AIConfigurationProfile removedProfile) throws DBException {
         try {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
                 throw new DBException("The user has no permission to save AI configuration");
             }
             settings.validateCurrentSettings();
-
-            if (AIUserProfileCredentials.isAvailable()) {
-                for (AIConfigurationProfile profile : settings.getConfigurations()) {
-                    if (profile.isAvailable() && !profile.isGlobal()) {
-                        AIUserProfileCredentials.saveChanges(profile);
-                    }
-                }
+            if (removedProfile == null) {
+                writeSettings(settings);
+            } else {
+                settings.removeConfigurationAndSave(removedProfile, () -> writeSettings(settings));
             }
-            if (!saveSecretsAsPlainText()) {
-                AIConfigurationProfile defaultProfile = settings.getDefaultConfigurationOrNull();
-                for (AIConfigurationProfile profile : settings.getConfigurations()) {
-                    if (!profile.isAvailable() || AIUserProfileCredentials.isUserProfile(profile)) {
-                        continue;
-                    }
-                    if (profile == defaultProfile) {
-                        profile.saveSecrets();
-                    } else if (profile.getConfiguration() instanceof OpenAIProperties properties) {
-                        properties.saveCustomHeaderSecrets(profile);
-                    }
-                }
-            }
-
-            settings.prepareSettingsSaving();
-            String content = SAVE_PROPS_GSON.toJson(settings);
-
-            settings.validateCurrentSettings();
-            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
-            configurationSaved = true;
-            settings.commitProfileRemovals();
-
             applyUserDefaultConfiguration(settings);
             this.getSettingsHolder().setSettings(settings);
-            if (AIUserProfileCredentials.isAvailable() && !settings.getPendingProfileSecretDeletions().isEmpty()) {
-                try {
-                    for (String profileId : settings.getPendingProfileSecretDeletions()) {
-                        AIUserProfileCredentials.delete(profileId);
-                        settings.completeProfileSecretDeletion(profileId);
-                    }
-                    DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
-                        AI_CONFIGURATION_FILE_NAME, SAVE_PROPS_GSON.toJson(settings));
-                } catch (DBException e) {
-                    throw new DBException("The AI profile was removed, but finalizing credential cleanup failed. "
-                        + "Save AI settings again to retry.", e);
-                }
-            }
+            finishProfileSecretCleanup(settings);
         } catch (Exception e) {
-            if (!configurationSaved) {
-                settings.rollbackProfileRemovals();
-            }
             if (e instanceof DBException dbException) {
                 throw dbException;
             }
@@ -261,6 +228,58 @@ public class AISettingsManager {
         } finally {
             raiseChangedEvent(this);
         }
+    }
+
+    private void writeSettings(@NotNull AISettings settings) throws DBException {
+        if (AIUserProfileCredentials.isAvailable()) {
+            for (AIConfigurationProfile profile : settings.getConfigurations()) {
+                if (profile.isAvailable() && !profile.isGlobal()) {
+                    AIUserProfileCredentials.saveChanges(profile);
+                }
+            }
+        }
+        if (!saveSecretsAsPlainText()) {
+            AIConfigurationProfile defaultProfile = settings.getDefaultConfigurationOrNull();
+            for (AIConfigurationProfile profile : settings.getConfigurations()) {
+                if (!profile.isAvailable() || AIUserProfileCredentials.isUserProfile(profile)) {
+                    continue;
+                }
+                if (profile == defaultProfile) {
+                    profile.saveSecrets();
+                } else if (profile.getConfiguration() instanceof OpenAIProperties properties) {
+                    properties.saveCustomHeaderSecrets(profile);
+                }
+            }
+        }
+
+        settings.prepareSettingsSaving();
+        writeConfiguration(settings);
+    }
+
+    private void finishProfileSecretCleanup(@NotNull AISettings settings) throws DBException {
+        if (!AIUserProfileCredentials.isAvailable()) {
+            return;
+        }
+        var pending = settings.getPendingProfileSecretDeletions();
+        if (pending.isEmpty()) {
+            return;
+        }
+        try {
+            for (String profileId : pending) {
+                settings.validateCurrentSettings();
+                AIUserProfileCredentials.delete(profileId);
+            }
+            settings.saveCompletedSecretDeletions(pending, () -> writeConfiguration(settings));
+        } catch (DBException e) {
+            throw new DBException("The AI profile was removed, but finalizing credential cleanup failed. "
+                + "Save AI settings again to retry.", e);
+        }
+    }
+
+    private void writeConfiguration(@NotNull AISettings settings) throws DBException {
+        String content = SAVE_PROPS_GSON.toJson(settings);
+        settings.validateCurrentSettings();
+        DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
     }
 
 
@@ -343,7 +362,7 @@ public class AISettingsManager {
         public synchronized void setSettings(@NotNull AISettings mruSettings) throws DBException {
             mruSettings.validateCurrentSettings();
             if (this.settings != null && this.settings != mruSettings) {
-                this.settings.invalidateUserCredentials();
+                this.settings.markStale();
             }
             this.settings = mruSettings;
         }
@@ -351,7 +370,7 @@ public class AISettingsManager {
         @Override
         public synchronized void reset() {
             if (this.settings != null) {
-                this.settings.invalidateUserCredentials();
+                this.settings.markStale();
             }
             this.settings = null;
         }

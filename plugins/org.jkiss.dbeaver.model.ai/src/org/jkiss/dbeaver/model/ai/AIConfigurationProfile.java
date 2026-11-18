@@ -192,12 +192,12 @@ public class AIConfigurationProfile {
         AISettings settings;
 
         boolean isValid() {
-            return valid && (settings == null || settings.isUserCredentialsActive());
+            return valid && (settings == null || !settings.isStale());
         }
     }
 
     @Nullable
-    Map<String, String> getResolvedUserCredentials() {
+    public Map<String, String> getResolvedUserCredentials() {
         return resolvedUserCredentials;
     }
 

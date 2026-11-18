@@ -71,7 +71,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai.engines";
     private final AISettings settings;
     private final AIProfileCredentialsEditor credentialsEditor = new AIProfileCredentialsEditor();
-    private AIConfigurationProfile defaultProfile;
 
     private AIConfigurationProfile selectedProfile;
     private TableViewer profilesViewer;
@@ -98,7 +97,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     public AIPreferencePageEngines() {
         this.settings = AISettingsManager.getInstance().getSettings();
         this.selectedProfile = settings.getDefaultConfigurationOrNull();
-        this.defaultProfile = selectedProfile;
         if (DBWorkbench.isDistributed() && !canManageConfiguration() && selectedProfile != null && selectedProfile.isGlobal()) {
             selectedProfile = null;
         }
@@ -150,11 +148,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         if (!flushSelectedProfile()) {
             return false;
         }
-        AIConfigurationProfile newDefault = selectedProfile;
-        if (newDefault != null && newDefault.isAvailable() && newDefault != settings.getDefaultConfigurationOrNull()) {
-            AISettingsManager.getInstance().setDefaultConfiguration(newDefault);
-        }
-        defaultProfile = settings.getDefaultConfigurationOrNull();
+        saveSelectedDefault();
         reloadEngines();
         try {
             AISettingsManager.getInstance().saveSettingsOrThrow(this.settings);
@@ -350,6 +344,12 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         return composite;
     }
 
+    private void saveSelectedDefault() {
+        if (selectedProfile != null && selectedProfile.isAvailable() && selectedProfile != settings.getDefaultConfigurationOrNull()) {
+            AISettingsManager.getInstance().setDefaultConfiguration(selectedProfile);
+        }
+    }
+
     private boolean savePersonalSettings() {
         if (!flushSelectedProfile()) {
             return false;
@@ -358,16 +358,12 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
                 try {
                     credentialsEditor.saveChanges();
-                    if (selectedProfile != null && selectedProfile.isAvailable()
-                        && selectedProfile != settings.getDefaultConfigurationOrNull()) {
-                        AISettingsManager.getInstance().setDefaultConfiguration(selectedProfile);
-                    }
+                    saveSelectedDefault();
                     AISettingsManager.getInstance().notifyProfilesChanged();
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
             });
-            defaultProfile = settings.getDefaultConfigurationOrNull();
             profilesViewer.refresh();
             return true;
         } catch (InvocationTargetException e) {
@@ -499,8 +495,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         try {
             UIUtils.getDialogRunnableContext().run(true, false, monitor -> {
                 try {
-                    settings.removeConfiguration(profile);
-                    AISettingsManager.getInstance().saveSettingsOrThrow(settings);
+                    AISettingsManager.getInstance().removeConfiguration(settings, profile);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -514,7 +509,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_delete_error_title, null, deletionError);
             return;
         }
-        defaultProfile = settings.getDefaultConfigurationOrNull();
         selectedProfile = null;
         showProfileSettings();
 
@@ -562,7 +556,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 if (!(element instanceof AIConfigurationProfile profile)) {
                     return null;
                 }
-                return DBWorkbench.isDistributed() && profile == defaultProfile
+                return DBWorkbench.isDistributed() && profile == settings.getDefaultConfigurationOrNull()
                     ? profile.getProfileName() + " (" + AIUIMessages.ai_profiles_default + ")"
                     : profile.getProfileName();
             }
@@ -572,7 +566,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 if (!(element instanceof AIConfigurationProfile profile)) {
                     return null;
                 }
-                if (profile == (DBWorkbench.isDistributed() ? defaultProfile : settings.getDefaultConfigurationOrNull())) {
+                if (profile == settings.getDefaultConfigurationOrNull()) {
                     return defaultProfileFont;
                 }
                 return super.getFont(element);
@@ -697,8 +691,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         if (!canManageConfiguration()) {
             UIUtils.disposeChildControls(engineGroup);
             try {
-                AIIObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> configurator =
-                    selectedProfile.isGlobal() ? null : createEngineConfigurator();
+                AIIObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> configurator = createEngineConfigurator();
                 EngineConfiguratorPage page = configurator == null ? null : new EngineConfiguratorPage(configurator);
                 if (page != null && page.createCredentialsControl(engineGroup, this::handleConfiguratorChange)) {
                     activeEngineConfiguratorPage = page;

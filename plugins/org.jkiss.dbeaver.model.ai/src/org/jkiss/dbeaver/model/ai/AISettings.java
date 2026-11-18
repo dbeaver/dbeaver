@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -48,11 +49,7 @@ public class AISettings implements DBPAdaptable {
     private final Map<String, AIConfigurationProfile> configurations = new LinkedHashMap<>();
     // reserve deleted ids until their credentials have been removed
     private final Set<String> pendingProfileSecretDeletions = new LinkedHashSet<>();
-    private final transient Map<String, AIConfigurationProfile> removedConfigurations = new LinkedHashMap<>();
-    private final transient Map<String, AILegacyEngineConfiguration> removedEngineConfigurations = new LinkedHashMap<>();
-    private transient String defaultBeforeRemoval;
-    private transient String userDefaultBeforeRemoval;
-    private transient volatile boolean userCredentialsActive = true;
+    private transient volatile boolean stale;
     private String defaultConfiguration;
     private transient String userDefaultConfiguration;
 
@@ -225,37 +222,62 @@ public class AISettings implements DBPAdaptable {
     }
 
     public void removeConfiguration(@NotNull AIConfigurationProfile profile) throws DBException {
+        if (AIUserProfileCredentials.isAvailable()) {
+            throw new DBException("Team AI profiles must be removed and saved together");
+        }
+        checkCurrentProfile(profile);
+        removeProfile(profile);
+        if (profile.isAvailable()) {
+            try {
+                profile.getConfiguration().deleteSecrets(profile);
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+    }
+
+    public void removeConfigurationAndSave(@NotNull AIConfigurationProfile profile, @NotNull DBRRunnable save) throws DBException {
+        if (!AIUserProfileCredentials.isAvailable()) {
+            removeConfiguration(profile);
+            save.run();
+            return;
+        }
+        validateCurrentSettings();
+        checkCurrentProfile(profile);
+        AIUserProfileCredentials.validateDeletionSupport();
+        var previousConfigurations = new LinkedHashMap<>(configurations);
+        var previousLegacyConfigurations = new LinkedHashMap<>(engineConfigurations);
+        String previousDefault = defaultConfiguration;
+        profile.invalidateUserCredentials();
+        try {
+            removeProfile(profile);
+            pendingProfileSecretDeletions.add(profile.getProfileId());
+            save.run();
+        } catch (DBException | RuntimeException e) {
+            configurations.clear();
+            configurations.putAll(previousConfigurations);
+            engineConfigurations.clear();
+            engineConfigurations.putAll(previousLegacyConfigurations);
+            defaultConfiguration = previousDefault;
+            pendingProfileSecretDeletions.remove(profile.getProfileId());
+            profile.restoreUserCredentials();
+            throw e;
+        }
+    }
+
+    private void checkCurrentProfile(@NotNull AIConfigurationProfile profile) throws DBException {
         if (configurations.get(profile.getProfileId()) != profile) {
             throw new DBException("AI configuration is no longer current");
         }
-        if (AIUserProfileCredentials.isAvailable()) {
-            AIUserProfileCredentials.validateDeletionSupport();
-            if (removedConfigurations.isEmpty()) {
-                defaultBeforeRemoval = defaultConfiguration;
-                userDefaultBeforeRemoval = userDefaultConfiguration;
-            }
-            removedConfigurations.put(profile.getProfileId(), profile);
-            AILegacyEngineConfiguration legacy = engineConfigurations.get(profile.getEngineId());
-            if (legacy != null) {
-                removedEngineConfigurations.putIfAbsent(profile.getEngineId(), legacy);
-            }
-            pendingProfileSecretDeletions.add(profile.getProfileId());
-            profile.invalidateUserCredentials();
-        }
+    }
+
+    private void removeProfile(@NotNull AIConfigurationProfile profile) {
         configurations.remove(profile.getProfileId());
         if (CommonUtils.equalObjects(defaultConfiguration, profile.getProfileId())) {
             defaultConfiguration = configurations.isEmpty() ? null : configurations.keySet().iterator().next();
         }
         // Remove in legacy config too
         engineConfigurations.remove(profile.getEngineId());
-        if (AIUserProfileCredentials.isAvailable() || !profile.isAvailable()) {
-            return;
-        }
-        try {
-            profile.getConfiguration().deleteSecrets(profile);
-        } catch (DBException e) {
-            log.error(e);
-        }
     }
 
     @NotNull
@@ -263,40 +285,28 @@ public class AISettings implements DBPAdaptable {
         return List.copyOf(pendingProfileSecretDeletions);
     }
 
-    public void completeProfileSecretDeletion(@NotNull String profileId) {
-        pendingProfileSecretDeletions.remove(profileId);
-    }
-
-    public void commitProfileRemovals() {
-        removedConfigurations.clear();
-        removedEngineConfigurations.clear();
-    }
-
-    public void rollbackProfileRemovals() {
-        if (!removedConfigurations.isEmpty()) {
-            configurations.putAll(removedConfigurations);
-            engineConfigurations.putAll(removedEngineConfigurations);
-            pendingProfileSecretDeletions.removeAll(removedConfigurations.keySet());
-            defaultConfiguration = defaultBeforeRemoval;
-            userDefaultConfiguration = userDefaultBeforeRemoval;
-            removedConfigurations.values().forEach(AIConfigurationProfile::restoreUserCredentials);
-            removedConfigurations.clear();
-            removedEngineConfigurations.clear();
+    public void saveCompletedSecretDeletions(@NotNull List<String> profileIds, @NotNull DBRRunnable save) throws DBException {
+        pendingProfileSecretDeletions.removeAll(profileIds);
+        try {
+            save.run();
+        } catch (DBException | RuntimeException e) {
+            pendingProfileSecretDeletions.addAll(profileIds);
+            throw e;
         }
     }
 
-    public void invalidateUserCredentials() {
-        userCredentialsActive = false;
+    public void markStale() {
+        stale = true;
     }
 
     public void validateCurrentSettings() throws DBException {
-        if (AIUserProfileCredentials.isAvailable() && !userCredentialsActive) {
+        if (AIUserProfileCredentials.isAvailable() && stale) {
             throw new DBException("AI settings have changed. Reopen the settings before saving.");
         }
     }
 
-    boolean isUserCredentialsActive() {
-        return userCredentialsActive;
+    boolean isStale() {
+        return stale;
     }
 
     /**

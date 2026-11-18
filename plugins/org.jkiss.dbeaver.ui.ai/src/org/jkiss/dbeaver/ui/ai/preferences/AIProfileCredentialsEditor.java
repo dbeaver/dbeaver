@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -27,7 +26,6 @@ import org.jkiss.dbeaver.model.ai.AIUserProfileCredentials;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -36,14 +34,12 @@ import java.util.Map;
 
 final class AIProfileCredentialsEditor {
     private final Map<AIConfigurationProfile, AIConfigurationProfile> personalProfiles = new LinkedHashMap<>();
-    private final Map<AIConfigurationProfile, Map<String, String>> savedCredentials = new LinkedHashMap<>();
     private final Map<AIConfigurationProfile, Map<String, String>> changes = new LinkedHashMap<>();
     private final Map<AIConfigurationProfile, DBException> loadErrors = new LinkedHashMap<>();
     private boolean profilesLoaded;
 
-    void loadProfiles(@NotNull AIConfigurationProfile[] profiles, boolean resolveSecrets)
+    void loadProfiles(@NotNull AIConfigurationProfile[] profiles, boolean canManageConfiguration)
         throws InvocationTargetException, InterruptedException {
-        Map<AIConfigurationProfile, Map<String, String>> loaded = new LinkedHashMap<>();
         Map<AIConfigurationProfile, DBException> errors = new LinkedHashMap<>();
         UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
             for (AIConfigurationProfile profile : profiles) {
@@ -51,10 +47,9 @@ final class AIProfileCredentialsEditor {
                     continue;
                 }
                 try {
-                    if (resolveSecrets) {
+                    if (canManageConfiguration) {
                         profile.resolveSecrets();
-                    }
-                    if (!profile.isGlobal()) {
+                    } else {
                         AIConfigurationProfile personalProfile = new AIConfigurationProfile();
                         personalProfile.setProfileId(profile.getProfileId());
                         personalProfile.setProfileName(profile.getProfileName());
@@ -65,14 +60,12 @@ final class AIProfileCredentialsEditor {
                         personalProfile.useUserCredentialScope(profile);
                         AIUserProfileCredentials.resolve(personalProfile);
                         personalProfiles.put(profile, personalProfile);
-                        loaded.put(profile, AIUserProfileCredentials.load(profile));
                     }
                 } catch (DBException e) {
                     errors.put(profile, e);
                 }
             }
         });
-        savedCredentials.putAll(loaded);
         loadErrors.clear();
         loadErrors.putAll(errors);
         profilesLoaded = true;
@@ -80,22 +73,22 @@ final class AIProfileCredentialsEditor {
 
     void createControl(@NotNull Composite parent, @NotNull AIConfigurationProfile profile) throws DBException {
         checkLoaded(profile);
-        if (profile.isGlobal()) {
-            Label description = new Label(parent, SWT.NONE);
-            description.setText(AIUIMessages.ai_profiles_managed_description);
+        AIConfigurationProfile personal = personalProfiles.get(profile);
+        if (personal == null) {
             return;
         }
-        if (!savedCredentials.containsKey(profile)) {
+        Map<String, String> saved = personal.getResolvedUserCredentials();
+        if (saved == null) {
             return;
         }
-        Map<String, String> credentials = new LinkedHashMap<>(savedCredentials.get(profile));
-        credentials.putAll(changes.getOrDefault(profile, Map.of()));
-        for (var property : AIUserProfileCredentials.getCredentialProperties(profile.getConfiguration(), true)) {
+        Map<String, String> edits = changes.getOrDefault(profile, Map.of());
+        for (var property : AIUserProfileCredentials.getCredentialProperties(personal.getConfiguration(), true)) {
+            String id = property.getId();
             Text editor = UIUtils.createLabelText(parent, property.getDisplayName(),
-                CommonUtils.notEmpty(credentials.get(property.getId())),
+                CommonUtils.notEmpty(edits.getOrDefault(id, saved.get(id))),
                 SWT.BORDER | (property.isPassword() ? SWT.PASSWORD : SWT.NONE));
             editor.addModifyListener(event -> changes.computeIfAbsent(profile, key -> new LinkedHashMap<>())
-                .put(property.getId(), editor.getText()));
+                .put(id, editor.getText()));
         }
     }
 
@@ -116,7 +109,6 @@ final class AIProfileCredentialsEditor {
             if (changes.containsKey(profile)) {
                 AIUserProfileCredentials.save(profile, changes.get(profile));
                 personal.resolveSecrets();
-                savedCredentials.get(profile).putAll(changes.get(profile));
             } else {
                 AIUserProfileCredentials.saveChanges(personal);
             }

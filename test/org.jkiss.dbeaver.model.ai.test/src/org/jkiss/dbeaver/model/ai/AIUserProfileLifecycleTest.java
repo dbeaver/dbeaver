@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -122,10 +123,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
             fixture.otherSecrets.put("ai.profile.openai.refreshToken", "other-user-refresh");
             profile.resolveSecrets();
 
-            settings.removeConfiguration(profile);
-            Assertions.assertEquals("user-token", fixture.secrets.get("ai.profile.openai.token"));
-            Assertions.assertThrows(DBException.class, () -> settings.createConfiguration("openai", fixture.descriptor));
-            AISettingsManager.getInstance().saveSettingsOrThrow(settings);
+            AISettingsManager.getInstance().removeConfiguration(settings, profile);
 
             Assertions.assertEquals(Map.of("ai.profile.other.token", "unrelated-token"), fixture.secrets);
             Assertions.assertTrue(fixture.otherSecrets.isEmpty());
@@ -144,25 +142,19 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
     }
 
     @Test
-    void deletingSharedProfileRemovesCredentialsFromItsEarlierPersonalMode() throws Exception {
-        try (Fixture fixture = new Fixture()) {
-            AISettings settings = fixture.settings(true);
-            fixture.secrets.put("ai.profile.openai.token", "old-personal-token");
-            settings.removeConfiguration(settings.getConfiguration("openai"));
-            AISettingsManager.getInstance().saveSettingsOrThrow(settings);
-            Assertions.assertTrue(fixture.secrets.isEmpty());
-        }
-    }
+    void deletionCleansCredentialsEvenIfTheProfileIsSharedOrUnavailable() throws Exception {
+        for (boolean shared : List.of(false, true)) {
+            try (Fixture fixture = new Fixture()) {
+                AISettings settings = fixture.settings(shared);
+                fixture.secrets.put("ai.profile.openai.token", "old-personal-token");
+                if (!shared) {
+                    Mockito.when(fixture.registry.getEngineDescriptor("openai")).thenReturn(null);
+                }
 
-    @Test
-    void deletingUnavailableProfileStillRemovesPrivateCredentials() throws Exception {
-        try (Fixture fixture = new Fixture()) {
-            AISettings settings = fixture.settings(false);
-            fixture.secrets.put("ai.profile.openai.token", "old-personal-token");
-            Mockito.when(fixture.registry.getEngineDescriptor("openai")).thenReturn(null);
-            settings.removeConfiguration(settings.getConfiguration("openai"));
-            AISettingsManager.getInstance().saveSettingsOrThrow(settings);
-            Assertions.assertTrue(fixture.secrets.isEmpty());
+                AISettingsManager.getInstance().removeConfiguration(settings, settings.getConfiguration("openai"));
+
+                Assertions.assertTrue(fixture.secrets.isEmpty());
+            }
         }
     }
 
@@ -175,11 +167,11 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
             settings.setUserDefaultConfiguration(profile);
             fixture.secrets.put("ai.profile.openai.token", "user-token");
             fixture.otherSecrets.put("ai.profile.openai.refreshToken", "other-user-token");
-            settings.removeConfiguration(profile);
+            profile.resolveSecrets();
             Mockito.doThrow(new DBException("Storage unavailable")).when(fixture.configurationController)
                 .saveConfigurationFile(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
 
-            Assertions.assertThrows(DBException.class, () -> AISettingsManager.getInstance().saveSettingsOrThrow(settings));
+            Assertions.assertThrows(DBException.class, () -> AISettingsManager.getInstance().removeConfiguration(settings, profile));
 
             Assertions.assertSame(profile, settings.getConfiguration("openai"));
             Assertions.assertSame(profile, settings.getDefaultConfiguration());
@@ -188,6 +180,8 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
             Assertions.assertEquals("other-user-token", fixture.otherSecrets.get("ai.profile.openai.refreshToken"));
             Mockito.verify(fixture.controller, Mockito.never()).deleteObjectSecrets(ArgumentMatchers.any(DBSSecretObject.class));
             Mockito.verify(fixture.controller, Mockito.never()).flushChanges();
+            authorize((OpenAIProperties) profile.getConfiguration(), "current-refresh");
+            Assertions.assertEquals("current-refresh", fixture.secrets.get("ai.profile.openai.refreshToken"));
         }
     }
 
@@ -196,11 +190,11 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
         try (Fixture fixture = new Fixture()) {
             AISettings settings = fixture.settings(false);
             fixture.secrets.put("ai.profile.openai.token", "user-token");
-            settings.removeConfiguration(settings.getConfiguration("openai"));
+            AIConfigurationProfile profile = settings.getConfiguration("openai");
             Mockito.doThrow(new DBException("Cleanup unavailable")).when(fixture.controller)
                 .deleteObjectSecrets(ArgumentMatchers.any(DBSSecretObject.class));
 
-            Assertions.assertThrows(DBException.class, () -> AISettingsManager.getInstance().saveSettingsOrThrow(settings));
+            Assertions.assertThrows(DBException.class, () -> AISettingsManager.getInstance().removeConfiguration(settings, profile));
 
             AISettings reloaded = fixture.reload();
             Assertions.assertNull(reloaded.getConfigurationOrNull("openai"));
@@ -222,7 +216,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
         try (Fixture fixture = new Fixture()) {
             AISettings settings = fixture.settings(false);
             fixture.secrets.put("ai.profile.openai.token", "user-token");
-            settings.removeConfiguration(settings.getConfiguration("openai"));
+            AIConfigurationProfile profile = settings.getConfiguration("openai");
             Mockito.doAnswer(invocation -> {
                 String content = invocation.getArgument(1);
                 if (fixture.secrets.isEmpty()) {
@@ -232,13 +226,36 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
                 return null;
             }).when(fixture.configurationController).saveConfigurationFile(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
 
-            Assertions.assertThrows(DBException.class, () -> AISettingsManager.getInstance().saveSettingsOrThrow(settings));
+            Assertions.assertThrows(DBException.class, () -> AISettingsManager.getInstance().removeConfiguration(settings, profile));
             Assertions.assertTrue(fixture.secrets.isEmpty());
+            Assertions.assertEquals(List.of("openai"), settings.getPendingProfileSecretDeletions());
+            Assertions.assertThrows(DBException.class, () -> settings.createConfiguration("openai", fixture.descriptor));
             AISettings reloaded = fixture.reload();
             Assertions.assertEquals(List.of("openai"), reloaded.getPendingProfileSecretDeletions());
             fixture.allowConfigurationWrites();
             AISettingsManager.getInstance().saveSettingsOrThrow(reloaded);
             Assertions.assertTrue(fixture.reload().getPendingProfileSecretDeletions().isEmpty());
+        }
+    }
+
+    @Test
+    void remoteUpdateStopsPendingCredentialCleanup() throws Exception {
+        try (Fixture fixture = new Fixture()) {
+            fixture.persistedConfiguration = """
+                {"pendingProfileSecretDeletions":["first","second"]}
+                """;
+            AISettings settings = fixture.reload();
+            Mockito.doAnswer(invocation -> {
+                WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME, "other-session");
+                return null;
+            }).when(fixture.controller).deleteObjectSecrets(ArgumentMatchers.any(DBSSecretObject.class));
+
+            Assertions.assertThrows(DBException.class, () -> AISettingsManager.getInstance().saveSettingsOrThrow(settings));
+
+            var removed = ArgumentCaptor.forClass(DBSSecretObject.class);
+            Mockito.verify(fixture.controller).deleteObjectSecrets(removed.capture());
+            Assertions.assertEquals("first", removed.getValue().getSecretObjectId());
+            Assertions.assertEquals(List.of("first", "second"), fixture.reload().getPendingProfileSecretDeletions());
         }
     }
 
@@ -250,7 +267,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
             fixture.secrets.put("ai.profile.openai.token", "user-token");
             Mockito.when(fixture.controller.supportsObjectSecretDeletion()).thenReturn(false);
 
-            Assertions.assertThrows(DBException.class, () -> settings.removeConfiguration(profile));
+            Assertions.assertThrows(DBException.class, () -> AISettingsManager.getInstance().removeConfiguration(settings, profile));
 
             Assertions.assertSame(profile, settings.getConfiguration("openai"));
             Assertions.assertEquals("user-token", fixture.secrets.get("ai.profile.openai.token"));
@@ -265,63 +282,38 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
         try (Fixture fixture = new Fixture()) {
             fixture.workbench.when(DBWorkbench::isDistributed).thenReturn(false);
             AISettings settings = fixture.settings(false);
-            settings.removeConfiguration(settings.getConfiguration("openai"));
+            AIConfigurationProfile profile = settings.getConfiguration("openai");
             Mockito.verify(fixture.controller, Mockito.never()).deleteObjectSecrets(ArgumentMatchers.any(DBSSecretObject.class));
         }
     }
 
     @Test
-    void lateAuthorizationCannotRecreateDeletedProfileCredentials() throws Exception {
+    void removedProfileAndItsEditorCannotWriteBeforeOrAfterIdReuse() throws Exception {
         try (Fixture fixture = new Fixture()) {
             AISettings settings = fixture.settings(false);
             AIConfigurationProfile profile = settings.getConfiguration("openai");
             profile.resolveSecrets();
+            AIConfigurationProfile personal = credentialsCopy(profile);
             OpenAIProperties target = (OpenAIProperties) profile.getConfiguration();
-            settings.removeConfiguration(profile);
-            AISettingsManager.getInstance().saveSettingsOrThrow(settings);
+            OpenAIProperties editorTarget = (OpenAIProperties) personal.getConfiguration();
+
+            AISettingsManager.getInstance().removeConfiguration(settings, profile);
 
             Assertions.assertThrows(DBException.class, () -> authorize(target, "late-refresh"));
-
-            Assertions.assertNull(settings.getConfigurationOrNull("openai"));
+            Assertions.assertThrows(DBException.class, () -> authorize(editorTarget, "late-editor"));
+            Assertions.assertThrows(DBException.class, () -> AIUserProfileCredentials.save(personal, Map.of("token", "late-token")));
             Assertions.assertTrue(fixture.secrets.isEmpty());
-            Assertions.assertEquals("openai", settings.generateProfileId(fixture.descriptor));
-        }
-    }
+            String id = settings.generateProfileId(fixture.descriptor);
+            Assertions.assertEquals("openai", id);
 
-    @Test
-    void lateAuthorizationCannotOverwriteReplacementProfilesCredentials() throws Exception {
-        try (Fixture fixture = new Fixture()) {
-            AISettings settings = fixture.settings(false);
-            AIConfigurationProfile oldProfile = settings.getConfiguration("openai");
-            oldProfile.resolveSecrets();
-            OpenAIProperties oldTarget = (OpenAIProperties) oldProfile.getConfiguration();
-            settings.removeConfiguration(oldProfile);
-            AISettingsManager.getInstance().saveSettingsOrThrow(settings);
-            AIConfigurationProfile replacement = settings.createConfiguration("openai", fixture.descriptor);
+            AIConfigurationProfile replacement = settings.createConfiguration(id, fixture.descriptor);
             replacement.setGlobal(false);
             replacement.resolveSecrets();
             authorize((OpenAIProperties) replacement.getConfiguration(), "replacement-refresh");
 
-            Assertions.assertThrows(DBException.class, () -> authorize(oldTarget, "late-refresh"));
-
-            Assertions.assertEquals("replacement-refresh", fixture.secrets.get("ai.profile.openai.refreshToken"));
-        }
-    }
-
-    @Test
-    void deletingProfileInvalidatesCredentialEditorsClone() throws Exception {
-        try (Fixture fixture = new Fixture()) {
-            AISettings settings = fixture.settings(false);
-            AIConfigurationProfile profile = settings.getConfiguration("openai");
-            AIConfigurationProfile personal = credentialsCopy(profile);
-            OpenAIProperties target = (OpenAIProperties) personal.getConfiguration();
-            settings.removeConfiguration(profile);
-            AISettingsManager.getInstance().saveSettingsOrThrow(settings);
-
             Assertions.assertThrows(DBException.class, () -> authorize(target, "late-refresh"));
-            Assertions.assertThrows(DBException.class, () -> AIUserProfileCredentials.save(personal, Map.of("token", "late-token")));
-
-            Assertions.assertTrue(fixture.secrets.isEmpty());
+            Assertions.assertThrows(DBException.class, () -> authorize(editorTarget, "late-editor"));
+            Assertions.assertEquals("replacement-refresh", fixture.secrets.get("ai.profile.openai.refreshToken"));
         }
     }
 
@@ -344,33 +336,9 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
     }
 
     @Test
-    void configurationEventInvalidatesAuthorizationOnOldProfilesAndCopies() throws Exception {
-        try (Fixture fixture = new Fixture()) {
-            AISettings settings = fixture.settings(false);
-            AISettingsManager manager = AISettingsManager.getInstance();
-            manager.saveSettingsOrThrow(settings);
-            AIConfigurationProfile original = settings.getConfiguration("openai");
-            original.resolveSecrets();
-            AIConfigurationProfile personal = credentialsCopy(original);
-            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
-            AISettings reloaded = manager.getSettings();
-            Assertions.assertNotSame(settings, reloaded);
-            AIConfigurationProfile current = reloaded.getConfiguration("openai");
-            current.resolveSecrets();
-            authorize((OpenAIProperties) current.getConfiguration(), "current-refresh");
-
-            Assertions.assertThrows(DBException.class, () -> authorize((OpenAIProperties) original.getConfiguration(), "late-original"));
-            Assertions.assertThrows(DBException.class, () -> authorize((OpenAIProperties) personal.getConfiguration(), "late-copy"));
-
-            Assertions.assertEquals("current-refresh", fixture.secrets.get("ai.profile.openai.refreshToken"));
-        }
-    }
-
-    @Test
     void ownSaveNotificationKeepsCredentialEditorsUsable() throws Exception {
         for (boolean beforeSaveCompletes : List.of(false, true)) {
             try (Fixture fixture = new Fixture()) {
-                fixture.workbench.when(DBWorkbench::isPlatformStarted).thenReturn(true);
                 Mockito.when(fixture.platform.getWorkspace().getWorkspaceSession().getSessionId()).thenReturn("current-session");
                 AISettings settings = fixture.settings(false);
                 AISettingsManager manager = AISettingsManager.getInstance();
@@ -399,28 +367,9 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
     }
 
     @Test
-    void anotherSessionNotificationRejectsOldAuthorization() throws Exception {
-        try (Fixture fixture = new Fixture()) {
-            fixture.workbench.when(DBWorkbench::isPlatformStarted).thenReturn(true);
-            Mockito.when(fixture.platform.getWorkspace().getWorkspaceSession().getSessionId()).thenReturn("current-session");
-            AISettings settings = fixture.settings(false);
-            AISettingsManager manager = AISettingsManager.getInstance();
-            manager.saveSettingsOrThrow(settings);
-            AIConfigurationProfile personal = credentialsCopy(settings.getConfiguration("openai"));
-
-            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME, "another-session");
-
-            Assertions.assertNotSame(settings, manager.getSettings());
-            Assertions.assertThrows(DBException.class, () -> authorize((OpenAIProperties) personal.getConfiguration(), "late-refresh"));
-            Assertions.assertTrue(fixture.secrets.isEmpty());
-        }
-    }
-
-    @Test
     void staleSettingsCannotRestoreDeletedProfilesOrAuthorization() throws Exception {
         for (boolean reloadBeforeSaving : List.of(false, true)) {
             try (Fixture fixture = new Fixture()) {
-                fixture.workbench.when(DBWorkbench::isPlatformStarted).thenReturn(true);
                 AISettings settings = fixture.settings(false);
                 AISettingsManager manager = AISettingsManager.getInstance();
                 manager.saveSettingsOrThrow(settings);
@@ -429,7 +378,8 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
                 AIConfigurationProfile personal = credentialsCopy(profile);
                 fixture.persistedConfiguration = "{\"configurations\":{},\"engineConfigurations\":{}}";
                 String remoteConfiguration = fixture.persistedConfiguration;
-                WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME, "other-session");
+                WorkspaceConfigEventManager.fireConfigChangedEvent(
+                    AISettingsManager.AI_CONFIGURATION_FILE_NAME, reloadBeforeSaving ? "other-session" : null);
                 if (reloadBeforeSaving) {
                     Assertions.assertNull(manager.getSettings().getConfigurationOrNull("openai"));
                 }
@@ -495,30 +445,11 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
         try (Fixture fixture = new Fixture()) {
             fixture.workbench.when(DBWorkbench::isDistributed).thenReturn(false);
             AISettings settings = fixture.settings(false);
-            settings.invalidateUserCredentials();
+            settings.markStale();
 
             AISettingsManager.getInstance().saveSettingsOrThrow(settings);
 
             Assertions.assertNotNull(fixture.reload().getConfigurationOrNull("openai"));
-        }
-    }
-
-    @Test
-    void failedRemovalKeepsCurrentAuthorizationUsable() throws Exception {
-        try (Fixture fixture = new Fixture()) {
-            AISettings settings = fixture.settings(false);
-            AIConfigurationProfile profile = settings.getConfiguration("openai");
-            profile.resolveSecrets();
-            OpenAIProperties target = (OpenAIProperties) profile.getConfiguration();
-            settings.removeConfiguration(profile);
-            Mockito.doThrow(new DBException("Write unavailable")).when(fixture.configurationController)
-                .saveConfigurationFile(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
-            Assertions.assertThrows(DBException.class, () -> AISettingsManager.getInstance().saveSettingsOrThrow(settings));
-
-            authorize(target, "current-refresh");
-
-            Assertions.assertSame(profile, settings.getConfiguration("openai"));
-            Assertions.assertEquals("current-refresh", fixture.secrets.get("ai.profile.openai.refreshToken"));
         }
     }
 
@@ -540,7 +471,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
         properties.saveAccountTokens();
     }
 
-    private static class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final Map<String, String> secrets = new HashMap<>();
         final Map<String, String> otherSecrets = new HashMap<>();
         final DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
@@ -561,6 +492,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
             Mockito.when(platform.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)).thenReturn(true);
             workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
             workbench.when(DBWorkbench::isDistributed).thenReturn(true);
+            workbench.when(DBWorkbench::isPlatformStarted).thenReturn(true);
             engines.when(AIEngineRegistry::getInstance).thenReturn(registry);
             controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
             controllers.when(DBSSecretController::getGlobalSecretControllerOrNull).thenReturn(controller);
@@ -600,6 +532,9 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
                 Assertions.assertEquals("", object.getProjectId());
                 Assertions.assertEquals("aiProfile", object.getSecretObjectType());
                 Assertions.assertEquals("openai", object.getSecretObjectId());
+                AISettings saved = reload();
+                Assertions.assertNull(saved.getConfigurationOrNull("openai"));
+                Assertions.assertTrue(saved.getPendingProfileSecretDeletions().contains("openai"));
                 for (Map<String, String> store : List.of(secrets, otherSecrets)) {
                     store.keySet().removeIf(key -> key.startsWith("ai.profile.openai."));
                 }

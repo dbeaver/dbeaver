@@ -72,11 +72,6 @@ public final class AIUserProfileCredentials {
     }
 
     @NotNull
-    public static Map<String, String> load(@NotNull AIConfigurationProfile profile) throws DBException {
-        return load(profile, DBSSecretController.getGlobalSecretController());
-    }
-
-    @NotNull
     static Map<String, String> load(
         @NotNull AIConfigurationProfile profile,
         @NotNull DBSSecretController controller
@@ -84,7 +79,8 @@ public final class AIUserProfileCredentials {
         checkUserProfile(profile, profile.getUserCredentialScope());
         Map<String, String> credentials = new LinkedHashMap<>();
         for (ObjectPropertyDescriptor property : getCredentialProperties(profile.getConfiguration())) {
-            credentials.put(property.getId(), CommonUtils.notEmpty(controller.getPrivateSecretValue(getSecretId(profile, property))));
+            String id = property.getId();
+            credentials.put(id, CommonUtils.notEmpty(controller.getPrivateSecretValue(getSecretId(profile, id))));
         }
         return credentials;
     }
@@ -316,11 +312,6 @@ public final class AIUserProfileCredentials {
                 throw new DBException("The AI profile was removed or changed. Reopen its settings before saving credentials.");
             }
         }
-    }
-
-    @NotNull
-    private static String getSecretId(@NotNull AIConfigurationProfile profile, @NotNull ObjectPropertyDescriptor property) {
-        return getSecretId(profile, property.getId());
     }
 
     @NotNull

@@ -136,10 +136,9 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             AISettings reloaded = manager.getSettings();
             Assertions.assertNotSame(settings, reloaded);
             Assertions.assertEquals("personal", reloaded.getDefaultConfiguration().getProfileId());
-            reloaded.removeConfiguration(reloaded.getConfiguration("personal"));
+            manager.removeConfiguration(reloaded, reloaded.getConfiguration("personal"));
             Assertions.assertEquals("shared", reloaded.getDefaultConfiguration().getProfileId());
 
-            manager.saveSettings();
             Assertions.assertFalse(preferences.containsKey(AIConstants.AI_DEFAULT_CONFIGURATION));
             Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
                 .thenReturn(sharedConfiguration);
