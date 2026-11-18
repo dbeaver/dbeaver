@@ -33,6 +33,10 @@ class DDDesktopTokenStore {
         this.secretStorage = secretStorage;
     }
 
+    boolean hasSavedToken() throws DBException {
+        return DDSecretStorage.hasStoredSecret(SECRET_ID);
+    }
+
     @Nullable
     DDDesktopUserToken load() throws DBException {
         String value = secretStorage.getPrivateSecretValue(SECRET_ID);
