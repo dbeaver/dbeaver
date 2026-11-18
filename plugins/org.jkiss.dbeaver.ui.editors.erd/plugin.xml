@@ -35,11 +35,11 @@
             <adapter type="org.jkiss.dbeaver.model.preferences.DBPPropertySource"/>
             <adapter type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         </factory>
-        <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorAdapter">
-           <adapter type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart"/>
+        <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.ui.editors.erd.editor.DiagramEditorAdapter">
+           <adapter type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart"/>
         </factory>
-        <factory adaptableType="org.eclipse.ui.IEditorPart" class="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorAdapter">
-            <adapter type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart"/>
+        <factory adaptableType="org.eclipse.ui.IEditorPart" class="org.jkiss.dbeaver.ui.editors.erd.editor.DiagramEditorAdapter">
+            <adapter type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart"/>
         </factory>
     </extension>
 
@@ -67,7 +67,7 @@
                 <and>
                     <with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.erd.ERDEditor"/></with>
                     <with variable="activeFocusControl">
-                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart">
                             <test property="org.jkiss.dbeaver.ui.editors.erd.editor.editable"/>
                         </adapt>
                     </with>
@@ -85,7 +85,7 @@
                 <and>
                     <with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.erd.ERDEditor"/></with>
                     <with variable="activeFocusControl">
-                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart">
                             <test property="org.jkiss.dbeaver.ui.editors.erd.editor.canDelete"/>
                         </adapt>
                     </with>
@@ -112,7 +112,7 @@
                 <and>
                     <with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.erd.ERDEditor"/></with>
                     <with variable="activeFocusControl">
-                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart">
                             <test property="org.jkiss.dbeaver.ui.editors.erd.editor.canUndo"/>
                         </adapt>
                     </with>
@@ -129,7 +129,7 @@
                 <and>
                     <with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.erd.ERDEditor"/></with>
                     <with variable="activeFocusControl">
-                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart">
                             <test property="org.jkiss.dbeaver.ui.editors.erd.editor.canRedo"/>
                         </adapt>
                     </with>
@@ -139,7 +139,7 @@
         <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.ui.editors.erd.action.ERDHandlerPrint">
             <activeWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart"/>
+                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart"/>
                 </with>
             </activeWhen>
         </handler>
@@ -153,7 +153,7 @@
         <handler commandId="org.jkiss.dbeaver.erd.diagram.saveAs" class="org.jkiss.dbeaver.ui.editors.erd.action.ERDHandlerSaveImage">
             <activeWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart"/>
+                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart"/>
                 </with>
             </activeWhen>
         </handler>
@@ -166,7 +166,7 @@
              id="org.jkiss.dbeaver.ui.editors.erd.action.ERDEditorPropertyTester"
              namespace="org.jkiss.dbeaver.ui.editors.erd.editor"
              properties="canUndo,canRedo,canDelete,editable,supportsStructureEdit,editMode,isERD"
-             type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+             type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart">
        </propertyTester>
     </extension>
 
@@ -396,7 +396,7 @@
     <extension point="org.eclipse.ui.propertyPages">
         <page id="org.jkiss.dbeaver.preferences.erd.general" class="org.jkiss.dbeaver.ui.editors.erd.editor.ERDPreferencePage" name="%page.org.jkiss.dbeaver.preferences.erd.general.name">
             <enabledWhen>
-                <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart">
                     <test property="org.jkiss.dbeaver.ui.editors.erd.editor.isERD"/>
                 </adapt>
             </enabledWhen>
@@ -470,28 +470,28 @@
         <handler commandId="org.jkiss.dbeaver.erd.focus.diagram" class="org.jkiss.dbeaver.ui.editors.erd.action.ERDHandlerFocus">
             <activeWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart"/>
+                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart"/>
                 </with>
             </activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.erd.focus.palette" class="org.jkiss.dbeaver.ui.editors.erd.action.ERDHandlerFocus">
             <activeWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart"/>
+                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart"/>
                 </with>
             </activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.erd.focus.outline" class="org.jkiss.dbeaver.ui.editors.erd.action.ERDHandlerFocus">
             <activeWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart"/>
+                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart"/>
                 </with>
             </activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.erd.focus.parameter" class="org.jkiss.dbeaver.ui.editors.erd.action.ERDHandlerFocus">
             <activeWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart"/>
+                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.IDiagramEditorPart"/>
                 </with>
             </activeWhen>
         </handler>
