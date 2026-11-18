@@ -81,7 +81,7 @@ public final class AIUserProfileCredentials {
         @NotNull AIConfigurationProfile profile,
         @NotNull DBSSecretController controller
     ) throws DBException {
-        checkUserProfile(profile);
+        checkUserProfile(profile, profile.getUserCredentialScope());
         Map<String, String> credentials = new LinkedHashMap<>();
         for (ObjectPropertyDescriptor property : getCredentialProperties(profile.getConfiguration())) {
             credentials.put(property.getId(), CommonUtils.notEmpty(controller.getPrivateSecretValue(getSecretId(profile, property))));
@@ -93,12 +93,26 @@ public final class AIUserProfileCredentials {
         save(profile, credentials, DBSSecretController.getGlobalSecretController());
     }
 
+    public static void validateDeletionSupport() throws DBException {
+        if (!DBSSecretController.getGlobalSecretController().supportsObjectSecretDeletion()) {
+            throw new DBException("The secret controller does not support deleting AI profile credentials");
+        }
+    }
+
+    public static void delete(@NotNull String profileId) throws DBException {
+        validateDeletionSupport();
+        DBSSecretController controller = DBSSecretController.getGlobalSecretController();
+        controller.deleteObjectSecrets(new ProfileSecretObject(profileId));
+        controller.flushChanges();
+    }
+
     static void save(
         @NotNull AIConfigurationProfile profile,
         @NotNull Map<String, String> credentials,
         @NotNull DBSSecretController controller
     ) throws DBException {
-        checkUserProfile(profile);
+        AIConfigurationProfile.UserCredentialScope scope = profile.getUserCredentialScope();
+        checkUserProfile(profile, scope);
         List<ObjectPropertyDescriptor> properties = getCredentialProperties(profile.getConfiguration());
         for (String propertyId : credentials.keySet()) {
             if (!(ACCOUNT_AUTHENTICATION_PROPERTY.equals(propertyId) && profile.getConfiguration() instanceof AIAccountProperties)
@@ -106,28 +120,33 @@ public final class AIUserProfileCredentials {
                 throw new DBException("Invalid AI credential property " + propertyId);
             }
         }
-        writeCredentials(profile, credentials, controller, null);
+        writeCredentials(profile, credentials, controller, null, scope);
     }
 
     private static void writeCredentials(
         @NotNull AIConfigurationProfile profile,
         @NotNull Map<String, String> credentials,
         @NotNull DBSSecretController controller,
-        @Nullable SMSession session
+        @Nullable SMSession session,
+        @NotNull AIConfigurationProfile.UserCredentialScope scope
     ) throws DBException {
-        for (var credential : credentials.entrySet()) {
+        synchronized (scope) {
+            for (var credential : credentials.entrySet()) {
+                checkSession(session);
+                checkUserProfile(profile, scope);
+                controller.setPrivateSecretValue(
+                    new ProfileSecretObject(profile.getProfileId()),
+                    new DBSSecretValue(
+                        getSecretId(profile, credential.getKey()),
+                        profile.getProfileName() + ": " + credential.getKey(),
+                        CommonUtils.isEmpty(credential.getValue()) ? null : credential.getValue()
+                    )
+                );
+            }
             checkSession(session);
-            controller.setPrivateSecretValue(
-                new ProfileSecretObject(profile.getProfileId()),
-                new DBSSecretValue(
-                    getSecretId(profile, credential.getKey()),
-                    profile.getProfileName() + ": " + credential.getKey(),
-                    CommonUtils.isEmpty(credential.getValue()) ? null : credential.getValue()
-                )
-            );
+            checkUserProfile(profile, scope);
+            controller.flushChanges();
         }
-        checkSession(session);
-        controller.flushChanges();
     }
 
     @NotNull
@@ -143,6 +162,8 @@ public final class AIUserProfileCredentials {
     }
 
     public static void resolve(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIConfigurationProfile.UserCredentialScope scope = profile.getUserCredentialScope();
+        checkUserProfile(profile, scope);
         DBSSecretController controller = DBSSecretController.getGlobalSecretController();
         SMSession session = DBWorkbench.isPlatformStarted()
             ? DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession() : null;
@@ -151,9 +172,9 @@ public final class AIUserProfileCredentials {
         apply(properties, credentials);
         if (properties instanceof AIAccountProperties accountProperties) {
             String mode = controller.getPrivateSecretValue(getSecretId(profile, ACCOUNT_AUTHENTICATION_PROPERTY));
-            if (mode != null) {
-                accountProperties.setAccountAuthentication(Boolean.parseBoolean(mode));
-            }
+            accountProperties.setUserAccountAuthentication(null);
+            accountProperties.setUserAccountAuthentication(mode == null
+                ? accountProperties.isAccountAuthentication() : Boolean.parseBoolean(mode));
             if (accountProperties.isAccountAuthentication() || mode != null) {
                 credentials.put(ACCOUNT_AUTHENTICATION_PROPERTY, Boolean.toString(accountProperties.isAccountAuthentication()));
             }
@@ -170,6 +191,7 @@ public final class AIUserProfileCredentials {
                 AIAccountProperties.ACCOUNT_EXPIRES_AT_PROPERTY))));
             accountProperties.setAccountTokenPersistence((previousRefreshToken, tokens) -> {
                 checkSession(session);
+                checkUserProfile(profile, scope);
                 if (previousRefreshToken != null && !previousRefreshToken.equals(tokens.refreshToken())) {
                     String storedRefreshToken = controller.getPrivateSecretValue(getSecretId(profile,
                         AIAccountProperties.ACCOUNT_REFRESH_TOKEN_PROPERTY));
@@ -177,10 +199,26 @@ public final class AIUserProfileCredentials {
                         throw new DBException("AI account credentials have changed while refreshing the token");
                     }
                 }
-                saveAccountCredentials(profile, accountProperties, tokens, controller, session);
+                saveAccountCredentials(profile, tokens, controller, session, accountProperties.isAccountAuthentication(), scope);
+            });
+            accountProperties.setAccountTokenRefreshHandler((authenticator, refreshToken) -> {
+                checkSession(session);
+                checkUserProfile(profile, scope);
+                var tokens = authenticator.refresh(refreshToken);
+                checkSession(session);
+                if (!refreshToken.equals(controller.getPrivateSecretValue(getSecretId(profile,
+                    AIAccountProperties.ACCOUNT_REFRESH_TOKEN_PROPERTY)))) {
+                    throw new DBException("AI account credentials have changed while refreshing the token");
+                }
+                var storedTokens = new AIAccountAuthenticator.Tokens(tokens.accessToken(), tokens.refreshToken(), tokens.expiresInSeconds(),
+                    tokens.accountId() == null ? accountProperties.getAccountId() : tokens.accountId(),
+                    tokens.email() == null ? accountProperties.getAccountEmail() : tokens.email());
+                saveAccountCredentials(profile, storedTokens, controller, session, null, scope);
+                return tokens;
             });
             accountProperties.setAccountTokenValidator(refreshToken -> {
                 checkSession(session);
+                checkUserProfile(profile, scope);
                 String storedRefreshToken = controller.getPrivateSecretValue(getSecretId(profile,
                     AIAccountProperties.ACCOUNT_REFRESH_TOKEN_PROPERTY));
                 if (!CommonUtils.equalObjects(refreshToken, storedRefreshToken)) {
@@ -189,6 +227,7 @@ public final class AIUserProfileCredentials {
             });
         }
         checkSession(session);
+        checkUserProfile(profile, scope);
         profile.setResolvedUserCredentials(credentials);
     }
 
@@ -200,21 +239,25 @@ public final class AIUserProfileCredentials {
 
     private static void saveAccountCredentials(
         @NotNull AIConfigurationProfile profile,
-        @NotNull AIAccountProperties properties,
         @NotNull AIAccountAuthenticator.Tokens tokens,
         @NotNull DBSSecretController controller,
-        @Nullable SMSession session
+        @Nullable SMSession session,
+        @Nullable Boolean accountAuthentication,
+        @NotNull AIConfigurationProfile.UserCredentialScope scope
     ) throws DBException {
-        checkUserProfile(profile);
+        checkUserProfile(profile, scope);
         Map<String, String> credentials = new LinkedHashMap<>();
         // save the rotating refresh token first so a partial write can be recovered
         credentials.put(AIAccountProperties.ACCOUNT_REFRESH_TOKEN_PROPERTY, CommonUtils.notEmpty(tokens.refreshToken()));
         credentials.put(AIAccountProperties.ACCOUNT_ACCESS_TOKEN_PROPERTY, CommonUtils.notEmpty(tokens.accessToken()));
         credentials.put(AIAccountProperties.ACCOUNT_ID_PROPERTY, CommonUtils.notEmpty(tokens.accountId()));
         credentials.put(AIAccountProperties.ACCOUNT_EMAIL_PROPERTY, CommonUtils.notEmpty(tokens.email()));
-        credentials.put(AIAccountProperties.ACCOUNT_EXPIRES_AT_PROPERTY, Long.toString(properties.getStoredExpiresAt()));
-        credentials.put(ACCOUNT_AUTHENTICATION_PROPERTY, Boolean.toString(properties.isAccountAuthentication()));
-        writeCredentials(profile, credentials, controller, session);
+        credentials.put(AIAccountProperties.ACCOUNT_EXPIRES_AT_PROPERTY,
+            Long.toString(CommonUtils.isEmpty(tokens.accessToken()) ? 0 : System.currentTimeMillis() + tokens.expiresInSeconds() * 1000));
+        if (accountAuthentication != null) {
+            credentials.put(ACCOUNT_AUTHENTICATION_PROPERTY, accountAuthentication.toString());
+        }
+        writeCredentials(profile, credentials, controller, session, scope);
     }
 
     public static void saveChanges(@NotNull AIConfigurationProfile profile) throws DBException {
@@ -261,9 +304,17 @@ public final class AIUserProfileCredentials {
         }
     }
 
-    private static void checkUserProfile(@NotNull AIConfigurationProfile profile) throws DBException {
-        if (profile.isGlobal()) {
-            throw new DBException("AI profile does not use user credentials");
+    private static void checkUserProfile(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull AIConfigurationProfile.UserCredentialScope scope
+    ) throws DBException {
+        synchronized (scope) {
+            if (profile.isGlobal()) {
+                throw new DBException("AI profile does not use user credentials");
+            }
+            if (profile.getUserCredentialScope() != scope || !scope.isValid()) {
+                throw new DBException("The AI profile was removed or changed. Reopen its settings before saving credentials.");
+            }
         }
     }
 

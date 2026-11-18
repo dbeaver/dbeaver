@@ -47,6 +47,7 @@ public class AIConfigurationProfile {
 
     private transient AIEngineDescriptor engineDescriptor;
     private transient Map<String, String> resolvedUserCredentials;
+    private transient volatile UserCredentialScope userCredentialScope = new UserCredentialScope();
     private transient JsonObject unavailableProfile;
 
     public AIConfigurationProfile() {
@@ -146,9 +147,53 @@ public class AIConfigurationProfile {
     }
 
     public void setConfiguration(@NotNull AIEngineProperties configuration) {
+        AISettings settings = userCredentialScope.settings;
+        invalidateUserCredentials();
         this.configuration = configuration;
         this.resolvedUserCredentials = null;
         this.global = configuration.isGlobal();
+        this.userCredentialScope = new UserCredentialScope();
+        this.userCredentialScope.settings = settings;
+    }
+
+    public void useUserCredentialScope(@NotNull AIConfigurationProfile source) {
+        if (userCredentialScope != source.userCredentialScope) {
+            invalidateUserCredentials();
+            userCredentialScope = source.userCredentialScope;
+        }
+    }
+
+    public void invalidateUserCredentials() {
+        UserCredentialScope scope = userCredentialScope;
+        synchronized (scope) {
+            scope.valid = false;
+        }
+    }
+
+    public void restoreUserCredentials() {
+        UserCredentialScope scope = userCredentialScope;
+        synchronized (scope) {
+            scope.valid = true;
+        }
+    }
+
+    @NotNull
+    UserCredentialScope getUserCredentialScope() {
+        return userCredentialScope;
+    }
+
+    void setUserCredentialSettings(@NotNull AISettings settings) {
+        userCredentialScope.settings = settings;
+    }
+
+    static final class UserCredentialScope {
+        boolean valid = true;
+        @Nullable
+        AISettings settings;
+
+        boolean isValid() {
+            return valid && (settings == null || settings.isUserCredentialsActive());
+        }
     }
 
     @Nullable

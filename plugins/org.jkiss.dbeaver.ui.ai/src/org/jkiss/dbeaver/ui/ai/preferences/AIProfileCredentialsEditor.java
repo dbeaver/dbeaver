@@ -62,6 +62,7 @@ final class AIProfileCredentialsEditor {
                         AIEngineProperties configuration = profile.getConfiguration();
                         personalProfile.setConfiguration(AISettingsManager.READ_PROPS_GSON.fromJson(
                             AISettingsManager.READ_PROPS_GSON.toJson(configuration), configuration.getClass()));
+                        personalProfile.useUserCredentialScope(profile);
                         AIUserProfileCredentials.resolve(personalProfile);
                         personalProfiles.put(profile, personalProfile);
                         loaded.put(profile, AIUserProfileCredentials.load(profile));

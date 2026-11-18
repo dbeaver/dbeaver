@@ -78,6 +78,10 @@ public interface DBSSecretController {
     default void deleteProjectSecrets(@NotNull String projectId) throws DBException {
     }
 
+    default boolean supportsObjectSecretDeletion() {
+        return false;
+    }
+
     default void deleteObjectSecrets(
         @NotNull DBSSecretObject secretObject
     ) throws DBException {

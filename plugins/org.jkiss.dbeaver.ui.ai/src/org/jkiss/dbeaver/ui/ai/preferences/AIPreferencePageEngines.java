@@ -60,6 +60,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -98,6 +99,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         this.settings = AISettingsManager.getInstance().getSettings();
         this.selectedProfile = settings.getDefaultConfigurationOrNull();
         this.defaultProfile = selectedProfile;
+        if (DBWorkbench.isDistributed() && !canManageConfiguration() && selectedProfile != null && selectedProfile.isGlobal()) {
+            selectedProfile = null;
+        }
     }
 
     @Override
@@ -133,6 +137,12 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         if (!hasAccessToPage() || !isValid()) {
             return false;
         }
+        try {
+            settings.validateCurrentSettings();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_save_error_title, null, e);
+            return false;
+        }
         if (!canManageConfiguration()) {
             return savePersonalSettings();
         }
@@ -146,7 +156,12 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         }
         defaultProfile = settings.getDefaultConfigurationOrNull();
         reloadEngines();
-        AISettingsManager.getInstance().saveSettings(this.settings);
+        try {
+            AISettingsManager.getInstance().saveSettingsOrThrow(this.settings);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_save_error_title, null, e);
+            return false;
+        }
         AISettingsManager.getInstance().notifyProfilesChanged();
         try {
             store.save();
@@ -313,7 +328,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             }
             if (DBWorkbench.isDistributed()) {
                 try {
-                    credentialsEditor.loadProfiles(settings.getConfigurations(), canManageConfiguration());
+                    credentialsEditor.loadProfiles(getVisibleProfiles(), canManageConfiguration());
                     setErrorMessage(null);
                     setValid(true);
                     engineGroup.setEnabled(true);
@@ -364,7 +379,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     }
 
     private void reloadEngines() {
-        profilesViewer.setInput(settings.getConfigurations());
+        profilesViewer.setInput(getVisibleProfiles());
+    }
+
+    @NotNull
+    private AIConfigurationProfile[] getVisibleProfiles() {
+        return Arrays.stream(settings.getConfigurations())
+            .filter(profile -> !DBWorkbench.isDistributed() || canManageConfiguration() || !profile.isGlobal())
+            .toArray(AIConfigurationProfile[]::new);
     }
 
     /**
@@ -471,23 +493,44 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         )) {
             return;
         }
-        settings.removeConfiguration(selectedProfile);
-        if (defaultProfile == selectedProfile) {
-            defaultProfile = settings.getDefaultConfigurationOrNull();
+        AIConfigurationProfile profile = selectedProfile;
+        int selectionIndex = profilesViewer.getTable().getSelectionIndex();
+        Throwable deletionError = null;
+        try {
+            UIUtils.getDialogRunnableContext().run(true, false, monitor -> {
+                try {
+                    settings.removeConfiguration(profile);
+                    AISettingsManager.getInstance().saveSettingsOrThrow(settings);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            deletionError = e.getCause();
+        } catch (InterruptedException e) {
+            deletionError = e;
         }
+        if (deletionError != null && settings.getConfigurationOrNull(profile.getProfileId()) == profile) {
+            DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_delete_error_title, null, deletionError);
+            return;
+        }
+        defaultProfile = settings.getDefaultConfigurationOrNull();
         selectedProfile = null;
         showProfileSettings();
-        int selectionIndex = profilesViewer.getTable().getSelectionIndex();
 
         reloadEngines();
-        if (selectionIndex >= profilesViewer.getTable().getItemCount()) {
-            selectionIndex--;
+        AIConfigurationProfile remaining = settings.getConfigurationOrNull(profile.getProfileId());
+        if (remaining != null) {
+            profilesViewer.setSelection(new StructuredSelection(remaining));
+        } else {
+            selectionIndex = Math.min(selectionIndex, profilesViewer.getTable().getItemCount() - 1);
+            if (selectionIndex >= 0) {
+                profilesViewer.setSelection(new StructuredSelection(settings.getConfigurations()[selectionIndex]));
+            }
         }
-        if (selectionIndex >= 0) {
-            profilesViewer.setSelection(new StructuredSelection(settings.getConfigurations()[selectionIndex]));
+        if (deletionError != null) {
+            DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_delete_error_title, null, deletionError);
         }
-
-        AISettingsManager.getInstance().saveSettings(this.settings);
     }
 
     private void createProfilesColumns() {
@@ -620,7 +663,11 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         }
         if (selectedProfile == null || !selectedProfile.isAvailable()) {
             noProfileLabel.setText(selectedProfile == null
-                ? AIUIMessages.ai_engines_page_no_active_engine
+                ? DBWorkbench.isDistributed() && !canManageConfiguration()
+                    ? getVisibleProfiles().length == 0
+                        ? AIUIMessages.ai_profiles_no_personal_profiles
+                        : AIUIMessages.ai_profiles_select_personal_profile
+                    : AIUIMessages.ai_engines_page_no_active_engine
                 : NLS.bind(AIUIMessages.ai_engines_page_provider_unavailable_details, selectedProfile.getProfileName()));
             if (profileIdText != null) {
                 profileIdText.setText("");

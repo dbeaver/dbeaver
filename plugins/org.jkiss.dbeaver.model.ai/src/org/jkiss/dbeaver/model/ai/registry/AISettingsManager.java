@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -60,6 +61,13 @@ public class AISettingsManager {
     private AISettingsManager() {
         WorkspaceConfigEventManager.addConfigChangedListener(
             AI_CONFIGURATION_FILE_NAME, o -> {
+                if (o instanceof String sourceSessionId && AIUserProfileCredentials.isAvailable()) {
+                    SMSession session = DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession();
+                    if (session != null && sourceSessionId.equals(session.getSessionId())) {
+                        // own saves already publish the settings without invalidating open credential editors
+                        return;
+                    }
+                }
                 // reset current context for settings to be lazily reloaded when needed
                 this.getSettingsHolder().reset();
                 this.notifyProfilesChanged();
@@ -178,11 +186,25 @@ public class AISettingsManager {
      * Saves the given settings and makes them current
      */
     public void saveSettings(@NotNull AISettings settings) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            log.warn("The user has no permission to save AI configuration");
+            return;
+        }
+        try {
+            saveSettingsOrThrow(settings);
+        } catch (DBException e) {
+            log.error("Error saving AI configuration", e);
+            DBWorkbench.getPlatformUI().showError(AIMessages.ai_settings_save_error_title, null, e);
+        }
+    }
+
+    public void saveSettingsOrThrow(@NotNull AISettings settings) throws DBException {
+        boolean configurationSaved = false;
         try {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
-                log.warn("The user has no permission to save AI configuration");
-                return;
+                throw new DBException("The user has no permission to save AI configuration");
             }
+            settings.validateCurrentSettings();
 
             if (AIUserProfileCredentials.isAvailable()) {
                 for (AIConfigurationProfile profile : settings.getConfigurations()) {
@@ -208,16 +230,37 @@ public class AISettingsManager {
             settings.prepareSettingsSaving();
             String content = SAVE_PROPS_GSON.toJson(settings);
 
+            settings.validateCurrentSettings();
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
+            configurationSaved = true;
+            settings.commitProfileRemovals();
 
             applyUserDefaultConfiguration(settings);
             this.getSettingsHolder().setSettings(settings);
+            if (AIUserProfileCredentials.isAvailable() && !settings.getPendingProfileSecretDeletions().isEmpty()) {
+                try {
+                    for (String profileId : settings.getPendingProfileSecretDeletions()) {
+                        AIUserProfileCredentials.delete(profileId);
+                        settings.completeProfileSecretDeletion(profileId);
+                    }
+                    DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
+                        AI_CONFIGURATION_FILE_NAME, SAVE_PROPS_GSON.toJson(settings));
+                } catch (DBException e) {
+                    throw new DBException("The AI profile was removed, but finalizing credential cleanup failed. "
+                        + "Save AI settings again to retry.", e);
+                }
+            }
         } catch (Exception e) {
-            log.error("Error saving AI configuration", e);
-            // the settings were entered by the user, so a failed save must not stay in the log only
-            DBWorkbench.getPlatformUI().showError(AIMessages.ai_settings_save_error_title, null, e);
+            if (!configurationSaved) {
+                settings.rollbackProfileRemovals();
+            }
+            if (e instanceof DBException dbException) {
+                throw dbException;
+            }
+            throw new DBException("Error saving AI configuration", e);
+        } finally {
+            raiseChangedEvent(this);
         }
-        raiseChangedEvent(this);
     }
 
 
@@ -268,7 +311,7 @@ public class AISettingsManager {
     private interface AISettingsHolder {
         AISettings getSettings();
 
-        void setSettings(AISettings mruSettings);
+        void setSettings(AISettings mruSettings) throws DBException;
 
         void reset();
     }
@@ -297,12 +340,19 @@ public class AISettingsManager {
         }
 
         @Override
-        public synchronized void setSettings(AISettings mruSettings) {
+        public synchronized void setSettings(@NotNull AISettings mruSettings) throws DBException {
+            mruSettings.validateCurrentSettings();
+            if (this.settings != null && this.settings != mruSettings) {
+                this.settings.invalidateUserCredentials();
+            }
             this.settings = mruSettings;
         }
 
         @Override
         public synchronized void reset() {
+            if (this.settings != null) {
+                this.settings.invalidateUserCredentials();
+            }
             this.settings = null;
         }
     }

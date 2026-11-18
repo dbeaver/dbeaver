@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.model;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -48,7 +51,11 @@ public class WorkspaceConfigEventManager {
     /**
      * Raise workspace configuration file changed event.
      */
-    public static void fireConfigChangedEvent(String configFileName) {
+    public static void fireConfigChangedEvent(@NotNull String configFileName) {
+        fireConfigChangedEvent(configFileName, null);
+    }
+
+    public static void fireConfigChangedEvent(@NotNull String configFileName, @Nullable String sourceSessionId) {
         List<Consumer<Object>> listenersList;
         synchronized (syncRoot) {
             Set<Consumer<Object>> listeners = listenersByConfigFile.get(configFileName);
@@ -60,7 +67,7 @@ public class WorkspaceConfigEventManager {
         }
         if (listenersList != null) {
             for (Consumer<Object> listener : listenersList) {
-                listener.accept(null);
+                listener.accept(sourceSessionId);
             }
         }
     }
