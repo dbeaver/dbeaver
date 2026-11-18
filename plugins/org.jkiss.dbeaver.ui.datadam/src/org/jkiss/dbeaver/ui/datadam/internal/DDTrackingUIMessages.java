@@ -143,6 +143,8 @@ public class DDTrackingUIMessages extends NLS {
     public static String event_time;
     public static String event_type;
     public static String event_details;
+    public static String event_database;
+    public static String show_in_navigator;
     public static String clear_events;
     public static String configuration;
     public static String integration_enabled;

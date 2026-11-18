@@ -75,10 +75,10 @@ class DDConnectionMonitorTest {
         Assertions.assertEquals("0", events.getFirst().details());
         Assertions.assertEquals("oldest", original.getFirst().details());
         Assertions.assertThrows(UnsupportedOperationException.class, events::clear);
-        monitor.record(DDConnectionMonitor.EventType.ERROR, "x".repeat(8_192));
+        monitor.record(DDConnectionMonitor.EventType.ERROR, "x".repeat(100_001));
         Assertions.assertEquals(10_000, monitor.getEvents().size());
         Assertions.assertEquals("1", monitor.getEvents().getFirst().details());
-        Assertions.assertEquals(4_096, monitor.getEvents().getLast().details().length());
+        Assertions.assertEquals(100_000, monitor.getEvents().getLast().details().length());
         monitor.clearEvents();
         Assertions.assertTrue(monitor.getEvents().isEmpty());
         Assertions.assertEquals(10_000, events.size());

@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,20 +70,51 @@ class DDMcpTrackingFunctionServiceTest {
         var parameters = JsonParser.parseString(details(0).substring(details(0).indexOf('\n'))).getAsJsonObject();
         Assertions.assertEquals(10, parameters.getAsJsonObject("options").get("limit").getAsInt());
         Assertions.assertEquals(2, parameters.getAsJsonObject("options").getAsJsonArray("columns").size());
+        var request = monitor.getEvents().getFirst().request();
+        Assertions.assertNotNull(request);
+        Assertions.assertEquals("select 'example'\nfrom sample", request.parameters().get("query"));
+        Assertions.assertEquals(parameters.get("options"), JsonParser.parseString(request.parameters().get("options")));
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> request.parameters().clear());
         Assertions.assertFalse(monitor.getEvents().toString().contains("result-secret"));
         Mockito.verify(delegate).callFunction(call);
     }
 
     @Test
     void boundsParameterDetailsWithoutChangingTheCall() throws Exception {
-        var call = new DDMcpFunctionCall("query", Map.of("query", "x".repeat(8_192)));
+        var call = new DDMcpFunctionCall("query", Map.of("query", "x".repeat(100_001)));
         var result = new DDMcpFunctionResult(new JsonPrimitive("ok"), false);
         Mockito.when(delegate.callFunction(call)).thenReturn(result);
 
         Assertions.assertSame(result, service.callFunction(call));
-        Assertions.assertEquals(4_096, details(0).length());
+        Assertions.assertEquals(100_000, details(0).length());
         Assertions.assertTrue(details(0).startsWith("callFunction: query\n\n{\n"));
         Mockito.verify(delegate).callFunction(call);
+    }
+
+    @Test
+    void preservesConnectionIdentifiersAndParameterRowsWhenDetailsAreTruncated() throws Exception {
+        var arguments = new LinkedHashMap<String, Object>();
+        arguments.put("query", "x".repeat(200_000));
+        arguments.put("project_id", "project-one");
+        arguments.put("datasource_id", "connection-one");
+        arguments.put("optional", null);
+        var call = new DDMcpFunctionCall("query", arguments);
+        Mockito.when(delegate.callFunction(call)).thenReturn(new DDMcpFunctionResult(new JsonPrimitive("ok"), false));
+
+        service.callFunction(call);
+        var event = monitor.getEvents().getFirst();
+        var request = event.request();
+        Assertions.assertNotNull(request);
+        Assertions.assertEquals("callFunction: query", request.operation());
+        Assertions.assertEquals("project-one", request.projectId());
+        Assertions.assertEquals("connection-one", request.datasourceId());
+        Assertions.assertEquals(arguments.keySet(), request.parameters().keySet());
+        Assertions.assertEquals("project-one", request.parameters().get("project_id"));
+        Assertions.assertEquals("connection-one", request.parameters().get("datasource_id"));
+        Assertions.assertEquals("null", request.parameters().get("optional"));
+        Assertions.assertTrue(request.parameters().entrySet().stream()
+            .mapToInt(parameter -> parameter.getKey().length() + parameter.getValue().length()).sum() <= 100_000);
+        Assertions.assertEquals(100_000, event.details().length());
     }
 
     @Test
@@ -91,6 +123,7 @@ class DDMcpTrackingFunctionServiceTest {
         Assertions.assertTrue(service.getFunctions().isEmpty());
         Assertions.assertEquals(List.of(EventType.MCP_REQUEST), types());
         Assertions.assertEquals("getFunctions", details(0));
+        Assertions.assertNull(monitor.getEvents().getFirst().request());
     }
 
     @Test

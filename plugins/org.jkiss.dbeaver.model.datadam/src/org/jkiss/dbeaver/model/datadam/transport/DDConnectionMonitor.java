@@ -20,11 +20,17 @@ import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpAiFunctionCatalog;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Bounded, in-memory diagnostics for the current or most recent WebSocket connection.
@@ -32,14 +38,28 @@ import java.util.List;
  */
 public final class DDConnectionMonitor {
     private static final int MAX_EVENTS = 10_000;
-    private static final int MAX_DETAILS_LENGTH = 4_096;
+    private static final int MAX_DETAILS_LENGTH = 100_000;
 
     public enum EventType {
         CONNECTING, CONNECTED, DISCONNECTED, CLOSED, SIGNED_IN, SIGNED_OUT, INVALID_TOKEN, ERROR,
         MCP_REQUEST
     }
 
-    public record Event(@NotNull Instant time, @NotNull EventType type, @NotNull String details) {
+    public record Event(@NotNull Instant time, @NotNull EventType type, @NotNull String details, @Nullable McpRequest request) {
+        public Event(@NotNull Instant time, @NotNull EventType type, @NotNull String details) {
+            this(time, type, details, null);
+        }
+    }
+
+    public record McpRequest(
+        @NotNull String operation,
+        @Nullable String projectId,
+        @Nullable String datasourceId,
+        @NotNull Map<String, String> parameters
+    ) {
+        public McpRequest {
+            parameters = Collections.unmodifiableMap(new LinkedHashMap<>(parameters));
+        }
     }
 
     public record Snapshot(
@@ -108,10 +128,58 @@ public final class DDConnectionMonitor {
     }
 
     public synchronized void record(@NotNull EventType type, @NotNull String details) {
+        addEvent(new Event(Instant.now(), type, limit(details)));
+    }
+
+    public synchronized void recordMcpRequest(@NotNull String operation, @Nullable Map<String, Object> arguments) {
+        if (arguments == null) {
+            record(EventType.MCP_REQUEST, operation);
+            return;
+        }
+        Map<String, String> parameters = new LinkedHashMap<>();
+        int remaining = MAX_DETAILS_LENGTH;
+        long valueLength = 0;
+        for (var parameter : arguments.entrySet()) {
+            if (parameter.getKey().length() >= remaining) {
+                break;
+            }
+            remaining -= parameter.getKey().length();
+            String value = parameter.getValue() instanceof String string ? string : JSONUtils.PRETTY_GSON.toJson(parameter.getValue());
+            parameters.put(parameter.getKey(), value);
+            valueLength += value.length();
+        }
+        if (valueLength > remaining) {
+            // Trim the largest values first, preserving short parameters such as connection identifiers.
+            long excess = valueLength - remaining;
+            var largestFirst = parameters.entrySet().stream()
+                .sorted(Comparator.<Map.Entry<String, String>>comparingInt(entry -> entry.getValue().length()).reversed()).toList();
+            for (var parameter : largestFirst) {
+                int removed = (int) Math.min(excess, parameter.getValue().length());
+                parameter.setValue(parameter.getValue().substring(0, parameter.getValue().length() - removed));
+                excess -= removed;
+                if (excess == 0) {
+                    break;
+                }
+            }
+        }
+        // Keep connection identifiers separately so a long preceding argument cannot truncate them away.
+        var request = new McpRequest(limit(operation),
+            argumentId(arguments, DDMcpAiFunctionCatalog.PROJECT_ID_PARAMETER),
+            argumentId(arguments, DDMcpAiFunctionCatalog.DATASOURCE_ID_PARAMETER), parameters);
+        addEvent(new Event(Instant.now(), EventType.MCP_REQUEST,
+            limit(operation + "\n\n" + JSONUtils.PRETTY_GSON.toJson(arguments)), request));
+    }
+
+    @Nullable
+    private static String argumentId(@NotNull Map<String, Object> arguments, @NotNull String name) {
+        return arguments.get(name) instanceof String id ? limit(id) : null;
+    }
+
+    private void addEvent(@NotNull Event event) {
         if (events.size() == MAX_EVENTS) {
             events.removeFirst();
         }
-        events.addLast(new Event(Instant.now(), type, limit(details)));
+        events.addLast(event);
     }
 
     @NotNull
