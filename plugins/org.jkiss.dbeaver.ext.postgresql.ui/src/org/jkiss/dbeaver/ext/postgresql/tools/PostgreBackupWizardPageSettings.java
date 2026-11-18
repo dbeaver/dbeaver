@@ -16,32 +16,49 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupRestoreSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDumpVersion;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
+
 
 class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<PostgreBackupWizard> {
+
+    private static final Log log = Log.getLog(PostgreBackupWizardPageSettings.class);
 
     private Combo formatCombo;
     private Combo compressCombo;
     private Combo encodingCombo;
     private Button useInsertsCheck;
+    private Label rowsPerInsertLabel;
     private Spinner rowsPerInsertSpinner;
     private Button noPrivilegesCheck;
     private Button noOwnerCheck;
     private Button dropObjects;
     private Button createDatabase;
+    private DBPNativeClientLocation checkedClientHome;
+    private int versionCheckId;
+    private boolean supportsMultipleRowsPerInsert;
 
     PostgreBackupWizardPageSettings(PostgreBackupWizard wizard)
     {
@@ -102,18 +119,18 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
             2
         );
         useInsertsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-            rowsPerInsertSpinner.setEnabled(useInsertsCheck.getSelection());
+            updateRowsPerInsertState();
             updateState();
         }));
-        rowsPerInsertSpinner = UIUtils.createLabelSpinner(
+        rowsPerInsertLabel = UIUtils.createControlLabel(formatGroup, PostgreMessages.wizard_backup_page_setting_label_rows_per_insert);
+        rowsPerInsertSpinner = UIUtils.createSpinner(
             formatGroup,
-            PostgreMessages.wizard_backup_page_setting_label_rows_per_insert,
             PostgreMessages.wizard_backup_page_setting_label_rows_per_insert_tip,
             settings.getRowsPerInsert(),
             1,
             Integer.MAX_VALUE
         );
-        rowsPerInsertSpinner.setEnabled(useInsertsCheck.getSelection());
+        rowsPerInsertSpinner.setEnabled(false);
         rowsPerInsertSpinner.addModifyListener(e -> updateState());
 
         noPrivilegesCheck = UIUtils.createCheckbox(formatGroup,
@@ -163,6 +180,72 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         PostgreUIUtils.addCompatibilityInfoLabelForForks(composite, wizard, null);
 
         setControl(composite);
+    }
+
+    @Override
+    public void activatePage() {
+        updatePageCompletion();
+    }
+
+    @Override
+    protected void updatePageCompletion() {
+        checkPgDumpVersion();
+        super.updatePageCompletion();
+    }
+
+    private void checkPgDumpVersion() {
+        if (rowsPerInsertSpinner == null || rowsPerInsertSpinner.isDisposed()) {
+            return;
+        }
+        DBPNativeClientLocation clientHome = wizard.getSettings().getClientHome();
+        if (clientHome == checkedClientHome) {
+            return;
+        }
+        checkedClientHome = clientHome;
+        supportsMultipleRowsPerInsert = false;
+        updateRowsPerInsertState();
+        int checkId = ++versionCheckId;
+        if (clientHome == null) {
+            return;
+        }
+        new AbstractJob("Check pg_dump version") {
+            {
+                setSystem(true);
+            }
+
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                boolean supported = false;
+                try {
+                    supported = PostgreDumpVersion.getMajorVersion(clientHome) >= PostgreDumpVersion.MIN_ROWS_PER_INSERT_VERSION;
+                } catch (IOException e) {
+                    log.debug("Could not determine pg_dump version", e);
+                }
+                boolean versionSupported = supported;
+                UIUtils.asyncExec(() -> {
+                    if (rowsPerInsertSpinner.isDisposed() || versionCheckId != checkId) {
+                        return;
+                    }
+                    supportsMultipleRowsPerInsert = versionSupported;
+                    if (!versionSupported && rowsPerInsertSpinner.getSelection() > 1) {
+                        rowsPerInsertSpinner.setSelection(1);
+                        wizard.getSettings().setRowsPerInsert(1);
+                    }
+                    updateRowsPerInsertState();
+                });
+                return Status.OK_STATUS;
+            }
+        }.schedule();
+    }
+
+    private void updateRowsPerInsertState() {
+        rowsPerInsertSpinner.setEnabled(useInsertsCheck.getSelection() && supportsMultipleRowsPerInsert);
+        String tooltip = supportsMultipleRowsPerInsert
+            ? PostgreMessages.wizard_backup_page_setting_label_rows_per_insert_tip
+            : PostgreMessages.wizard_backup_page_setting_label_rows_per_insert_requires_pg_dump_12;
+        rowsPerInsertLabel.setToolTipText(tooltip);
+        rowsPerInsertSpinner.setToolTipText(tooltip);
     }
 
     @Override
