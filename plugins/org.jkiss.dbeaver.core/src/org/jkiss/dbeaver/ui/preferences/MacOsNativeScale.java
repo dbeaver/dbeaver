@@ -21,7 +21,9 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 
@@ -34,6 +36,7 @@ import java.util.Map;
 final class MacOsNativeScale {
     private static final String DISPLAY_KEY = MacOsNativeScale.class.getName();
     private static final String READY_PROPERTY = "dbeaver.ui.nativeScale.ready";
+    private static final String PAINTER_READY_PROPERTY = "dbeaver.ui.nativeScale.painterReady";
     private static final String ERROR_PROPERTY = "dbeaver.ui.nativeScale.error";
     private static final String FACTOR_PROPERTY = "dbeaver.ui.nativeScale.factor";
     private static final int MAX_DIALOG_PERCENT = 90;
@@ -77,11 +80,25 @@ final class MacOsNativeScale {
                     ? percentage / (double) MacOsUiScale.DEFAULT_SCALE : 1);
             }
         });
+        Listener redrawSearch = event -> {
+            if (event.widget instanceof Text text && (text.getStyle() & SWT.SEARCH) != 0) {
+                // AppKit installs its field editor after the focus callback; refresh the cached background afterwards
+                display.asyncExec(() -> {
+                    if (!text.isDisposed()) {
+                        text.redraw();
+                    }
+                });
+            }
+        };
+        display.addFilter(SWT.FocusIn, redrawSearch);
+        display.addFilter(SWT.FocusOut, redrawSearch);
+        display.addFilter(SWT.Modify, redrawSearch);
         display.disposeExec(initialized::clear);
     }
 
     static boolean isAvailable() {
-        return Boolean.getBoolean(READY_PROPERTY) && System.getProperty(ERROR_PROPERTY) == null;
+        return Boolean.getBoolean(READY_PROPERTY) && Boolean.getBoolean(PAINTER_READY_PROPERTY)
+            && System.getProperty(ERROR_PROPERTY) == null;
     }
 
     static void apply(@NotNull Display display, int percentage) {
