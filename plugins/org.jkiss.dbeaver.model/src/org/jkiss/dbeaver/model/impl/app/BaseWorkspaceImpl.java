@@ -273,12 +273,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
             }
             if (ni == null) {
                 log.debug("Cannot detect local network interface");
-                return "NOMACADDR";
+                return RuntimeUtils.NO_MAC_HASH;
             }
             return RuntimeUtils.hashMacAddress(Objects.requireNonNull(ni.getHardwareAddress()));
         } catch (Exception e) {
             log.debug(e);
-            return "XXXXXXXXXX";
+            return RuntimeUtils.MAC_HASH_ERROR;
         }
     }
 

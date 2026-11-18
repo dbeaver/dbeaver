@@ -148,10 +148,10 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     private static String readMacHash() {
         try {
             byte[] address = RuntimeUtils.selectMacAddress();
-            return address == null ? "NOMACADDR" : RuntimeUtils.hashMacAddress(address);
+            return address == null ? RuntimeUtils.NO_MAC_HASH : RuntimeUtils.hashMacAddress(address);
         } catch (SocketException | NoSuchAlgorithmException e) {
             log.debug(e);
-            return "XXXXXXXXXX";
+            return RuntimeUtils.MAC_HASH_ERROR;
         }
     }
 

@@ -59,6 +59,8 @@ public final class RuntimeUtils {
 
     public static final String ENV_WORKSPACE_PATH = "DBEAVER_WORKSPACE";
     public static final String ENV_DATA_PATH = "DBEAVER_DATA";
+    public static final String NO_MAC_HASH = "NOMACADDR";
+    public static final String MAC_HASH_ERROR = "XXXXXXXXXX";
 
     private static final Log log = Log.getLog(RuntimeUtils.class);
 
@@ -72,7 +74,10 @@ public final class RuntimeUtils {
     private static final byte[] PLACEHOLDER_MAC_ADDRESS = {2, 0, 0, 0, 0, 0};
     private static final Pattern PEER_INTERFACE = Pattern.compile("(?:awdl|llw)\\d+");
     private static final Pattern VIRTUAL_INTERFACE = Pattern.compile(
-        "(?:bridge|docker|virbr|vboxnet|vmnet|vmenet|tun|tap|utun)\\d+|veth\\w+"
+        "(?:bridge|docker|virbr|vboxnet|vmnet|vmenet|tun|tap|utun)\\d+|veth\\w+|br-[0-9a-f]{12}"
+    );
+    private static final Pattern WINDOWS_VIRTUAL_INTERFACE = Pattern.compile(
+        "\\b(?:virtual|vmware|hyper-v|vethernet|virtualbox)\\b", Pattern.CASE_INSENSITIVE
     );
 
     static {
@@ -570,8 +575,10 @@ public final class RuntimeUtils {
         if (PEER_INTERFACE.matcher(name).matches()) {
             return 2;
         }
+        String displayName = IS_WINDOWS ? networkInterface.getDisplayName() : null;
+        boolean windowsVirtual = displayName != null && WINDOWS_VIRTUAL_INTERFACE.matcher(displayName).find();
         if (networkInterface.isVirtual() || VIRTUAL_INTERFACE.matcher(name).matches()
-            || networkInterface.isPointToPoint() || networkInterface.isLoopback()
+            || windowsVirtual || networkInterface.isPointToPoint() || networkInterface.isLoopback()
         ) {
             return 1;
         }
