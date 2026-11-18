@@ -13,10 +13,11 @@ Free multi-platform database tool for developers, SQL programmers, database admi
 * Supports any database which has JDBC or ODBC driver (basically - almost all existing databases).
 * Integrates AI tools for work with data, SQL and database structure
 
-<a href="https://dbeaver.io/product/dbeaver-sql-editor.png"><img src="https://dbeaver.io/product/dbeaver-sql-editor.png" width="400"/></a>
-<a href="https://dbeaver.io/product/dbeaver-gis-viewer.png"><img src="https://dbeaver.io/product/dbeaver-gis-viewer.png" width="400"/></a>
-<a href="https://dbeaver.io/product/dbeaver-data-editor.png"><img src="https://dbeaver.io/product/dbeaver-data-editor.png" width="400"/></a>
-<a href="https://dbeaver.io/product/dbeaver-erd.png"><img src="https://dbeaver.io/product/dbeaver-erd.png" width="400"/></a>
+<a href=".github/images/dbeaver-sql-editor.png"><img src=".github/images/dbeaver-sql-editor.png" width="400"/></a>
+<a href=".github/images/dbeaver-data-export.png"><img src=".github/images/dbeaver-data-export.png" width="400"/></a>
+<a href=".github/images/dbeaver-gis-viewer.png"><img src=".github/images/dbeaver-gis-viewer.png" width="400"/></a>
+<a href=".github/images/dbeaver-erd.png"><img src=".github/images/dbeaver-erd.png" width="400"/></a>
+<a href=".github/images/dbeaver-data-editor.png"><img src=".github/images/dbeaver-data-editor.png" width="400"/></a>
 
 ## Download
 
