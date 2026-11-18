@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.utils.AIDataExportUtils;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -122,18 +123,45 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull SQLQuery query
     ) throws DBException {
         String queryText = query.getText();
-        if (hasBackslashQuote(queryText)
-            && !executionContext.getDataSource().getSQLDialect().getExecutableCommentPrefixes().isEmpty()) {
-            verifySqlMode(context, executionContext, queryText);
+        SQLDialect dialect = null;
+        SQLQuery validationQuery = query;
+        if (hasBackslashQuote(queryText)) {
+            dialect = executionContext.getDataSource().getSQLDialect();
+            if (!dialect.getExecutableCommentPrefixes().isEmpty()) {
+                String sqlMode = verifySqlMode(context, executionContext);
+                if (queryText.contains("\\\"")) {
+                    if (sqlMode.contains("ANSI_QUOTES")) {
+                        SQLUtils.prepareQueryForParsing(dialect, queryText, false, true);
+                    } else {
+                        String doubleQuoted = SQLUtils.prepareQueryForParsing(dialect, queryText, true);
+                        String prepared;
+                        try {
+                            prepared = SQLUtils.prepareQueryForParsing(dialect, queryText);
+                        } catch (DBCException e) {
+                            // the baseline scan can reject a comment hidden by a double-quoted string
+                            prepared = null;
+                        }
+                        if (!doubleQuoted.equals(prepared)) {
+                            validationQuery = new SQLQuery(executionContext.getDataSource(), doubleQuoted, query);
+                        }
+                    }
+                }
+            }
         }
-        if (query.getStatement() == null || query.getParseError() != null || query.getStatement() instanceof UnsupportedStatement) {
-            SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
+        if (validationQuery.getStatement() == null || validationQuery.getParseError() != null
+            || validationQuery.getStatement() instanceof UnsupportedStatement) {
+            if (validationQuery != query) {
+                throw new DBException("Cannot verify double-quoted SQL string in an unparsed statement");
+            }
+            if (dialect == null) {
+                dialect = executionContext.getDataSource().getSQLDialect();
+            }
             if (!dialect.getExecutableCommentPrefixes().isEmpty() && hasActiveExecutableComment(dialect, queryText)) {
                 throw new DBException("Cannot verify database object scope in an unparsed SQL statement containing executable comments");
             }
             verifyQueryText(context, executionContext, query.getText());
         } else {
-            verifyStatement(context, executionContext, query);
+            verifyStatement(context, executionContext, validationQuery);
         }
     }
 
@@ -141,10 +169,10 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         return sql != null && (sql.contains("\\'") || sql.contains("\\\""));
     }
 
-    private static void verifySqlMode(
+    @NotNull
+    private static String verifySqlMode(
         @NotNull AIFunctionContext context,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull String sql
+        @NotNull DBCExecutionContext executionContext
     ) throws DBException {
         try (DBCSession session = executionContext.openSession(context.getMonitor(), DBCExecutionPurpose.UTIL, "Read SQL mode");
              DBCStatement statement = session.prepareStatement(DBCStatementType.QUERY, "SELECT @@SESSION.sql_mode", false, false, false)) {
@@ -156,10 +184,10 @@ public abstract class ExecuteSQLFunction implements AIFunction {
                     throw new DBException("Cannot verify session SQL mode");
                 }
                 String normalizedMode = sqlMode.toUpperCase(Locale.ROOT);
-                if (normalizedMode.contains("NO_BACKSLASH_ESCAPES")
-                    || sql.contains("\\\"") && normalizedMode.contains("ANSI_QUOTES")) {
+                if (normalizedMode.contains("NO_BACKSLASH_ESCAPES")) {
                     throw new DBException("Cannot verify SQL string escapes in the current session SQL mode");
                 }
+                return normalizedMode;
             }
         }
     }

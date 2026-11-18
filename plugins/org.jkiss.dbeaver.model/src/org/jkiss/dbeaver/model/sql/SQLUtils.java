@@ -176,9 +176,24 @@ public final class SQLUtils {
 
     @NotNull
     public static String prepareQueryForParsing(@NotNull SQLDialect dialect, @NotNull String sql) throws DBCException {
+        return prepareQueryForParsing(dialect, sql, false, false);
+    }
+
+    @NotNull
+    public static String prepareQueryForParsing(
+        @NotNull SQLDialect dialect, @NotNull String sql, boolean doubleQuotedStrings
+    ) throws DBCException {
+        return prepareQueryForParsing(dialect, sql, doubleQuotedStrings, false);
+    }
+
+    @NotNull
+    public static String prepareQueryForParsing(
+        @NotNull SQLDialect dialect, @NotNull String sql, boolean doubleQuotedStrings, boolean rejectDoubleQuoteEscapes
+    ) throws DBCException {
         List<String> lineComments = ArrayUtils.safeArray(dialect.getSingleLineComments());
         List<String> executablePrefixes = dialect.getExecutableCommentPrefixes();
-        if (executablePrefixes.isEmpty() && lineComments.stream().allMatch(prefix -> prefix.startsWith(SQLConstants.SL_COMMENT))) {
+        if (!doubleQuotedStrings && !rejectDoubleQuoteEscapes && executablePrefixes.isEmpty()
+            && lineComments.stream().allMatch(prefix -> prefix.startsWith(SQLConstants.SL_COMMENT))) {
             // let jsqlparser handle standard comments and dialect literals, including dollar-quoted strings
             return sql;
         }
@@ -193,10 +208,24 @@ public final class SQLUtils {
         while (pos < result.length()) {
             String[] stringQuote = quoteStartingAt(result, pos, stringQuotes);
             String[] identifierQuote = identifierQuotes == null ? null : quoteStartingAt(result, pos, identifierQuotes);
-            if (stringQuote != null) {
+            if (doubleQuotedStrings && result.charAt(pos) == '"') {
+                int end = findQuotedEnd(result, pos, new String[]{"\"", "\""}, escapeChar);
+                if (end < 0) {
+                    throw new DBCException("Unterminated double-quoted SQL string");
+                }
+                maskCommentRange(result, pos, end);
+                result.setCharAt(pos, '\'');
+                result.setCharAt(end - 1, '\'');
+                pos = end;
+            } else if (stringQuote != null) {
                 pos = skipQuoted(result, pos, stringQuote, escapeChar);
             } else if (identifierQuote != null) {
-                pos = skipQuoted(result, pos, identifierQuote, (char) 0);
+                int end = skipQuoted(result, pos, identifierQuote, (char) 0);
+                if (rejectDoubleQuoteEscapes && identifierQuote[0].equals("\"")
+                    && result.substring(pos, end).contains("\\\"")) {
+                    throw new DBCException("Cannot verify escaped double quote in SQL identifier");
+                }
+                pos = end;
             } else if (executableComment && startsWith(result, blockComment.getSecond(), pos)) {
                 maskCommentRange(result, pos, pos + blockComment.getSecond().length());
                 pos += blockComment.getSecond().length();
@@ -271,6 +300,9 @@ public final class SQLUtils {
                 // jsqlparser always treats -- as a comment, but mysql requires a separator after it
                 subtractionSeparators.add(pos + 1);
                 pos += 2;
+            } else if (rejectDoubleQuoteEscapes && result.charAt(pos) == '\\'
+                && pos + 1 < result.length() && result.charAt(pos + 1) == '"') {
+                throw new DBCException("Cannot verify escaped double quote outside SQL string");
             } else {
                 pos++;
             }
@@ -361,6 +393,11 @@ public final class SQLUtils {
     }
 
     private static int skipQuoted(@NotNull CharSequence sql, int openPos, @NotNull String[] quote, char escapeChar) {
+        int end = findQuotedEnd(sql, openPos, quote, escapeChar);
+        return end < 0 ? sql.length() : end;
+    }
+
+    private static int findQuotedEnd(@NotNull CharSequence sql, int openPos, @NotNull String[] quote, char escapeChar) {
         String close = quote[1];
         int pos = openPos + quote[0].length();
         while (pos < sql.length()) {
@@ -372,7 +409,7 @@ public final class SQLUtils {
                 pos++;
             }
         }
-        return sql.length();
+        return -1;
     }
 
     @Nullable

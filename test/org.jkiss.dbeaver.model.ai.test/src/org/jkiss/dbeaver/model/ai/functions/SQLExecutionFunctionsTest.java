@@ -426,14 +426,28 @@ class SQLExecutionFunctionsTest {
             "SELECT 'it\\'s' FROM public.orders"));
         Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
             "SELECT 'it\\\"s' FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT \"it\\\"s\" FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT \"it\\\"s /*! UNION SELECT id FROM private.orders */\" FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT \"it\\\"s /*! nested /*! hidden */ */\" FROM public.orders"));
+        fixture.assertRestricted(new ExecuteDQLFunction(),
+            "SELECT \"it\\\"s\" FROM private.orders");
+        fixture.assertRestricted(new ExecuteDQLFunction(),
+            "SELECT \"it\\\"s\" FROM public.orders /*! UNION SELECT id FROM private.orders */");
         fixture.setSqlMode("NO_BACKSLASH_ESCAPES");
         DBException modeError = Assertions.assertThrows(DBException.class, () -> fixture.verify(new ExecuteDQLFunction(),
             "SELECT 'x\\' /*! UNION SELECT id FROM private.orders */ -- '"));
         Assertions.assertTrue(modeError.getMessage().contains("SQL mode"));
         fixture.setSqlMode("ANSI_QUOTES");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 'it\\\"s' FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 1 /* \\\" */ FROM public.orders"));
         modeError = Assertions.assertThrows(DBException.class,
             () -> fixture.verify(new ExecuteDQLFunction(), "SELECT \"x\\\" FROM public.orders"));
-        Assertions.assertTrue(modeError.getMessage().contains("SQL mode"));
+        Assertions.assertTrue(modeError.getMessage().contains("escaped double quote"));
         fixture.setSqlMode("");
         DBException scriptError = Assertions.assertThrows(DBException.class, () -> new ExecuteDQLFunction().verifyQueries(
             fixture.context, fixture.executionContext,
