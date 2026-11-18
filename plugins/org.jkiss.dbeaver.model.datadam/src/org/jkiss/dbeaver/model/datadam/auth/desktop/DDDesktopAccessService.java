@@ -275,24 +275,37 @@ public class DDDesktopAccessService {
     }
 
     private void expireAccess(long version, @Nullable Instant expiresAt) {
+        boolean recovering;
         operationLock.writeLock().lock();
         try {
             if (version != expiryVersion) {
                 return;
             }
             expiryJob = null;
-            boolean recovering = !loaded || !initializationComplete;
-            try {
-                if (recovering) {
+            recovering = !loaded || !initializationComplete;
+            if (recovering) {
+                try {
                     initializeAccess();
-                } else {
-                    getAccessTokenForResource(storageUrl);
-                }
-            } catch (DBException e) {
-                if (recovering) {
+                } catch (DBException e) {
                     retryInitialization();
+                    log.debug("DataDam desktop access could not be initialized");
                 }
+            }
+        } finally {
+            operationLock.writeLock().unlock();
+        }
+        // A slow refresh must not hide already validated keys from concurrent readers.
+        if (!recovering) {
+            try {
+                getAccessTokenForResource(storageUrl);
+            } catch (DBException e) {
                 log.debug("DataDam desktop access could not be renewed");
+            }
+        }
+        operationLock.writeLock().lock();
+        try {
+            if (version != expiryVersion) {
+                return;
             }
             // An early wake keeps the deadline; a rotated token needs a new WebSocket handshake.
             boolean refreshed = !Objects.equals(expiresAt, tokenManager.getExpiresAt());

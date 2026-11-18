@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(60)
@@ -321,6 +323,38 @@ class DDDesktopAccessLifecycleTest {
             Assertions.assertEquals(DDDesktopAccessService.Status.SIGNED_IN, access.getStatus());
             keys.verify(DDKeyStore::clear, Mockito.never());
             Mockito.verify(manager, Mockito.never()).signIn(Mockito.any(), Mockito.any(), Mockito.any());
+        }
+    }
+
+    @Test
+    void scheduledRefreshKeepsValidatedKeysAvailableToConcurrentReaders() throws Exception {
+        DDDesktopTokenManager manager = Mockito.mock(DDDesktopTokenManager.class);
+        Instant expires = Instant.now().plusSeconds(3600);
+        Mockito.when(manager.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        Mockito.when(manager.getExpiresAt()).thenReturn(expires);
+        Mockito.when(manager.getRefreshAt()).thenReturn(expires);
+        DDKeyBundle bundle = new DDKeyBundle(UUID.randomUUID(), "signing-key", "data-key", 1);
+        AtomicReference<ICoreRunnable> renewal = new AtomicReference<>();
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var clients = Mockito.mockConstruction(DDAccountClient.class, (client, context) -> {
+                 Mockito.when(client.getAccountId()).thenReturn(bundle.accountId());
+             });
+             var jobs = Mockito.mockStatic(Job.class);
+             var reader = Executors.newSingleThreadExecutor()) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            jobs.when(() -> Job.createSystem(Mockito.anyString(), Mockito.any(ICoreRunnable.class))).thenAnswer(invocation -> {
+                renewal.set(invocation.getArgument(1));
+                return Mockito.mock(Job.class);
+            });
+            DDDesktopAccessService access = new DDDesktopAccessService(manager);
+            access.load();
+            Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenAnswer(invocation -> {
+                Assertions.assertEquals(bundle, reader.submit(access::getKeyBundle).get(1, TimeUnit.SECONDS));
+                throw new DBException("SSO temporarily unavailable");
+            });
+
+            renewal.get().run(new NullProgressMonitor());
+            Assertions.assertEquals(bundle, access.getKeyBundle());
         }
     }
 
