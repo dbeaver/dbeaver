@@ -22,6 +22,7 @@ import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -132,15 +133,28 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
     @NotNull
     @Override
     protected DBException mapErrorResponse(int code, @NotNull String message, @NotNull URI uri) {
-        return new DBException("Desktop SSO request failed (HTTP " + code + ")");
+        boolean invalidGrant = false;
+        if (code == 400) {
+            try {
+                var error = JsonParser.parseString(message).getAsJsonObject().get("error");
+                invalidGrant = error != null && error.isJsonPrimitive()
+                    && DDSsoConstants.ERROR_INVALID_GRANT.equals(error.getAsString());
+            } catch (RuntimeException e) {
+                // Unrecognized responses are not evidence that saved authorization has expired.
+            }
+        }
+        return new DDDesktopSsoException(code, invalidGrant);
     }
 
     @Override
     protected void handleRequestException(@NotNull String message, @NotNull Throwable e) throws DBException {
+        if (e instanceof DDDesktopSsoException ssoError) {
+            throw ssoError;
+        }
         if (e instanceof JsonParseException) {
             throw new DBException("Invalid desktop SSO response", e);
         }
-        // Transport errors can include response data. A failed rotation is never retried automatically.
+        // Do not include transport error text, which can contain response data.
         throw new DBException("Desktop SSO request failed", e);
     }
 

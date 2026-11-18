@@ -42,6 +42,8 @@ public class DDDesktopAccessService {
     public enum Status { SIGNED_IN, SIGNED_OUT, INVALID_TOKEN, UNLOADED }
 
     private static final Log log = Log.getLog(DDDesktopAccessService.class);
+    private static final long MIN_RETRY_MILLIS = 1_000;
+    private static final long MAX_RETRY_MILLIS = 60_000;
     private static final DDDesktopAccessService INSTANCE = new DDDesktopAccessService(DDDesktopTokenManager.getInstance());
 
     private final DDDesktopTokenManager tokenManager;
@@ -53,6 +55,9 @@ public class DDDesktopAccessService {
     private final DDAccountClient accountClient = new DDAccountClient(accountUrl, this);
     private final DDDesktopUserService userService;
     private volatile boolean loaded;
+    private boolean initializationComplete;
+    private Instant initializationRetryAt = Instant.EPOCH;
+    private long retryMillis = MIN_RETRY_MILLIS;
     @Nullable
     private volatile DDKeyBundle keyBundle;
     @Nullable
@@ -139,17 +144,18 @@ public class DDDesktopAccessService {
     //can call some UI functionality. so must be kept separately from instance creation
     public void load() throws DBException {
         operationLock.writeLock().lock();
-        if (loaded) {
+        if ((loaded && initializationComplete) || Instant.now().isBefore(initializationRetryAt)) {
             operationLock.writeLock().unlock();
             return;
         }
         try {
             log.debug("Loading DataDam desktop access");
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
-            tokenManager.load(storageUrl);
-            updateKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
+            initializeAccess();
+        } catch (DBException e) {
+            retryInitialization();
+            throw e;
         } finally {
-            loaded = true;
             finishAccessChange();
         }
     }
@@ -160,9 +166,13 @@ public class DDDesktopAccessService {
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.signIn(accountUrl, storageUrl, monitor);
             loaded = true;
+            initializationComplete = false;
             setKeyBundle(null);
-            updateKeyBundle(DDKeyStore.load());
+            initializeAccess();
             log.debug("Signed in to DataDam desktop access");
+        } catch (DBException e) {
+            retryInitialization();
+            throw e;
         } finally {
             finishAccessChange();
         }
@@ -201,6 +211,9 @@ public class DDDesktopAccessService {
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.signOut();
             loaded = true;
+            initializationComplete = true;
+            initializationRetryAt = Instant.EPOCH;
+            retryMillis = MIN_RETRY_MILLIS;
             setKeyBundle(null);
             DDKeyStore.clear();
             log.debug("Signed out of DataDam desktop access");
@@ -243,33 +256,51 @@ public class DDDesktopAccessService {
             expiryJob.cancel();
             expiryJob = null;
         }
-        if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
+        Instant expiresAt = tokenManager.getExpiresAt();
+        Instant nextAttempt;
+        if (!loaded || !initializationComplete) {
+            nextAttempt = initializationRetryAt;
+        } else if (tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN) {
+            nextAttempt = tokenManager.getRefreshAt();
+        } else {
             return;
         }
-        Instant expiresAt = tokenManager.getExpiresAt();
-        if (expiresAt != null) {
+        if (nextAttempt != null) {
             Job job = Job.createSystem("Expire DataDam desktop access", monitor -> {
                 expireAccess(version, expiresAt);
             });
             expiryJob = job;
-            job.schedule(Math.max(1, Duration.between(Instant.now(), expiresAt).toMillis()));
+            job.schedule(Math.max(1, Duration.between(Instant.now(), nextAttempt).toMillis()));
         }
     }
 
-    private void expireAccess(long version, @NotNull Instant expiresAt) {
+    private void expireAccess(long version, @Nullable Instant expiresAt) {
+        boolean recovering;
         operationLock.writeLock().lock();
         try {
             if (version != expiryVersion) {
                 return;
             }
             expiryJob = null;
+            recovering = !loaded || !initializationComplete;
+            if (recovering) {
+                try {
+                    initializeAccess();
+                } catch (DBException e) {
+                    retryInitialization();
+                    log.debug("DataDam desktop access could not be initialized");
+                }
+            }
         } finally {
             operationLock.writeLock().unlock();
         }
-        try {
-            getAccessTokenForResource(storageUrl);
-        } catch (DBException e) {
-            log.debug("DataDam authorization requires sign-in");
+        // A slow refresh must not hide already validated keys from concurrent readers.
+        if (!recovering) {
+            try {
+                getAccessTokenForResource(storageUrl);
+            } catch (DBException e) {
+                log.debug("DataDam desktop access could not be renewed");
+            }
         }
         operationLock.writeLock().lock();
         try {
@@ -278,16 +309,38 @@ public class DDDesktopAccessService {
             }
             // An early wake keeps the deadline; a rotated token needs a new WebSocket handshake.
             boolean refreshed = !Objects.equals(expiresAt, tokenManager.getExpiresAt());
-            if (refreshed) {
+            boolean recovered = recovering && initializationComplete;
+            if (refreshed || recovered) {
                 notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             }
             scheduleExpiry();
-            if (refreshed || tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
+            if (refreshed || recovered || tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
                 notifyAccessListeners(DDDesktopAccessListener::accessChanged);
             }
         } finally {
             operationLock.writeLock().unlock();
         }
+    }
+
+    private void initializeAccess() throws DBException {
+        if (!loaded) {
+            tokenManager.load(storageUrl);
+            loaded = true;
+        }
+        if (tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN) {
+            tokenManager.getAccessTokenForResource(storageUrl);
+            updateKeyBundle(DDKeyStore.load());
+        } else {
+            setKeyBundle(null);
+        }
+        initializationComplete = true;
+        initializationRetryAt = Instant.EPOCH;
+        retryMillis = MIN_RETRY_MILLIS;
+    }
+
+    private void retryInitialization() {
+        initializationRetryAt = Instant.now().plusMillis(retryMillis);
+        retryMillis = Math.min(MAX_RETRY_MILLIS, retryMillis * 2);
     }
 
     private void notifyAccessListeners(@NotNull Consumer<DDDesktopAccessListener> event) {

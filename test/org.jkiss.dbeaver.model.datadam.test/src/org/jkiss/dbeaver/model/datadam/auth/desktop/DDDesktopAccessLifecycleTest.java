@@ -20,12 +20,15 @@ import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
 import com.google.gson.JsonObject;
+import org.eclipse.core.runtime.ICoreRunnable;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistrationRegistry;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
@@ -42,6 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(60)
@@ -70,10 +75,11 @@ class DDDesktopAccessLifecycleTest {
 
     @Test
     void completesTheAccessChangeEvenWhenEncryptionKeysCannotBeLoaded() throws Exception {
-        DDDesktopAccessService access = access();
+        DDDesktopAccessService access = access(new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_IN));
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
-        try (var keys = Mockito.mockStatic(DDKeyStore.class)) {
+        try (var jobs = new ExpiryJobs();
+             var keys = Mockito.mockStatic(DDKeyStore.class)) {
             keys.when(DDKeyStore::load).thenThrow(new DBException("Keys unavailable"));
 
             Assertions.assertThrows(DBException.class, () -> access.signIn(Mockito.mock(DBRProgressMonitor.class)));
@@ -238,6 +244,120 @@ class DDDesktopAccessLifecycleTest {
         }
     }
 
+    @Test
+    void retriesIncompleteKeyInitializationWithoutRequiringAnotherLogin() throws Exception {
+        DDDesktopTokenManager manager = Mockito.mock(DDDesktopTokenManager.class);
+        Instant expires = Instant.now().plusSeconds(3600);
+        Mockito.when(manager.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        Mockito.when(manager.getExpiresAt()).thenReturn(expires);
+        Mockito.when(manager.getRefreshAt()).thenReturn(expires);
+        DDDesktopAccessService access = new DDDesktopAccessService(manager);
+        AtomicReference<ICoreRunnable> recovery = new AtomicReference<>();
+        Job job = Mockito.mock(Job.class);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var jobs = Mockito.mockStatic(Job.class)) {
+            keys.when(DDKeyStore::load).thenThrow(new DBException("Key storage unavailable")).thenReturn(null);
+            jobs.when(() -> Job.createSystem(Mockito.anyString(), Mockito.any(ICoreRunnable.class))).thenAnswer(invocation -> {
+                recovery.set(invocation.getArgument(1));
+                return job;
+            });
+
+            Assertions.assertThrows(DBException.class, access::load);
+            Assertions.assertEquals(DDDesktopAccessService.Status.SIGNED_IN, access.getStatus());
+            Mockito.verify(job).schedule(Mockito.longThat(delay -> delay >= 500 && delay <= 1000));
+
+            recovery.get().run(new NullProgressMonitor());
+            keys.verify(DDKeyStore::load, Mockito.times(2));
+            Mockito.verify(manager, Mockito.times(1)).load(Mockito.any());
+            Mockito.verify(job).schedule(Mockito.longThat(delay -> delay > 3_000_000));
+            Mockito.verify(manager, Mockito.never()).signIn(Mockito.any(), Mockito.any(), Mockito.any());
+        }
+    }
+
+    @Test
+    void failedLocalCredentialLoadIsRetriedAutomatically() throws Exception {
+        DDDesktopTokenManager manager = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(manager.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_OUT);
+        Mockito.doThrow(new DBException("Secret storage unavailable")).doNothing().when(manager).load(Mockito.any());
+        DDDesktopAccessService access = new DDDesktopAccessService(manager);
+        AtomicReference<ICoreRunnable> recovery = new AtomicReference<>();
+        try (var jobs = Mockito.mockStatic(Job.class)) {
+            jobs.when(() -> Job.createSystem(Mockito.anyString(), Mockito.any(ICoreRunnable.class))).thenAnswer(invocation -> {
+                recovery.set(invocation.getArgument(1));
+                return Mockito.mock(Job.class);
+            });
+
+            Assertions.assertThrows(DBException.class, access::load);
+            Assertions.assertEquals(DDDesktopAccessService.Status.UNLOADED, access.getStatus());
+            recovery.get().run(new NullProgressMonitor());
+            Assertions.assertEquals(DDDesktopAccessService.Status.SIGNED_OUT, access.getStatus());
+            Mockito.verify(manager, Mockito.times(2)).load(Mockito.any());
+        }
+    }
+
+    @Test
+    void retriesAccountValidationBeforeActivatingSavedEncryptionKeys() throws Exception {
+        DDDesktopTokenManager manager = Mockito.mock(DDDesktopTokenManager.class);
+        Instant expires = Instant.now().plusSeconds(3600);
+        Mockito.when(manager.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        Mockito.when(manager.getExpiresAt()).thenReturn(expires);
+        Mockito.when(manager.getRefreshAt()).thenReturn(expires);
+        DDKeyBundle bundle = new DDKeyBundle(UUID.randomUUID(), "signing-key", "data-key", 1);
+        AtomicReference<ICoreRunnable> recovery = new AtomicReference<>();
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var clients = Mockito.mockConstruction(DDAccountClient.class, (client, context) -> {
+                 Mockito.when(client.getAccountId()).thenThrow(new DBException("Account offline")).thenReturn(bundle.accountId());
+             });
+             var jobs = Mockito.mockStatic(Job.class)) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            jobs.when(() -> Job.createSystem(Mockito.anyString(), Mockito.any(ICoreRunnable.class))).thenAnswer(invocation -> {
+                recovery.set(invocation.getArgument(1));
+                return Mockito.mock(Job.class);
+            });
+            DDDesktopAccessService access = new DDDesktopAccessService(manager);
+
+            Assertions.assertThrows(DBException.class, access::load);
+            Assertions.assertNull(access.getKeyBundle());
+            recovery.get().run(new NullProgressMonitor());
+            Assertions.assertEquals(bundle, access.getKeyBundle());
+            Assertions.assertEquals(DDDesktopAccessService.Status.SIGNED_IN, access.getStatus());
+            keys.verify(DDKeyStore::clear, Mockito.never());
+            Mockito.verify(manager, Mockito.never()).signIn(Mockito.any(), Mockito.any(), Mockito.any());
+        }
+    }
+
+    @Test
+    void scheduledRefreshKeepsValidatedKeysAvailableToConcurrentReaders() throws Exception {
+        DDDesktopTokenManager manager = Mockito.mock(DDDesktopTokenManager.class);
+        Instant expires = Instant.now().plusSeconds(3600);
+        Mockito.when(manager.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        Mockito.when(manager.getExpiresAt()).thenReturn(expires);
+        Mockito.when(manager.getRefreshAt()).thenReturn(expires);
+        DDKeyBundle bundle = new DDKeyBundle(UUID.randomUUID(), "signing-key", "data-key", 1);
+        AtomicReference<ICoreRunnable> renewal = new AtomicReference<>();
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var clients = Mockito.mockConstruction(DDAccountClient.class, (client, context) -> {
+                 Mockito.when(client.getAccountId()).thenReturn(bundle.accountId());
+             });
+             var jobs = Mockito.mockStatic(Job.class);
+             var reader = Executors.newSingleThreadExecutor()) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            jobs.when(() -> Job.createSystem(Mockito.anyString(), Mockito.any(ICoreRunnable.class))).thenAnswer(invocation -> {
+                renewal.set(invocation.getArgument(1));
+                return Mockito.mock(Job.class);
+            });
+            DDDesktopAccessService access = new DDDesktopAccessService(manager);
+            access.load();
+            Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenAnswer(invocation -> {
+                Assertions.assertEquals(bundle, reader.submit(access::getKeyBundle).get(1, TimeUnit.SECONDS));
+                throw new DBException("SSO temporarily unavailable");
+            });
+
+            renewal.get().run(new NullProgressMonitor());
+            Assertions.assertEquals(bundle, access.getKeyBundle());
+        }
+    }
+
     @NotNull
     private static DDDesktopAccessService access() throws DBException {
         return access(new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_OUT));
@@ -256,6 +376,7 @@ class DDDesktopAccessLifecycleTest {
         DDDesktopTokenManager manager = Mockito.mock(DDDesktopTokenManager.class);
         Mockito.when(manager.getStatus()).thenAnswer(invocation -> status.get());
         Mockito.when(manager.getExpiresAt()).thenAnswer(invocation -> expiresAt.get());
+        Mockito.when(manager.getRefreshAt()).thenAnswer(invocation -> expiresAt.get());
         DDDesktopAccessService access = new DDDesktopAccessService(manager);
         DDDesktopTokenManager.Status initial = status.get();
         status.set(DDDesktopTokenManager.Status.SIGNED_OUT);
