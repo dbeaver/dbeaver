@@ -78,6 +78,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
+import org.jkiss.dbeaver.ui.preferences.MacOsUiScale;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
@@ -312,6 +313,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void postStartup() {
         super.postStartup();
+
+        MacOsUiScale.initialize(Display.getCurrent(), DBWorkbench.getPlatform().getPreferenceStore());
 
         filterPreferencePages();
         filterWizards();

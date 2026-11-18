@@ -105,6 +105,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private boolean appliedStatusLineVisibleIsDefault;
     private boolean statusBarPreviewed;
     private Button zoomRestartPromptCheck;
+    private Spinner uiScaleSpinner;
 
     @Nullable
     private FontsController fontsController = null;
@@ -125,6 +126,20 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+
+        if (isStandalone && MacOsUiScale.isEnabled()) {
+            Composite displayGroup = UIUtils.createTitledComposite(
+                composite, CoreMessages.pref_page_ui_general_group_display, 2, GridData.FILL_HORIZONTAL
+            );
+            UIUtils.createControlLabel(displayGroup, CoreMessages.pref_page_ui_general_live_scale_label);
+            uiScaleSpinner = new Spinner(displayGroup, SWT.BORDER);
+            uiScaleSpinner.setMinimum(MacOsUiScale.MIN_SCALE);
+            uiScaleSpinner.setMaximum(MacOsUiScale.MAX_SCALE);
+            uiScaleSpinner.setIncrement(25);
+            uiScaleSpinner.setPageIncrement(25);
+            Control tip = UIUtils.createInfoLabel(displayGroup, CoreMessages.pref_page_ui_general_live_scale_tip);
+            tip.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
+        }
 
         if (isStandalone) {
             themeEngine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
@@ -326,6 +341,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private void setSettings() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         rememberAppliedStatusBar(store);
+        if (uiScaleSpinner != null) {
+            uiScaleSpinner.setSelection(MacOsUiScale.getSavedScale(store));
+        }
         if (isWindowsDesktopClient()) {
             browserCombo.select(SWTBrowserRegistry.getActiveBrowser().ordinal());
             useEmbeddedBrowserAuth.setEnabled(
@@ -349,6 +367,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     @Override
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (uiScaleSpinner != null) {
+            uiScaleSpinner.setSelection(MacOsUiScale.DEFAULT_SCALE);
+        }
         if (isStandalone) {
             useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH));
         }
@@ -468,6 +489,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         if (this.fontsController != null) {
             this.fontsController.apply();
+        }
+        if (uiScaleSpinner != null) {
+            store.setValue(MacOsUiScale.PREFERENCE, uiScaleSpinner.getSelection());
+            MacOsUiScale.apply(getShell().getDisplay(), uiScaleSpinner.getSelection());
         }
         if (isStandalone) {
             PrefUtils.savePreferenceStore(store);
