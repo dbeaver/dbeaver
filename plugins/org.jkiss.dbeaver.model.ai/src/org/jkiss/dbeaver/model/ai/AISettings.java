@@ -212,7 +212,7 @@ public class AISettings implements DBPAdaptable {
         return copy;
     }
 
-    public void removeConfiguration(@NotNull AIConfigurationProfile profile) throws DBException {
+    public void removeConfiguration(@NotNull AIConfigurationProfile profile) {
         removeProfile(profile);
         if (profile.isAvailable()) {
             try {
@@ -223,10 +223,8 @@ public class AISettings implements DBPAdaptable {
         }
     }
 
-    public void removeProfile(@NotNull AIConfigurationProfile profile) throws DBException {
-        if (!configurations.remove(profile.getProfileId(), profile)) {
-            throw new DBException("AI configuration is no longer current");
-        }
+    public void removeProfile(@NotNull AIConfigurationProfile profile) {
+        configurations.remove(profile.getProfileId());
         if (CommonUtils.equalObjects(defaultConfiguration, profile.getProfileId())) {
             defaultConfiguration = configurations.isEmpty() ? null : configurations.keySet().iterator().next();
         }

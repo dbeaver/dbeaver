@@ -247,11 +247,10 @@ public class AISettingsManager {
                     AIUserProfileCredentials.saveChanges(profile);
                 }
             }
-        }
-        if (!saveSecretsAsPlainText()) {
+        } else if (!saveSecretsAsPlainText()) {
             AIConfigurationProfile defaultProfile = settings.getDefaultConfigurationOrNull();
             for (AIConfigurationProfile profile : settings.getConfigurations()) {
-                if (!profile.isAvailable() || AIUserProfileCredentials.isUserProfile(profile)) {
+                if (!profile.isAvailable()) {
                     continue;
                 }
                 if (profile == defaultProfile) {
