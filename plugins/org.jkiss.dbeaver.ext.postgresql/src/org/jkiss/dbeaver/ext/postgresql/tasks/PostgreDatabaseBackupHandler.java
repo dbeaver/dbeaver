@@ -111,7 +111,11 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             cmd.add("--encoding=" + settings.getEncoding());
         }
         if (settings.isUseInserts()) {
-            cmd.add("--inserts");
+            if (settings.getRowsPerInsert() > 1) {
+                cmd.add("--rows-per-insert=" + settings.getRowsPerInsert());
+            } else {
+                cmd.add("--inserts");
+            }
         }
         if (settings.isNoPrivileges()) {
             cmd.add("--no-privileges");

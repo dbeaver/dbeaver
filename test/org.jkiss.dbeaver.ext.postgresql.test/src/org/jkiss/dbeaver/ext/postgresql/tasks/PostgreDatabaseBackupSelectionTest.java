@@ -227,9 +227,41 @@ public class PostgreDatabaseBackupSelectionTest extends DBeaverUnitTest {
         );
     }
 
+    @Test
+    void rowsPerInsertOnlyAppliesToInsertBackups() throws IOException {
+        PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(database, null, null);
+        List<String> copyCommand = getCommand(info, false, false, 100);
+        Assertions.assertFalse(copyCommand.contains("--inserts"));
+        Assertions.assertFalse(copyCommand.contains("--rows-per-insert=100"));
+
+        List<String> defaultInsertCommand = getCommand(info, false, true, 1);
+        Assertions.assertTrue(defaultInsertCommand.contains("--inserts"));
+        Assertions.assertFalse(defaultInsertCommand.contains("--rows-per-insert=1"));
+
+        List<String> batchedInsertCommand = getCommand(info, false, true, 100);
+        Assertions.assertTrue(batchedInsertCommand.contains("--rows-per-insert=100"));
+        Assertions.assertFalse(batchedInsertCommand.contains("--inserts"));
+    }
+
+    @Test
+    void rowsPerInsertDefaultsToOne() {
+        PostgreDatabaseBackupSettings settings = new PostgreDatabaseBackupSettings();
+        Assertions.assertEquals(1, settings.getRowsPerInsert());
+        settings.setRowsPerInsert(0);
+        Assertions.assertEquals(1, settings.getRowsPerInsert());
+    }
+
     @NotNull
     private List<String> getCommand(@NotNull PostgreDatabaseBackupInfo info, boolean completeBackup) throws IOException {
-        Files.createFile(temporaryDirectory.resolve(RuntimeUtils.getNativeBinaryName("pg_dump")));
+        return getCommand(info, completeBackup, false, 1);
+    }
+
+    @NotNull
+    private List<String> getCommand(@NotNull PostgreDatabaseBackupInfo info, boolean completeBackup, boolean useInserts, int rowsPerInsert) throws IOException {
+        Path pgDump = temporaryDirectory.resolve(RuntimeUtils.getNativeBinaryName("pg_dump"));
+        if (!Files.exists(pgDump)) {
+            Files.createFile(pgDump);
+        }
         DBPNativeClientLocation clientHome = Mockito.mock(DBPNativeClientLocation.class);
         Mockito.when(clientHome.getPath()).thenReturn(temporaryDirectory.toFile());
         DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
@@ -241,6 +273,8 @@ public class PostgreDatabaseBackupSelectionTest extends DBeaverUnitTest {
         Mockito.when(settings.getOutputFile(info)).thenReturn(temporaryDirectory.resolve("dump.backup").toString());
         Mockito.when(settings.getExportObjects()).thenReturn(List.of(info));
         Mockito.when(settings.isFullSchemaBackup()).thenReturn(completeBackup);
+        Mockito.when(settings.isUseInserts()).thenReturn(useInserts);
+        Mockito.when(settings.getRowsPerInsert()).thenReturn(rowsPerInsert);
         List<String> command = new ArrayList<>();
         new PostgreDatabaseBackupHandler().fillProcessParameters(settings, info, command);
         return command;

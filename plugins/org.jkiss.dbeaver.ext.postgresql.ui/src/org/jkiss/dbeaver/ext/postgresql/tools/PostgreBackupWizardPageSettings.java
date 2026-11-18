@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Spinner;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupRestoreSettings;
@@ -36,6 +37,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
     private Combo compressCombo;
     private Combo encodingCombo;
     private Button useInsertsCheck;
+    private Spinner rowsPerInsertSpinner;
     private Button noPrivilegesCheck;
     private Button noOwnerCheck;
     private Button dropObjects;
@@ -99,7 +101,20 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
             settings.isUseInserts(),
             2
         );
-        useInsertsCheck.addSelectionListener(changeListener);
+        useInsertsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            rowsPerInsertSpinner.setEnabled(useInsertsCheck.getSelection());
+            updateState();
+        }));
+        rowsPerInsertSpinner = UIUtils.createLabelSpinner(
+            formatGroup,
+            PostgreMessages.wizard_backup_page_setting_label_rows_per_insert,
+            PostgreMessages.wizard_backup_page_setting_label_rows_per_insert_tip,
+            settings.getRowsPerInsert(),
+            1,
+            Integer.MAX_VALUE
+        );
+        rowsPerInsertSpinner.setEnabled(useInsertsCheck.getSelection());
+        rowsPerInsertSpinner.addModifyListener(e -> updateState());
 
         noPrivilegesCheck = UIUtils.createCheckbox(formatGroup,
             PostgreMessages.wizard_backup_page_setting_checkbox_no_privileges,
@@ -177,6 +192,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         settings.setCompression(compressCombo.getText());
         settings.setEncoding(encodingCombo.getText());
         settings.setUseInserts(useInsertsCheck.getSelection());
+        settings.setRowsPerInsert(rowsPerInsertSpinner.getSelection());
         settings.setNoPrivileges(noPrivilegesCheck.getSelection());
         settings.setNoOwner(noOwnerCheck.getSelection());
         settings.setDropObjects(dropObjects.getSelection());
