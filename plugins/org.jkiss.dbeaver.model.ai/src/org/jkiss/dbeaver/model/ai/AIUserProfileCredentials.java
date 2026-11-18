@@ -185,34 +185,7 @@ public final class AIUserProfileCredentials {
                 AIAccountProperties.ACCOUNT_EMAIL_PROPERTY)));
             accountProperties.setStoredExpiresAt(CommonUtils.toLong(controller.getPrivateSecretValue(getSecretId(profile,
                 AIAccountProperties.ACCOUNT_EXPIRES_AT_PROPERTY))));
-            accountProperties.setAccountTokenPersistence((previousRefreshToken, tokens) -> {
-                checkSession(session);
-                checkUserProfile(profile, scope);
-                if (previousRefreshToken != null && !previousRefreshToken.equals(tokens.refreshToken())) {
-                    String storedRefreshToken = controller.getPrivateSecretValue(getSecretId(profile,
-                        AIAccountProperties.ACCOUNT_REFRESH_TOKEN_PROPERTY));
-                    if (!previousRefreshToken.equals(storedRefreshToken)) {
-                        throw new DBException("AI account credentials have changed while refreshing the token");
-                    }
-                }
-                saveAccountCredentials(profile, tokens, controller, session, accountProperties.isAccountAuthentication(), scope);
-            });
-            accountProperties.setAccountTokenRefreshHandler((authenticator, refreshToken) -> {
-                checkSession(session);
-                checkUserProfile(profile, scope);
-                var tokens = authenticator.refresh(refreshToken);
-                checkSession(session);
-                if (!refreshToken.equals(controller.getPrivateSecretValue(getSecretId(profile,
-                    AIAccountProperties.ACCOUNT_REFRESH_TOKEN_PROPERTY)))) {
-                    throw new DBException("AI account credentials have changed while refreshing the token");
-                }
-                var storedTokens = new AIAccountAuthenticator.Tokens(tokens.accessToken(), tokens.refreshToken(), tokens.expiresInSeconds(),
-                    tokens.accountId() == null ? accountProperties.getAccountId() : tokens.accountId(),
-                    tokens.email() == null ? accountProperties.getAccountEmail() : tokens.email());
-                saveAccountCredentials(profile, storedTokens, controller, session, null, scope);
-                return tokens;
-            });
-            accountProperties.setAccountTokenValidator(refreshToken -> {
+            AIAccountProperties.AccountTokenValidator validator = refreshToken -> {
                 checkSession(session);
                 checkUserProfile(profile, scope);
                 String storedRefreshToken = controller.getPrivateSecretValue(getSecretId(profile,
@@ -220,6 +193,18 @@ public final class AIUserProfileCredentials {
                 if (!CommonUtils.equalObjects(refreshToken, storedRefreshToken)) {
                     throw new DBException("AI account credentials have changed. Reopen the profile settings to sign in again.");
                 }
+            };
+            accountProperties.setAccountTokenValidator(validator);
+            accountProperties.setAccountTokenPersistence((ignored, tokens) ->
+                saveAccountCredentials(profile, tokens, controller, session, accountProperties.isAccountAuthentication(), scope));
+            accountProperties.setAccountTokenRefreshHandler((authenticator, refreshToken) -> {
+                var tokens = authenticator.refresh(refreshToken);
+                validator.validate(refreshToken);
+                var storedTokens = new AIAccountAuthenticator.Tokens(tokens.accessToken(), tokens.refreshToken(), tokens.expiresInSeconds(),
+                    tokens.accountId() == null ? accountProperties.getAccountId() : tokens.accountId(),
+                    tokens.email() == null ? accountProperties.getAccountEmail() : tokens.email());
+                saveAccountCredentials(profile, storedTokens, controller, session, null, scope);
+                return tokens;
             });
         }
         checkSession(session);

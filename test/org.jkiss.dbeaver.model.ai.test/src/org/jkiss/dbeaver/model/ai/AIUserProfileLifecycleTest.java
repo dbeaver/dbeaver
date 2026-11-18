@@ -246,7 +246,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
                 """;
             AISettings settings = fixture.reload();
             Mockito.doAnswer(invocation -> {
-                WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME, "other-session");
+                WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
                 return null;
             }).when(fixture.controller).deleteObjectSecrets(ArgumentMatchers.any(DBSSecretObject.class));
 
@@ -336,33 +336,18 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
     }
 
     @Test
-    void ownSaveNotificationKeepsCredentialEditorsUsable() throws Exception {
-        for (boolean beforeSaveCompletes : List.of(false, true)) {
-            try (Fixture fixture = new Fixture()) {
-                Mockito.when(fixture.platform.getWorkspace().getWorkspaceSession().getSessionId()).thenReturn("current-session");
-                AISettings settings = fixture.settings(false);
-                AISettingsManager manager = AISettingsManager.getInstance();
-                manager.saveSettingsOrThrow(settings);
-                AIConfigurationProfile personal = credentialsCopy(settings.getConfiguration("openai"));
-                if (beforeSaveCompletes) {
-                    Mockito.doAnswer(invocation -> {
-                        fixture.persistedConfiguration = invocation.getArgument(1);
-                        WorkspaceConfigEventManager.fireConfigChangedEvent(
-                            AISettingsManager.AI_CONFIGURATION_FILE_NAME, "current-session");
-                        return null;
-                    }).when(fixture.configurationController)
-                        .saveConfigurationFile(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
-                }
-                manager.saveSettingsOrThrow(settings);
-                if (!beforeSaveCompletes) {
-                    WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME, "current-session");
-                }
+    void savingCurrentSettingsKeepsCredentialEditorsUsable() throws Exception {
+        try (Fixture fixture = new Fixture()) {
+            AISettings settings = fixture.settings(false);
+            AISettingsManager manager = AISettingsManager.getInstance();
+            manager.saveSettingsOrThrow(settings);
+            AIConfigurationProfile personal = credentialsCopy(settings.getConfiguration("openai"));
+            manager.saveSettingsOrThrow(settings);
 
-                authorize((OpenAIProperties) personal.getConfiguration(), "current-refresh");
+            authorize((OpenAIProperties) personal.getConfiguration(), "current-refresh");
 
-                Assertions.assertSame(settings, manager.getSettings());
-                Assertions.assertEquals("current-refresh", fixture.secrets.get("ai.profile.openai.refreshToken"));
-            }
+            Assertions.assertSame(settings, manager.getSettings());
+            Assertions.assertEquals("current-refresh", fixture.secrets.get("ai.profile.openai.refreshToken"));
         }
     }
 
@@ -378,8 +363,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
                 AIConfigurationProfile personal = credentialsCopy(profile);
                 fixture.persistedConfiguration = "{\"configurations\":{},\"engineConfigurations\":{}}";
                 String remoteConfiguration = fixture.persistedConfiguration;
-                WorkspaceConfigEventManager.fireConfigChangedEvent(
-                    AISettingsManager.AI_CONFIGURATION_FILE_NAME, reloadBeforeSaving ? "other-session" : null);
+                WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
                 if (reloadBeforeSaving) {
                     Assertions.assertNull(manager.getSettings().getConfigurationOrNull("openai"));
                 }
@@ -407,7 +391,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
             AIConfigurationProfile profile = settings.getConfiguration("openai");
             profile.resolveSecrets();
             ((OpenAIProperties) profile.getConfiguration()).setToken("pending-token");
-            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME, "other-session");
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
             Mockito.clearInvocations(fixture.controller, fixture.configurationController);
 
             Assertions.assertThrows(DBException.class, () -> manager.saveSettingsOrThrow(settings));
@@ -427,7 +411,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
             profile.resolveSecrets();
             Mockito.doAnswer(invocation -> {
                 fixture.persistedConfiguration = "{\"configurations\":{},\"engineConfigurations\":{}}";
-                WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME, "other-session");
+                WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
                 return null;
             }).when(fixture.configurationController)
                 .saveConfigurationFile(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());

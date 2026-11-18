@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -49,7 +48,7 @@ import java.util.function.Consumer;
 public class AISettingsManager {
     private static final Log log = Log.getLog(AISettingsManager.class);
 
-    public static final String AI_CONFIGURATION_FILE_NAME = "ai-configuration.json";
+    public static final String AI_CONFIGURATION_FILE_NAME = RMConstants.AI_CONFIGURATION_FILE_NAME;
 
     private static AISettingsManager instance = null;
 
@@ -61,13 +60,6 @@ public class AISettingsManager {
     private AISettingsManager() {
         WorkspaceConfigEventManager.addConfigChangedListener(
             AI_CONFIGURATION_FILE_NAME, o -> {
-                if (o instanceof String sourceSessionId && AIUserProfileCredentials.isAvailable()) {
-                    SMSession session = DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession();
-                    if (session != null && sourceSessionId.equals(session.getSessionId())) {
-                        // own saves already publish the settings without invalidating open credential editors
-                        return;
-                    }
-                }
                 // reset current context for settings to be lazily reloaded when needed
                 this.getSettingsHolder().reset();
                 this.notifyProfilesChanged();
