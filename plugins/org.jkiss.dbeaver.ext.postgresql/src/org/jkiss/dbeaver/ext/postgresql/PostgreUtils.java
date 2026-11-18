@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePrivilege.ObjectPermission;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
@@ -68,6 +69,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * postgresql utils
@@ -890,7 +892,22 @@ public class PostgreUtils {
             if (!CommonUtils.isEmpty(permissions)) {
 
                 for (PostgrePrivilege permission : permissions) {
-                    if (permission.hasAllPrivileges(object)) {
+                    Map<Boolean, List<PostgrePrivilegeType>> typesByGrantOption = Arrays.stream(permission.getPermissions())
+                        .collect(Collectors.partitioningBy(
+                            p -> CommonUtils.isBitSet(p.getPermissions(), PostgrePrivilege.WITH_GRANT_OPTION),
+                            Collectors.mapping(ObjectPermission::getPrivilegeType, Collectors.toList())
+                        ));
+                    List<PostgrePrivilegeType> grantableTypes = typesByGrantOption.get(true);
+                    List<PostgrePrivilegeType> nonGrantableTypes = typesByGrantOption.get(false);
+                    if (!grantableTypes.isEmpty() && !nonGrantableTypes.isEmpty()) {
+                        // WITH GRANT OPTION applies to the whole statement, so mixed grant options
+                        // are split into separate GRANT statements (as pg_dump does)
+                        for (List<PostgrePrivilegeType> types : List.of(nonGrantableTypes, grantableTypes)) {
+                            Collections.addAll(actions,
+                                    new PostgreCommandGrantPrivilege(permission.getOwner(), true, object, permission, types.toArray(new PostgrePrivilegeType[0]))
+                                            .getPersistActions(monitor, executionContext, options));
+                        }
+                    } else if (permission.hasAllPrivileges(object)) {
                         Collections.addAll(actions,
                                 new PostgreCommandGrantPrivilege(permission.getOwner(), true, object, permission, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
                                         .getPersistActions(monitor, executionContext, options));
