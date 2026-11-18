@@ -61,7 +61,6 @@ public interface SQLEditorCommands
     String CMD_DISABLE_SQL_SYNTAX_PARSER = "org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser"; //$NON-NLS-1$
 
     String CMD_NAVIGATE_OBJECT = "org.jkiss.dbeaver.ui.editors.sql.navigate.object";
-    String CMD_TOGGLE_LAYOUT = "org.jkiss.dbeaver.ui.editors.sql.toggleLayout";
     String CMD_RESULTS_BELOW = "org.jkiss.dbeaver.ui.editors.sql.resultsBelow";
     String CMD_RESULTS_RIGHT = "org.jkiss.dbeaver.ui.editors.sql.resultsRight";
     String CMD_TOGGLE_SEPARATE_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.connection.separate";
