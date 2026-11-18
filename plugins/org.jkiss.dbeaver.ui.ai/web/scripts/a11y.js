@@ -185,6 +185,14 @@ chat.addEventListener('keydown', function(event) {
             return;
         }
         if (isItem || isChat) {
+            if (isItem && !event.shiftKey && target.hasAttribute('data-a11y-tab-through')) {
+                const firstControl = getInteractiveDescendants(target)[0];
+                if (firstControl) {
+                    event.preventDefault();
+                    firstControl.focus();
+                    return;
+                }
+            }
             if (typeof window.traverseOut === 'function') {
                 event.preventDefault();
                 window.traverseOut(!event.shiftKey);
@@ -196,12 +204,19 @@ chat.addEventListener('keydown', function(event) {
             const controls = getInteractiveDescendants(item);
             const index = controls.indexOf(target);
             if (index !== -1) {
+                const nextControl = controls[index + (event.shiftKey ? -1 : 1)];
+                if (!nextControl && !event.shiftKey && item.hasAttribute('data-a11y-tab-through')) {
+                    if (typeof window.traverseOut === 'function') {
+                        event.preventDefault();
+                        window.traverseOut(true);
+                    }
+                    return;
+                }
                 event.preventDefault();
-                const nextIndex = index + (event.shiftKey ? -1 : 1);
-                if (nextIndex < 0 || nextIndex >= controls.length) {
-                    focusItem(item);
+                if (nextControl) {
+                    nextControl.focus();
                 } else {
-                    controls[nextIndex].focus();
+                    focusItem(item);
                 }
             }
         }
