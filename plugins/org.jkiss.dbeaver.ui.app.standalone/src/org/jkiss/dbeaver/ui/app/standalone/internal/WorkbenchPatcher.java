@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -413,12 +414,15 @@ public final class WorkbenchPatcher {
             }
 
             if (CompatibilityPart.COMPATIBILITY_VIEW_URI.equals(child.getAttribute("contributionURI"))) {
-                String viewId = child.getAttribute("elementId").split(":", 2)[0];
+                String[] viewIds = child.getAttribute("elementId").split(":", 2);
+                String viewId = viewIds[0];
                 String label = labels.get(viewId);
                 String oldLabel = child.getAttribute("label");
                 String previousLabel = previousLabels.get(viewId);
-                // keep instance-specific titles, such as a database object name
-                boolean defaultLabel = child.getTagName().equals("descriptors") || previousLabel == null || previousLabel.equals(oldLabel);
+                // secondary database browsers use object names even when they match the default view title
+                boolean objectTitle = viewIds.length > 1 && DatabaseBrowserView.VIEW_ID.equals(viewId);
+                boolean defaultLabel = !objectTitle &&
+                    (child.getTagName().equals("descriptors") || previousLabel == null || previousLabel.equals(oldLabel));
                 if (label != null && defaultLabel && !label.equals(oldLabel)) {
                     child.setAttribute("label", label);
                     if (child.hasAttribute("tooltip") && oldLabel.equals(child.getAttribute("tooltip"))) {
