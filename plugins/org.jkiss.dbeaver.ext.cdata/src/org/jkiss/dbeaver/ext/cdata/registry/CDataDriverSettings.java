@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
@@ -47,8 +49,10 @@ record CDataDriverSettings(
 ) {
     static final String FILE_NAME = "cdata-driver-settings.json";
     static final String URL = "https://dbeaver.com/info/cdata-driver-settings.json";
+    private static final String METADATA_KEY = "_meta";
     private static final int CONNECTION_TIMEOUT = 10_000;
     private static final Log log = Log.getLog(CDataDriverSettings.class);
+    private static final SettingsFile EMPTY = new SettingsFile(0, Map.of());
 
     @NotNull
     static Map<String, CDataDriverSettings> load(
@@ -67,14 +71,12 @@ record CDataDriverSettings(
         @NotNull ThrowableSupplier<URLConnection, IOException> connectionFactory
     ) throws InterruptedException {
         var cached = readCached(file);
-        boolean hasCachedSettings = !cached.isEmpty();
-        if (!hasCachedSettings) {
-            cached = loadBundled();
-        }
+        var preferred = preferBundled(cached);
+        boolean hasCachedSettings = !cached.drivers().isEmpty();
         checkCanceled(monitor);
         try {
             if (hasCachedSettings && CDataDriverCatalog.isCacheFresh(file)) {
-                return cached;
+                return preferred.drivers();
             }
             URLConnection connection = connectionFactory.get();
             try {
@@ -89,17 +91,20 @@ record CDataDriverSettings(
                             output.write(buffer, 0, count);
                         }
                     }
-                    Map<String, CDataDriverSettings> settings;
+                    SettingsFile settings;
                     try (Reader reader = Files.newBufferedReader(temporary)) {
                         settings = read(reader);
                     }
                     checkCanceled(monitor);
+                    if (settings.version() < preferred.version()) {
+                        return preferred.drivers();
+                    }
                     try {
                         Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
                     } catch (AtomicMoveNotSupportedException e) {
                         Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
                     }
-                    return settings;
+                    return settings.drivers();
                 } finally {
                     Files.deleteIfExists(temporary);
                 }
@@ -109,19 +114,24 @@ record CDataDriverSettings(
                 }
             }
         } catch (IOException | IllegalArgumentException | IllegalStateException e) {
-            log.warn("Error updating CData driver settings; using the cached settings", e);
-            return cached;
+            log.warn("Error updating CData driver settings; using local settings", e);
+            return preferred.drivers();
         }
     }
 
     @NotNull
     static Map<String, CDataDriverSettings> load(@NotNull Path file) {
-        var cached = readCached(file);
-        return cached.isEmpty() ? loadBundled() : cached;
+        return preferBundled(readCached(file)).drivers();
     }
 
     @NotNull
-    private static Map<String, CDataDriverSettings> readCached(@NotNull Path file) {
+    private static SettingsFile preferBundled(@NotNull SettingsFile cached) {
+        var bundled = loadBundled();
+        return cached.drivers().isEmpty() || bundled.version() > cached.version() ? bundled : cached;
+    }
+
+    @NotNull
+    private static SettingsFile readCached(@NotNull Path file) {
         if (Files.isRegularFile(file)) {
             try (Reader reader = Files.newBufferedReader(file)) {
                 return read(reader);
@@ -129,11 +139,11 @@ record CDataDriverSettings(
                 log.warn("Error reading CData driver settings", e);
             }
         }
-        return Map.of();
+        return EMPTY;
     }
 
     @NotNull
-    private static Map<String, CDataDriverSettings> loadBundled() {
+    private static SettingsFile loadBundled() {
         try (var input = CDataDriverSettings.class.getResourceAsStream(FILE_NAME)) {
             if (input == null) {
                 throw new IOException("Bundled CData driver settings are missing");
@@ -143,15 +153,30 @@ record CDataDriverSettings(
             }
         } catch (IOException | IllegalArgumentException | IllegalStateException e) {
             log.error("Error reading bundled CData driver settings", e);
-            return Map.of();
+            return EMPTY;
         }
     }
 
     @NotNull
-    private static Map<String, CDataDriverSettings> read(@NotNull Reader reader) {
+    private static SettingsFile read(@NotNull Reader reader) {
         try {
+            var json = JsonParser.parseReader(reader).getAsJsonObject();
+            JsonElement metadata = json.remove(METADATA_KEY);
+            int version = 0;
+            if (metadata != null) {
+                JsonElement value = metadata.getAsJsonObject().get("version");
+                if (value != null) {
+                    if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isNumber()) {
+                        throw new IllegalStateException("Invalid CData driver settings version");
+                    }
+                    version = value.getAsBigDecimal().intValueExact();
+                    if (version < 0) {
+                        throw new IllegalStateException("Invalid CData driver settings version");
+                    }
+                }
+            }
             Map<String, CDataDriverSettings> settings = JSONUtils.GSON.fromJson(
-                reader, new TypeToken<Map<String, CDataDriverSettings>>() { }.getType());
+                json, new TypeToken<Map<String, CDataDriverSettings>>() { }.getType());
             if (settings == null || settings.isEmpty()) {
                 throw new IllegalStateException("CData driver settings are empty");
             }
@@ -164,10 +189,13 @@ record CDataDriverSettings(
                     throw new IllegalStateException("Invalid CData driver settings: " + entry.getKey());
                 }
             }
-            return Map.copyOf(settings);
-        } catch (JsonParseException e) {
+            return new SettingsFile(version, Map.copyOf(settings));
+        } catch (JsonParseException | ArithmeticException e) {
             throw new IllegalStateException("Error parsing CData driver settings", e);
         }
+    }
+
+    private record SettingsFile(int version, @NotNull Map<String, CDataDriverSettings> drivers) {
     }
 
     private static void checkCanceled(@NotNull DBRProgressMonitor monitor) throws InterruptedException {
