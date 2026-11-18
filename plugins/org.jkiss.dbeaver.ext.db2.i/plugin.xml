@@ -30,7 +30,7 @@
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
                         supportedConfigurationTypes="MANUAL,URL"
                         defaultPort="446"
-                        description="IBM Db2 driver for IBM i (replacement for iSeries and AS/400)"
+                        description="Connect to Db2 on IBM i with the IBM JDBC driver. Use this driver in place of the older iSeries and AS/400 definitions."
                         databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
                         categories="sql">
                     <replace provider="generic" driver="db2_iseries"/>

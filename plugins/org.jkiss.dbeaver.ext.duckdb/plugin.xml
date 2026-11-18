@@ -31,7 +31,7 @@
                         webURL="https://duckdb.org/docs/api/java"
                         embedded="true"
                         anonymous="true"
-                        description="DuckDB JDBC driver"
+                        description="Open DuckDB databases in-process through the DuckDB JDBC driver for embedded analytical SQL workloads."
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql,embedded">
                     <replace provider="generic" driver="duckdb_jdbc"/>

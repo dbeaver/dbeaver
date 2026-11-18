@@ -32,7 +32,7 @@
                         class="com.ocient.jdbc.JDBCDriver"
                         sampleURL="jdbc:ocient://{host}:{port}/{database}"
                         defaultPort="4050"
-                        description="Ocient JDBC driver"
+                        description="Connect to Ocient through its JDBC driver for large-scale analytical SQL and data warehouse workloads."
                         webURL=""
                         categories="sql,analytic">
                     <file type="jar" path="maven:/com.ocient:ocient-jdbc4:RELEASE"/>

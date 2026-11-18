@@ -28,7 +28,7 @@
                     sampleURL="jdbc:polardbx://{host}[:{port}][/{database}]"
                     categories="sql"
                     webURL="https://github.com/ApsaraDB/galaxysql"
-                    description="PolarDB-X JDBC Driver"
+                    description="Connect to PolarDB-X through its dedicated JDBC driver to query relational data using the MySQL-derived SQL dialect. The connector uses PolarDB-X connection URLs rather than a generic MySQL JDBC URL."
                     icon="icons/polardbx_icon.svg"
                     iconBig="icons/polardbx_icon_big.svg"
                     logoImage="icons/polardbx_logo.svg">

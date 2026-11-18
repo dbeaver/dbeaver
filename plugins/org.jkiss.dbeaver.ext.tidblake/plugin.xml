@@ -31,7 +31,7 @@
                     sampleURL="jdbc:lake://{host}:{port}[/{database}]"
                     defaultPort="443"
                     defaultDatabase="default"
-                    description="TiDB Cloud Lake driver"
+                    description="Connect to TiDB Cloud Lake through its JDBC driver for column-oriented SQL analytics in the cloud service."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/tidbcloud/lake-jdbc"
                     categories="sql,analytic,columns">

@@ -31,7 +31,7 @@
                      defaultDatabase="mydb"
                      defaultPort="20300"
                      defaultUser="SYS"
-                     description="Altibase JDBC Driver"
+                     description="Connect to Altibase with its JDBC driver for relational SQL queries and administration."
                      id="Altibase"
                      label="Altibase"
                      sampleURL="jdbc:Altibase://{host}:{port}/{database}"

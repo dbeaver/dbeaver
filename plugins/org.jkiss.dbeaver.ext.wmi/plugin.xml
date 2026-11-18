@@ -57,7 +57,7 @@
                 <driver
                     id="wmi"
                     label="WMI"
-                    description="WMI Native driver"
+                    description="Open Windows Management Instrumentation data through the native WMI driver for system management and monitoring queries."
                     class="org.jkiss.wmi.service.WMIServiceNative"
                     customDriverLoader="true"
                     categories="embedded">

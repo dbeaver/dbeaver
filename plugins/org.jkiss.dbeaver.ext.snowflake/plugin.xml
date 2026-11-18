@@ -37,7 +37,7 @@
                         class="net.snowflake.client.jdbc.SnowflakeDriver"
                         sampleURL="jdbc:snowflake://{host}[:{port}]/?[db={database}]"
                         defaultPort="443"
-                        description="Snowflake JDBC driver"
+                        description="Connect to Snowflake through the Snowflake JDBC driver for cloud data warehouse queries and analytical workloads."
                         webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html"
                         databaseDocumentationSuffixURL="Snowflake"
                         categories="sql,analytic"

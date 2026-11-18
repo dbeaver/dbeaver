@@ -420,7 +420,7 @@
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
                     webURL="https://jdbc.postgresql.org/"
-                    description="PostgreSQL generic driver. Can be used for old (7.x) or non-standard PostgreSQL servers."
+                    description="Legacy PostgreSQL JDBC definition intended for older or non-standard PostgreSQL servers. Hidden and replaced by the standard PostgreSQL JDBC connector rather than offered as a separate connector."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
@@ -438,7 +438,7 @@
                     defaultDatabase="postgres"
                     defaultUser="postgres"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                    description="Obsolete"
+                    description="Obsolete Greenplum JDBC definition using the PostgreSQL JDBC driver and PostgreSQL-style connection URLs for an analytical database. Hidden in favor of the dedicated Greenplum connector."
                     supportedConfigurationTypes="MANUAL,URL"
                     dialect="postgresql">
                     <parameter name="serverType" value="greenplum"/>
@@ -479,7 +479,7 @@
                     defaultPort="5432"
                     webURL="https://yellowbrick.com/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                    description="Yellowbrick JDBC driver"
+                    description="Connect to Yellowbrick through its JDBC driver and PostgreSQL-oriented connection settings for analytical SQL workloads."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
@@ -574,7 +574,7 @@
                     defaultDatabase="dev"
                     defaultUser="awsuser"
                     threadSafe="false"
-                    description="AWS Redshift JDBC driver"
+                    description="Connect to Amazon Redshift through the AWS JDBC driver for cloud data warehouse queries and analytical workloads."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                     databaseDocumentationSuffixURL="Database-driver-Amazon-Redshift"
