@@ -166,7 +166,9 @@ class DDDesktopTokenManager {
         } catch (DDDesktopSsoException e) {
             if (e.isInvalidGrant()) {
                 // Expired or revoked refresh tokens still require interactive authorization.
-                saveToken(new DDDesktopUserToken(current.accessToken(), current.issuer(), current.endpoints(), current.scopes()));
+                token = new DDDesktopUserToken(current.accessToken(), current.issuer(), current.endpoints(), current.scopes());
+                dirty = true;
+                saveToken(token);
                 throw new DBException("DataDam authorization has expired. Sign in again");
             }
             retryLater();
@@ -212,6 +214,9 @@ class DDDesktopTokenManager {
             if (validator.isExpired(rotated)) {
                 throw new DBException("Refreshed DataDam token has expired");
             }
+            // Rotation consumed the old token: retain the replacement even if persistence fails.
+            token = rotated;
+            dirty = true;
             saveToken(rotated);
             return rotated;
         }
@@ -246,9 +251,8 @@ class DDDesktopTokenManager {
     }
 
     private synchronized void saveToken(@NotNull DDDesktopUserToken saved) throws DBException {
-        token = saved;
-        dirty = true;
         store.save(saved);
+        token = saved;
         dirty = false;
         log.debug("Stored DataDam desktop token");
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, true);

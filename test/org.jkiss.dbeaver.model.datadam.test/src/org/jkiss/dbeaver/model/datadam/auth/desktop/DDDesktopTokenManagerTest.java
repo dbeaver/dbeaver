@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
+import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoLogin;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -224,6 +226,26 @@ class DDDesktopTokenManagerTest {
         Assertions.assertNotNull(manager.getAccessTokenForResource(RESOURCE));
         Assertions.assertEquals(ROTATED_REFRESH_TOKEN, store.load().refreshToken());
         Assertions.assertEquals(1, requests.get());
+    }
+
+    @Test
+    void failedInteractiveSignInSaveDoesNotPublishTheNewAuthorization() throws Exception {
+        DDDesktopUserToken previous = store.load();
+        store.save(new DDDesktopUserToken(previous.accessToken(), previous.issuer(), previous.endpoints(), previous.scopes()));
+        DDDesktopSsoLogin login = Mockito.mock(DDDesktopSsoLogin.class);
+        Mockito.when(login.login(Mockito.any(), Mockito.isNull(), Mockito.anySet(), Mockito.any(), Mockito.any()))
+            .thenReturn(new DDSsoTokenResponse(accessToken(now.get().plusSeconds(3600)), "Bearer", 3600,
+                "account:full_access", null, ROTATED_REFRESH_TOKEN));
+        DDDesktopTokenManager manager = new DDDesktopTokenManager(store, new DDDesktopTokenValidator(), login, clock);
+        manager.load(RESOURCE);
+        Assertions.assertEquals(DDDesktopTokenManager.Status.INVALID_TOKEN, manager.getStatus());
+        Instant previousExpiry = manager.getExpiresAt();
+        Mockito.doThrow(new DBException("Secret storage unavailable")).when(secrets).flushChanges();
+
+        Assertions.assertThrows(DBException.class,
+            () -> manager.signIn(URI.create("https://account.example.test"), RESOURCE, Mockito.mock(DBRProgressMonitor.class)));
+        Assertions.assertEquals(DDDesktopTokenManager.Status.INVALID_TOKEN, manager.getStatus());
+        Assertions.assertEquals(previousExpiry, manager.getExpiresAt());
     }
 
     @NotNull
