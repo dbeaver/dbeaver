@@ -188,8 +188,8 @@
         <!-- SELECT statements may invoke routines with side effects. -->
         <function
             id="executeDQL"
-            readOnlyHint="false"
-            destructiveHint="true"
+            readOnlyHint="true"
+            destructiveHint="false"
             idempotentHint="false"
             name="Execute DQL"
             enabledByDefault="true"
