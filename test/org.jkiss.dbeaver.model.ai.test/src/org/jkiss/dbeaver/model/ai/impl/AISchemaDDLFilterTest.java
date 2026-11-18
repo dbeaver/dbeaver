@@ -55,9 +55,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class AISchemaDDLFilterTest extends DBeaverUnitTest {
@@ -275,6 +280,77 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
         Assertions.assertEquals(first, second);
         Assertions.assertEquals("order index", index.getName());
         Mockito.verify(index, Mockito.times(2)).getAttributeReferences(monitor);
+    }
+
+    @Test
+    public void concurrentCompactGenerationRestoresOriginalIndexName() throws Exception {
+        DBSTable table = Mockito.mock(AbstractTable.class);
+        Mockito.doReturn(table("orders").getDataSource()).when(table).getDataSource();
+        Mockito.when(table.getName()).thenReturn("orders");
+        Mockito.when(table.getFullyQualifiedName(DBPEvaluationContext.DDL)).thenReturn("orders");
+        Mockito.when(table.getEntityType()).thenReturn(DBSEntityType.TABLE);
+        DBSEntityAttribute column = table("orders").getAttributes(monitor).getFirst();
+        Mockito.doReturn(List.of(column)).when(table).getAttributes(monitor);
+        DBSTableIndex index = index(table, "order index", column);
+        Mockito.doReturn(table).when(index).getTable();
+        Mockito.doReturn(List.of(index)).when(table).getIndexes(monitor);
+        SQLIndexManager<?, ?> manager = Mockito.mock(TestGenericIndexManager.class, Mockito.CALLS_REAL_METHODS);
+        DBERegistry registry = Mockito.mock(DBERegistry.class);
+        Mockito.doReturn(manager).when(registry).getObjectManager(index.getClass(), SQLObjectEditor.class);
+        Mockito.when(DBWorkbench.getPlatform().getEditorsRegistry()).thenReturn(registry);
+        AISchemaGenerationOptions options = options(false).withSendIndexes(true).build();
+        List<? extends DBSTableIndexColumn> columns = index.getAttributeReferences(monitor);
+        var firstQuoted = new CountDownLatch(1);
+        var secondQuoted = new CountDownLatch(1);
+        var firstFinished = new CountDownLatch(1);
+        var releaseFirst = new CountDownLatch(1);
+        var firstThread = new AtomicReference<Thread>();
+        var secondThread = new AtomicReference<Thread>();
+        Mockito.doAnswer(invocation -> {
+            if (invocation.getArgument(0) != monitor) {
+                if (Thread.currentThread() == firstThread.get()) {
+                    firstQuoted.countDown();
+                    Assertions.assertTrue(releaseFirst.await(10, TimeUnit.SECONDS));
+                } else {
+                    secondQuoted.countDown();
+                    Assertions.assertTrue(firstFinished.await(10, TimeUnit.SECONDS));
+                }
+            }
+            return columns;
+        }).when(index).getAttributeReferences(Mockito.any());
+        var executor = Executors.newFixedThreadPool(2);
+        try {
+            final var first = executor.submit(() -> {
+                firstThread.set(Thread.currentThread());
+                try {
+                    return new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table);
+                } finally {
+                    firstFinished.countDown();
+                }
+            });
+            Assertions.assertTrue(firstQuoted.await(10, TimeUnit.SECONDS));
+            final var second = executor.submit(() -> {
+                secondThread.set(Thread.currentThread());
+                return new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table);
+            });
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            while (secondQuoted.getCount() != 0) {
+                Thread worker = secondThread.get();
+                ThreadInfo info = worker == null ? null : ManagementFactory.getThreadMXBean().getThreadInfo(worker.threadId());
+                if (info != null && info.getLockOwnerId() == firstThread.get().threadId()) {
+                    break;
+                }
+                Assertions.assertTrue(System.nanoTime() < deadline, "Second generation did not enter or wait for the first");
+                Thread.yield();
+            }
+            releaseFirst.countDown();
+            Assertions.assertTrue(first.get(15, TimeUnit.SECONDS).contains("CREATE INDEX"));
+            Assertions.assertTrue(second.get(15, TimeUnit.SECONDS).contains("CREATE INDEX"));
+            Assertions.assertEquals("order index", index.getName());
+        } finally {
+            releaseFirst.countDown();
+            executor.shutdownNow();
+        }
     }
 
     @Test
