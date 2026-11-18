@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
@@ -197,6 +198,9 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         if (rowsPerInsertSpinner == null || rowsPerInsertSpinner.isDisposed()) {
             return;
         }
+        if (!useInsertsCheck.getSelection()) {
+            return;
+        }
         DBPNativeClientLocation clientHome = wizard.getSettings().getClientHome();
         if (clientHome == checkedClientHome) {
             return;
@@ -217,18 +221,32 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 boolean supported = false;
+                boolean versionResolved = false;
                 try {
+                    if (!clientHome.validateFilesPresence(monitor)) {
+                        throw new IOException("PostgreSQL native client files are not available");
+                    }
                     supported = PostgreDumpVersion.getMajorVersion(clientHome) >= PostgreDumpVersion.MIN_ROWS_PER_INSERT_VERSION;
-                } catch (IOException e) {
+                    versionResolved = true;
+                } catch (IOException | DBException e) {
                     log.debug("Could not determine pg_dump version", e);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.debug("Interrupted while checking pg_dump version", e);
                 }
                 boolean versionSupported = supported;
+                boolean versionChecked = versionResolved;
                 UIUtils.asyncExec(() -> {
-                    if (rowsPerInsertSpinner.isDisposed() || versionCheckId != checkId) {
+                    if (rowsPerInsertSpinner.isDisposed() || versionCheckId != checkId
+                        || wizard.getSettings().getClientHome() != clientHome) {
                         return;
                     }
+                    if (!versionChecked) {
+                        // Retry on the next activation or settings change if downloading the client failed.
+                        checkedClientHome = null;
+                    }
                     supportsMultipleRowsPerInsert = versionSupported;
-                    if (!versionSupported && rowsPerInsertSpinner.getSelection() > 1) {
+                    if (versionChecked && !versionSupported && rowsPerInsertSpinner.getSelection() > 1) {
                         rowsPerInsertSpinner.setSelection(1);
                         wizard.getSettings().setRowsPerInsert(1);
                     }
@@ -241,7 +259,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
 
     private void updateRowsPerInsertState() {
         rowsPerInsertSpinner.setEnabled(useInsertsCheck.getSelection() && supportsMultipleRowsPerInsert);
-        String tooltip = supportsMultipleRowsPerInsert
+        String tooltip = !useInsertsCheck.getSelection() || supportsMultipleRowsPerInsert
             ? PostgreMessages.wizard_backup_page_setting_label_rows_per_insert_tip
             : PostgreMessages.wizard_backup_page_setting_label_rows_per_insert_requires_pg_dump_12;
         rowsPerInsertLabel.setToolTipText(tooltip);
