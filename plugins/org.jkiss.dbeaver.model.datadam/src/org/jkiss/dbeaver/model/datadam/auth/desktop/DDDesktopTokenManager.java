@@ -27,12 +27,16 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoClient;
+import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoException;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoLogin;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.net.URI;
+import java.security.SecureRandom;
+import java.time.Clock;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Set;
 
 /**
@@ -44,12 +48,19 @@ class DDDesktopTokenManager {
 
     private static final Log log = Log.getLog(DDDesktopTokenManager.class);
     private static final String PREF_LOGGED_IN = "datadam.desktop.sso.logged-in";
+    private static final long MIN_RETRY_MILLIS = 1_000;
+    private static final long MAX_RETRY_MILLIS = 60_000;
+    private static final SecureRandom RANDOM = new SecureRandom();
     private static final DDDesktopTokenManager INSTANCE = new DDDesktopTokenManager(
         DDDesktopTokenStore.INSTANCE, new DDDesktopTokenValidator(), new DDDesktopSsoLogin());
 
     private final DDDesktopTokenStore store;
     private final DDDesktopTokenValidator validator;
     private final DDDesktopSsoLogin login;
+    private final Clock clock;
+    private Instant retryAt = Instant.EPOCH;
+    private long retryMillis = MIN_RETRY_MILLIS;
+    private volatile boolean dirty;
     @Nullable
     private volatile DDDesktopUserToken token;
 
@@ -57,9 +68,17 @@ class DDDesktopTokenManager {
         @NotNull DDDesktopTokenStore store, @NotNull DDDesktopTokenValidator validator,
         @NotNull DDDesktopSsoLogin login
     ) {
+        this(store, validator, login, Clock.systemUTC());
+    }
+
+    DDDesktopTokenManager(
+        @NotNull DDDesktopTokenStore store, @NotNull DDDesktopTokenValidator validator,
+        @NotNull DDDesktopSsoLogin login, @NotNull Clock clock
+    ) {
         this.store = store;
         this.validator = validator;
         this.login = login;
+        this.clock = clock;
     }
 
     @NotNull
@@ -81,6 +100,15 @@ class DDDesktopTokenManager {
     Instant getExpiresAt() {
         DDDesktopUserToken current = token;
         return current == null ? null : validator.expiresAt(current);
+    }
+
+    @Nullable
+    synchronized Instant getRefreshAt() {
+        Instant expiresAt = getExpiresAt();
+        if (expiresAt == null) {
+            return null;
+        }
+        return dirty || retryAt.isAfter(expiresAt) ? retryAt : expiresAt;
     }
 
     /** Returns readable claims even for an expired token; these are not verified credentials. */
@@ -106,7 +134,6 @@ class DDDesktopTokenManager {
         }
         token = saved;
         log.debug("Loaded DataDam desktop token");
-        refreshIfExpired();
     }
 
     @NotNull
@@ -115,7 +142,7 @@ class DDDesktopTokenManager {
         if (!validator.matchesResource(current, resource)) {
             throw new DBException("DataDam token is not valid for this endpoint. Relogin to DataDam");
         }
-        if (validator.isExpired(current)) {
+        if (validator.isExpired(current) || dirty) {
             current = refreshIfExpired();
         }
         return current.accessToken();
@@ -124,7 +151,39 @@ class DDDesktopTokenManager {
     @NotNull
     private synchronized DDDesktopUserToken refreshIfExpired() throws DBException {
         DDDesktopUserToken current = requireSignedInToken();
-        return validator.isExpired(current) ? refresh(current) : current;
+        if (!validator.isExpired(current) && !dirty) {
+            return current;
+        }
+        if (clock.instant().isBefore(retryAt)) {
+            throw new DBException("DataDam token refresh is waiting to retry");
+        }
+        try {
+            if (dirty) {
+                store.save(current);
+                dirty = false;
+            }
+            DDDesktopUserToken result = validator.isExpired(current) ? refresh(current) : current;
+            retryAt = Instant.EPOCH;
+            retryMillis = MIN_RETRY_MILLIS;
+            return result;
+        } catch (DDDesktopSsoException e) {
+            if (e.isInvalidGrant()) {
+                // Expired or revoked refresh tokens still require interactive authorization.
+                saveToken(new DDDesktopUserToken(current.accessToken(), current.issuer(), current.endpoints(), current.scopes()));
+                throw new DBException("DataDam authorization has expired. Sign in again");
+            }
+            retryLater();
+            throw e;
+        } catch (Exception e) {
+            retryLater();
+            // Exception text from HTTP/JSON implementations can contain tokens.
+            throw new DBException("DataDam token refresh failed; it will be retried (" + e.getClass().getSimpleName() + ")");
+        }
+    }
+
+    private void retryLater() {
+        retryAt = clock.instant().plusMillis(retryMillis);
+        retryMillis = Math.min(MAX_RETRY_MILLIS, retryMillis * 2);
     }
 
     @NotNull
@@ -146,8 +205,16 @@ class DDDesktopTokenManager {
             throw new DBException("DataDam authorization cannot be refreshed. Sign in again");
         }
         log.debug("Refreshing DataDam desktop token");
+        if (current.nextRefreshToken() == null) {
+            byte[] bytes = new byte[DDSsoConstants.OPAQUE_VALUE_BYTES];
+            RANDOM.nextBytes(bytes);
+            current = new DDDesktopUserToken(current.accessToken(), current.issuer(), current.endpoints(), current.scopes(),
+                refreshToken, Base64.getUrlEncoder().withoutPadding().encodeToString(bytes));
+            // Persist both secrets before sending: a response lost after rotation must survive restart.
+            saveToken(current);
+        }
         try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(DDEndpoints.getSsoBaseUrl()))) {
-            var response = client.refresh(refreshToken, DDSsoScopes.format(current.scopes()));
+            var response = client.refresh(refreshToken, DDSsoScopes.format(current.scopes()), current.nextRefreshToken());
             DDDesktopUserToken rotated = new DDDesktopUserToken(
                 response.accessToken(), validator.getIssuer(response.accessToken()), current.endpoints(), current.scopes(), response.refreshToken());
             if (!validator.matchesIssuer(rotated)) {
@@ -158,16 +225,6 @@ class DDDesktopTokenManager {
             }
             saveToken(rotated);
             return rotated;
-        } catch (Exception e) {
-            DDDesktopUserToken spent = new DDDesktopUserToken(
-                current.accessToken(), current.issuer(), current.endpoints(), current.scopes());
-            try {
-                saveToken(spent);
-            } catch (DBException saveError) {
-                token = null;
-                log.warn("Could not save DataDam refresh failure");
-            }
-            throw new DBException("DataDam token refresh failed. Sign in again");
         }
     }
 
@@ -195,11 +252,15 @@ class DDDesktopTokenManager {
             throw new DBException("DataDam desktop token has expired");
         }
         saveToken(saved);
+        retryAt = Instant.EPOCH;
+        retryMillis = MIN_RETRY_MILLIS;
     }
 
     private synchronized void saveToken(@NotNull DDDesktopUserToken saved) throws DBException {
-        store.save(saved);
         token = saved;
+        dirty = true;
+        store.save(saved);
+        dirty = false;
         log.debug("Stored DataDam desktop token");
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, true);
     }
@@ -210,6 +271,9 @@ class DDDesktopTokenManager {
         try {
             DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
             token = null;
+            dirty = false;
+            retryAt = Instant.EPOCH;
+            retryMillis = MIN_RETRY_MILLIS;
             store.clear();
             log.debug("Cleared DataDam desktop token");
         } finally {
