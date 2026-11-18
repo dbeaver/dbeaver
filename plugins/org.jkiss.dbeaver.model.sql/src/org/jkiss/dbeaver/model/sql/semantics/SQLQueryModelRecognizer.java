@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures.ArraySubquerySemantics;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
@@ -1207,14 +1208,25 @@ public class SQLQueryModelRecognizer {
         List<SQLQueryValueExpression> argExprs = new ArrayList<>(argNodes.size());
         for (STMTreeNode argNode : argNodes) {
             STMTreeNode value = argNode.findFirstNonErrorChild();
-            STMTreeNode n = value == null ? null : value.findFirstNonErrorChild();
-            SQLQueryValueExpression expr = n != null
-                ? this.collectValueExpression(n, scope)
-                : new SQLQueryValueFlattenedExpression(argNode, Collections.emptyList());
+            SQLQueryValueExpression expr;
+            if (value != null && value.getNodeName().equals(STMKnownRuleNames.directSubqueryExpression)) {
+                // Retain references even for a dialect where this is not a recognized ARRAY constructor.
+                expr = new SQLQueryValueSubqueryExpression(value, this.collectQueryExpression(value));
+            } else {
+                STMTreeNode n = value == null ? null : value.findFirstNonErrorChild();
+                expr = n != null
+                    ? this.collectValueExpression(n, scope)
+                    : new SQLQueryValueFlattenedExpression(argNode, Collections.emptyList());
+            }
             argExprs.add(expr);
         }
 
-        return new SQLQueryValueFunctionExpression(callNode, name, argExprs, forRows);
+        boolean arraySubqueryConstructor = argExprs.size() == 1 &&
+            argExprs.getFirst() instanceof SQLQueryValueSubqueryExpression &&
+            this.dialect.getDialectFeatures().getArraySubquerySemantics() != ArraySubquerySemantics.DEFAULT &&
+            name != null && name.invalidPartsCount == 0 && name.parts.size() == 1 &&
+            STMKnownRuleNames.ARRAY_TERM.equalsIgnoreCase(name.parts.getFirst().getRawName());
+        return new SQLQueryValueFunctionExpression(callNode, name, argExprs, forRows, arraySubqueryConstructor);
     }
 
     /**
