@@ -78,6 +78,8 @@ public class DiagnosticInfoSanitizerTest {
         check(sanitizer, "Open [https://db.example.test/path]", "Open [[REDACTED]]");
         check(sanitizer, "Open (https://db.example.test/path(a))", "Open ([REDACTED])");
         check(sanitizer, "Open [https://[2001:db8::1]/path]", "Open [[REDACTED]]");
+        String closingDelimiters = ")]}".repeat(70_000);
+        check(sanitizer, "https://db.example.test/path" + closingDelimiters, "[REDACTED]" + closingDelimiters);
         check(sanitizer, "Initiate connection pool with management database (H2 Embedded; jdbc:h2:/private/database)",
             "Initiate connection pool with management database (H2 Embedded; [REDACTED])");
         check(sanitizer,

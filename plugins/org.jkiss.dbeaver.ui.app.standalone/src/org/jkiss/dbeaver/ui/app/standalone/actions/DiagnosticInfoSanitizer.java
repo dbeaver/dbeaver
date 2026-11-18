@@ -248,20 +248,30 @@ final class DiagnosticInfoSanitizer {
     @NotNull
     private static String redactLocation(@NotNull String value) {
         // Keep enclosing log-message delimiters, but consume balanced delimiters inside URLs (e.g. IPv6 hosts).
+        int[] unmatchedClosings = new int[3];
+        for (int i = 0; i < value.length(); i++) {
+            switch (value.charAt(i)) {
+                case '(' -> unmatchedClosings[0]--;
+                case ')' -> unmatchedClosings[0]++;
+                case '[' -> unmatchedClosings[1]--;
+                case ']' -> unmatchedClosings[1]++;
+                case '{' -> unmatchedClosings[2]--;
+                case '}' -> unmatchedClosings[2]++;
+                default -> { }
+            }
+        }
         int end = value.length();
         while (end > 0) {
-            char closing = value.charAt(end - 1);
-            char opening = switch (closing) {
-                case ')' -> '(';
-                case ']' -> '[';
-                case '}' -> '{';
-                default -> '\0';
+            int delimiter = switch (value.charAt(end - 1)) {
+                case ')' -> 0;
+                case ']' -> 1;
+                case '}' -> 2;
+                default -> -1;
             };
-            if (opening == '\0'
-                || value.substring(0, end).chars().filter(c -> c == opening).count()
-                >= value.substring(0, end).chars().filter(c -> c == closing).count()) {
+            if (delimiter < 0 || unmatchedClosings[delimiter] <= 0) {
                 break;
             }
+            unmatchedClosings[delimiter]--;
             end--;
         }
         return REDACTED + value.substring(end);
