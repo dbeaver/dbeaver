@@ -4,14 +4,14 @@ const A11Y_DISMISS_SELECTOR = '.message-clean-btn, .attachment-close-icon';
 const A11Y_ANNOUNCE_MAX_LENGTH = 4000;
 
 let a11yStrings = {roles: {}};
-let a11yUseAriaNotify = false;
+let a11yNotifyOutsideWebView = false;
 let a11yAnnouncementsSuspended = false;
 let a11yCurrentItem = null;
 
 function initA11y(strings) {
     a11yStrings = strings || {};
     a11yStrings.roles = a11yStrings.roles || {};
-    a11yUseAriaNotify = Boolean(a11yStrings.preferAriaNotify) && typeof document.ariaNotify === 'function';
+    a11yNotifyOutsideWebView = Boolean(a11yStrings.notifyOutsideWebView) && typeof document.ariaNotify === 'function';
 
     if (a11yStrings.transcriptLabel) {
         chat.setAttribute('aria-label', a11yStrings.transcriptLabel);
@@ -308,25 +308,22 @@ function announce(text) {
     if (a11yAnnouncementsSuspended || !text) {
         return;
     }
-    const announcer = a11yUseAriaNotify ? null : document.getElementById('a11y-announcer');
-    if (!a11yUseAriaNotify && !announcer) {
+    const announcer = document.getElementById('a11y-announcer');
+    if (!announcer) {
         return;
     }
     a11yPendingAnnouncements.push(String(text).substring(0, A11Y_ANNOUNCE_MAX_LENGTH));
     if (a11yAnnounceTimer) {
         return;
     }
-    if (announcer) {
-        announcer.textContent = '';
-    }
+    announcer.textContent = '';
     a11yAnnounceTimer = setTimeout(() => {
         a11yAnnounceTimer = null;
         const announcement = a11yPendingAnnouncements.join('. ').substring(0, A11Y_ANNOUNCE_MAX_LENGTH);
         a11yPendingAnnouncements = [];
-        if (announcer) {
-            announcer.textContent = announcement;
-        } else {
-            // webview2 can miss live-region announcements while the native prompt has focus
+        announcer.textContent = announcement;
+        if (a11yNotifyOutsideWebView && !document.hasFocus()) {
+            // live-region updates can be missed while the native prompt has focus
             document.ariaNotify(announcement);
         }
     }, 30);
