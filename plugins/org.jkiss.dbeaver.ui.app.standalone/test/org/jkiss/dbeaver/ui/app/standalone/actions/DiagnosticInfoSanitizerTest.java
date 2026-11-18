@@ -92,11 +92,19 @@ public class DiagnosticInfoSanitizerTest {
         check(sanitizer, "Open [custom://user:pass@db.example.test/path]", "Open [[REDACTED]]");
         check(sanitizer, "Authorization: Bearer private-token\nConnect to 2001:db8::1",
             "Authorization: [REDACTED]\nConnect to [REDACTED]");
-        check(new DiagnosticInfoSanitizer(Map.of("API_TOKEN", "private-token")),
-            "org.osgi.framework.system.packages=java.lang,private-token\n"
-                + "Transfer data from \"public.private-token@postgres\" into \"archive.orders [Existing]\"",
+        check(new DiagnosticInfoSanitizer(Map.of("API_TOKEN", "private_token")),
+            "org.osgi.framework.system.packages=java.lang,private_token\n"
+                + "Transfer data from \"public.private_token@postgres\" into \"archive.orders [Existing]\"",
             "org.osgi.framework.system.packages=java.lang,[REDACTED]\n"
                 + "Transfer data from \"public.[REDACTED]@postgres\" into \"archive.orders [Existing]\"");
+        check(sanitizer,
+            "Transfer data from \"SELECT * FROM jobs WHERE endpoint = 'private.customer.example'\" into \"archive.orders\"",
+            "Transfer data from \"SELECT * FROM jobs WHERE endpoint = '[REDACTED]'\" into \"archive.orders\"");
+        check(sanitizer,
+            "org.osgi.framework.system.capabilities.extra=com.acme.feature;endpoint=private.customer.example;"
+                + "com.acme.key=\"value;private.customer.example,other.customer.example\",com.acme.other",
+            "org.osgi.framework.system.capabilities.extra=com.acme.feature;endpoint=[REDACTED];"
+                + "com.acme.key=\"value;[REDACTED],[REDACTED]\",com.acme.other");
     }
 
     private static void check(@NotNull DiagnosticInfoSanitizer sanitizer, @NotNull String input, @NotNull String expected) {

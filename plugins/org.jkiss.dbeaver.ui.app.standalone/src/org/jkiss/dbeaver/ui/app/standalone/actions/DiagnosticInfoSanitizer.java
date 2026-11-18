@@ -81,9 +81,12 @@ final class DiagnosticInfoSanitizer {
         "\\bbundle:/[\\w.-]+|(?m)^[\\t ]*[\\w.-]+(?= \\(\\d+(?:\\.[\\w-]+)+\\) \")"
     );
     private static final Pattern SYSTEM_METADATA = Pattern.compile(
-        "(?m)^[\\t ]*org\\.osgi\\.framework\\.system\\.(?:packages(?:\\.extra)?|capabilities(?:\\.extra)?)\\s*=[^\\r\\n]*"
+        "^[\\t ]*org\\.osgi\\.framework\\.system\\.(?:packages(?:\\.extra)?|capabilities(?:\\.extra)?)\\s*="
     );
     private static final Pattern DEBIAN_VERSION = Pattern.compile("\\bDebian[\\t ]+\\d+(?:\\.\\d+)+(?:[-+~][\\w.+~:-]+)*");
+    private static final Pattern OBJECT_LABEL = Pattern.compile(
+        "([\\p{L}_$][\\p{L}\\p{N}_$]*(?:\\.[\\p{L}_$][\\p{L}\\p{N}_$]*)*)(?: \\[[^\"]*\\])?"
+    );
     private static final Pattern TRANSFER_OBJECT = Pattern.compile(
         "Transfer data from \"([^\"@]*)(?:@[^\"]*)?\" into \"([^\"@]*)(?:@[^\"]*)?\""
     );
@@ -167,7 +170,7 @@ final class DiagnosticInfoSanitizer {
             boolean metadata = isWithin(MODULE_ARGUMENT, beforeDomains, m.start(), m.end())
                 || isWithin(LAUNCHER_ARGUMENT, beforeDomains, m.start(), m.end())
                 || isWithin(BUNDLE_IDENTIFIER, beforeDomains, m.start(), m.end())
-                || isWithin(SYSTEM_METADATA, beforeDomains, m.start(), m.end())
+                || isSystemMetadataIdentifier(beforeDomains, m.start(), m.end())
                 || isWithin(DEBIAN_VERSION, beforeDomains, m.start(), m.end())
                 || isTransferObject(beforeDomains, m.start(), m.end());
             return isStackFrame(beforeDomains, m.start()) || bundle || propertyName || identifier || metadata
@@ -215,12 +218,53 @@ final class DiagnosticInfoSanitizer {
         int lineStart = text.lastIndexOf('\n', start - 1) + 1;
         while (matcher.find()) {
             for (int group = 1; group <= matcher.groupCount(); group++) {
-                if (matcher.start(group) <= start - lineStart && matcher.end(group) >= end - lineStart) {
+                Matcher object = OBJECT_LABEL.matcher(matcher.group(group));
+                if (object.matches() && matcher.start(group) <= start - lineStart
+                    && matcher.start(group) + object.end(1) >= end - lineStart) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private static boolean isSystemMetadataIdentifier(@NotNull String text, int start, int end) {
+        String line = lineAt(text, start);
+        Matcher property = SYSTEM_METADATA.matcher(line);
+        if (!property.lookingAt()) {
+            return false;
+        }
+        int lineStart = text.lastIndexOf('\n', start - 1) + 1;
+        start -= lineStart;
+        end -= lineStart;
+        if (start < property.end()) {
+            return false;
+        }
+        // Only clause namespaces and attribute keys are identifiers. Attribute values may contain private hosts.
+        int tokenStart = property.end();
+        boolean namespace = true;
+        char quote = '\0';
+        for (int i = tokenStart; i < start; i++) {
+            char c = line.charAt(i);
+            if (quote != '\0') {
+                if (c == '\\') {
+                    i++;
+                } else if (c == quote) {
+                    quote = '\0';
+                }
+            } else if (c == '"' || c == '\'') {
+                quote = c;
+            } else if (c == ',' || c == ';') {
+                tokenStart = i + 1;
+                namespace = c == ',';
+            }
+        }
+        if (quote != '\0' || !line.substring(tokenStart, start).isBlank()) {
+            return false;
+        }
+        String suffix = line.substring(end).stripLeading();
+        return suffix.startsWith("=") || suffix.startsWith(":")
+            || namespace && (suffix.isEmpty() || suffix.startsWith(";") || suffix.startsWith(","));
     }
 
     @NotNull
