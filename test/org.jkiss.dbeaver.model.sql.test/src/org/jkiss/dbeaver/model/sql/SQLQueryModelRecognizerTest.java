@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryVariableClause;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryVariableStatementModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableAlterModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableCreateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsLocalTableModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
@@ -551,6 +552,69 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
     private static final String STMT_SELECT =
         "SELECT t.id, t.amount FROM test_table t JOIN parent_table p ON p.id = t.parent_id " +
             "WHERE t.amount > 0 GROUP BY t.id, t.amount HAVING COUNT(*) > 0 ORDER BY t.id";
+
+    @Test
+    public void recognizesExplainedSelectAndItsTableReference() {
+        for (String sql : List.of(
+            "EXPLAIN QUERY PLAN SELECT * FROM Album",
+            "EXPLAIN SELECT * FROM Album",
+            "EXPLAIN (ANALYZE, FORMAT JSON) SELECT * FROM Album",
+            "EXPLAIN PLAN SET STATEMENT_ID = 'album' INTO plan_table FOR SELECT * FROM Album",
+            "EXPLAIN FORMAT=JSON SELECT * FROM Album",
+            "EXPLAIN USING TEXT SELECT * FROM Album",
+            "EXPLAIN PLAN json=1 SELECT * FROM Album"
+        )) {
+            SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()), sql);
+            Assertions.assertNotNull(model);
+            STMTreeNode explain = model.getSyntaxNode().findFirstChildOfName(STMKnownRuleNames.sqlQueryBody)
+                .findFirstNonErrorChild();
+            Assertions.assertEquals(STMKnownRuleNames.explainStatement, explain.getNodeName());
+            STMTreeNode explainedBody = explain.findFirstChildOfName(STMKnownRuleNames.explainableSqlQueryBody);
+            Assertions.assertNotNull(explainedBody);
+            Assertions.assertEquals(STMKnownRuleNames.directSqlDataStatement, explainedBody.findFirstNonErrorChild().getNodeName());
+            Assertions.assertInstanceOf(SQLQueryRowsSourceModel.class, model.getQueryModel());
+            Assertions.assertTrue(model.getAllSymbols().stream()
+                .anyMatch(symbol -> symbol.getRawName().equals("Album")));
+            Assertions.assertNotSame(model, model.findNodeContaining(sql.indexOf("Album") + 1));
+        }
+    }
+
+    @Test
+    public void recognizesSelectThroughExplainableBodyWithoutExplain() {
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()),
+            "SELECT * FROM Album");
+        Assertions.assertNotNull(model);
+        STMTreeNode body = model.getSyntaxNode().findFirstChildOfName(STMKnownRuleNames.sqlQueryBody);
+        Assertions.assertNotNull(body);
+        Assertions.assertEquals(STMKnownRuleNames.explainableSqlQueryBody, body.findFirstNonErrorChild().getNodeName());
+        Assertions.assertInstanceOf(SQLQueryRowsSourceModel.class, model.getQueryModel());
+        Assertions.assertTrue(model.getAllSymbols().stream().anyMatch(symbol -> symbol.getRawName().equals("Album")));
+    }
+
+    @Test
+    public void recognizesExplainedDmlAndDdl() {
+        SQLQueryModel update = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()),
+            "EXPLAIN QUERY PLAN UPDATE Album SET title = 'new'");
+        Assertions.assertNotNull(update);
+        Assertions.assertInstanceOf(SQLQueryUpdateModel.class, update.getQueryModel());
+
+        SQLQueryModel create = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()),
+            "EXPLAIN PLAN FOR CREATE TABLE Album (id integer)");
+        Assertions.assertNotNull(create);
+        Assertions.assertInstanceOf(SQLQueryTableCreateModel.class, create.getQueryModel());
+    }
+
+    @Test
+    public void recognizesDeclarationFollowedByExplainedQueryWithoutSeparator() {
+        String sql = "DECLARE @id INT = 1\nEXPLAIN SELECT * FROM Album WHERE id = @id";
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()), sql);
+        Assertions.assertNotNull(model);
+        SQLQueryVariableStatementModel variables = Assertions.assertInstanceOf(
+            SQLQueryVariableStatementModel.class, model.getQueryModel());
+        Assertions.assertEquals(1, variables.getVariableClauses().size());
+        Assertions.assertInstanceOf(SQLQueryRowsSourceModel.class, variables.getBody());
+        Assertions.assertTrue(model.getAllSymbols().stream().anyMatch(symbol -> symbol.getRawName().equals("Album")));
+    }
 
     private static final String STMT_RECURSIVE_CTE =
         "WITH RECURSIVE hierarchy (id, parent_id, depth, total_amount) AS (" +

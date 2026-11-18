@@ -160,6 +160,7 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
             }
             boolean commentSet = SQLServerUtils.isCommentSet(
                 monitor,
+                executionContext,
                 database,
                 SQLServerObjectClass.OBJECT_OR_COLUMN,
                 procedure.getObjectId(),

@@ -217,7 +217,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         BaseThemeSettings.instance.addPropertyListener(
             BaseEditorColors.COLOR_ERROR,
-            s -> tasksTree.refresh(),
+            s -> {
+                tasksTree.refresh();
+                taskRunViewer.refresh();
+            },
             taskrunTree
         );
 

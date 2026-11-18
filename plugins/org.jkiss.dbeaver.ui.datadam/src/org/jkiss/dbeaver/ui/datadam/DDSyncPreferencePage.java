@@ -37,6 +37,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -46,6 +48,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.management.DDManagementActions;
 import org.jkiss.dbeaver.ui.forms.UIAlignX;
 import org.jkiss.dbeaver.ui.forms.UIGrowX;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
@@ -63,6 +66,20 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
     private static final String MCP_SETTINGS_URL = "remote-dams";
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+    private final DDDesktopAccessListener accessListener = new DDDesktopAccessListener() {
+        @Override
+        public void accessChanging() {
+        }
+
+        @Override
+        public void accessChanged() {
+            UIUtils.asyncExec(() -> {
+                if (content != null && !content.isDisposed()) {
+                    refresh();
+                }
+            });
+        }
+    };
     private final UIObservable<Boolean> mcpLoading = UIObservable.of(false);
     private final UIObservable<Boolean> mcpUnavailable = UIObservable.of(false);
     private final UIObservable<Boolean> mcpGloballyDisabled = UIObservable.of(false);
@@ -102,6 +119,13 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         ((GridLayout) content.getLayout()).verticalSpacing = 8;
+        Button integrationCheck = UIUtils.createCheckbox(content, DDTrackingUIMessages.integration_enabled,
+            DDProductConfig.isIntegrationEnabled());
+        integrationCheck.setEnabled(DDProductConfig.isIntegrationAvailable());
+        integrationCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+            DDManagementActions.setIntegrationEnabled(integrationCheck.getSelection());
+            refresh();
+        }));
         Label description = DDUIUtils.create(
             content, DDTrackingUIMessages.sync_preference_page_description,
             DDTrackingUIMessages.sync_preference_page_about_link, DDUIConstants.DATADAM_DOCS_URL
@@ -135,6 +159,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         formLayout.verticalIndent = 16;
         form.setLayoutData(formLayout);
 
+        accessService.addAccessListener(accessListener);
         refresh();
         return content;
     }
@@ -206,6 +231,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     @Override
     public void dispose() {
+        accessService.removeAccessListener(accessListener);
         if (userViewJob != null) {
             userViewJob.cancel();
         }
@@ -248,6 +274,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void refresh() {
+        boolean enabled = DDProductConfig.isIntegrationEnabled();
         DDDesktopAccessService.Status status = accessService.getStatus();
         boolean signedIn = status == DDDesktopAccessService.Status.SIGNED_IN;
         userText.setText(signedIn ? DDTrackingUIMessages.sync_preference_page_account_signed_in
@@ -255,10 +282,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         accountActionButton.setText(signedIn
             ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
             : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);
-        mcpVisible.set(signedIn);
-        damNameRow.setVisible(signedIn);
-        ((GridData) damNameRow.getLayoutData()).exclude = !signedIn;
-        if (signedIn) {
+        accountActionButton.setEnabled(enabled);
+        mcpVisible.set(enabled && signedIn);
+        damNameRow.setVisible(enabled && signedIn);
+        ((GridData) damNameRow.getLayoutData()).exclude = !enabled || !signedIn;
+        if (enabled && signedIn) {
             loadDamName();
             loadMcpStatus();
         } else {
@@ -272,7 +300,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             showMcpStatus(null);
         }
         content.layout(true, true);
-        if (signedIn) {
+        if (enabled && signedIn) {
             loadLoggedUserView();
         } else if (userViewJob != null) {
             userViewJob.cancel();
@@ -465,7 +493,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         mcpSettings = state;
         boolean accountEnabled = state != null && state.settings().isAccountEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true);
         mcpCheck.setSelection(accountEnabled && state.settings().isDamEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, false));
-        mcpCheck.setEnabled(accountEnabled && state.canManage());
+        mcpCheck.setEnabled(DDProductConfig.isIntegrationEnabled() && accountEnabled && state.canManage());
         mcpLoading.set(false);
         mcpUnavailable.set(state == null);
         mcpGloballyDisabled.set(state != null && !accountEnabled);

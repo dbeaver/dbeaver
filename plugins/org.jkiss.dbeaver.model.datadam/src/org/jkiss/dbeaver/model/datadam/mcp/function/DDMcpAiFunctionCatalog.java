@@ -74,7 +74,10 @@ public class DDMcpAiFunctionCatalog {
     ) {
         List<DDMcpFunctionParameter> parameters = new ArrayList<>(connectionParameters);
         Arrays.stream(function.getParameters()).map(this::describeParameter).forEach(parameters::add);
-        return new DDMcpFunctionDescriptor(function.getFullId(), function.getName(), function.getAiDescription(), parameters);
+        return new DDMcpFunctionDescriptor(
+            function.getFullId(), function.getName(), function.getAiDescription(), parameters,
+            function.isReadOnlyHint(), function.isDestructiveHint(), function.isIdempotentHint()
+        );
     }
 
     @NotNull
