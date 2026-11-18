@@ -71,7 +71,8 @@ public final class VerticaSSLUtils {
                 || VerticaConstants.TLS_MODE_VERIFY_FULL.equalsIgnoreCase(tlsMode);
         } else {
             String ssl = settings.get(VerticaConstants.PROP_SSL);
-            usesTLS = "1".equals(ssl) || "true".equalsIgnoreCase(ssl);
+            // the current driver defaults to prefer when neither property is set
+            usesTLS = ssl == null || "1".equals(ssl) || "true".equalsIgnoreCase(ssl);
         }
         return usesTLS
             && !settings.containsKey(VerticaConstants.PROP_KEYSTORE_PATH)

@@ -58,11 +58,17 @@ public class VerticaSSLUtilsTest {
     }
 
     @Test
-    public void otherTLSModesAreUnchanged() {
+    public void disabledTLSModeIsUnchanged() {
         Properties properties = new Properties();
-        assertFalse(VerticaSSLUtils.needsEmptyKeyStore(properties, URL, null));
         properties.setProperty(VerticaConstants.PROP_TLS_MODE, "disable");
         assertFalse(VerticaSSLUtils.needsEmptyKeyStore(properties, URL, null));
+    }
+
+    @Test
+    public void implicitPreferModeUsesEmptyKeyStore() {
+        Properties properties = new Properties();
+        assertTrue(VerticaSSLUtils.needsEmptyKeyStore(properties, URL, null));
+        assertFalse(VerticaSSLUtils.needsEmptyKeyStore(properties, URL, "/custom/client.jks"));
     }
 
     @Test
