@@ -36,6 +36,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDLoggedUserView;
+import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -715,6 +717,8 @@ class DDRemoteDamDesktopRpcServiceTest {
         private final DDRemoteDamDesktopSessionService session;
 
         private Desktop(@NotNull MemoryChannel messages) {
+            Mockito.when(channel.getMonitor()).thenReturn(new DDConnectionMonitor());
+            Mockito.when(access.getLoggedUserIdentity()).thenReturn(new DDLoggedUserView(null, null, null, null));
             Mockito.when(channel.getStatus()).thenAnswer(invocation -> messages.getStatus());
             Mockito.when(channel.observeState(Mockito.any())).thenAnswer(invocation ->
                 messages.observeState(invocation.getArgument(0)));

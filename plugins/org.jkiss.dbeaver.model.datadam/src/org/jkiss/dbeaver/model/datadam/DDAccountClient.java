@@ -71,6 +71,11 @@ public class DDAccountClient extends DDClient {
             canManageSettings
         }
         """;
+    private static final String CAN_MANAGE_DAM_SETTINGS_QUERY = """
+        query CanManageDamSettings {
+            canManageSettings
+        }
+        """;
     private static final String SET_DAM_SETTING = """
         mutation SetDamSetting($clientDamId: String!, $key: String!, $value: String!, $expectedAccountId: ID!) {
             setDamSetting(clientDamId: $clientDamId, key: $key, value: $value, expectedAccountId: $expectedAccountId) { account dam }
@@ -162,6 +167,15 @@ public class DDAccountClient extends DDClient {
             throw new DBException("Could not read Dam settings from DataDam Account");
         }
         return new DamSettingsState(data.accountInfo().accountId(), data.damSettings(), data.canManageSettings());
+    }
+
+    public boolean canManageDamSettings() throws DBException {
+        DamSettingsData data = executeGraphQl(CAN_MANAGE_DAM_SETTINGS_QUERY, DamSettingsData.class,
+            "Could not check Dam settings permission in DataDam Account");
+        if (data.canManageSettings() == null) {
+            throw new DBException("Could not check Dam settings permission in DataDam Account");
+        }
+        return data.canManageSettings();
     }
 
     @NotNull
