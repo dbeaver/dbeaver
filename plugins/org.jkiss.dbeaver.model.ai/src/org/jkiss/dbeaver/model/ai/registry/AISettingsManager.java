@@ -232,7 +232,7 @@ public class AISettingsManager {
         profile.invalidateUserCredentials();
         try {
             settings.validateCurrentSettings();
-            AIUserProfileCredentials.delete(profileId);
+            AIUserProfileCredentials.delete(profile);
         } catch (DBException | RuntimeException e) {
             profile.restoreUserCredentials();
             throw e;
@@ -456,6 +456,7 @@ public class AISettingsManager {
             AIConfigurationProfile profile = new AIConfigurationProfile();
             profile.setProfileId(engineId);
             profile.setProfileName(engineId);
+            profile.setCredentialRevision(AIConfigurationProfile.LEGACY_CREDENTIAL_REVISION);
             profile.setEngineId(engineId);
             profile.setMigrated(true);
             AIEngineProperties properties = configuration.getProperties();
@@ -484,6 +485,9 @@ public class AISettingsManager {
             out.beginObject();
             out.name("name").value(value.getProfileName());
             out.name("engine").value(value.getEngineId());
+            if (!AIConfigurationProfile.LEGACY_CREDENTIAL_REVISION.equals(value.getCredentialRevision())) {
+                out.name("credentialRevision").value(value.getCredentialRevision());
+            }
             if (value.isMigrated()) {
                 out.name("migrated").value(true);
             }
@@ -503,6 +507,9 @@ public class AISettingsManager {
             JsonObject json = JsonParser.parseReader(in).getAsJsonObject();
             AIConfigurationProfile result = new AIConfigurationProfile();
             result.setEngineId(json.get("engine").getAsString());
+            JsonElement credentialRevision = json.get("credentialRevision");
+            result.setCredentialRevision(credentialRevision == null || credentialRevision.isJsonNull()
+                ? AIConfigurationProfile.LEGACY_CREDENTIAL_REVISION : credentialRevision.getAsString());
             result.setProfileName(json.has("name") && !json.get("name").isJsonNull()
                 ? json.get("name").getAsString() : result.getEngineId());
             if (json.has("migrated")) {

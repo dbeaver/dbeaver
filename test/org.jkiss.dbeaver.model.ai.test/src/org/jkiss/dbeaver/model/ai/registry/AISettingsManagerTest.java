@@ -51,6 +51,34 @@ import java.util.Set;
 public class AISettingsManagerTest extends DBeaverUnitTest {
 
     @Test
+    public void keepsCredentialRevisionAcrossReloadAndChangesItForNewProfile() {
+        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
+            DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
+            MockedStatic<AIEngineRegistry> registries = Mockito.mockStatic(
+                AIEngineRegistry.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            AIEngineRegistry registry = Mockito.mock(AIEngineRegistry.class);
+            AIEngineDescriptor engine = Mockito.mock(AIEngineDescriptor.class);
+            Mockito.when(registry.getEngineDescriptor("test-engine")).thenReturn(engine);
+            Mockito.doReturn(OpenAIProperties.class).when(engine).getPropertiesType();
+            registries.when(AIEngineRegistry::getInstance).thenReturn(registry);
+            AIConfigurationProfile current = new AIConfigurationProfile();
+            current.setEngineId("test-engine");
+            current.setProfileName("Test");
+            current.setConfiguration(new OpenAIProperties());
+            String json = AISettingsManager.READ_PROPS_GSON.toJson(current);
+            AIConfigurationProfile loaded = AISettingsManager.READ_PROPS_GSON.fromJson(json, AIConfigurationProfile.class);
+            AIConfigurationProfile editor = new AIConfigurationProfile();
+            editor.useUserCredentialScope(loaded);
+
+            Assertions.assertEquals(current.getCredentialRevision(), loaded.getCredentialRevision());
+            Assertions.assertEquals(loaded.getCredentialRevision(), editor.getCredentialRevision());
+            Assertions.assertNotEquals(loaded.getCredentialRevision(), new AIConfigurationProfile().getCredentialRevision());
+        }
+    }
+
+    @Test
     public void savesUserDefaultWithoutChangingSharedConfiguration() throws Exception {
         DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
         Mockito.when(platform.getApplication().isMultiuser()).thenReturn(true);

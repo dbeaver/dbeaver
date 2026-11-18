@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.secret;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * An object for which secrets may exist
@@ -30,4 +31,9 @@ public interface DBSSecretObject {
 
     @NotNull
     String getSecretObjectType();
+
+    @Nullable
+    default String getSecretObjectRevision() {
+        return null;
+    }
 }

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * AI engine settings profile
@@ -37,10 +38,12 @@ import java.util.Map;
 @JsonAdapter(AISettingsManager.ConfigProfileAdapter.class)
 public class AIConfigurationProfile {
     protected static final Log log = Log.getLog(AIConfigurationProfile.class);
+    public static final String LEGACY_CREDENTIAL_REVISION = "legacy";
 
     private boolean migrated;
     private String profileId;
     private String profileName;
+    private String credentialRevision = UUID.randomUUID().toString();
     private String engineId;
     private boolean global = true;
     private AIEngineProperties configuration;
@@ -69,6 +72,15 @@ public class AIConfigurationProfile {
 
     public void setProfileName(@NotNull String profileName) {
         this.profileName = profileName;
+    }
+
+    @NotNull
+    public String getCredentialRevision() {
+        return credentialRevision;
+    }
+
+    public void setCredentialRevision(@NotNull String credentialRevision) {
+        this.credentialRevision = credentialRevision;
     }
 
     @NotNull
@@ -157,6 +169,7 @@ public class AIConfigurationProfile {
     }
 
     public void useUserCredentialScope(@NotNull AIConfigurationProfile source) {
+        credentialRevision = source.credentialRevision;
         if (userCredentialScope != source.userCredentialScope) {
             invalidateUserCredentials();
             userCredentialScope = source.userCredentialScope;

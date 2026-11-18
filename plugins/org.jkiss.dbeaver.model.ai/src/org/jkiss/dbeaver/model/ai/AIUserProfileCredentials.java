@@ -89,12 +89,12 @@ public final class AIUserProfileCredentials {
         save(profile, credentials, DBSSecretController.getGlobalSecretController());
     }
 
-    public static void delete(@NotNull String profileId) throws DBException {
+    public static void delete(@NotNull AIConfigurationProfile profile) throws DBException {
         DBSSecretController controller = DBSSecretController.getGlobalSecretController();
         if (!controller.supportsObjectSecretDeletion()) {
             throw new DBException("The secret controller does not support deleting AI profile credentials");
         }
-        controller.deleteObjectSecrets(new ProfileSecretObject(profileId));
+        controller.deleteObjectSecrets(new ProfileSecretObject(profile.getProfileId(), profile.getCredentialRevision()));
         controller.flushChanges();
     }
 
@@ -127,7 +127,7 @@ public final class AIUserProfileCredentials {
                 checkSession(session);
                 checkUserProfile(profile, scope);
                 controller.setPrivateSecretValue(
-                    new ProfileSecretObject(profile.getProfileId()),
+                    new ProfileSecretObject(profile.getProfileId(), profile.getCredentialRevision()),
                     new DBSSecretValue(
                         getSecretId(profile, credential.getKey()),
                         profile.getProfileName() + ": " + credential.getKey(),
@@ -300,7 +300,10 @@ public final class AIUserProfileCredentials {
         return SECRET_ID_PREFIX + profile.getProfileId() + "." + propertyId;
     }
 
-    private record ProfileSecretObject(@NotNull String secretObjectId) implements DBSSecretObject {
+    private record ProfileSecretObject(
+        @NotNull String secretObjectId,
+        @NotNull String secretObjectRevision
+    ) implements DBSSecretObject {
         @NotNull
         @Override
         public String getProjectId() {
@@ -311,6 +314,12 @@ public final class AIUserProfileCredentials {
         @Override
         public String getSecretObjectId() {
             return secretObjectId;
+        }
+
+        @NotNull
+        @Override
+        public String getSecretObjectRevision() {
+            return secretObjectRevision;
         }
 
         @NotNull
