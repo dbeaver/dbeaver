@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.event.DDProjectEventListener;
@@ -103,7 +103,8 @@ public class DDProjectUIManager {
 
     public void refreshProjectVisibility() {
         DDProjectSyncPropertyTester.firePropertyChange();
-        UIUtils.asyncExec(() -> {
+        // Wait for navigator initialization, which may be running a master-password dialog's event loop.
+        UIExecutionQueue.queueExec(() -> {
             for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
                 for (IWorkbenchPage page : window.getPages()) {
                     refreshNavigator(page, ProjectNavigatorView.VIEW_ID);
