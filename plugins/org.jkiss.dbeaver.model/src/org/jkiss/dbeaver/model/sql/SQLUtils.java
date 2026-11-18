@@ -190,6 +190,28 @@ public final class SQLUtils {
     public static String prepareQueryForParsing(
         @NotNull SQLDialect dialect, @NotNull String sql, boolean doubleQuotedStrings, boolean rejectDoubleQuoteEscapes
     ) throws DBCException {
+        return prepareQueryForParsing(dialect, sql, doubleQuotedStrings, rejectDoubleQuoteEscapes, false, null);
+    }
+
+    public static boolean hasActiveExecutableComment(
+        @NotNull SQLDialect dialect, @NotNull String sql, boolean doubleQuotedStrings
+    ) throws DBCException {
+        boolean[] active = new boolean[1];
+        prepareQueryForParsing(dialect, sql, doubleQuotedStrings, false, false, active);
+        return active[0];
+    }
+
+    public static void verifyNoBackslashEscapes(
+        @NotNull SQLDialect dialect, @NotNull String sql, boolean ansiQuotes
+    ) throws DBCException {
+        prepareQueryForParsing(dialect, sql, !ansiQuotes, ansiQuotes, true, null);
+    }
+
+    @NotNull
+    private static String prepareQueryForParsing(
+        @NotNull SQLDialect dialect, @NotNull String sql, boolean doubleQuotedStrings,
+        boolean rejectDoubleQuoteEscapes, boolean noBackslashEscapes, @Nullable boolean[] activeComment
+    ) throws DBCException {
         List<String> lineComments = ArrayUtils.safeArray(dialect.getSingleLineComments());
         List<String> executablePrefixes = dialect.getExecutableCommentPrefixes();
         if (!doubleQuotedStrings && !rejectDoubleQuoteEscapes && executablePrefixes.isEmpty()
@@ -200,7 +222,7 @@ public final class SQLUtils {
         Pair<String, String> blockComment = dialect.getMultiLineComments();
         String[][] stringQuotes = dialect.getStringQuoteStrings();
         String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
-        char escapeChar = dialect.getStringEscapeCharacter();
+        char escapeChar = noBackslashEscapes ? 0 : dialect.getStringEscapeCharacter();
         StringBuilder result = new StringBuilder(sql);
         List<Integer> subtractionSeparators = new ArrayList<>();
         boolean executableComment = false;
@@ -213,12 +235,19 @@ public final class SQLUtils {
                 if (end < 0) {
                     throw new DBCException("Unterminated double-quoted SQL string");
                 }
+                if (noBackslashEscapes && result.substring(pos, end).contains("\\\"")) {
+                    throw new DBCException("Cannot verify SQL string escapes in the current session SQL mode");
+                }
                 maskCommentRange(result, pos, end);
                 result.setCharAt(pos, '\'');
                 result.setCharAt(end - 1, '\'');
                 pos = end;
             } else if (stringQuote != null) {
-                pos = skipQuoted(result, pos, stringQuote, escapeChar);
+                int end = skipQuoted(result, pos, stringQuote, escapeChar);
+                if (noBackslashEscapes && result.substring(pos, end).contains("\\" + stringQuote[1])) {
+                    throw new DBCException("Cannot verify SQL string escapes in the current session SQL mode");
+                }
+                pos = end;
             } else if (identifierQuote != null) {
                 int end = skipQuoted(result, pos, identifierQuote, (char) 0);
                 if (rejectDoubleQuoteEscapes && identifierQuote[0].equals("\"")
@@ -263,6 +292,9 @@ public final class SQLUtils {
                         throw new DBCException("Cannot determine whether an executable comment applies to this server");
                     }
                     if (active) {
+                        if (activeComment != null) {
+                            activeComment[0] = true;
+                        }
                         maskCommentRange(result, pos, versionEnd);
                         pos = versionEnd;
                         executableComment = true;
@@ -300,9 +332,10 @@ public final class SQLUtils {
                 // jsqlparser always treats -- as a comment, but mysql requires a separator after it
                 subtractionSeparators.add(pos + 1);
                 pos += 2;
-            } else if (rejectDoubleQuoteEscapes && result.charAt(pos) == '\\'
-                && pos + 1 < result.length() && result.charAt(pos + 1) == '"') {
-                throw new DBCException("Cannot verify escaped double quote outside SQL string");
+            } else if (result.charAt(pos) == '\\' && pos + 1 < result.length()
+                && (rejectDoubleQuoteEscapes && result.charAt(pos + 1) == '"'
+                    || noBackslashEscapes && (result.charAt(pos + 1) == '\'' || result.charAt(pos + 1) == '"'))) {
+                throw new DBCException("Cannot verify SQL string escapes outside a quoted string");
             } else {
                 pos++;
             }

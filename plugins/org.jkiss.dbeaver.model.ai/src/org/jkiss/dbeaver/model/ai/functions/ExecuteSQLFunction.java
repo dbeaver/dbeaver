@@ -129,8 +129,12 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             dialect = executionContext.getDataSource().getSQLDialect();
             if (!dialect.getExecutableCommentPrefixes().isEmpty()) {
                 String sqlMode = verifySqlMode(context, executionContext);
+                boolean ansiQuotes = sqlMode.contains("ANSI_QUOTES");
+                if (sqlMode.contains("NO_BACKSLASH_ESCAPES")) {
+                    SQLUtils.verifyNoBackslashEscapes(dialect, queryText, ansiQuotes);
+                }
                 if (queryText.contains("\\\"")) {
-                    if (sqlMode.contains("ANSI_QUOTES")) {
+                    if (ansiQuotes) {
                         SQLUtils.prepareQueryForParsing(dialect, queryText, false, true);
                     } else {
                         String doubleQuoted = SQLUtils.prepareQueryForParsing(dialect, queryText, true);
@@ -150,16 +154,14 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         }
         if (validationQuery.getStatement() == null || validationQuery.getParseError() != null
             || validationQuery.getStatement() instanceof UnsupportedStatement) {
-            if (validationQuery != query) {
-                throw new DBException("Cannot verify double-quoted SQL string in an unparsed statement");
-            }
             if (dialect == null) {
                 dialect = executionContext.getDataSource().getSQLDialect();
             }
-            if (!dialect.getExecutableCommentPrefixes().isEmpty() && hasActiveExecutableComment(dialect, queryText)) {
+            if (!dialect.getExecutableCommentPrefixes().isEmpty()
+                && SQLUtils.hasActiveExecutableComment(dialect, queryText, validationQuery != query)) {
                 throw new DBException("Cannot verify database object scope in an unparsed SQL statement containing executable comments");
             }
-            verifyQueryText(context, executionContext, query.getText());
+            verifyQueryText(context, executionContext, validationQuery.getText());
         } else {
             verifyStatement(context, executionContext, validationQuery);
         }
@@ -184,51 +186,8 @@ public abstract class ExecuteSQLFunction implements AIFunction {
                     throw new DBException("Cannot verify session SQL mode");
                 }
                 String normalizedMode = sqlMode.toUpperCase(Locale.ROOT);
-                if (normalizedMode.contains("NO_BACKSLASH_ESCAPES")) {
-                    throw new DBException("Cannot verify SQL string escapes in the current session SQL mode");
-                }
                 return normalizedMode;
             }
-        }
-    }
-
-    private static boolean hasActiveExecutableComment(@NotNull SQLDialect dialect, @NotNull String sql) throws DBException {
-        SQLUtils.prepareQueryForParsing(dialect, sql);
-        try {
-            CCJSqlParser lexer = new CCJSqlParser(sql)
-                .withBackslashEscapeCharacter(dialect.getStringEscapeCharacter() == '\\');
-            while (true) {
-                Token token = lexer.getNextToken();
-                for (Token comment = token.specialToken; comment != null; comment = comment.specialToken) {
-                    for (String prefix : dialect.getExecutableCommentPrefixes()) {
-                        if (comment.image.startsWith(prefix)) {
-                            int end = prefix.length();
-                            while (end < comment.image.length() && Character.isDigit(comment.image.charAt(end))) {
-                                end++;
-                            }
-                            int digits = end - prefix.length();
-                            if (digits > 6) {
-                                return true;
-                            }
-                            if (digits < 5) {
-                                end = prefix.length();
-                            } else if (digits == 6) {
-                                char following = comment.image.startsWith("*/", end) ? 0 : comment.image.charAt(end);
-                                end = prefix.length() + dialect.getExecutableCommentVersionLength(digits, following);
-                            }
-                            int version = end == prefix.length() ? 0 : Integer.parseInt(comment.image.substring(prefix.length(), end));
-                            if (!Boolean.FALSE.equals(dialect.isExecutableCommentActive(prefix, version))) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                if (token.kind == CCJSqlParserConstants.EOF) {
-                    return false;
-                }
-            }
-        } catch (ParseException | TokenMgrException e) {
-            throw new DBException("Cannot tokenize SQL statement", e);
         }
     }
 
@@ -283,13 +242,31 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         if (processor != null && queries.size() > 1 && !processor.isAppendable()) {
             throw new DBException("Format '" + processor.getAIFormatId() + "' supports only one statement per call");
         }
-        if (queries.size() > 1 && !executionContext.getDataSource().getSQLDialect().getExecutableCommentPrefixes().isEmpty()
-            && queries.stream().anyMatch(query -> hasBackslashQuote(query.getText()))) {
-            throw new DBException("Cannot verify SQL string escapes across multiple statements");
+        if (queries.size() > 1 && !executionContext.getDataSource().getSQLDialect().getExecutableCommentPrefixes().isEmpty()) {
+            boolean modeMayChange = false;
+            for (SQLQuery query : queries) {
+                if (modeMayChange && hasBackslashQuote(query.getText())) {
+                    throw new DBException("Cannot verify SQL string escapes after a statement that may change the session SQL mode");
+                }
+                modeMayChange |= !isModeStableQuery(query);
+            }
         }
         for (SQLQuery query : queries) {
             verifyQuery(context, executionContext, query);
         }
+    }
+
+    private static boolean isModeStableQuery(@NotNull SQLQuery query) {
+        if (!(query.getStatement() instanceof Select select) || query.getParseError() != null || query.isModifying()) {
+            return false;
+        }
+        Set<String> routines = new HashSet<>();
+        try {
+            objectFinder(new HashSet<>(), routines, Set.of()).getTables((Statement) select);
+        } catch (UnsupportedOperationException | ClassCastException | IllegalArgumentException e) {
+            return false;
+        }
+        return routines.isEmpty();
     }
 
     @NotNull

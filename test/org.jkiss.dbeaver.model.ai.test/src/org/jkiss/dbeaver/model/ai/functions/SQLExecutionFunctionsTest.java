@@ -437,6 +437,10 @@ class SQLExecutionFunctionsTest {
         fixture.assertRestricted(new ExecuteDQLFunction(),
             "SELECT \"it\\\"s\" FROM public.orders /*! UNION SELECT id FROM private.orders */");
         fixture.setSqlMode("NO_BACKSLASH_ESCAPES");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 'a\\\"b' FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT id FROM public.orders # \\'"));
         DBException modeError = Assertions.assertThrows(DBException.class, () -> fixture.verify(new ExecuteDQLFunction(),
             "SELECT 'x\\' /*! UNION SELECT id FROM private.orders */ -- '"));
         Assertions.assertTrue(modeError.getMessage().contains("SQL mode"));
@@ -449,11 +453,25 @@ class SQLExecutionFunctionsTest {
             () -> fixture.verify(new ExecuteDQLFunction(), "SELECT \"x\\\" FROM public.orders"));
         Assertions.assertTrue(modeError.getMessage().contains("escaped double quote"));
         fixture.setSqlMode("");
+        Assertions.assertDoesNotThrow(() -> new ExecuteDQLFunction().verifyQueries(
+            fixture.context, fixture.executionContext,
+            List.of(new SQLQuery(fixture.dataSource, "SELECT 'it\\'s' FROM public.orders"),
+                new SQLQuery(fixture.dataSource, "SELECT 1 FROM public.orders")), null));
         DBException scriptError = Assertions.assertThrows(DBException.class, () -> new ExecuteDQLFunction().verifyQueries(
             fixture.context, fixture.executionContext,
             List.of(new SQLQuery(fixture.dataSource, "SET SESSION sql_mode='NO_BACKSLASH_ESCAPES'"),
                 new SQLQuery(fixture.dataSource, "SELECT 'x\\' FROM public.orders")), null));
-        Assertions.assertTrue(scriptError.getMessage().contains("multiple statements"));
+        Assertions.assertTrue(scriptError.getMessage().contains("may change"));
+        scriptError = Assertions.assertThrows(DBException.class, () -> new ExecuteDQLFunction().verifyQueries(
+            fixture.context, fixture.executionContext,
+            List.of(new SQLQuery(fixture.dataSource, "SELECT public.read_payroll()"),
+                new SQLQuery(fixture.dataSource, "SELECT 'it\\'s' FROM public.orders")), null));
+        Assertions.assertTrue(scriptError.getMessage().contains("may change"));
+        scriptError = Assertions.assertThrows(DBException.class, () -> new ExecuteDQLFunction().verifyQueries(
+            fixture.context, fixture.executionContext,
+            List.of(new SQLQuery(fixture.dataSource, "/*! SET SESSION sql_mode='NO_BACKSLASH_ESCAPES' */"),
+                new SQLQuery(fixture.dataSource, "SELECT 'it\\'s' FROM public.orders")), null));
+        Assertions.assertTrue(scriptError.getMessage().contains("may change"));
         Assertions.assertThrows(DBException.class,
             () -> fixture.verify(new ExecuteDQLFunction(), "SELECT * FROM public.orders /*! UNION SELECT * FROM private.orders */"));
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT 'unterminated FROM public.orders");
@@ -468,6 +486,7 @@ class SQLExecutionFunctionsTest {
         for (String sql : List.of(
             "SELECT '/*!' FROM public.orders WHERE id SOUNDS LIKE 'x'",
             "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /* ordinary /*! */",
+            "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' # /*! inert */",
             "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /*!999999 ignored */"
         )) {
             Assertions.assertDoesNotThrow(() -> fixture.verify(function, sql), sql);
@@ -477,6 +496,13 @@ class SQLExecutionFunctionsTest {
             "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /*! AND id > 0 */");
         fixture.assertRestricted(function,
             "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /*M! AND id > 0 */");
+        fixture.setSqlMode("");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function,
+            "SELECT \"it\\\"s\" FROM public.orders WHERE id SOUNDS LIKE 'x'"));
+        fixture.assertRestricted(function,
+            "SELECT \"it\\\"s\" FROM private.orders WHERE id SOUNDS LIKE 'x'");
+        fixture.assertRestricted(function,
+            "SELECT \"it\\\"s\" FROM public.orders WHERE id SOUNDS LIKE 'x' /*! UNION SELECT id FROM private.orders */");
     }
 
     @Test
