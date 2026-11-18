@@ -30,7 +30,7 @@
             class="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester"
             id="org.jkiss.dbeaver.ui.datadam.project.DDProjectToolbarPropertyTester"
             namespace="org.jkiss.dbeaver.ui.datadam.projectSync"
-            properties="enabled"
+            properties="enabled,canImport"
             type="org.eclipse.ui.IWorkbenchWindow"/>
     </extension>
 
@@ -89,6 +89,11 @@
                     <test forcePluginActivation="true" property="org.jkiss.dbeaver.ui.datadam.projectSync.enabled"/>
                 </with>
             </and>
+        </definition>
+        <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.canImportProjects">
+            <with variable="activeWorkbenchWindow">
+                <test forcePluginActivation="true" property="org.jkiss.dbeaver.ui.datadam.projectSync.canImport"/>
+            </with>
         </definition>
         <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.canShareProject">
             <and>
@@ -216,7 +221,7 @@
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator?before=additions_end">
             <command commandId="org.jkiss.dbeaver.datadam.commands.project.import">
                 <visibleWhen>
-                    <reference definitionId="org.jkiss.dbeaver.ui.datadam.projectSync.hasKeys"/>
+                    <reference definitionId="org.jkiss.dbeaver.ui.datadam.projectSync.canImportProjects"/>
                 </visibleWhen>
             </command>
             <command commandId="org.jkiss.dbeaver.datadam.commands.project.syncAll">
