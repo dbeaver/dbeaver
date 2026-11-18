@@ -17,8 +17,11 @@
 package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import picocli.CommandLine;
 
+import java.net.URI;
 import java.nio.file.Path;
 
 public class OutputFileOption extends AbstractFileOption {
@@ -34,6 +37,13 @@ public class OutputFileOption extends AbstractFileOption {
 
     @Nullable
     public Path getOutputFile() {
+        String launchDirectory = System.getenv("DBVR_LAUNCH_CWD");
+        if (!CommonUtils.isEmpty(launchDirectory)
+            && !CommonUtils.isEmpty(outputFile)
+            && (IOUtils.isLocalFile(outputFile) || !URI.create(outputFile).isAbsolute())
+        ) {
+            return Path.of(launchDirectory).resolve(outputFile);
+        }
         return getPath(outputFile);
     }
 }
