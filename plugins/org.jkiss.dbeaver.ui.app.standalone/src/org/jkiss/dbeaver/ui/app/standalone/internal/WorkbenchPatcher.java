@@ -77,6 +77,7 @@ public final class WorkbenchPatcher {
     private static final Log log = Log.getLog(WorkbenchPatcher.class);
     private static final String NL_STATE_FILENAME = "last_nl.properties";
     private static final String NL_STATE_KEY = "eclipse.last.nl";
+    private static final String DASHBOARD_VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
     private static final String ERROR_LOG_ICON_URI = DBIcon.SMALL_ERROR.getLocation();
     private static final String DEBUG_VIEW_ICON_URI = RuntimeUtils.makePlatformResourceUrl(
         IActionConstants.DEBUG_UI_PLUGIN_ID, "icons/debug_config.png");
@@ -419,8 +420,9 @@ public final class WorkbenchPatcher {
                 String label = labels.get(viewId);
                 String oldLabel = child.getAttribute("label");
                 String previousLabel = previousLabels.get(viewId);
-                // secondary database browsers use object names even when they match the default view title
-                boolean objectTitle = viewIds.length > 1 && DatabaseBrowserView.VIEW_ID.equals(viewId);
+                // secondary browsers and dashboards use object names even when they match the default view title
+                boolean objectTitle = viewIds.length > 1 &&
+                    (DatabaseBrowserView.VIEW_ID.equals(viewId) || DASHBOARD_VIEW_ID.equals(viewId));
                 boolean defaultLabel = !objectTitle &&
                     (child.getTagName().equals("descriptors") || previousLabel == null || previousLabel.equals(oldLabel));
                 if (label != null && defaultLabel && !label.equals(oldLabel)) {
