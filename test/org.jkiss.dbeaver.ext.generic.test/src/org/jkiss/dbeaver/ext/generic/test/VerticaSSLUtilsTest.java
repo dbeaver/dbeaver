@@ -61,10 +61,30 @@ public class VerticaSSLUtilsTest {
     public void otherTLSModesAreUnchanged() {
         Properties properties = new Properties();
         assertFalse(VerticaSSLUtils.needsEmptyKeyStore(properties, URL, null));
-        for (String mode : new String[] {"disable", "verify-ca", "verify-full"}) {
+        properties.setProperty(VerticaConstants.PROP_TLS_MODE, "disable");
+        assertFalse(VerticaSSLUtils.needsEmptyKeyStore(properties, URL, null));
+    }
+
+    @Test
+    public void allTLSModesUseEmptyKeyStore() {
+        for (String mode : new String[] {"prefer", "require", "verify-ca", "verify-full"}) {
+            Properties properties = new Properties();
             properties.setProperty(VerticaConstants.PROP_TLS_MODE, mode);
-            assertFalse(VerticaSSLUtils.needsEmptyKeyStore(properties, URL, null));
+            assertTrue(VerticaSSLUtils.needsEmptyKeyStore(properties, URL, null));
         }
+    }
+
+    @Test
+    public void legacySslPropertyUsesEmptyKeyStore() {
+        Properties properties = new Properties();
+        assertTrue(VerticaSSLUtils.needsEmptyKeyStore(properties, URL + "?SSL=1", null));
+        assertTrue(VerticaSSLUtils.needsEmptyKeyStore(properties, URL + "?SSL=true", null));
+        properties.setProperty("SSL", "true");
+        assertTrue(VerticaSSLUtils.needsEmptyKeyStore(properties, URL, null));
+        assertFalse(VerticaSSLUtils.needsEmptyKeyStore(properties, URL + "?SSL=0", null));
+        assertFalse(VerticaSSLUtils.needsEmptyKeyStore(properties, URL + "?SSL=false", null));
+        assertFalse(VerticaSSLUtils.needsEmptyKeyStore(properties, URL + "?SSL=1&TLSmode=disable", null));
+        assertTrue(VerticaSSLUtils.needsEmptyKeyStore(properties, URL + "?SSL=0&TLSmode=require", null));
     }
 
     @Test
@@ -84,7 +104,7 @@ public class VerticaSSLUtilsTest {
     public void urlParametersAreRespected() {
         assertTrue(VerticaSSLUtils.needsEmptyKeyStore(new Properties(), URL + "?TLSMode=ReQuIrE", null));
         assertTrue(VerticaSSLUtils.needsEmptyKeyStore(new Properties(), URL + "?TLSMode=require#fragment", null));
-        assertFalse(VerticaSSLUtils.needsEmptyKeyStore(requireProperties(), URL + "?TLSMode=verify-full", null));
+        assertTrue(VerticaSSLUtils.needsEmptyKeyStore(requireProperties(), URL + "?TLSMode=verify-full", null));
         assertFalse(VerticaSSLUtils.needsEmptyKeyStore(requireProperties(), URL + "?KeystorePath=%2Fcustom.jks", null));
         assertFalse(VerticaSSLUtils.needsEmptyKeyStore(requireProperties(), URL + "?KeystorePath=", null));
         assertFalse(VerticaSSLUtils.needsEmptyKeyStore(requireProperties(), URL + "?SSLSocketFactoryName=custom", null));
