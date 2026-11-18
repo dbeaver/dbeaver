@@ -222,10 +222,6 @@ public class AISettings implements DBPAdaptable {
     }
 
     public void removeConfiguration(@NotNull AIConfigurationProfile profile) throws DBException {
-        if (AIUserProfileCredentials.isAvailable()) {
-            throw new DBException("Team AI profiles must be removed and saved together");
-        }
-        checkCurrentProfile(profile);
         removeProfile(profile);
         if (profile.isAvailable()) {
             try {
@@ -236,22 +232,14 @@ public class AISettings implements DBPAdaptable {
         }
     }
 
-    public void removeConfigurationAndSave(@NotNull AIConfigurationProfile profile, @NotNull DBRRunnable save) throws DBException {
-        if (!AIUserProfileCredentials.isAvailable()) {
-            removeConfiguration(profile);
-            save.run();
-            return;
-        }
-        validateCurrentSettings();
-        checkCurrentProfile(profile);
-        AIUserProfileCredentials.validateDeletionSupport();
+    public void saveProfileRemoval(@NotNull AIConfigurationProfile profile, @NotNull DBRRunnable save) throws DBException {
         var previousConfigurations = new LinkedHashMap<>(configurations);
         var previousLegacyConfigurations = new LinkedHashMap<>(engineConfigurations);
         String previousDefault = defaultConfiguration;
+        removeProfile(profile);
         profile.invalidateUserCredentials();
+        pendingProfileSecretDeletions.add(profile.getProfileId());
         try {
-            removeProfile(profile);
-            pendingProfileSecretDeletions.add(profile.getProfileId());
             save.run();
         } catch (DBException | RuntimeException e) {
             configurations.clear();
@@ -265,14 +253,10 @@ public class AISettings implements DBPAdaptable {
         }
     }
 
-    private void checkCurrentProfile(@NotNull AIConfigurationProfile profile) throws DBException {
-        if (configurations.get(profile.getProfileId()) != profile) {
+    private void removeProfile(@NotNull AIConfigurationProfile profile) throws DBException {
+        if (!configurations.remove(profile.getProfileId(), profile)) {
             throw new DBException("AI configuration is no longer current");
         }
-    }
-
-    private void removeProfile(@NotNull AIConfigurationProfile profile) {
-        configurations.remove(profile.getProfileId());
         if (CommonUtils.equalObjects(defaultConfiguration, profile.getProfileId())) {
             defaultConfiguration = configurations.isEmpty() ? null : configurations.keySet().iterator().next();
         }

@@ -204,10 +204,14 @@ public class AISettingsManager {
                 throw new DBException("The user has no permission to save AI configuration");
             }
             settings.validateCurrentSettings();
-            if (removedProfile == null) {
-                writeSettings(settings);
+            if (removedProfile != null && AIUserProfileCredentials.isAvailable()) {
+                AIUserProfileCredentials.validateDeletionSupport();
+                settings.saveProfileRemoval(removedProfile, () -> writeSettings(settings));
             } else {
-                settings.removeConfigurationAndSave(removedProfile, () -> writeSettings(settings));
+                if (removedProfile != null) {
+                    settings.removeConfiguration(removedProfile);
+                }
+                writeSettings(settings);
             }
             applyUserDefaultConfiguration(settings);
             this.getSettingsHolder().setSettings(settings);

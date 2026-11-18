@@ -281,8 +281,10 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
     void standaloneDeletionDoesNotDeleteTeamProfileSecrets() throws Exception {
         try (Fixture fixture = new Fixture()) {
             fixture.workbench.when(DBWorkbench::isDistributed).thenReturn(false);
+            Mockito.when(fixture.platform.getApplication().isDistributed()).thenReturn(false);
             AISettings settings = fixture.settings(false);
-            AIConfigurationProfile profile = settings.getConfiguration("openai");
+            AISettingsManager.getInstance().removeConfiguration(settings, settings.getConfiguration("openai"));
+            Assertions.assertNull(fixture.reload().getConfigurationOrNull("openai"));
             Mockito.verify(fixture.controller, Mockito.never()).deleteObjectSecrets(ArgumentMatchers.any(DBSSecretObject.class));
         }
     }
