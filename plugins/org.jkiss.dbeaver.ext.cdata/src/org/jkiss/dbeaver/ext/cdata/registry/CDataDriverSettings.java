@@ -39,6 +39,7 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
 
@@ -97,7 +98,18 @@ record CDataDriverSettings(
                     }
                     checkCanceled(monitor);
                     if (settings.version() < preferred.version()) {
-                        return preferred.drivers();
+                        if (hasCachedSettings && cached.version() == preferred.version()) {
+                            Files.setLastModifiedTime(file, FileTime.fromMillis(System.currentTimeMillis()));
+                            return preferred.drivers();
+                        }
+                        try (var input = CDataDriverSettings.class.getResourceAsStream(FILE_NAME)) {
+                            if (input == null) {
+                                throw new IOException("Bundled CData driver settings are missing");
+                            }
+                            Files.copy(input, temporary, StandardCopyOption.REPLACE_EXISTING);
+                        }
+                        checkCanceled(monitor);
+                        settings = preferred;
                     }
                     try {
                         Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);

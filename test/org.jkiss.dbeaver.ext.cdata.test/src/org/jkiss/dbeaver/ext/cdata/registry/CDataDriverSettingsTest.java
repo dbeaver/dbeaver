@@ -239,13 +239,43 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
     public void ignoreDownloadOlderThanBundledSettings() throws Exception {
         for (String downloaded : List.of("{\"postgresql\":{\"datatype_id\":\"old_postgresql\"}}",
             versionedSettings(0, "old_postgresql"))) {
+            Files.deleteIfExists(cacheFile);
             Mockito.when(connection.getInputStream()).thenReturn(new ByteArrayInputStream(downloaded.getBytes(StandardCharsets.UTF_8)));
 
             var settings = CDataDriverSettings.load(progressMonitor, cacheFile, () -> connection);
 
             Assertions.assertEquals(List.of("sql"), settings.get("postgresql").categories());
             Assertions.assertEquals("oracle", settings.get("oracledb").dataTypeId());
-            Assertions.assertFalse(Files.exists(cacheFile));
+            try (var bundled = CDataDriverSettings.class.getResourceAsStream(CDataDriverSettings.FILE_NAME)) {
+                Assertions.assertArrayEquals(bundled.readAllBytes(), Files.readAllBytes(cacheFile));
+            }
+            assertNoTemporaryFiles();
+        }
+    }
+
+    @Test
+    public void reuseBundledSettingsAfterOlderDownload() throws Exception {
+        String downloaded = versionedSettings(0, "old_postgresql");
+        for (boolean hasCache : List.of(false, true)) {
+            Files.deleteIfExists(cacheFile);
+            if (hasCache) {
+                Files.writeString(cacheFile, downloaded);
+                expireCache();
+            }
+            Mockito.clearInvocations(connection);
+            Mockito.when(connection.getInputStream()).thenReturn(new ByteArrayInputStream(downloaded.getBytes(StandardCharsets.UTF_8)));
+
+            var first = CDataDriverSettings.load(progressMonitor, cacheFile, () -> connection);
+            var second = CDataDriverSettings.load(progressMonitor, cacheFile, () -> {
+                Assertions.fail("A successful check must prevent another download for one week");
+                return connection;
+            });
+
+            Assertions.assertEquals(List.of("sql"), first.get("postgresql").categories());
+            Assertions.assertEquals(first, second);
+            Assertions.assertTrue(CDataDriverCatalog.isCacheFresh(cacheFile));
+            Assertions.assertEquals(first, CDataDriverSettings.load(cacheFile));
+            Mockito.verify(connection).getInputStream();
             assertNoTemporaryFiles();
         }
     }
@@ -255,7 +285,6 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
         String cached = versionedSettings(3, "cached_postgresql");
         Files.writeString(cacheFile, cached);
         expireCache();
-        long modified = Files.getLastModifiedTime(cacheFile).toMillis();
         String downloaded = versionedSettings(2, "downloaded_postgresql");
         Mockito.when(connection.getInputStream()).thenReturn(new ByteArrayInputStream(downloaded.getBytes(StandardCharsets.UTF_8)));
 
@@ -263,7 +292,12 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
 
         Assertions.assertEquals("cached_postgresql", settings.get("postgresql").dataTypeId());
         Assertions.assertEquals(cached, Files.readString(cacheFile));
-        Assertions.assertEquals(modified, Files.getLastModifiedTime(cacheFile).toMillis());
+        Assertions.assertTrue(CDataDriverCatalog.isCacheFresh(cacheFile));
+        Assertions.assertEquals(settings, CDataDriverSettings.load(progressMonitor, cacheFile, () -> {
+            Assertions.fail("The newer cache must stay fresh after rejecting an older download");
+            return connection;
+        }));
+        Mockito.verify(connection).getInputStream();
         assertNoTemporaryFiles();
     }
 
