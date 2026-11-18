@@ -27,8 +27,14 @@ import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
@@ -415,8 +421,25 @@ class SQLExecutionFunctionsTest {
     void executableCommentsAndUnterminatedStringsCannotBypassTextChecks() throws Exception {
         ScopeFixture fixture = new ScopeFixture();
         fixture.enableExecutableComments();
-        fixture.assertRestricted(new ExecuteDQLFunction(),
-            "SELECT 'x\\' /*! UNION SELECT id FROM private.orders */ -- '");
+        fixture.setSqlMode("");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 'it\\'s' FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 'it\\\"s' FROM public.orders"));
+        fixture.setSqlMode("NO_BACKSLASH_ESCAPES");
+        DBException modeError = Assertions.assertThrows(DBException.class, () -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 'x\\' /*! UNION SELECT id FROM private.orders */ -- '"));
+        Assertions.assertTrue(modeError.getMessage().contains("SQL mode"));
+        fixture.setSqlMode("ANSI_QUOTES");
+        modeError = Assertions.assertThrows(DBException.class,
+            () -> fixture.verify(new ExecuteDQLFunction(), "SELECT \"x\\\" FROM public.orders"));
+        Assertions.assertTrue(modeError.getMessage().contains("SQL mode"));
+        fixture.setSqlMode("");
+        DBException scriptError = Assertions.assertThrows(DBException.class, () -> new ExecuteDQLFunction().verifyQueries(
+            fixture.context, fixture.executionContext,
+            List.of(new SQLQuery(fixture.dataSource, "SET SESSION sql_mode='NO_BACKSLASH_ESCAPES'"),
+                new SQLQuery(fixture.dataSource, "SELECT 'x\\' FROM public.orders")), null));
+        Assertions.assertTrue(scriptError.getMessage().contains("multiple statements"));
         Assertions.assertThrows(DBException.class,
             () -> fixture.verify(new ExecuteDQLFunction(), "SELECT * FROM public.orders /*! UNION SELECT * FROM private.orders */"));
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT 'unterminated FROM public.orders");
@@ -596,6 +619,11 @@ class SQLExecutionFunctionsTest {
 
         private void enableExecutableComments() {
             Mockito.when(dataSource.getSQLDialect()).thenReturn(new BasicSQLDialect() {
+                @Override
+                public char getStringEscapeCharacter() {
+                    return '\\';
+                }
+
                 @NotNull
                 @Override
                 public DBPIdentifierCase storesUnquotedCase() {
@@ -620,6 +648,21 @@ class SQLExecutionFunctionsTest {
                     return new String[]{"-- ", "--\t", "#"};
                 }
             });
+        }
+
+        private void setSqlMode(@NotNull String mode) throws DBException {
+            DBCSession session = Mockito.mock(DBCSession.class);
+            DBCStatement statement = Mockito.mock(DBCStatement.class);
+            DBCResultSet resultSet = Mockito.mock(DBCResultSet.class);
+            Mockito.when(context.getMonitor()).thenReturn(Mockito.mock(DBRProgressMonitor.class));
+            Mockito.when(executionContext.openSession(Mockito.any(), Mockito.eq(DBCExecutionPurpose.UTIL), Mockito.anyString()))
+                .thenReturn(session);
+            Mockito.when(session.prepareStatement(Mockito.eq(DBCStatementType.QUERY), Mockito.anyString(),
+                Mockito.eq(false), Mockito.eq(false), Mockito.eq(false))).thenReturn(statement);
+            Mockito.when(statement.executeStatement()).thenReturn(true);
+            Mockito.when(statement.openResultSet()).thenReturn(resultSet);
+            Mockito.when(resultSet.nextRow()).thenReturn(true);
+            Mockito.when(resultSet.getAttributeValue(0)).thenReturn(mode);
         }
 
         private void verify(@NotNull ExecuteSQLFunction function, @NotNull String sql) throws DBException {

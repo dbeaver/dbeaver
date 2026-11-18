@@ -56,7 +56,12 @@ import org.jkiss.dbeaver.model.ai.utils.AIDataExportUtils;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
@@ -117,9 +122,9 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull SQLQuery query
     ) throws DBException {
         String queryText = query.getText();
-        if (queryText != null && (queryText.contains("\\'") || queryText.contains("\\\""))
+        if (hasBackslashQuote(queryText)
             && !executionContext.getDataSource().getSQLDialect().getExecutableCommentPrefixes().isEmpty()) {
-            throw new DBException("Cannot verify SQL string escapes without the session SQL mode");
+            verifySqlMode(context, executionContext, queryText);
         }
         if (query.getStatement() == null || query.getParseError() != null || query.getStatement() instanceof UnsupportedStatement) {
             SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
@@ -129,6 +134,33 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             verifyQueryText(context, executionContext, query.getText());
         } else {
             verifyStatement(context, executionContext, query);
+        }
+    }
+
+    private static boolean hasBackslashQuote(@Nullable String sql) {
+        return sql != null && (sql.contains("\\'") || sql.contains("\\\""));
+    }
+
+    private static void verifySqlMode(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull String sql
+    ) throws DBException {
+        try (DBCSession session = executionContext.openSession(context.getMonitor(), DBCExecutionPurpose.UTIL, "Read SQL mode");
+             DBCStatement statement = session.prepareStatement(DBCStatementType.QUERY, "SELECT @@SESSION.sql_mode", false, false, false)) {
+            if (!statement.executeStatement()) {
+                throw new DBException("Cannot verify session SQL mode");
+            }
+            try (DBCResultSet resultSet = statement.openResultSet()) {
+                if (resultSet == null || !resultSet.nextRow() || !(resultSet.getAttributeValue(0) instanceof String sqlMode)) {
+                    throw new DBException("Cannot verify session SQL mode");
+                }
+                String normalizedMode = sqlMode.toUpperCase(Locale.ROOT);
+                if (normalizedMode.contains("NO_BACKSLASH_ESCAPES")
+                    || sql.contains("\\\"") && normalizedMode.contains("ANSI_QUOTES")) {
+                    throw new DBException("Cannot verify SQL string escapes in the current session SQL mode");
+                }
+            }
         }
     }
 
@@ -222,6 +254,10 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         }
         if (processor != null && queries.size() > 1 && !processor.isAppendable()) {
             throw new DBException("Format '" + processor.getAIFormatId() + "' supports only one statement per call");
+        }
+        if (queries.size() > 1 && !executionContext.getDataSource().getSQLDialect().getExecutableCommentPrefixes().isEmpty()
+            && queries.stream().anyMatch(query -> hasBackslashQuote(query.getText()))) {
+            throw new DBException("Cannot verify SQL string escapes across multiple statements");
         }
         for (SQLQuery query : queries) {
             verifyQuery(context, executionContext, query);

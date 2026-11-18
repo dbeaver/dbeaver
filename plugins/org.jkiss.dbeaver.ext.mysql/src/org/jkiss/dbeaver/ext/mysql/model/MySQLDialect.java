@@ -282,7 +282,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         String productName = CommonUtils.notEmpty(mysqlDataSource.getInfo().getDatabaseProductName()).toLowerCase(Locale.ROOT);
         this.mariaDb = productVersion.contains("mariadb") || productName.contains("mariadb")
             ? Boolean.TRUE : productName.contains("mysql") && serverVersion != null
-                && serverVersion.getMajor() < 10
+                && (serverVersion.getMajor() < 10 || serverVersion.getMajor() >= 26)
                 ? Boolean.FALSE : null;
         this.lowerCaseTableNames = mysqlDataSource.getLowerCaseTableNames();
         this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);

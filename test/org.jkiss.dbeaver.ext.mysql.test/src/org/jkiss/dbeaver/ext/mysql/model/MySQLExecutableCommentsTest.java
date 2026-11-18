@@ -78,6 +78,10 @@ public class MySQLExecutableCommentsTest {
             dialect(false, "MariaDB", "10.9.8").isExecutableCommentActive("/*!", 50700));
         Assertions.assertNull(dialect(false, "unknown", "8.0.36").isExecutableCommentActive("/*M!", 0));
         Assertions.assertNull(dialect(false, "MySQL", "10.9.8").isExecutableCommentActive("/*M!", 0));
+        Assertions.assertEquals(Boolean.TRUE,
+            dialect(false, "MySQL", "26.7.0").isExecutableCommentActive("/*!", 260700));
+        Assertions.assertEquals(Boolean.FALSE,
+            dialect(false, "MySQL", "26.7.0").isExecutableCommentActive("/*M!", 0));
     }
 
     private MySQLDialect dialect(boolean mariaDb, String version) {
