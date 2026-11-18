@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.app.standalone.actions;
 
 import org.jkiss.code.NotNull;
 
+import java.util.List;
 import java.util.Map;
 
 /** Standalone regression checks; compile alongside the sanitizer and run without an Eclipse application. */
@@ -105,6 +106,21 @@ public class DiagnosticInfoSanitizerTest {
                 + "com.acme.key=\"value;private.customer.example,other.customer.example\",com.acme.other",
             "org.osgi.framework.system.capabilities.extra=com.acme.feature;endpoint=[REDACTED];"
                 + "com.acme.key=\"value;[REDACTED],[REDACTED]\",com.acme.other");
+        DiagnosticInfoSanitizer localized = new DiagnosticInfoSanitizer(Map.of(), List.of(
+            "Transférer les données de « {0} » vers « {1} »",
+            "Преобразовать данные из \"{0}\" в \"{1}\"",
+            "「{0}」から「{1}」にデータを転送"
+        ));
+        check(localized,
+            "Transférer les données de « public.orders@db.example.test » vers « archive.orders [Existing] »",
+            "Transférer les données de « public.orders@[REDACTED] » vers « archive.orders [Existing] »");
+        check(localized, "Преобразовать данные из \"public.orders\" в \"archive.orders\"",
+            "Преобразовать данные из \"public.orders\" в \"archive.orders\"");
+        check(localized, "「public.orders」から「archive.orders」にデータを転送",
+            "「public.orders」から「archive.orders」にデータを転送");
+        check(localized,
+            "Transférer les données de « SELECT * FROM jobs WHERE endpoint = 'private.customer.example' » vers « archive.orders »",
+            "Transférer les données de « SELECT * FROM jobs WHERE endpoint = '[REDACTED]' » vers « archive.orders »");
     }
 
     private static void check(@NotNull DiagnosticInfoSanitizer sanitizer, @NotNull String input, @NotNull String expected) {
