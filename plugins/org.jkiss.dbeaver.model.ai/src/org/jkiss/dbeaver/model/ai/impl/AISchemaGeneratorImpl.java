@@ -102,10 +102,18 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
                         if (indexEditor != null) {
                             String indexName = index.getName();
                             try {
-                                DBEPersistAction[] actions = indexEditor.makeCreateCommand(index, Map.of()).getPersistActions(
+                                Map<String, Object> indexOptions = Map.of(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES,
+                                    options.useFQN() || requiresFqn(table, executionContext));
+                                DBEPersistAction[] actions = indexEditor.makeCreateCommand(index, indexOptions).getPersistActions(
                                     monitor,
                                     executionContext == null ? DBUtils.getDefaultContext(index, true) : executionContext,
-                                    Map.of());
+                                    indexOptions);
+                                if (actions != null && !options.sendObjectComment()) {
+                                    actions = Arrays.stream(actions)
+                                        .filter(action -> !"COMMENT".equalsIgnoreCase(SQLUtils.getFirstKeyword(
+                                            table.getDataSource().getSQLDialect(), CommonUtils.notEmpty(action.getScript()))))
+                                        .toArray(DBEPersistAction[]::new);
+                                }
                                 DBStructUtils.addDDLLine(ddl, SQLUtils.generateScript(table.getDataSource(), actions, false));
                             } finally {
                                 // generic index managers may quote the cached object's name while generating DDL
