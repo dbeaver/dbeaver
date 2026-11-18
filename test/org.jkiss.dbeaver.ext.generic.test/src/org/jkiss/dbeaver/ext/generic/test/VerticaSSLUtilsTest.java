@@ -130,7 +130,7 @@ public class VerticaSSLUtilsTest {
         DBPDataSourceContainer container = mock(DBPDataSourceContainer.class);
         DBPDriver driver = mock(DBPDriver.class);
         when(container.getDriver()).thenReturn(driver);
-        when(driver.getConnectionURL(configuration)).thenReturn(URL + "?tlsmode=verify-full");
+        when(driver.getConnectionURL(configuration)).thenReturn(URL + "?tlsmode=disable");
         when(driver.isSampleURLApplicable()).thenReturn(true);
         TestVerticaDataSource dataSource = mock(TestVerticaDataSource.class, CALLS_REAL_METHODS);
         doReturn(container).when(dataSource).getContainer();
