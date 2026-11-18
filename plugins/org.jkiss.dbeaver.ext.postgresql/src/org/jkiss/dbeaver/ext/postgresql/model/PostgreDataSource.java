@@ -628,14 +628,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                             throw new DBCException("Connection URL preparation error", ex);
                         }
                     }
-                } else {
+                } else if (CommonUtils.isNotEmpty(databaseName)) {
                     // Patch connection URL with new database name
                     newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), databaseName);
                 }
                 newConfig.setUrl(newURL);
                 // Also update the proxy source URL so the underlying connection targets the requested database
                 String proxySourceUrl = newConfig.getProperty(DBConstants.PROP_PROXY_SOURCE_URL);
-                if (proxySourceUrl != null) {
+                if (proxySourceUrl != null && CommonUtils.isNotEmpty(databaseName)) {
                     newConfig.setProperty(
                         DBConstants.PROP_PROXY_SOURCE_URL,
                         PostgreUtils.updateDatabaseNameInURL(proxySourceUrl, databaseName)

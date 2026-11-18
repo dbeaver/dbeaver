@@ -24,7 +24,10 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
@@ -108,7 +111,11 @@ public class DatabaseURL {
     }
 
     private static final Log log = Log.getLog(DatabaseURL.class);
+    private static final String OPTIONAL_HOST_PORT = "{host}[:{port}]";
     private static final String URL_SUFFIX_PARAMETER = "dbeaverUrlSuffix";
+    private static final java.util.regex.Pattern POSTGRESQL_ENDPOINT_OPTIONS = java.util.regex.Pattern.compile(
+        "(^|&)(PGHOST|PGPORT)(?:=[^&]*)?(?=&|$)"
+    );
 
     @NotNull
     private static final Object lock = new Object();
@@ -225,14 +232,33 @@ public class DatabaseURL {
         boolean validSuffix = suffix != null && (suffix.isEmpty() || "?;#".indexOf(suffix.charAt(0)) >= 0
             || queryStart >= 0 && queryStart < url.length() - suffix.length());
         String localHost = hostName.indexOf(':') >= 0 && !hostName.startsWith("[") ? "[" + hostName + "]" : hostName;
-        String updated = validSuffix ? template.replaceParameters(url, Map.of(
-            DBConstants.PROP_HOST, localHost,
-            DBConstants.PROP_PORT, Integer.toString(hostPort)
-        )) : null;
-        if (updated != null) {
-            return updated;
+        if (validSuffix) {
+            boolean addPort = !parameters.containsKey(DBConstants.PROP_PORT) && sampleUrl.contains(OPTIONAL_HOST_PORT);
+            Map<String, String> replacements = addPort
+                ? Map.of(DBConstants.PROP_HOST, localHost + ":" + hostPort)
+                : Map.of(DBConstants.PROP_HOST, localHost, DBConstants.PROP_PORT, Integer.toString(hostPort));
+            String updated = template.replaceParameters(url, replacements);
+            if (updated != null) {
+                return replacePostgreSqlEndpointOptions(updated, localHost, hostPort);
+            }
         }
         throw new DBException("Cannot redirect database URL to a single tunnel endpoint using the driver URL template");
+    }
+
+    @NotNull
+    private static String replacePostgreSqlEndpointOptions(@NotNull String url, @NotNull String host, int port) {
+        int queryStart = url.indexOf('?');
+        if (!url.startsWith("jdbc:postgresql:") || queryStart < 0) {
+            return url;
+        }
+        // pgjdbc gives these query parameters precedence over the URL authority
+        String encodedHost = URLEncoder.encode(host, StandardCharsets.UTF_8);
+        String query = POSTGRESQL_ENDPOINT_OPTIONS.matcher(url.substring(queryStart + 1)).replaceAll(option -> {
+            String key = option.group(2);
+            String value = "PGHOST".equals(key) ? encodedHost : Integer.toString(port);
+            return Matcher.quoteReplacement(option.group(1) + key + "=" + value);
+        });
+        return url.substring(0, queryStart + 1) + query;
     }
 
     @Nullable

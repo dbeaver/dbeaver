@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -53,9 +54,12 @@ public class DBWUtils {
             connectionInfo.setHostName(LOOPBACK_HOST_NAME);
         }
         connectionInfo.setHostPort(Integer.toString(localPort));
-        if (configuration.getDriver() != null) {
+        DBPDriver driver = configuration.getDriver();
+        if (driver != null) {
             // Driver can be null in case of orphan tunnel config (e.g. in network profile)
-            String newURL = configuration.getDriver().getConnectionURL(connectionInfo);
+            String newURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL
+                ? DatabaseURL.replaceHostAndPort(driver, CommonUtils.notEmpty(connectionInfo.getUrl()), connectionInfo.getHostName(), localPort)
+                : driver.getConnectionURL(connectionInfo);
             connectionInfo.setUrl(newURL);
         }
     }
