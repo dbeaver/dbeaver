@@ -45,8 +45,8 @@ public final class LocalNetworkProfileUsageProvider implements DBWNetworkProfile
     public Map<String, String> findLocalProfileConflicts(@NotNull String profileName) throws DBException {
         Map<String, String> result = new LinkedHashMap<>();
         for (var project : workspace.getProjects()) {
+            // Pro marks the project secure, but CE does not support secured projects and reports it as unencrypted.
             if (CommonUtils.toBoolean(project.getProjectProperty(SECURE_PROJECT_PROPERTY)) &&
-                // Pro marks the project secure, but CE does not support secured projects and reports it as unencrypted.
                 !project.isEncryptedProject()) {
                 continue;
             }
