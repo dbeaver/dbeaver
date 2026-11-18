@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -277,7 +278,12 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     public void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
         MySQLDataSource mysqlDataSource = (MySQLDataSource) dataSource;
         this.serverVersion = mysqlDataSource.getVersion();
-        this.mariaDb = mysqlDataSource.isMariaDB();
+        String productVersion = CommonUtils.notEmpty(mysqlDataSource.getInfo().getDatabaseProductVersion()).toLowerCase(Locale.ROOT);
+        String productName = CommonUtils.notEmpty(mysqlDataSource.getInfo().getDatabaseProductName()).toLowerCase(Locale.ROOT);
+        this.mariaDb = productVersion.contains("mariadb") || productName.contains("mariadb")
+            ? Boolean.TRUE : productName.contains("mysql") && serverVersion != null
+                && serverVersion.getMajor() < 10
+                ? Boolean.FALSE : null;
         this.lowerCaseTableNames = mysqlDataSource.getLowerCaseTableNames();
         this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
     }

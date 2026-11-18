@@ -70,10 +70,25 @@ public class MySQLExecutableCommentsTest {
         Assertions.assertNull(dialect(false, "unknown").isExecutableCommentActive("/*!", 80000));
     }
 
+    @Test
+    public void serverFlavorDoesNotDependOnDriver() {
+        Assertions.assertEquals(Boolean.TRUE,
+            dialect(false, "MySQL", "10.9.8-MariaDB").isExecutableCommentActive("/*M!", 0));
+        Assertions.assertEquals(Boolean.FALSE,
+            dialect(false, "MariaDB", "10.9.8").isExecutableCommentActive("/*!", 50700));
+        Assertions.assertNull(dialect(false, "unknown", "8.0.36").isExecutableCommentActive("/*M!", 0));
+        Assertions.assertNull(dialect(false, "MySQL", "10.9.8").isExecutableCommentActive("/*M!", 0));
+    }
+
     private MySQLDialect dialect(boolean mariaDb, String version) {
+        return dialect(mariaDb, mariaDb ? "MariaDB" : "MySQL", version);
+    }
+
+    private MySQLDialect dialect(boolean mariaDb, String product, String version) {
         MySQLDataSource dataSource = Mockito.mock(MySQLDataSource.class, Mockito.CALLS_REAL_METHODS);
         DBPDataSourceInfo info = Mockito.mock(DBPDataSourceInfo.class);
         Mockito.doReturn(info).when(dataSource).getInfo();
+        Mockito.when(info.getDatabaseProductName()).thenReturn(product);
         Mockito.when(info.getDatabaseProductVersion()).thenReturn(version);
         Mockito.doReturn(mariaDb).when(dataSource).isMariaDB();
         MySQLDialect dialect = new MySQLDialect();

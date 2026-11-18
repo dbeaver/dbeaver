@@ -415,10 +415,31 @@ class SQLExecutionFunctionsTest {
     void executableCommentsAndUnterminatedStringsCannotBypassTextChecks() throws Exception {
         ScopeFixture fixture = new ScopeFixture();
         fixture.enableExecutableComments();
+        fixture.assertRestricted(new ExecuteDQLFunction(),
+            "SELECT 'x\\' /*! UNION SELECT id FROM private.orders */ -- '");
         Assertions.assertThrows(DBException.class,
             () -> fixture.verify(new ExecuteDQLFunction(), "SELECT * FROM public.orders /*! UNION SELECT * FROM private.orders */"));
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT 'unterminated FROM public.orders");
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT * INTO public.copy FROM public.orders");
+    }
+
+    @Test
+    void inertExecutableMarkersDoNotBlockTextFallback() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        fixture.enableExecutableComments();
+        ExecuteDQLFunction function = new ExecuteDQLFunction();
+        for (String sql : List.of(
+            "SELECT '/*!' FROM public.orders WHERE id SOUNDS LIKE 'x'",
+            "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /* ordinary /*! */",
+            "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /*!999999 ignored */"
+        )) {
+            Assertions.assertDoesNotThrow(() -> fixture.verify(function, sql), sql);
+            fixture.assertRestricted(function, sql.replace("public.orders", "private.orders"));
+        }
+        fixture.assertRestricted(function,
+            "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /*! AND id > 0 */");
+        fixture.assertRestricted(function,
+            "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /*M! AND id > 0 */");
     }
 
     @Test

@@ -206,6 +206,9 @@ public final class SQLUtils {
                 maskCommentRange(result, pos, lineEnd);
                 pos = lineEnd;
             } else if (blockComment != null && startsWith(result, blockComment.getFirst(), pos)) {
+                if (executableComment) {
+                    throw new DBCException("Nested executable comment cannot be verified");
+                }
                 String executablePrefix = prefixStartingAt(result, pos, executablePrefixes);
                 if (executablePrefix != null) {
                     int bodyStart = pos + executablePrefix.length();
@@ -238,6 +241,10 @@ public final class SQLUtils {
                         int end = result.indexOf(blockComment.getSecond(), versionEnd);
                         if (end < 0) {
                             throw new DBCException("Unterminated executable comment");
+                        }
+                        int nestedStart = result.indexOf(blockComment.getFirst(), versionEnd);
+                        if (nestedStart >= 0 && nestedStart < end) {
+                            throw new DBCException("Nested executable comment cannot be verified");
                         }
                         end += blockComment.getSecond().length();
                         maskCommentRange(result, pos, end);

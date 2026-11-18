@@ -116,14 +116,59 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull DBCExecutionContext executionContext,
         @NotNull SQLQuery query
     ) throws DBException {
+        String queryText = query.getText();
+        if (queryText != null && (queryText.contains("\\'") || queryText.contains("\\\""))
+            && !executionContext.getDataSource().getSQLDialect().getExecutableCommentPrefixes().isEmpty()) {
+            throw new DBException("Cannot verify SQL string escapes without the session SQL mode");
+        }
         if (query.getStatement() == null || query.getParseError() != null || query.getStatement() instanceof UnsupportedStatement) {
-            if (executionContext.getDataSource().getSQLDialect().getExecutableCommentPrefixes().stream()
-                .anyMatch(prefix -> query.getText().contains(prefix))) {
+            SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
+            if (!dialect.getExecutableCommentPrefixes().isEmpty() && hasActiveExecutableComment(dialect, queryText)) {
                 throw new DBException("Cannot verify database object scope in an unparsed SQL statement containing executable comments");
             }
             verifyQueryText(context, executionContext, query.getText());
         } else {
             verifyStatement(context, executionContext, query);
+        }
+    }
+
+    private static boolean hasActiveExecutableComment(@NotNull SQLDialect dialect, @NotNull String sql) throws DBException {
+        SQLUtils.prepareQueryForParsing(dialect, sql);
+        try {
+            CCJSqlParser lexer = new CCJSqlParser(sql)
+                .withBackslashEscapeCharacter(dialect.getStringEscapeCharacter() == '\\');
+            while (true) {
+                Token token = lexer.getNextToken();
+                for (Token comment = token.specialToken; comment != null; comment = comment.specialToken) {
+                    for (String prefix : dialect.getExecutableCommentPrefixes()) {
+                        if (comment.image.startsWith(prefix)) {
+                            int end = prefix.length();
+                            while (end < comment.image.length() && Character.isDigit(comment.image.charAt(end))) {
+                                end++;
+                            }
+                            int digits = end - prefix.length();
+                            if (digits > 6) {
+                                return true;
+                            }
+                            if (digits < 5) {
+                                end = prefix.length();
+                            } else if (digits == 6) {
+                                char following = comment.image.startsWith("*/", end) ? 0 : comment.image.charAt(end);
+                                end = prefix.length() + dialect.getExecutableCommentVersionLength(digits, following);
+                            }
+                            int version = end == prefix.length() ? 0 : Integer.parseInt(comment.image.substring(prefix.length(), end));
+                            if (!Boolean.FALSE.equals(dialect.isExecutableCommentActive(prefix, version))) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                if (token.kind == CCJSqlParserConstants.EOF) {
+                    return false;
+                }
+            }
+        } catch (ParseException | TokenMgrException e) {
+            throw new DBException("Cannot tokenize SQL statement", e);
         }
     }
 

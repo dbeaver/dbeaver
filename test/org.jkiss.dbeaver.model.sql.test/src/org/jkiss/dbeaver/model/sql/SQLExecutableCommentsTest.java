@@ -100,6 +100,8 @@ public class SQLExecutableCommentsTest {
         for (String sql : List.of(
             "SELECT 1 /*! UNION SELECT id FROM secret",
             "SELECT 1 /*!1234567 UNION SELECT id FROM secret */",
+            "SELECT 1 /*!999999 /* nested */ '*/ UNION SELECT id FROM secret #'",
+            "SELECT 0 /*! + /*! (SELECT id FROM secret) */ */",
             "SELECT 1 /*! unsupported syntax FROM secret */"
         )) {
             Assertions.assertThrows(DBCException.class,
