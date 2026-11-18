@@ -44,9 +44,9 @@ public final class DDSecretStorage implements DBSSecretController {
         nativeController = nativeProviderId == null ? null
             : SecurePreferencesSecretController.createWithoutEquinoxPrompts(NODE, nativeProviderId);
         if (nativeController == null) {
-            log.warn("DataDam native secure storage provider not found; using the configured default provider");
+            log.debug("DataDam native secure storage provider not found; using the configured default provider");
         } else {
-            log.info("DataDam using native secure storage provider '" + nativeProviderId + "'");
+            log.debug("DataDam using native secure storage provider '" + nativeProviderId + "'");
         }
     }
 
@@ -77,7 +77,7 @@ public final class DDSecretStorage implements DBSSecretController {
             }
             // Equinox can silently store plaintext when the OS provider cannot supply a password.
             nativeController.setPrivateSecretValue(secretId, null);
-            log.warn("DataDam native secure storage did not encrypt the secret; unencrypted value removed");
+            log.debug("DataDam native secure storage did not encrypt the secret; unencrypted value removed");
             throw new DBException("Native secure storage did not encrypt DataDam secret");
         }
         if (secretValue != null) {

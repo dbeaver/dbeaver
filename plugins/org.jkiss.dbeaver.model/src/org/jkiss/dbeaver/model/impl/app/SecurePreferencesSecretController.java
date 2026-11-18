@@ -79,7 +79,7 @@ public class SecurePreferencesSecretController implements DBSSecretController, D
                 .get(keyPath.getFileName().toString(), null);
         } catch (StorageException e) {
             if (e.getErrorCode() == StorageException.NO_PASSWORD) {
-                throw new DBSecurityException("Cannot load secure settings - master password is not provided");
+                throw new DBSecurityException("Cannot load secure settings - master password is not provided", e);
             }
             throw new DBSecurityException("Error getting preference value '" + secretId + "'", e);
         }
