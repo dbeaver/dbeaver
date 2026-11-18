@@ -159,7 +159,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
     }
 
     @Test
-    void failedConfigurationSavePreservesEveryUsersCredentialsAndRestoresProfile() throws Exception {
+    void failedConfigurationSaveLeavesProfileAndCredentialsIntact() throws Exception {
         try (Fixture fixture = new Fixture()) {
             AISettings settings = fixture.settings(false);
             AIConfigurationProfile profile = settings.getConfiguration("openai");
@@ -168,8 +168,11 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
             fixture.secrets.put("ai.profile.openai.token", "user-token");
             fixture.otherSecrets.put("ai.profile.openai.refreshToken", "other-user-token");
             profile.resolveSecrets();
-            Mockito.doThrow(new DBException("Storage unavailable")).when(fixture.configurationController)
-                .saveConfigurationFile(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+            Mockito.doAnswer(invocation -> {
+                Assertions.assertSame(profile, settings.getConfiguration("openai"));
+                Assertions.assertTrue(settings.getPendingProfileSecretDeletions().isEmpty());
+                throw new DBException("Storage unavailable");
+            }).when(fixture.configurationController).saveConfigurationFile(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
 
             Assertions.assertThrows(DBException.class, () -> AISettingsManager.getInstance().removeConfiguration(settings, profile));
 
@@ -220,6 +223,7 @@ class AIUserProfileLifecycleTest extends DBeaverUnitTest {
             Mockito.doAnswer(invocation -> {
                 String content = invocation.getArgument(1);
                 if (fixture.secrets.isEmpty()) {
+                    Assertions.assertEquals(List.of("openai"), settings.getPendingProfileSecretDeletions());
                     throw new DBException("Final write unavailable");
                 }
                 fixture.persistedConfiguration = content;

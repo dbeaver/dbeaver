@@ -206,12 +206,16 @@ public class AISettingsManager {
             settings.validateCurrentSettings();
             if (removedProfile != null && AIUserProfileCredentials.isAvailable()) {
                 AIUserProfileCredentials.validateDeletionSupport();
-                settings.saveProfileRemoval(removedProfile, () -> writeSettings(settings));
+                AISettings snapshot = settings.copyForSave();
+                snapshot.reserveRemovedProfileId(removedProfile);
+                writeSettings(snapshot, settings);
+                removedProfile.invalidateUserCredentials();
+                settings.applySavedProfileRemoval(removedProfile, snapshot);
             } else {
                 if (removedProfile != null) {
                     settings.removeConfiguration(removedProfile);
                 }
-                writeSettings(settings);
+                writeSettings(settings, settings);
             }
             applyUserDefaultConfiguration(settings);
             this.getSettingsHolder().setSettings(settings);
@@ -226,7 +230,7 @@ public class AISettingsManager {
         }
     }
 
-    private void writeSettings(@NotNull AISettings settings) throws DBException {
+    private void writeSettings(@NotNull AISettings settings, @NotNull AISettings current) throws DBException {
         if (AIUserProfileCredentials.isAvailable()) {
             for (AIConfigurationProfile profile : settings.getConfigurations()) {
                 if (profile.isAvailable() && !profile.isGlobal()) {
@@ -249,7 +253,7 @@ public class AISettingsManager {
         }
 
         settings.prepareSettingsSaving();
-        writeConfiguration(settings);
+        writeConfiguration(settings, current);
     }
 
     private void finishProfileSecretCleanup(@NotNull AISettings settings) throws DBException {
@@ -265,16 +269,19 @@ public class AISettingsManager {
                 settings.validateCurrentSettings();
                 AIUserProfileCredentials.delete(profileId);
             }
-            settings.saveCompletedSecretDeletions(pending, () -> writeConfiguration(settings));
+            AISettings snapshot = settings.copyForSave();
+            snapshot.completeProfileSecretDeletions(pending);
+            writeConfiguration(snapshot, settings);
+            settings.completeProfileSecretDeletions(pending);
         } catch (DBException e) {
             throw new DBException("The AI profile was removed, but finalizing credential cleanup failed. "
                 + "Save AI settings again to retry.", e);
         }
     }
 
-    private void writeConfiguration(@NotNull AISettings settings) throws DBException {
-        String content = SAVE_PROPS_GSON.toJson(settings);
-        settings.validateCurrentSettings();
+    private void writeConfiguration(@NotNull AISettings snapshot, @NotNull AISettings current) throws DBException {
+        String content = SAVE_PROPS_GSON.toJson(snapshot);
+        current.validateCurrentSettings();
         DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
     }
 

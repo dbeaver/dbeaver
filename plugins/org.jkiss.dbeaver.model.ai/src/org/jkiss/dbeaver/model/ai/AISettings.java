@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
-import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -68,6 +67,23 @@ public class AISettings implements DBPAdaptable {
             log.error("Error checking AI configuration", e);
             aiDisabled = true;
         }
+    }
+
+    private AISettings(@NotNull AISettings source) {
+        aiDisabled = source.aiDisabled;
+        configurations.putAll(source.configurations);
+        pendingProfileSecretDeletions.addAll(source.pendingProfileSecretDeletions);
+        defaultConfiguration = source.defaultConfiguration;
+        userDefaultConfiguration = source.userDefaultConfiguration;
+        activeEngine = source.activeEngine;
+        engineConfigurations.putAll(source.engineConfigurations);
+        properties.putAll(source.properties);
+        customInstructions.putAll(source.customInstructions);
+    }
+
+    @NotNull
+    public AISettings copyForSave() {
+        return new AISettings(this);
     }
 
     @NotNull
@@ -232,25 +248,14 @@ public class AISettings implements DBPAdaptable {
         }
     }
 
-    public void saveProfileRemoval(@NotNull AIConfigurationProfile profile, @NotNull DBRRunnable save) throws DBException {
-        var previousConfigurations = new LinkedHashMap<>(configurations);
-        var previousLegacyConfigurations = new LinkedHashMap<>(engineConfigurations);
-        String previousDefault = defaultConfiguration;
+    public void reserveRemovedProfileId(@NotNull AIConfigurationProfile profile) throws DBException {
         removeProfile(profile);
-        profile.invalidateUserCredentials();
         pendingProfileSecretDeletions.add(profile.getProfileId());
-        try {
-            save.run();
-        } catch (DBException | RuntimeException e) {
-            configurations.clear();
-            configurations.putAll(previousConfigurations);
-            engineConfigurations.clear();
-            engineConfigurations.putAll(previousLegacyConfigurations);
-            defaultConfiguration = previousDefault;
-            pendingProfileSecretDeletions.remove(profile.getProfileId());
-            profile.restoreUserCredentials();
-            throw e;
-        }
+    }
+
+    public void applySavedProfileRemoval(@NotNull AIConfigurationProfile profile, @NotNull AISettings saved) throws DBException {
+        reserveRemovedProfileId(profile);
+        engineConfigurations.putAll(saved.engineConfigurations);
     }
 
     private void removeProfile(@NotNull AIConfigurationProfile profile) throws DBException {
@@ -269,14 +274,8 @@ public class AISettings implements DBPAdaptable {
         return List.copyOf(pendingProfileSecretDeletions);
     }
 
-    public void saveCompletedSecretDeletions(@NotNull List<String> profileIds, @NotNull DBRRunnable save) throws DBException {
+    public void completeProfileSecretDeletions(@NotNull List<String> profileIds) {
         pendingProfileSecretDeletions.removeAll(profileIds);
-        try {
-            save.run();
-        } catch (DBException | RuntimeException e) {
-            pendingProfileSecretDeletions.addAll(profileIds);
-            throw e;
-        }
     }
 
     public void markStale() {
