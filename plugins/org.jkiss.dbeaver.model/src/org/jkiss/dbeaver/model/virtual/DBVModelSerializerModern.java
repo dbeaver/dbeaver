@@ -142,12 +142,14 @@ class DBVModelSerializerModern implements DBVModelSerializer {
                 List<DBVEntityForeignKeyColumn> refAttrs = fk.getAttributeReferences(null);
                 if (!CommonUtils.isEmpty(refAttrs)) {
                     json.name("attributes");
-                    json.beginObject();
+                    json.beginArray();
                     for (DBVEntityForeignKeyColumn cc : refAttrs) {
-                        json.name(cc.getAttributeName());
-                        json.value(cc.getRefAttributeName());
+                        json.beginObject();
+                        JSONUtils.field(json, "attribute", cc.getAttributeName());
+                        JSONUtils.field(json, "ref-attribute", cc.getRefAttributeName());
+                        json.endObject();
                     }
-                    json.endObject();
+                    json.endArray();
                 }
                 json.endObject();
             }
