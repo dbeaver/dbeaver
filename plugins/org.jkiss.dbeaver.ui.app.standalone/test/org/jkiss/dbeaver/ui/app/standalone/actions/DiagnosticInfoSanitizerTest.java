@@ -51,6 +51,52 @@ public class DiagnosticInfoSanitizerTest {
         check(new DiagnosticInfoSanitizer(Map.of("API_TOKEN", "secret-value")),
             "prefixsecret-valuesuffix", "prefix[REDACTED]suffix");
         check(new DiagnosticInfoSanitizer(Map.of("USER", "bob")), "bob bobcat", "[REDACTED] bobcat");
+        check(sanitizer,
+            "Command-line arguments: --launcher.library C:\\Users\\bob\\dbeaver\\launcher.dll --launcher.appendVmargs",
+            "Command-line arguments: --launcher.library [REDACTED] --launcher.appendVmargs");
+        check(sanitizer, "--launcher.library \"C:\\Program Files\\DBeaver\\launcher.dll\"",
+            "--launcher.library \"[REDACTED]\"");
+        check(sanitizer,
+            "--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.sql/java.sql=ALL-UNNAMED "
+                + "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED --add-modules=java.sql,java.xml",
+            "--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.sql/java.sql=ALL-UNNAMED "
+                + "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED --add-modules=java.sql,java.xml");
+        check(sanitizer,
+            "org.osgi.framework.system.packages=java.lang,javax.crypto;version=\"1.0.0\",com.sun.net.httpserver\r\n"
+                + "org.osgi.framework.system.capabilities=osgi.ee;osgi.ee=\"JavaSE\";version:List<Version>=\"21.0\"\r\n"
+                + "host=db.example.test",
+            "org.osgi.framework.system.packages=java.lang,javax.crypto;version=\"1.0.0\",com.sun.net.httpserver\r\n"
+                + "org.osgi.framework.system.capabilities=osgi.ee;osgi.ee=\"JavaSE\";version:List<Version>=\"21.0\"\r\n"
+                + "host=[REDACTED]");
+        check(sanitizer, "  com.google.gson (2.14.0) \"Gson\" [Resolved]",
+            "  com.google.gson (2.14.0) \"Gson\" [Resolved]");
+        check(sanitizer, "Loading bundle:/com.google.gson", "Loading bundle:/com.google.gson");
+        check(sanitizer, "Connect to com.google.gson", "Connect to [REDACTED]");
+        check(sanitizer, "License: DB-EXAMPLE-123 (Enterprise)", "License: [REDACTED] (Enterprise)");
+        check(sanitizer, "PostgreSQL 11.22 (Debian 11.22-1.pgdg110+1)",
+            "PostgreSQL 11.22 (Debian 11.22-1.pgdg110+1)");
+        check(sanitizer, "Open [https://db.example.test/path]", "Open [[REDACTED]]");
+        check(sanitizer, "Open (https://db.example.test/path(a))", "Open ([REDACTED])");
+        check(sanitizer, "Open [https://[2001:db8::1]/path]", "Open [[REDACTED]]");
+        check(sanitizer, "Initiate connection pool with management database (H2 Embedded; jdbc:h2:/private/database)",
+            "Initiate connection pool with management database (H2 Embedded; [REDACTED])");
+        check(sanitizer,
+            "Transfer data from \"public.orders@postgres (2)\" into \"archive.orders [Existing]\"",
+            "Transfer data from \"public.orders@postgres (2)\" into \"archive.orders [Existing]\"");
+        check(sanitizer,
+            "Transfer data from \"public.orders@db.example.test\" into \"archive.orders [Existing]\" host=db.example.test",
+            "Transfer data from \"public.orders@[REDACTED]\" into \"archive.orders [Existing]\" host=[REDACTED]");
+        check(sanitizer,
+            "password=secret token=private host=192.168.1.10 https://user:pass@db.example.test/db /home/bob/workspace",
+            "password=[REDACTED] token=[REDACTED] host=[REDACTED] [REDACTED] [REDACTED]");
+        check(sanitizer, "Open [custom://user:pass@db.example.test/path]", "Open [[REDACTED]]");
+        check(sanitizer, "Authorization: Bearer private-token\nConnect to 2001:db8::1",
+            "Authorization: [REDACTED]\nConnect to [REDACTED]");
+        check(new DiagnosticInfoSanitizer(Map.of("API_TOKEN", "private-token")),
+            "org.osgi.framework.system.packages=java.lang,private-token\n"
+                + "Transfer data from \"public.private-token@postgres\" into \"archive.orders [Existing]\"",
+            "org.osgi.framework.system.packages=java.lang,[REDACTED]\n"
+                + "Transfer data from \"public.[REDACTED]@postgres\" into \"archive.orders [Existing]\"");
     }
 
     private static void check(@NotNull DiagnosticInfoSanitizer sanitizer, @NotNull String input, @NotNull String expected) {

@@ -45,6 +45,7 @@ final class DiagnosticInfoSanitizer {
     private static final Pattern HOST = Pattern.compile(
         "(?i)(\\b(?:host(?:name)?|server)\\s*[=:]\\s*)([\\w.-]+)"
     );
+    private static final Pattern LICENSE = Pattern.compile("(?i)(\\bLicense\\s*:\\s*)DB-[\\w-]+");
     private static final Pattern BUNDLE_START_LINE = Pattern.compile(
         "(?m)^(?:\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3} - )?Start \\[[^\\r\\n]*(?:\\r?\\n|$)"
     );
@@ -72,6 +73,20 @@ final class DiagnosticInfoSanitizer {
     private static final Pattern ECLIPSE_LOG_BUNDLE = Pattern.compile("!(?:ENTRY|SUBENTRY\\s+\\d+)\\s+");
     private static final Pattern TECHNICAL_IDENTIFIER = Pattern.compile("(?:org\\.(?:eclipse|jkiss)|com\\.dbeaver)\\..+");
     private static final Pattern PROPERTY_NAME = Pattern.compile("(?m)^[\\t ]*[\\w.-]+[\\t ]*(?=[=:])");
+    private static final Pattern MODULE_ARGUMENT = Pattern.compile(
+        "--(?:add-opens|add-exports|add-reads|add-modules|limit-modules)(?:=|[\\t ]+)[\\w.,/=-]+"
+    );
+    private static final Pattern LAUNCHER_ARGUMENT = Pattern.compile("--[a-zA-Z][\\w.-]*");
+    private static final Pattern BUNDLE_IDENTIFIER = Pattern.compile(
+        "\\bbundle:/[\\w.-]+|(?m)^[\\t ]*[\\w.-]+(?= \\(\\d+(?:\\.[\\w-]+)+\\) \")"
+    );
+    private static final Pattern SYSTEM_METADATA = Pattern.compile(
+        "(?m)^[\\t ]*org\\.osgi\\.framework\\.system\\.(?:packages(?:\\.extra)?|capabilities(?:\\.extra)?)\\s*=[^\\r\\n]*"
+    );
+    private static final Pattern DEBIAN_VERSION = Pattern.compile("\\bDebian[\\t ]+\\d+(?:\\.\\d+)+(?:[-+~][\\w.+~:-]+)*");
+    private static final Pattern TRANSFER_OBJECT = Pattern.compile(
+        "Transfer data from \"([^\"@]*)(?:@[^\"]*)?\" into \"([^\"@]*)(?:@[^\"]*)?\""
+    );
 
     private final List<Pattern> environmentValues;
 
@@ -116,8 +131,8 @@ final class DiagnosticInfoSanitizer {
 
     @NotNull
     private String sanitizeText(@NotNull String text) {
-        String result = CONNECTION.matcher(text).replaceAll(REDACTED);
-        result = URI_WITH_USERINFO.matcher(result).replaceAll(REDACTED);
+        String result = CONNECTION.matcher(text).replaceAll(m -> Matcher.quoteReplacement(redactLocation(m.group())));
+        result = URI_WITH_USERINFO.matcher(result).replaceAll(m -> Matcher.quoteReplacement(redactLocation(m.group())));
         result = AUTHORIZATION_HEADER.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
         result = CREDENTIAL.matcher(result).replaceAll(m -> {
             String value = m.group(3);
@@ -125,10 +140,12 @@ final class DiagnosticInfoSanitizer {
             return Matcher.quoteReplacement(m.group(1) + quote + REDACTED + quote);
         });
         result = HOST.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
-        result = QUOTED_PATH.matcher(result).replaceAll(REDACTED);
+        result = LICENSE.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
+        result = QUOTED_PATH.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED + m.group(1)));
         String beforePaths = result;
         result = PATH.matcher(result).replaceAll(m ->
-            isStackFrame(beforePaths, m.start()) ? Matcher.quoteReplacement(m.group()) : REDACTED);
+            Matcher.quoteReplacement(isStackFrame(beforePaths, m.start()) || isWithin(MODULE_ARGUMENT, beforePaths, m.start(), m.end())
+                ? m.group() : redactLocation(m.group())));
         String beforeAddresses = result;
         result = ADDRESS.matcher(result).replaceAll(m -> {
             String line = lineAt(beforeAddresses, m.start());
@@ -146,7 +163,14 @@ final class DiagnosticInfoSanitizer {
             boolean propertyName = property.lookingAt() && prefix.length() < property.end();
             // Known Java namespaces also occur in Eclipse messages outside stack frames and bundle headers.
             boolean identifier = !prefix.endsWith("@") && TECHNICAL_IDENTIFIER.matcher(m.group()).matches();
-            return isStackFrame(beforeDomains, m.start()) || bundle || propertyName || identifier
+            // Other dotted identifiers are only safe in a recognized diagnostic context, not as arbitrary hostnames.
+            boolean metadata = isWithin(MODULE_ARGUMENT, beforeDomains, m.start(), m.end())
+                || isWithin(LAUNCHER_ARGUMENT, beforeDomains, m.start(), m.end())
+                || isWithin(BUNDLE_IDENTIFIER, beforeDomains, m.start(), m.end())
+                || isWithin(SYSTEM_METADATA, beforeDomains, m.start(), m.end())
+                || isWithin(DEBIAN_VERSION, beforeDomains, m.start(), m.end())
+                || isTransferObject(beforeDomains, m.start(), m.end());
+            return isStackFrame(beforeDomains, m.start()) || bundle || propertyName || identifier || metadata
                 ? Matcher.quoteReplacement(m.group()) : REDACTED;
         });
         // Environment values can also occur in property names. Only replace them outside the key.
@@ -173,6 +197,52 @@ final class DiagnosticInfoSanitizer {
 
     private static boolean isStackFrame(@NotNull String text, int position) {
         return STACK_FRAME.matcher(lineAt(text, position)).matches();
+    }
+
+    private static boolean isWithin(@NotNull Pattern pattern, @NotNull String text, int start, int end) {
+        Matcher matcher = pattern.matcher(lineAt(text, start));
+        int lineStart = text.lastIndexOf('\n', start - 1) + 1;
+        while (matcher.find()) {
+            if (matcher.start() <= start - lineStart && matcher.end() >= end - lineStart) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isTransferObject(@NotNull String text, int start, int end) {
+        Matcher matcher = TRANSFER_OBJECT.matcher(lineAt(text, start));
+        int lineStart = text.lastIndexOf('\n', start - 1) + 1;
+        while (matcher.find()) {
+            for (int group = 1; group <= matcher.groupCount(); group++) {
+                if (matcher.start(group) <= start - lineStart && matcher.end(group) >= end - lineStart) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @NotNull
+    private static String redactLocation(@NotNull String value) {
+        // Keep enclosing log-message delimiters, but consume balanced delimiters inside URLs (e.g. IPv6 hosts).
+        int end = value.length();
+        while (end > 0) {
+            char closing = value.charAt(end - 1);
+            char opening = switch (closing) {
+                case ')' -> '(';
+                case ']' -> '[';
+                case '}' -> '{';
+                default -> '\0';
+            };
+            if (opening == '\0'
+                || value.substring(0, end).chars().filter(c -> c == opening).count()
+                >= value.substring(0, end).chars().filter(c -> c == closing).count()) {
+                break;
+            }
+            end--;
+        }
+        return REDACTED + value.substring(end);
     }
 
     @NotNull
