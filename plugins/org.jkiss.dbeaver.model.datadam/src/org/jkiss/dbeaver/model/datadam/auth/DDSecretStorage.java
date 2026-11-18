@@ -63,7 +63,6 @@ public final class DDSecretStorage implements DBSSecretController {
     @Nullable
     @Override
     public String getPrivateSecretValue(@NotNull String secretId) throws DBException {
-        log.debug("Reading DataDam secret through Equinox secure storage");
         return defaultController.getPrivateSecretValue(secretId);
     }
 
@@ -81,7 +80,9 @@ public final class DDSecretStorage implements DBSSecretController {
             log.warn("DataDam native secure storage did not encrypt the secret; unencrypted value removed");
             throw new DBException("Native secure storage did not encrypt DataDam secret");
         }
-        log.debug(secretValue == null ? "Removing DataDam secret" : "Writing DataDam secret with configured default provider");
+        if (secretValue != null) {
+            log.debug("Writing DataDam secret with configured default provider");
+        }
         defaultController.setPrivateSecretValue(secretId, secretValue);
     }
 

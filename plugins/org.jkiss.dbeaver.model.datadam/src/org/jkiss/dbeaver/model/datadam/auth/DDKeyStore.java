@@ -53,7 +53,6 @@ public class DDKeyStore {
     @Nullable
     public DDKeyBundle loadBundle() throws DBException {
         try {
-            log.debug("Reading stored DataDam encryption keys");
             String value = secretStorage.getPrivateSecretValue(SECRET_KEY_BUNDLE);
             if (CommonUtils.isEmpty(value)) {
                 return null;
