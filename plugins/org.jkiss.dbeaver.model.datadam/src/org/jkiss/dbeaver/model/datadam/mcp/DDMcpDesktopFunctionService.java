@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionInternalDescriptor;
 import org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpAiFunctionCatalog;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
@@ -72,15 +71,12 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
         log.debug("Calling DataDam MCP function " + call.functionId());
         DDMcpFunctionExtensionDescriptor descriptor = registry.getDescriptor(call.functionId());
         if (descriptor != null) {
-            McpServerStatistics.toolCalled(
-                call.requestId(), McpServerStatistics.AccessPath.DATADAM, descriptor.getDescriptor().id(), null, null);
+            AIBaseFeatures.MCP_SERVER.use();
             return descriptor.getInstance().call(call.arguments());
         }
         AIFunctionDescriptor aiFunction = catalog.getFunction(call.functionId());
         if (aiFunction != null) {
-            McpServerStatistics.toolCalled(
-                call.requestId(), McpServerStatistics.AccessPath.DATADAM,
-                aiFunction instanceof AIFunctionInternalDescriptor ? aiFunction.getId() : "other", null, null);
+            AIBaseFeatures.MCP_SERVER.use();
             return callAiFunction(aiFunction, call.arguments());
         }
         throw new DDMcpFunctionException(DDMcpFunctionErrorCode.FUNCTION_NOT_FOUND, "Function not found", null);

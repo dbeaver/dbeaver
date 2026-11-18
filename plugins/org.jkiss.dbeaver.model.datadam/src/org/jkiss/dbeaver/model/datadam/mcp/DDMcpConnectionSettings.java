@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.datadam.mcp;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.McpServerStatistics;
 
 /**
  * Per-connection DataDam MCP permission stored with the connection configuration.
@@ -34,10 +33,6 @@ public final class DDMcpConnectionSettings {
     }
 
     public static void setEnabled(@NotNull DBPDataSourceContainer connection, boolean enabled) {
-        boolean previousEnabled = isEnabled(connection);
         connection.setExtension(ENABLED_EXTENSION, enabled ? Boolean.TRUE : null);
-        if (previousEnabled != enabled) {
-            McpServerStatistics.configurationChanged(McpServerStatistics.AccessPath.DATADAM, enabled);
-        }
     }
 }
