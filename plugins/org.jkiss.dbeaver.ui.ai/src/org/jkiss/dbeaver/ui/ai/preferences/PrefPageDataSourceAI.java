@@ -30,6 +30,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -39,7 +41,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
-import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
@@ -191,18 +192,15 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
                 }
             }
         }));
-        Button scopeButton = UIUtils.createDialogButton(
-            settingsGroup,
-            null,
+        ToolBar scopeToolBar = new ToolBar(settingsGroup, SWT.FLAT);
+        scopeToolBar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        ToolItem scopeItem = UIUtils.createToolItem(
+            scopeToolBar,
             AIUIMessages.ai_connection_settings_custom_scope_label,
             UIIcon.CONFIGURATION,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> configureCustomScope(connection))
         );
-        scopeButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        scopeButton.setEnabled(connection.getRegistry().getDataSource(connection.getId()) != null);
-        if (settings.getScope() == null) {
-            AIUtils.updateScopeSettingsIfNeeded(settings, connection, DBUtils.getDefaultContext(connection, true));
-        }
+        scopeItem.setEnabled(connection.getRegistry().getDataSource(connection.getId()) != null);
         updateScopeSelection();
     }
 
@@ -220,12 +218,7 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
     }
 
     private void updateScopeSelection() {
-        AIDatabaseScope scope = settings.getScope();
-        if (scope == null) {
-            metadataScopeCombo.deselectAll();
-        } else {
-            metadataScopeCombo.select(scope.ordinal());
-        }
+        metadataScopeCombo.select(settings.getScope().ordinal());
     }
 
     @Override
