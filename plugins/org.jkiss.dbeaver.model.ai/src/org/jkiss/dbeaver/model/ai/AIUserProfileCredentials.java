@@ -89,15 +89,11 @@ public final class AIUserProfileCredentials {
         save(profile, credentials, DBSSecretController.getGlobalSecretController());
     }
 
-    public static void validateDeletionSupport() throws DBException {
-        if (!DBSSecretController.getGlobalSecretController().supportsObjectSecretDeletion()) {
+    public static void delete(@NotNull String profileId) throws DBException {
+        DBSSecretController controller = DBSSecretController.getGlobalSecretController();
+        if (!controller.supportsObjectSecretDeletion()) {
             throw new DBException("The secret controller does not support deleting AI profile credentials");
         }
-    }
-
-    public static void delete(@NotNull String profileId) throws DBException {
-        validateDeletionSupport();
-        DBSSecretController controller = DBSSecretController.getGlobalSecretController();
         controller.deleteObjectSecrets(new ProfileSecretObject(profileId));
         controller.flushChanges();
     }

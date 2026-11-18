@@ -170,6 +170,13 @@ public class AIConfigurationProfile {
         }
     }
 
+    public void restoreUserCredentials() {
+        UserCredentialScope scope = userCredentialScope;
+        synchronized (scope) {
+            scope.valid = true;
+        }
+    }
+
     @NotNull
     UserCredentialScope getUserCredentialScope() {
         return userCredentialScope;

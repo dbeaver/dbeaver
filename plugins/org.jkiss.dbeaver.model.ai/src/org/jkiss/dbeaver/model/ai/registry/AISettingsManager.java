@@ -204,22 +204,16 @@ public class AISettingsManager {
                 throw new DBException("The user has no permission to save AI configuration");
             }
             settings.validateCurrentSettings();
-            if (removedProfile != null && AIUserProfileCredentials.isAvailable()) {
-                AIUserProfileCredentials.validateDeletionSupport();
-                AISettings snapshot = settings.copyForSave();
-                snapshot.reserveRemovedProfileId(removedProfile);
-                writeSettings(snapshot, settings);
-                removedProfile.invalidateUserCredentials();
-                settings.applySavedProfileRemoval(removedProfile, snapshot);
-            } else {
-                if (removedProfile != null) {
+            if (removedProfile != null) {
+                if (AIUserProfileCredentials.isAvailable()) {
+                    removeTeamProfile(settings, removedProfile);
+                } else {
                     settings.removeConfiguration(removedProfile);
                 }
-                writeSettings(settings, settings);
             }
+            writeSettings(settings);
             applyUserDefaultConfiguration(settings);
             this.getSettingsHolder().setSettings(settings);
-            finishProfileSecretCleanup(settings);
         } catch (Exception e) {
             if (e instanceof DBException dbException) {
                 throw dbException;
@@ -230,7 +224,23 @@ public class AISettingsManager {
         }
     }
 
-    private void writeSettings(@NotNull AISettings settings, @NotNull AISettings current) throws DBException {
+    private void removeTeamProfile(@NotNull AISettings settings, @NotNull AIConfigurationProfile profile) throws DBException {
+        String profileId = profile.getProfileId();
+        if (settings.getConfigurationOrNull(profileId) != profile) {
+            throw new DBException("AI configuration is no longer current");
+        }
+        profile.invalidateUserCredentials();
+        try {
+            settings.validateCurrentSettings();
+            AIUserProfileCredentials.delete(profileId);
+        } catch (DBException | RuntimeException e) {
+            profile.restoreUserCredentials();
+            throw e;
+        }
+        settings.removeProfile(profile);
+    }
+
+    private void writeSettings(@NotNull AISettings settings) throws DBException {
         if (AIUserProfileCredentials.isAvailable()) {
             for (AIConfigurationProfile profile : settings.getConfigurations()) {
                 if (profile.isAvailable() && !profile.isGlobal()) {
@@ -253,35 +263,8 @@ public class AISettingsManager {
         }
 
         settings.prepareSettingsSaving();
-        writeConfiguration(settings, current);
-    }
-
-    private void finishProfileSecretCleanup(@NotNull AISettings settings) throws DBException {
-        if (!AIUserProfileCredentials.isAvailable()) {
-            return;
-        }
-        var pending = settings.getPendingProfileSecretDeletions();
-        if (pending.isEmpty()) {
-            return;
-        }
-        try {
-            for (String profileId : pending) {
-                settings.validateCurrentSettings();
-                AIUserProfileCredentials.delete(profileId);
-            }
-            AISettings snapshot = settings.copyForSave();
-            snapshot.completeProfileSecretDeletions(pending);
-            writeConfiguration(snapshot, settings);
-            settings.completeProfileSecretDeletions(pending);
-        } catch (DBException e) {
-            throw new DBException("The AI profile was removed, but finalizing credential cleanup failed. "
-                + "Save AI settings again to retry.", e);
-        }
-    }
-
-    private void writeConfiguration(@NotNull AISettings snapshot, @NotNull AISettings current) throws DBException {
-        String content = SAVE_PROPS_GSON.toJson(snapshot);
-        current.validateCurrentSettings();
+        String content = SAVE_PROPS_GSON.toJson(settings);
+        settings.validateCurrentSettings();
         DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
     }
 

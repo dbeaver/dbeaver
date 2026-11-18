@@ -31,11 +31,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * AI global settings.
@@ -46,8 +43,6 @@ public class AISettings implements DBPAdaptable {
     private boolean aiDisabled;
 
     private final Map<String, AIConfigurationProfile> configurations = new LinkedHashMap<>();
-    // reserve deleted ids until their credentials have been removed
-    private final Set<String> pendingProfileSecretDeletions = new LinkedHashSet<>();
     private transient volatile boolean stale;
     private String defaultConfiguration;
     private transient String userDefaultConfiguration;
@@ -67,23 +62,6 @@ public class AISettings implements DBPAdaptable {
             log.error("Error checking AI configuration", e);
             aiDisabled = true;
         }
-    }
-
-    private AISettings(@NotNull AISettings source) {
-        aiDisabled = source.aiDisabled;
-        configurations.putAll(source.configurations);
-        pendingProfileSecretDeletions.addAll(source.pendingProfileSecretDeletions);
-        defaultConfiguration = source.defaultConfiguration;
-        userDefaultConfiguration = source.userDefaultConfiguration;
-        activeEngine = source.activeEngine;
-        engineConfigurations.putAll(source.engineConfigurations);
-        properties.putAll(source.properties);
-        customInstructions.putAll(source.customInstructions);
-    }
-
-    @NotNull
-    public AISettings copyForSave() {
-        return new AISettings(this);
     }
 
     @NotNull
@@ -166,9 +144,6 @@ public class AISettings implements DBPAdaptable {
         if (configurations.containsKey(id)) {
             throw new DBException("AI configuration '" + id + "' already exists");
         }
-        if (pendingProfileSecretDeletions.contains(id)) {
-            throw new DBException("AI configuration '" + id + "' is waiting for credential cleanup");
-        }
         AIConfigurationProfile profile = new AIConfigurationProfile();
         profile.setProfileId(id);
         profile.setEngineId(engine.getId());
@@ -184,7 +159,7 @@ public class AISettings implements DBPAdaptable {
     public String generateProfileId(@NotNull AIEngineDescriptor engine) {
         String baseId = engine.getId();
         String id = baseId;
-        for (int i = 1; getConfigurationOrNull(id) != null || pendingProfileSecretDeletions.contains(id); i++) {
+        for (int i = 1; getConfigurationOrNull(id) != null; i++) {
             id = baseId + "_" + i;
         }
         return id;
@@ -248,17 +223,7 @@ public class AISettings implements DBPAdaptable {
         }
     }
 
-    public void reserveRemovedProfileId(@NotNull AIConfigurationProfile profile) throws DBException {
-        removeProfile(profile);
-        pendingProfileSecretDeletions.add(profile.getProfileId());
-    }
-
-    public void applySavedProfileRemoval(@NotNull AIConfigurationProfile profile, @NotNull AISettings saved) throws DBException {
-        reserveRemovedProfileId(profile);
-        engineConfigurations.putAll(saved.engineConfigurations);
-    }
-
-    private void removeProfile(@NotNull AIConfigurationProfile profile) throws DBException {
+    public void removeProfile(@NotNull AIConfigurationProfile profile) throws DBException {
         if (!configurations.remove(profile.getProfileId(), profile)) {
             throw new DBException("AI configuration is no longer current");
         }
@@ -267,15 +232,6 @@ public class AISettings implements DBPAdaptable {
         }
         // Remove in legacy config too
         engineConfigurations.remove(profile.getEngineId());
-    }
-
-    @NotNull
-    public List<String> getPendingProfileSecretDeletions() {
-        return List.copyOf(pendingProfileSecretDeletions);
-    }
-
-    public void completeProfileSecretDeletions(@NotNull List<String> profileIds) {
-        pendingProfileSecretDeletions.removeAll(profileIds);
     }
 
     public void markStale() {
