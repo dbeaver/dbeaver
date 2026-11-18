@@ -12,18 +12,10 @@ Free multi-platform database tool for developers, SQL programmers, database admi
 * Out of the box supports more than <a href="#supported-databases">100 database drivers</a>.
 * Supports any database which has JDBC or ODBC driver (basically - almost all existing databases).
 * Integrates AI tools for work with data, SQL and database structure
-
-<p>
   <a href=".github/images/dbeaver-sql-editor.png"><img src=".github/images/dbeaver-sql-editor.png" width="400"/></a>
-  <a href=".github/images/dbeaver-erd.png"><img src=".github/images/dbeaver-erd.png" width="400"/></a>
-</p>
-<p>
-  <a href=".github/images/dbeaver-gis-viewer.png"><img src=".github/images/dbeaver-gis-viewer.png" width="400"/></a>
   <a href=".github/images/dbeaver-data-editor.png"><img src=".github/images/dbeaver-data-editor.png" width="400"/></a>
-</p>
-<p align="center">
-  <a href=".github/images/dbeaver-data-export.png"><img src=".github/images/dbeaver-data-export.png" width="400"/></a>
-</p>
+  <a href=".github/images/dbeaver-erd.png"><img src=".github/images/dbeaver-erd.png" width="400"/></a>
+  <a href=".github/images/dbeaver-gis-viewer.png"><img src=".github/images/dbeaver-gis-viewer.png" width="400"/></a>
 
 ## Download
 
@@ -74,9 +66,9 @@ You can find the list of all databases supported in commercial versions <a href=
 
 ## AI integration
 
-- All DBeaver products contain AI Chat view similar to classic LLM chats. 
+- All DBeaver products contain AI Chat view similar to classic LLM chats.
 - You can generate/analyse/optimize your SQL queries, work with database structure or even work with databases with a very little knowledge of SQL.
-- We use smart chat context which provides LLMs details about database structure, SQL dialect, etc. 
+- We use smart chat context which provides LLMs details about database structure, SQL dialect, etc.
 - LLM integration uses context-dependent dynamic tools and is very efficient from token consumption point of view.
 - AI providers in Community version:
   - OpenAI (allows to configure most of existing LLMs with custom endpoint)
@@ -110,4 +102,4 @@ Thank you!
 ## Our other open-source products:
 
 - <a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> - web-based database management tool built on the DBeaver platform.<br/>Runs as server (docker) and provides rich web interface (SPA).  
-- <a href="https://github.com/dbeaver/dbvr">dbvr</a> - CLI database management tool. Useful in CI/CD pipelines and all sort of automations. 
+- <a href="https://github.com/dbeaver/dbvr">dbvr</a> - CLI database management tool. Useful in CI/CD pipelines and all sort of automations.
