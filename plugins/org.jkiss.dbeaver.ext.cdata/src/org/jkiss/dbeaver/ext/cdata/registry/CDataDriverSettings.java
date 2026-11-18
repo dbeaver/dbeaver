@@ -37,11 +37,13 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Map;
 
 record CDataDriverSettings(
     @SerializedName("datatype_id") @NotNull String dataTypeId,
-    @SerializedName("icon_driver") @Nullable String iconDriver
+    @SerializedName("icon_driver") @Nullable String iconDriver,
+    @Nullable List<String> categories
 ) {
     static final String FILE_NAME = "cdata-driver-settings.json";
     static final String URL = "https://dbeaver.com/info/cdata-driver-settings.json";
@@ -64,9 +66,16 @@ record CDataDriverSettings(
         @NotNull Path file,
         @NotNull ThrowableSupplier<URLConnection, IOException> connectionFactory
     ) throws InterruptedException {
-        var cached = load(file);
+        var cached = readCached(file);
+        boolean hasCachedSettings = !cached.isEmpty();
+        if (!hasCachedSettings) {
+            cached = loadBundled();
+        }
         checkCanceled(monitor);
         try {
+            if (hasCachedSettings && CDataDriverCatalog.isCacheFresh(file)) {
+                return cached;
+            }
             URLConnection connection = connectionFactory.get();
             try {
                 Files.createDirectories(file.getParent());
@@ -107,6 +116,12 @@ record CDataDriverSettings(
 
     @NotNull
     static Map<String, CDataDriverSettings> load(@NotNull Path file) {
+        var cached = readCached(file);
+        return cached.isEmpty() ? loadBundled() : cached;
+    }
+
+    @NotNull
+    private static Map<String, CDataDriverSettings> readCached(@NotNull Path file) {
         if (Files.isRegularFile(file)) {
             try (Reader reader = Files.newBufferedReader(file)) {
                 return read(reader);
@@ -114,7 +129,7 @@ record CDataDriverSettings(
                 log.warn("Error reading CData driver settings", e);
             }
         }
-        return loadBundled();
+        return Map.of();
     }
 
     @NotNull
@@ -143,7 +158,9 @@ record CDataDriverSettings(
             for (var entry : settings.entrySet()) {
                 var value = entry.getValue();
                 if (entry.getKey().isBlank() || value == null || value.dataTypeId() == null || value.dataTypeId().isBlank()
-                    || value.iconDriver() != null && !value.iconDriver().matches("[^:]+:[^:]+")) {
+                    || value.iconDriver() != null && !value.iconDriver().matches("[^:]+:[^:]+")
+                    || value.categories() != null && value.categories().stream()
+                        .anyMatch(category -> category == null || category.isBlank())) {
                     throw new IllegalStateException("Invalid CData driver settings: " + entry.getKey());
                 }
             }

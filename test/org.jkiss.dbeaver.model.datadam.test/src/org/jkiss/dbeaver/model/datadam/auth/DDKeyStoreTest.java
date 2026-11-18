@@ -79,6 +79,7 @@ class DDKeyStoreTest {
         Assertions.assertEquals(fixture.signingKey(), bundle.signingKey());
         Assertions.assertEquals(fixture.dataKey(), bundle.dataKey());
         Assertions.assertEquals(7, bundle.generation());
+        Assertions.assertEquals(fixture.state().apiKeyId(), bundle.apiKeyId());
     }
 
     @Test
@@ -98,7 +99,7 @@ class DDKeyStoreTest {
         byte[] encrypted = Base64.getDecoder().decode(fixture.state().encryptedBundle());
         String truncated = Base64.getEncoder().encodeToString(Arrays.copyOf(encrypted, 12));
         DDCryptoState state = new DDCryptoState(
-            ACCOUNT_UUID, true, truncated, 1L, fixture.state().salt(), KDF_ITERATIONS);
+            ACCOUNT_UUID, true, truncated, 1L, fixture.state().salt(), KDF_ITERATIONS, fixture.state().apiKeyId());
 
         Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(state, RECOVERY_PHRASE));
     }
@@ -114,7 +115,7 @@ class DDKeyStoreTest {
             Base64.getEncoder().encodeToString(encrypted),
             1L,
             Base64.getEncoder().encodeToString(salt),
-            KDF_ITERATIONS
+            KDF_ITERATIONS, UUID.randomUUID()
         );
 
         Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(state, RECOVERY_PHRASE));
@@ -167,10 +168,14 @@ class DDKeyStoreTest {
 
     @Test
     void saveRejectsGenerationRollback() throws Exception {
-        DDKeyBundle stored = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 3);
-        DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "old-signing-key", "old-data-key", 2);
+        UUID keyId = UUID.randomUUID();
+        DDKeyBundle stored = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 3, keyId);
+        DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "old-signing-key", "old-data-key", 2, keyId);
 
         assertRejectedSave(stored, replacement);
+        DDKeyBundle reissued = new DDKeyBundle(ACCOUNT_UUID, "new-signing-key", "new-data-key", 1, UUID.randomUUID());
+        store.saveBundle(reissued);
+        Mockito.verify(secretStorage).setPrivateSecretValue("datadam.key-bundle", JSONUtils.GSON.toJson(reissued));
     }
 
     private void assertRejectedSave(@NotNull DDKeyBundle stored, @NotNull DDKeyBundle replacement) throws Exception {
@@ -201,7 +206,7 @@ class DDKeyStoreTest {
                 Base64.getEncoder().encodeToString(encrypted),
                 generation,
                 Base64.getEncoder().encodeToString(salt),
-                KDF_ITERATIONS
+                KDF_ITERATIONS, UUID.randomUUID()
             ),
             signingKey,
             dataKey

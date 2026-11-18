@@ -31,6 +31,8 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.Duration;
 import java.util.List;
 
 public class CDataDriverSettingsTest extends DBeaverUnitTest {
@@ -66,8 +68,57 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void applyOptionalCategories() throws Exception {
+        var info = new CDataDriverInfo("postgresql", "postgresql", "PostgreSQL JDBC Driver", 2026,
+            CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "postgresql", null);
+        for (String categories : List.of("", ",\"categories\":null", ",\"categories\":[]", ",\"categories\":[\"sql\",\"analytic\"]")) {
+            Files.writeString(cacheFile, "{\"postgresql\":{\"datatype_id\":\"postgresql\"" + categories + "}}");
+
+            var settings = CDataDriverSettings.load(cacheFile).get("postgresql");
+            var updated = info.withSettings(settings);
+
+            Assertions.assertEquals(categories.contains("sql") ? List.of("sql", "analytic") : List.of(), updated.categories());
+            Assertions.assertEquals("postgresql", updated.dataTypeId());
+        }
+        Assertions.assertTrue(info.withSettings(null).categories().isEmpty());
+    }
+
+    @Test
+    public void rejectInvalidCategoriesWithoutReplacingCache() throws Exception {
+        Files.writeString(cacheFile, SETTINGS);
+        expireCache();
+        for (String categories : List.of("[null]", "[\"\"]", "[\" \" ]", "{}", "\"sql\"")) {
+            String invalid = "{\"postgresql\":{\"datatype_id\":\"postgresql\",\"categories\":" + categories + "}}";
+            Mockito.when(connection.getInputStream()).thenReturn(new ByteArrayInputStream(invalid.getBytes(StandardCharsets.UTF_8)));
+
+            var settings = CDataDriverSettings.load(progressMonitor, cacheFile, () -> connection);
+
+            Assertions.assertEquals("postgresql", settings.get("postgresql").dataTypeId());
+            Assertions.assertEquals(SETTINGS, Files.readString(cacheFile));
+            assertNoTemporaryFiles();
+        }
+    }
+
+    @Test
+    public void reuseSettingsYoungerThanOneWeekWithoutConnecting() throws Exception {
+        Files.writeString(cacheFile, SETTINGS);
+        long modified = System.currentTimeMillis() - Duration.ofDays(6).toMillis();
+        Files.setLastModifiedTime(cacheFile, FileTime.fromMillis(modified));
+
+        var settings = CDataDriverSettings.load(progressMonitor, cacheFile, () -> {
+            Assertions.fail("Fresh settings must not open a connection");
+            return connection;
+        });
+
+        Assertions.assertEquals("postgresql", settings.get("postgresql").dataTypeId());
+        Assertions.assertEquals(modified, Files.getLastModifiedTime(cacheFile).toMillis());
+        Mockito.verifyNoInteractions(connection);
+    }
+
+    @Test
     public void replaceCachedSettings() throws Exception {
         Files.writeString(cacheFile, SETTINGS.replace("postgresql", "oldsource"));
+        expireCache();
 
         var settings = CDataDriverSettings.load(progressMonitor, cacheFile, () -> connection);
 
@@ -79,6 +130,7 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
     @Test
     public void keepCachedSettingsWhenOffline() throws Exception {
         Files.writeString(cacheFile, SETTINGS);
+        expireCache();
 
         var settings = CDataDriverSettings.load(progressMonitor, cacheFile, () -> {
             throw new IOException("Server unavailable");
@@ -133,6 +185,7 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
     @Test
     public void keepCacheAfterInvalidDownload() throws Exception {
         Files.writeString(cacheFile, SETTINGS);
+        expireCache();
         for (String invalid : List.of("{", "null", "{}", "[]", "{\"postgresql\":null}",
             SETTINGS.replace("datatype_id", "unknown"), SETTINGS.replace("postgresql:postgres-jdbc", "invalid"))) {
             Mockito.when(connection.getInputStream()).thenReturn(new ByteArrayInputStream(invalid.getBytes(StandardCharsets.UTF_8)));
@@ -148,6 +201,7 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
     @Test
     public void keepCacheAfterInterruptedDownload() throws Exception {
         Files.writeString(cacheFile, SETTINGS);
+        expireCache();
         InputStream input = Mockito.mock(InputStream.class);
         Mockito.when(input.read(Mockito.any(byte[].class))).thenReturn(10).thenThrow(new IOException("Connection lost"));
         Mockito.when(connection.getInputStream()).thenReturn(input);
@@ -162,6 +216,7 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
     @Test
     public void cancelDownloadWithoutReplacingCache() throws Exception {
         Files.writeString(cacheFile, SETTINGS);
+        expireCache();
         Mockito.when(progressMonitor.isCanceled()).thenReturn(false, true);
 
         Assertions.assertThrows(InterruptedException.class,
@@ -178,6 +233,10 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
         Assertions.assertFalse(CDataDriverSettings.load(progressMonitor, cacheFile, () -> connection).isEmpty());
         Assertions.assertEquals(SETTINGS, Files.readString(cacheFile));
         assertNoTemporaryFiles();
+    }
+
+    private void expireCache() throws IOException {
+        Files.setLastModifiedTime(cacheFile, FileTime.fromMillis(System.currentTimeMillis() - Duration.ofDays(7).toMillis()));
     }
 
     private void assertNoTemporaryFiles() throws IOException {

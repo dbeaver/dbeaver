@@ -328,6 +328,7 @@ final class WebViewMessageRenderer {
             Map<String, Object> resultArgs = new HashMap<>();
             resultArgs.put("messageId", message.id());
             resultArgs.put("functionName", functionCall.getFunctionName());
+            resultArgs.put("functionCallId", functionCall.getId().toString());
             resultArgs.put("result", result);
             resultArgs.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
             AIFunctionResult functionResult = message.message().getFunctionResult();
@@ -360,6 +361,7 @@ final class WebViewMessageRenderer {
                 : NLS.bind(AIChatMessagesUI.ai_chat_confirm_auto_approved, toolName)
         );
         args.put("functionName", functionCall.getFunctionName());
+        args.put("functionCallId", functionCall.getId().toString());
         args.put("confirmed", confirmed);
         args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
         args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);

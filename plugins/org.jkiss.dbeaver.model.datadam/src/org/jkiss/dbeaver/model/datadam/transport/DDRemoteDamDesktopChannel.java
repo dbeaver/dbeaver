@@ -23,11 +23,13 @@ import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.*;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.internal.DDConnectionMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.BaseWebSocketClient;
@@ -64,6 +66,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
     private static final long MAX_RETRY_MILLIS = 60_000;
 
     private final Object lock = new Object();
+    private final DDConnectionMonitor monitor = new DDConnectionMonitor();
     private final URI endpoint;
     private final DDRemoteDamHandshakeRequest hello;
     private final String helloMessage;
@@ -158,6 +161,11 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
         return hello.clientDamId();
     }
 
+    @NotNull
+    public DDConnectionMonitor getMonitor() {
+        return monitor;
+    }
+
     @Override
     @NotNull
     public DDRemoteDamChannelStatus getStatus() {
@@ -183,6 +191,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
     private void updateStatus(@NotNull DDRemoteDamChannelStatus next) {
         if (status.state() != DDRemoteDamChannelState.CLOSED && !status.equals(next)) {
             status = next;
+            monitor.stateChanged(next);
             for (StateObservation observation : stateObservers) {
                 observation.pending.add(next);
             }
@@ -275,7 +284,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             String token = tokens.getAccessToken(endpoint);
             if (token == null || token.isBlank()) {
                 log.debug("DataDam desktop channel has no access token");
-                finish(attempt, false);
+                finish(attempt, false, DDConnectionMessages.token_unavailable);
                 return;
             }
             if (!isCurrent(attempt)) {
@@ -300,13 +309,13 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             }
         } catch (DBException e) {
             log.warn("Cannot obtain DataDam desktop channel access token", e);
-            finish(attempt, true);
+            finish(attempt, true, DDConnectionMessages.token_failed);
         } catch (InterruptedException e) {
             finish(attempt, true);
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             log.warn("Cannot connect DataDam desktop channel", e);
-            finish(attempt, !isAuthorizationFailure(e));
+            finish(attempt, !isAuthorizationFailure(e), NLS.bind(DDConnectionMessages.connect_failed, e.getClass().getSimpleName()));
         }
     }
 
@@ -326,6 +335,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             accepted = current == attempt;
             if (accepted) {
                 attempt.socket = socket;
+                monitor.opened();
                 attempt.outgoing.add(new Outgoing(helloMessage, new CompletableFuture<>()));
                 attempt.readyDeadline.schedule(READY_TIMEOUT_MILLIS);
                 wakeSender(attempt);
@@ -368,13 +378,14 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                 Thread.currentThread().interrupt();
                 return;
             } catch (Exception e) {
-                finish(attempt, true);
+                finish(attempt, true, NLS.bind(DDConnectionMessages.send_failed, e.getClass().getSimpleName()));
                 return;
             }
             boolean accepted;
             synchronized (lock) {
                 accepted = current == attempt;
                 if (accepted) {
+                    monitor.sent(outgoing.text.getBytes(StandardCharsets.UTF_8).length);
                     attempt.sending = null;
                 }
             }
@@ -397,7 +408,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             }
         }
         if (overflow) {
-            finish(attempt, true);
+            finish(attempt, true, DDConnectionMessages.incoming_queue_full);
         }
     }
 
@@ -429,7 +440,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                 try {
                     deliverText(attempt, text);
                 } catch (RuntimeException e) {
-                    finish(attempt, true);
+                    finish(attempt, true, DDConnectionMessages.invalid_message);
                 }
             }
         }
@@ -499,6 +510,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             if (current != attempt || attempt.session != null || !waitingForReady && attempt.socket != null) {
                 return;
             }
+            monitor.failed(waitingForReady ? DDConnectionMessages.handshake_timeout : DDConnectionMessages.connect_timeout);
             detach(attempt, true);
         }
         log.warn("DataDam desktop channel timed out waiting for "
@@ -508,10 +520,15 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
     }
 
     private void finish(@NotNull Attempt attempt, boolean retry) {
+        finish(attempt, retry, DDConnectionMessages.interrupted);
+    }
+
+    private void finish(@NotNull Attempt attempt, boolean retry, @NotNull String failure) {
         synchronized (lock) {
             if (current != attempt) {
                 return;
             }
+            monitor.failed(failure);
             detach(attempt, retry);
         }
         cleanup(attempt);
@@ -520,6 +537,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
 
     private void detach(@NotNull Attempt attempt, boolean retry) {
         current = null;
+        monitor.disconnected();
         updateStatus(new DDRemoteDamChannelStatus(
             closed ? DDRemoteDamChannelState.CLOSED : DDRemoteDamChannelState.DISCONNECTED, null));
         attempt.incoming.clear();
@@ -612,11 +630,12 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                 return null;
             }
             activity(socket);
+            int previousBytes = bytes;
             for (int i = 0; i < data.length(); i++) {
                 char value = data.charAt(i);
                 if (highSurrogate) {
                     if (!Character.isLowSurrogate(value)) {
-                        finish(attempt, true);
+                        finish(attempt, true, DDConnectionMessages.invalid_message);
                         return null;
                     }
                     highSurrogate = false;
@@ -624,19 +643,25 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                     bytes += 4;
                     highSurrogate = true;
                 } else if (Character.isLowSurrogate(value)) {
-                    finish(attempt, true);
+                    finish(attempt, true, DDConnectionMessages.invalid_message);
                     return null;
                 } else {
                     bytes += value <= 0x7f ? 1 : value <= 0x7ff ? 2 : 3;
                 }
                 if (bytes > MAX_MESSAGE_BYTES) {
-                    finish(attempt, true);
+                    finish(attempt, true, DDConnectionMessages.invalid_message);
                     return null;
                 }
             }
             if (last && highSurrogate) {
-                finish(attempt, true);
+                finish(attempt, true, DDConnectionMessages.invalid_message);
                 return null;
+            }
+            synchronized (lock) {
+                if (current == attempt) {
+                    // UTF-8 accounting spans fragments, including a split surrogate pair.
+                    monitor.received(bytes - previousBytes);
+                }
             }
             text.append(data);
             if (last) {
@@ -654,7 +679,12 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
         @Override
         @Nullable
         public CompletionStage<?> onBinary(@NotNull WebSocket socket, @NotNull ByteBuffer data, boolean last) {
-            finish(attempt, true);
+            synchronized (lock) {
+                if (current == attempt) {
+                    monitor.received(data.remaining());
+                }
+            }
+            finish(attempt, true, DDConnectionMessages.binary_message);
             return null;
         }
 
@@ -663,7 +693,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             if (isCurrent(attempt)) {
                 log.warn("DataDam desktop channel closed by remote server (code " + statusCode + ")");
             }
-            finish(attempt, true);
+            finish(attempt, true, NLS.bind(DDConnectionMessages.remote_closed, Integer.toString(statusCode)));
         }
 
         @Override
@@ -671,7 +701,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             if (isCurrent(attempt)) {
                 log.warn("DataDam desktop channel error", cause);
             }
-            finish(attempt, !isAuthorizationFailure(cause));
+            finish(attempt, !isAuthorizationFailure(cause), NLS.bind(DDConnectionMessages.websocket_error, cause.getClass().getSimpleName()));
         }
 
         private void dispose(@NotNull WebSocket socket, boolean graceful) {

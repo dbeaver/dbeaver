@@ -282,7 +282,7 @@ public final class AIUtils {
                 AIMessages.ai_execute_query_confirm_dml_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
         }
-        if (queryCategories.contains(SQLQueryCategory.SQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
+        if (queryCategories.contains(SQLQueryCategory.DQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_sql_message :
                 AIMessages.ai_execute_query_confirm_sql_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);

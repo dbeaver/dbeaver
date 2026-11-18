@@ -5,7 +5,7 @@
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="yashandb" parent="oracle" class="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSQLDialect"
                  label="YashanDB" description="YashanDB SQL dialect." icon="icons/yashandb_icon.png">
-            <property name="insertMethods" value="yashandbInsertIgnore"/>
+            <property name="insertMethods" value="oracleInsertIgnore"/>
         </dialect>
     </extension>
 
