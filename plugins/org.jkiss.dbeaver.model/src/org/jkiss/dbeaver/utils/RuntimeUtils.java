@@ -45,9 +45,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.*;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * RuntimeUtils
@@ -66,6 +69,11 @@ public final class RuntimeUtils {
     private static final boolean IS_WINDOWS;
 
     private static final byte[] NULL_MAC_ADDRESS = new byte[] {0, 0, 0, 0, 0, 0};
+    private static final byte[] PLACEHOLDER_MAC_ADDRESS = {2, 0, 0, 0, 0, 0};
+    private static final Pattern PEER_INTERFACE = Pattern.compile("(?:awdl|llw)\\d+");
+    private static final Pattern VIRTUAL_INTERFACE = Pattern.compile(
+        "(?:bridge|docker|virbr|vboxnet|vmnet|vmenet|tun|tap|utun)\\d+|veth\\w+"
+    );
 
     static {
         String arch = Platform.getOSArch();
@@ -510,6 +518,64 @@ public final class RuntimeUtils {
             }
         }
         return ni == null || ni.getHardwareAddress() == null ? NULL_MAC_ADDRESS : ni.getHardwareAddress();
+    }
+
+    @NotNull
+    public static String hashMacAddress(@NotNull byte[] macAddress) throws NoSuchAlgorithmException {
+        byte[] digest = MessageDigest.getInstance("MD5").digest(macAddress);
+        long value = 0;
+        for (int i = 0; i < digest.length; i++) {
+            value += (long) digest[i] << (i * Byte.SIZE);
+        }
+        return Long.toString(Math.abs(value), Character.MAX_RADIX).toUpperCase();
+    }
+
+    @Nullable
+    public static byte[] selectMacAddress() throws SocketException {
+        byte[] selectedAddress = null;
+        String selectedName = "";
+        int selectedPriority = Integer.MAX_VALUE;
+        for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+            try {
+                byte[] address = networkInterface.getHardwareAddress();
+                if (address == null || !isUsableMacAddress(address)) {
+                    continue;
+                }
+                int priority = macInterfacePriority(networkInterface);
+                String name = networkInterface.getName();
+                if (priority < selectedPriority || priority == selectedPriority && name.compareTo(selectedName) < 0) {
+                    selectedAddress = address;
+                    selectedName = name;
+                    selectedPriority = priority;
+                }
+            } catch (SocketException e) {
+                log.debug("Cannot read network interface " + networkInterface.getName(), e);
+            }
+        }
+        return selectedAddress;
+    }
+
+    private static boolean isUsableMacAddress(@NotNull byte[] address) {
+        boolean allZero = true;
+        boolean allOnes = true;
+        for (byte octet : address) {
+            allZero &= octet == 0;
+            allOnes &= octet == (byte) 0xff;
+        }
+        return !allZero && !allOnes && !Arrays.equals(address, PLACEHOLDER_MAC_ADDRESS);
+    }
+
+    private static int macInterfacePriority(@NotNull NetworkInterface networkInterface) throws SocketException {
+        String name = networkInterface.getName();
+        if (PEER_INTERFACE.matcher(name).matches()) {
+            return 2;
+        }
+        if (networkInterface.isVirtual() || VIRTUAL_INTERFACE.matcher(name).matches()
+            || networkInterface.isPointToPoint() || networkInterface.isLoopback()
+        ) {
+            return 1;
+        }
+        return 0;
     }
 
     @NotNull

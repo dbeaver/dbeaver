@@ -21,10 +21,17 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
 
 public class RuntimeUtilsTest extends DBeaverUnitTest {
+
+    @Test
+    public void testHashMacAddressKeepsExistingFormat() throws NoSuchAlgorithmException {
+        byte[] macAddress = {2, 1, 2, 3, 4, 5};
+        Assertions.assertEquals("1UJA5Y1Q1JG8P", RuntimeUtils.hashMacAddress(macAddress));
+    }
 
     @Test
     public void testMakePlatformResourceUrl() {
