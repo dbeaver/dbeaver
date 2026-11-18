@@ -154,6 +154,31 @@ public class DDTrackingUIMessages extends NLS {
     public static String import_key_dialog_paste_button;
     public static String import_key_dialog_reset_button;
 
+    public static String tracking_title;
+    public static String event_time;
+    public static String event_type;
+    public static String event_details;
+    public static String event_database;
+    public static String show_in_navigator;
+    public static String clear_events;
+    public static String configuration;
+    public static String integration_enabled;
+    public static String status_connected;
+    public static String status_disconnected;
+    public static String status_connecting;
+    public static String status_disabled;
+    public static String status_unknown;
+    public static String status_not_logged_in;
+    public static String signed_in;
+    public static String signed_out;
+    public static String invalid_token;
+    public static String error;
+    public static String mcp_request;
+    public static String connected_at;
+    public static String connection_duration;
+    public static String bytes_sent;
+    public static String bytes_received;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, DDTrackingUIMessages.class);

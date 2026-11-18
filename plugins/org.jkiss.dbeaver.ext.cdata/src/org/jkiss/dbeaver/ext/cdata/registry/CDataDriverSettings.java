@@ -37,11 +37,13 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Map;
 
 record CDataDriverSettings(
     @SerializedName("datatype_id") @NotNull String dataTypeId,
-    @SerializedName("icon_driver") @Nullable String iconDriver
+    @SerializedName("icon_driver") @Nullable String iconDriver,
+    @Nullable List<String> categories
 ) {
     static final String FILE_NAME = "cdata-driver-settings.json";
     static final String URL = "https://dbeaver.com/info/cdata-driver-settings.json";
@@ -156,7 +158,9 @@ record CDataDriverSettings(
             for (var entry : settings.entrySet()) {
                 var value = entry.getValue();
                 if (entry.getKey().isBlank() || value == null || value.dataTypeId() == null || value.dataTypeId().isBlank()
-                    || value.iconDriver() != null && !value.iconDriver().matches("[^:]+:[^:]+")) {
+                    || value.iconDriver() != null && !value.iconDriver().matches("[^:]+:[^:]+")
+                    || value.categories() != null && value.categories().stream()
+                        .anyMatch(category -> category == null || category.isBlank())) {
                     throw new IllegalStateException("Invalid CData driver settings: " + entry.getKey());
                 }
             }

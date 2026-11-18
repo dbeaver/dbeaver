@@ -29,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
@@ -90,7 +91,8 @@ public class DDProjectUIManager {
     }
 
     public boolean isProjectSyncReady() {
-        return accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
+        return DDProductConfig.isIntegrationEnabled()
+            && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
             && accessService.getKeyBundle() != null;
     }
 
@@ -193,7 +195,8 @@ public class DDProjectUIManager {
 
     @Nullable
     public List<ProjectListing> loadProjectListings(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (monitor.isCanceled() || !DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+        if (monitor.isCanceled() || !DDProductConfig.isIntegrationEnabled()
+            || !DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
             return null;
         }
         DDProjectManager manager = getProjectManager();
@@ -337,6 +340,9 @@ public class DDProjectUIManager {
         int maxThreads,
         @NotNull DBRProgressMonitor monitor
     ) {
+        if (!DDProductConfig.isIntegrationEnabled()) {
+            return new ProjectJobBatchResult<>(List.of(), List.of(), true);
+        }
         if (jobs.isEmpty()) {
             return new ProjectJobBatchResult<>(List.of(), List.of(), false);
         }

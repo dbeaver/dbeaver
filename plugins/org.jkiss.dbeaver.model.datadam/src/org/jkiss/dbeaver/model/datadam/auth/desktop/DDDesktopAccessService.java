@@ -129,6 +129,12 @@ public class DDDesktopAccessService {
         return userService.getLoggedUserView(getAccountId());
     }
 
+    /** Reads display-only user identity from the local token without making an Account request. */
+    @NotNull
+    public DDLoggedUserView getLoggedUserIdentity() {
+        return userService.getLoggedUserView(null);
+    }
+
 
     //can call some UI functionality. so must be kept separately from instance creation
     public void load() throws DBException {
