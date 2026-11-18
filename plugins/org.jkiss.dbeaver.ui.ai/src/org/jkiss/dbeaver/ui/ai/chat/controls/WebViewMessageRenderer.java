@@ -429,6 +429,7 @@ final class WebViewMessageRenderer {
             AIChatMessagesUI.ai_chat_ai_notice,
             "a11y",
             Map.of(
+                "preferAriaNotify", "edge".equals(browser.getBrowserType()),
                 "transcriptLabel", AIChatMessagesUI.ai_chat_a11y_transcript_label,
                 "waitingForResponse", AIChatMessagesUI.ai_chat_a11y_waiting_for_response,
                 "roles", Map.of(
