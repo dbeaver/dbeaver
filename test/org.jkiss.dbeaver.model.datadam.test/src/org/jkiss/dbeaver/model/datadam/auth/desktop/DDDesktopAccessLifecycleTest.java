@@ -19,14 +19,17 @@ package org.jkiss.dbeaver.model.datadam.auth.desktop;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
+import com.google.gson.JsonObject;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistrationRegistry;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
+import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.jupiter.api.Assertions;
@@ -37,11 +40,33 @@ import org.mockito.Mockito;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(60)
 class DDDesktopAccessLifecycleTest {
+
+    @Test
+    void readsLoginIdentityLocallyWithoutAccountRequestsOrTokenRefresh() {
+        var manager = Mockito.mock(DDDesktopTokenManager.class);
+        var userId = UUID.randomUUID();
+        JsonObject claims = new JsonObject();
+        claims.addProperty("sub", userId.toString());
+        claims.addProperty("email", "user@example.com");
+        Mockito.when(manager.getUnverifiedTokenClaims()).thenReturn(claims);
+        try (var accounts = Mockito.mockConstruction(DDAccountClient.class)) {
+            var identity = new DDDesktopAccessService(manager).getLoggedUserIdentity();
+            Assertions.assertEquals(userId, identity.userId());
+            Assertions.assertEquals("user@example.com", identity.userName());
+            Assertions.assertNull(identity.accountName());
+            for (var account : accounts.constructed()) {
+                Mockito.verifyNoInteractions(account);
+            }
+        }
+        Mockito.verify(manager).getUnverifiedTokenClaims();
+        Mockito.verifyNoMoreInteractions(manager);
+    }
 
     @Test
     void completesTheAccessChangeEvenWhenEncryptionKeysCannotBeLoaded() throws Exception {
@@ -97,6 +122,7 @@ class DDDesktopAccessLifecycleTest {
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
         DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
+        Mockito.when(channel.getMonitor()).thenReturn(new DDConnectionMonitor());
         Mockito.when(channel.getStatus()).thenReturn(new DDRemoteDamChannelStatus(
             DDRemoteDamChannelState.CONNECTED, new DDRemoteDamSessionInfo("deployment", "instance", "session")));
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
@@ -129,8 +155,9 @@ class DDDesktopAccessLifecycleTest {
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
         DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
+        Mockito.when(channel.getMonitor()).thenReturn(new DDConnectionMonitor());
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
-             var session = new DDRemoteDamDesktopSessionService(access, channel);
+             var session = new DDRemoteDamDesktopSessionService(access, channel, Mockito.mock(DDDesktopRpcRegistrationRegistry.class));
              var jobs = new ExpiryJobs()) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
             session.start();

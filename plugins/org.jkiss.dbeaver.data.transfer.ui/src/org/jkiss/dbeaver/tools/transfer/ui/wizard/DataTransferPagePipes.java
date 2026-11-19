@@ -469,7 +469,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                     StreamConsumerSettings streamSettings = getStreamConsumerSettings();
                     StreamMappingContainer mapping = streamSettings == null || !(element instanceof DBSDataContainer source)
                         ? null : streamSettings.getDataMapping(source);
-                    if (!isDatabaseMigrationSelected() && mapping != null && DBUtils.getAdapter(SQLQueryContainer.class, element) == null) {
+                    if (!isDatabaseMigrationSelected() && mapping != null) {
                         List<StreamMappingAttribute> attributes = mapping.getAttributes(new org.jkiss.dbeaver.model.runtime.VoidProgressMonitor());
                         long selected = attributes.stream()
                             .filter(attribute -> attribute.getMappingType() == StreamMappingType.export).count();
@@ -601,8 +601,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             inputsTable.getSelection().isEmpty() ? DTUIMessages.data_transfer_wizard_select_source :
                 DTUIMessages.data_transfer_task_configurator_dialog_button_label_remove);
         inputsTable.getTable().redraw();
-        setConfigureColumnsButtonVisible(!isDatabaseMigrationSelected() &&
-            ((IStructuredSelection) inputsTable.getSelection()).toList().stream().noneMatch(source -> DBUtils.getAdapter(SQLQueryContainer.class, source) != null));
+        setConfigureColumnsButtonVisible(!isDatabaseMigrationSelected());
         columnsButton.setToolTipText(!columnsButton.isEnabled() ?
             getWizard().getSettings().isPipeChangeRestricted() ? DTUIMessages.data_transfer_wizard_sources_locked :
                 inputsTable.getSelection().isEmpty() ? DTUIMessages.data_transfer_wizard_select_source :

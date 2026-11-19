@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tips xmlns="https://github.com/dbeaver/dbeaver/blob/devel/plugins/org.jkiss.dbeaver.ui.app.standalone/src/org/jkiss/dbeaver/ui/app/standalone/tipoftheday/tips.xsd">
+    <!--        Tips below were reviewed on 28th of November 2023   -->
+    <tip>您可以根据需要自定义 DBeaver。有关可选扩展的详细信息，请参阅<a href="https://dbeaver.com/docs/dbeaver/Eclipse-extensions/">此处</a>。</tip>
+    <tip>您可以<a href="prefs://org.eclipse.ui.window.customizePerspective">自定义菜单栏和显示的菜单项列表</a>，相关设置位于<b>菜单可见性</b>选项卡中。</tip>
+    <tip>您可以<a href="prefs://org.eclipse.ui.window.customizePerspective">自定义工具栏</a>，相关设置位于<b>工具栏可见性</b>选项卡中。</tip>
+    <tip>您可以为 DBeaver 中的大多数命令创建键盘快捷键。<a href="prefs://org.eclipse.ui.preferencePages.Keys">也可以修改现有快捷键</a>。</tip>
+    <tip>您可以在工具栏中更改当前的<a href="https://dbeaver.com/2022/05/26/change-the-data-in-the-smart-way/">数据库事务模式</a>。点击<b>提交和回滚按钮</b>右侧的下拉菜单即可。</tip>
+    <tip>如果您担心意外更改表中的重要数据，可以开启<b>只读模式</b>，在不提供编辑选项的情况下查看表。</tip>
+    <tip>SSH 隧道密码更改后，无需花时间逐一编辑所有连接。请使用<a href="https://dbeaver.com/2022/03/10/how-to-create-network-profiles/">网络配置文件</a>。</tip>
+    <tip>为驱动添加新依赖项时，可以切换到<b>依赖声明</b>选项卡，使用 Maven 或 Gradle 脚本。</tip>
+    <tip>要安全地将外部变量传入 DBeaver，可以使用 -vars 命令行参数指定包含变量的文件。有关管理员变量的更多信息，请参阅<a href="https://dbeaver.com/docs/dbeaver/Admin-Variables#declare-external-variables-in-a-file">此处</a>。</tip>
+    <tip>您可以轻松更改 DBeaver 文件的位置。只需转到<b>文件 –> 切换工作空间</b>并设置新路径。</tip>
+    <tip><a href="https://dbeaver.com/2022/06/02/keep-calm-and-use-connection-types/">突出显示连接类型</a>（测试或生产），为它们在<b>导航树、数据编辑器和 SQL 编辑器</b>中指定颜色。这有助于防止您意外更改生产系统。</tip>
+    <tip>您可以使用 <commandRef commandId="org.jkiss.dbeaver.core.sql.editor.console" /> 命令打开 SQL 控制台。它适合执行您不想保存到文件中的查询。</tip>
+    <tip>要执行当前查询，请使用 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/> 命令。请注意，查询由分隔符或空行分隔。</tip>
+    <tip>要运行当前 SQL 脚本，请使用 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/> 命令。</tip>
+    <tip>要格式化 SQL 语句，请使用 <commandRef commandId="org.jkiss.dbeaver.ui.editors.text.content.format"/> 命令。</tip>
+    <tip>使用 SQL 编辑器右键菜单中的<b>执行 -> 从查询导出</b>选项，可以直接从 SQL 查询导出数据，无需预先执行查询。</tip>
+    <tip>您可以使用 <commandRef commandId="org.eclipse.ui.edit.text.upperCase"/> 命令将所选文本转换为大写。</tip>
+    <tip>您可以使用 <commandRef commandId="org.eclipse.ui.edit.text.lowerCase"/> 命令将所选文本转换为小写。</tip>
+    <tip>要刷新 <a href="https://dbeaver.com/2022/04/14/your-first-queries-in-the-sql-editor/">SQL 编辑器</a>中的查询结果，请使用 <commandRef commandId="org.eclipse.ui.file.refresh"/> 命令。</tip>
+    <tip>要查看可用的 SQL 语句<a href="https://dbeaver.com/docs/dbeaver/SQL-Templates">模板</a>，请使用 <commandRef commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation"/> 命令。</tip>
+    <tip>您可以根据所选行生成 <b>SQL 语句（SELECT/INSERT/UPDATE/DELETE）</b>。要生成 SQL，请右键点击所选行，点击<b>生成 SQL</b>，然后选择显示的 SQL 命令之一。</tip>
+    <tip>要查看当前查询的执行计划，请使用 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/> 命令。</tip>
+    <tip>要同时执行当前脚本中的查询并在单独的选项卡中显示结果，请使用 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/> 命令。</tip>
+    <tip>要跳转到当前 SQL 脚本中的上一个查询，请使用 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.query.prev"/> 命令。</tip>
+    <tip>要跳转到当前 SQL 脚本中的下一个查询，请使用 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.query.next"/> 命令。</tip>
+    <tip>在 DBeaver 中运行 SQL 脚本时发生的所有错误都可以在<a href="view://org.eclipse.pde.runtime.LogView">错误日志</a>视图中查看。错误日志会记录 SQL、权限和配置错误。</tip>
+    <tip>您可以在<b>查询管理器</b>中查看 DBeaver 执行过的查询。DBeaver 为读取元数据而运行的所有内部查询也可以在这里找到。</tip>
+    <tip>您可以根据个人需要更改编辑器设置。点击齿轮图标，然后转到<b>编辑器 -> SQL 编辑器</b>。在这里，您可以更改格式化、脚本处理等设置。</tip>
+    <tip>在 SQL 编辑器中，对于类似 "SELECT * FROM tableName" 或 "INSERT INTO tableName (*)"（括号很重要）的查询，您可以在星号后调用 <commandRef commandId="org.eclipse.ui.edit.text.contentAssist.proposals"/>，星号就会被替换为表中所有列的列表。</tip>
+    <tip>在 SQL 编辑器中选择对象的完全限定名称，然后使用 <b>Ctrl + 鼠标左键点击</b>。这会打开该对象的选项卡。此功能适用于表、列和过程。</tip>
+    <tip>您可以在网格上方的筛选字段中<b>输入 SQL 表达式</b>来筛选结果。<br/>点击右侧的展开按钮（<b>&#9660;</b>）可查看筛选历史记录。<br/>点击<b>保存筛选设置</b>后，即使重新启动应用程序，筛选历史记录仍然可用。</tip>
+    <tip>您无需再将脚本逐一导入 SQL 编辑器。DBeaver 的“导入 SQL 脚本”选项允许您同时选择多个文件，并在同一个编辑器中打开它们。</tip>
+    <tip>要执行所选 SQL 表达式并获取结果，请使用 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/> 命令。</tip>
+    <tip><b>导航树</b>上方的 SQL 按钮可以用来打开 SQL 脚本和更改默认命令。例如，您可以设置为点击此按钮即可快速打开控制台。</tip>
+    <tip>在数据编辑器中，您可以使用 <commandRef commandId="org.jkiss.dbeaver.core.resultset.switchPresentation"/> 命令切换视图模式。</tip>
+    <tip>在<a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">数据编辑器</a>中，使用 <commandRef commandId="org.eclipse.ui.edit.findReplace"/> 命令可以快速搜索当前表中的数据。</tip>
+    <tip>要在<a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">数据编辑器</a>中按列值筛选表行，请使用 <commandRef commandId="org.jkiss.dbeaver.core.resultset.filterMenu.distinct"/> 命令。您也可以打开 <commandRef commandId="org.jkiss.dbeaver.core.resultset.filterMenu"/>。</tip>
+    <tip>要在<a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">数据编辑器</a>中打开外键菜单，请使用 <commandRef commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"/> 命令。</tip>
+    <tip>使用数据编辑器时，您可以用剪贴板中的值进行筛选。从任意来源复制所需的值，右键点击单元格，转到<b>筛选 -> 剪贴板</b>，然后选择适当的选项。</tip>
+    <tip>突出显示数据中的重复值可以方便您找到它们。您可以在此处勾选“标记所选单元格值的出现位置”复选框来启用此功能。</tip>
+    <tip>您可以在属性中轻松更改布尔值的显示方式。点击齿轮图标，转到<b>外观 –> 网格</b>，然后点击<b>配置布尔值显示</b> – 编辑器。您可以选择将布尔值显示为图标、勾选标记或文字，并为文字设置字体颜色。同样，您也可以自定义数据编辑器的其他属性，更改数据格式、字号等。</tip>
+    <tip><a href="https://dbeaver.com/tag/colorization/">突出显示行或按颜色筛选单元格</a>，可以更好地查看和分析网格中的数据。应用渐变色，可以按数值大小直观地显示行中数值的增长。</tip>
+    <tip>如果在表中选择一行或多行，然后点击编辑器侧边工具栏中的<b>记录按钮</b>，行和列就会互换位置。当表包含大量列时，记录模式非常有用。</tip>
+    <tip>您可以使用<b>筛选字段和顶部工具栏</b>输入 SQL 表达式来筛选结果。筛选历史记录也可以在这里查看。如果您使用 DBeaver PRO，重新启动应用程序后仍会保留这些历史记录。</tip>
+    <tip>通过<a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">值面板</a>查看各种特定类型的数据（GIS、网站、图像等）。</tip>
+    <tip>您可以使用便捷的日历编辑表中的日期和时间字段。打开<a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">值面板</a>，点击时钟图标，即可将编辑器切换到日历视图。您也可以在首选项中找到相应的复选框。</tip>
+    <tip>您可以使用 <commandRef commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview"/> 命令显示或隐藏右侧面板。</tip>
+    <tip>选择包含键的单元格并转到<a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">值面板</a>后，您会看到一个由“值”和“描述”两列组成的字典。您可以使用此表快速查看所需数据并进行搜索。</tip>
+    <tip>如果需要快速统计表中的值，请使用分组面板或计算面板。有关 DBeaver 面板所有功能的更多信息，请参阅<a href="https://dbeaver.com/2022/05/05/build-your-report-step-by-step/">此处</a>。</tip>
+    <tip>您可以使用元数据面板快速查看数据格式和大小限制的信息。<a href="https://dbeaver.com/2022/05/19/think-about-the-content-not-about-the-structure/">元数据面板</a>仅在只读模式下工作。如果要进行更改，请转到“属性”选项卡。</tip>
+    <tip>添加或编辑数据时，无需在各个表之间不断切换，可以使用<a href="https://dbeaver.com/2022/05/19/think-about-the-content-not-about-the-structure/">引用面板</a>。它可以让您快速查看所选表与哪些表相关联。</tip>
+    <tip>在<a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">数据库导航器</a>中，使用 <commandRef commandId="org.eclipse.ui.edit.rename"/> 命令可以重命名所选元素。</tip>
+    <tip>在<a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">数据库导航器</a>中，使用 <commandRef commandId="org.jkiss.dbeaver.core.object.open"/> 命令可以编辑所选元素的属性。</tip>
+    <tip>在<a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">数据库导航器</a>中，使用 <commandRef commandId="org.eclipse.ui.file.refresh"/> 命令可以刷新所选元素。</tip>
+    <tip>在<a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">数据库导航器</a>中，使用 <commandRef commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/> 命令可以将所选元素添加到<a href="https://dbeaver.com/docs/dbeaver/Bookmarks">书签</a>。</tip>
+    <tip>您可以根据需要自定义数据库导航器树。有关导航树自定义的更多信息，请参阅<a href="https://dbeaver.com/2022/08/25/how-to-customize-your-navigation-tree/">此处</a>。</tip>
+    <tip>根据需要选择简单或高级导航树视图。有关设置方法的更多信息，请参阅<a href="https://dbeaver.com/2022/08/18/simple-or-advanced-choose-your-navigation-tree-view/">此处</a>。</tip>
+    <tip>使用<a href="https://dbeaver.com/docs/dbeaver/Bookmarks">书签</a>作为快速访问数据库对象的链接。</tip>
+    <tip>如果“项目”选项卡已关闭，请转到<b>主菜单 -> 窗口 -> 显示视图 -> 项目</b>将其打开。</tip>
+    <tip>您可以将项目设为默认项目，其内容就会显示在<b>数据库导航器</b>中。为此，请右键点击该项目，然后选择<b>“设置活动项目”</b>。</tip>
+    <tip>您可以在项目之间复制连接、书签、图表和脚本。</tip>
+    <tip>DBeaver 允许您查看任意对象的图表：表、视图，甚至整个数据库模式。有关 DBeaver 中 ER 图的更多信息，请参阅<a href="https://dbeaver.com/2022/06/30/two-ways-to-use-erd-in-dbeaver/">此处</a>。</tip>
+    <tip>您可以创建包含表、关系和注释的自定义 ER 图。有关此功能的更多信息，请参阅<a href="https://dbeaver.com/2022/06/30/two-ways-to-use-erd-in-dbeaver/">此处</a>。</tip>
+    <tip>您可以通过<b>主工具栏</b>或 <commandRef commandId="org.jkiss.dbeaver.ui.dashboard.open"/> 命令打开仪表板视图，以监控数据库运行状况。<br/>注意：仪表板因数据库而异。</tip>
+    <tip>使用我们的应用程序时，您可以<a href="https://dbeaver.com/2022/09/08/working-with-tasks-how-to-get-started/">保存重复性任务</a>，例如导入和导出数据、数据库转储和恢复、比较数据等。</tip>
+    <tip>您可以<a href="https://dbeaver.com/2022/09/22/database-tasks-view-all-your-tasks-in-one-place/">自定义</a>数据库任务中显示的列。例如，显示某个任务的执行时间。为此，请右键点击列表中的任意区域，转到<b>配置列</b>，勾选相应的复选框，然后<b>点击确定</b>。</tip>
+    <tip>向表中<a href="https://dbeaver.com/docs/dbeaver/Data-Import-and-Replace">导入数据</a>时，您可以在数据加载设置中选择“替换”方法，以忽略主键验证约束。Oracle、MySQL、PostgreSQL、Firebird 和 SQLite 支持此功能。</tip>
+    <tip>您可以在数据传输设置中启用<b>使用多行值</b>插入，以提高数据导入性能。此外，还可以增加<b>多行插入批次</b>中的行数。</tip>
+    <tip>您可以使用 <commandRef commandId="org.jkiss.dbeaver.core.resultset.grid.gotoColumn"/> 命令跳转到结果集中的某一列。</tip>
+    <tip>要在一个选项卡中依次查看脚本执行结果，请在 SQL 编辑器右键菜单中启用<b>执行 -> 切换执行结果方向</b>选项。</tip>
+    <tip>想在 DBeaver 中使用本地客户端进行数据库备份和恢复吗？<br/><a href="https://dbeaver.com/docs/dbeaver/Local-Client-Configuration/">了解有关客户端配置的更多信息</a>。</tip>
+    <tip>您可以在<a href="prefs://org.jkiss.dbeaver.preferences.accessibility">此处</a>为数据库编辑器启用额外的屏幕阅读器支持。</tip>
+    <tip>如果连接需要通过代理，您可以在创建或编辑连接时，使用<b>网络配置</b>按钮指定代理设置。</tip>
+    <tip>如果需要高对比度主题，请在操作系统中启用它，DBeaver 的高对比度主题也会随之启用。</tip>
+
+    <tip product="ce">DBeaver PRO 已与 <a href="https://dbeaver.com/docs/dbeaver/Project-team-work/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Git 版本控制系统</a>完全集成。升级 DBeaver，即可将项目配置、脚本、图表、书签及其他项目文件保存在 Git 仓库中。</tip>
+    <tip product="ce,le,ee">使用 DBeaver Ultimate，您可以同时操作通过 AWS、Google Cloud 和 Microsoft Azure 访问的数据库，并轻松切换它们的配置。有关在 DBeaver Ultimate 中轻松使用混合云的更多信息，请参阅<a href="https://dbeaver.com/2023/06/01/hybrid-cloud-with-dbeaver-how-to-get-started/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <tip product="ce">利用 DBeaver PRO <a href="https://dbeaver.com/2023/06/08/security-in-dbeaver-pro-questions-and-answers/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">私密地管理数据</a>：使用主密码保护本地工作空间中的所有项目，并对凭据进行高强度加密。</tip>
+    <tip product="ce,ee,ue">如果您与团队一起使用 DBeaver，可以通过 <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a> 选择最适合的方式来管理用户权利、限制和权限。创建用户，并为他们分配具有预定义功能的便捷角色。</tip>
+    <tip product="ce">如果您正在为团队寻找服务器端数据管理解决方案，请试用 <a href="https://dbeaver.com/cloudbeaver-enterprise/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">CloudBeaver</a>。</tip>
+    <tip product="ce,le,ee">如果您经常使用 AWS 数据库，并且需要访问存储在 AWS 中的文件，请使用 DBeaver Ultimate 中的 <a href="https://dbeaver.com/2022/04/21/easy-management-for-aws-s3-files/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">S3 浏览器</a>。</tip>
+    <tip product="ce,le">使用 DBeaver PRO 中的<a href="https://dbeaver.com/2022/02/10/how-does-visual-query-builder-help-optimize-your-work/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">可视化查询构建器</a>工具，可以简化 SQL 脚本编写过程。</tip>
+    <tip product="ce">DBeaver PRO 支持<a href="https://dbeaver.com/databases/?utm_source=ce&amp;tm_medium=cpc&amp;utm_campaign=tips">所有流行的 NoSQL 数据库</a>：MongoDB、CouchDB、InfluxDB 等。此外，如果您不熟悉 NoSQL，也可以在 DBeaver PRO 中使用普通的 SQL 编辑器执行各种查询。</tip>
+    <tip>使用 DBeaver 中的 AI 助手，自动创建包含联接的复杂查询。观看<a href="https://youtu.be/MOaEpDa5GP0">我们的教程视频</a>，了解其工作方式。</tip>
+    <tip product="ce">在 DBeaver PRO 中，您可以在数据网格、面板或 SQL 编辑器的结果集中使用<a href="https://dbeaver.com/2022/06/09/visualize-data-with-dbeaver/?utm_source=c&amp;utm_medium=cpc&amp;utm_campaign=tips">图表</a>，快速轻松地将数据可视化。</tip>
+    <tip product="ce">DBeaver PRO 允许您通过 ERD 编辑模式直接更改数据库模式。有关在 DBeaver PRO 中进行数据库开发的更多信息，请参阅<a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <tip product="ce">如果需要创建大量逼真的测试样本数据，并希望避免手动输入测试数据的繁琐耗时工作，请使用 DBeaver PRO 中的<a href="https://dbeaver.com/docs/dbeaver/Mock-Data-Generation/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">模拟数据生成器</a>。</tip>
+    <tip product="ce">使用 DBeaver PRO 中<a href="https://dbeaver.com/docs/dbeaver/Query-Execution-Plan/?utm_source=ce&amp;utm_&amp;edium=cpc&amp;utm_campaign=tips">查询执行计划</a>的图形模式，可以查看和估算查询或脚本的执行速度，并确定开销最大的计划节点。</tip>
+    <tip product="ce">使用 DBeaver PRO，您可以<a href="https://dbeaver.com/2022/06/23/import-data-with-dbeaver/?utm_source=ce&amp;utm&amp;medium=cpc&amp;utm_campaign=tips">导入和导出文件</a>，支持 XLS、XLSL、XML 等任意格式。</tip>
+    <tip product="ce">在 DBeaver PRO 中，您可以使用高级选项比较两个相似表中的数据，以查看差异。有关 DBeaver PRO 数据比较功能的更多信息，请参阅<a href="https://dbeaver.com/docs/dbeaver/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <tip product="ce">使用 DBeaver PRO，您可以<a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">安排任务</a>按指定周期执行，无需打开 DBeaver。</tip>
+    <tip product="ce">使用 DBeaver PRO，您可以将多个任务分组为<a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">一个复合任务</a>，以便一键轻松执行一组操作。</tip>
+    <tip product="ce">在 DBeaver PRO 中，您可以使用<a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">模式比较/迁移功能</a>创建数据库模式备份，并将其保存为任务。此外，您还可以使用 DBeaver PRO 的任务调度器自动执行此任务。</tip>
+    <tip product="ce">使用 DBeaver PRO，您可以比较同一数据库或不同数据库中的模式，包括所有元数据对象。有关 DBeaver PRO 强大的模式比较功能的更多信息，请参阅<a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <tip product="ce">要切换 ER 图的表示法，请右键点击图表，转到<b>表示法</b>菜单项，然后选择所需的表示法，例如 Crow's Foot（乌鸦脚）。</tip>
+    <tip product="ce,le,ee,ue">DBeaver PRO 提供了便捷的 Kubernetes 设置配置方式，用于连接 Kubernetes 集群中的数据库。<br/>有关 Kubernetes 配置的更多信息，请参阅<a href="https://dbeaver.com/docs/dbeaver/Kubernetes-configuration/">此处</a>。</tip>
+    <tip product="ce">您可以在 <a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">DBeaver PRO</a> 中使用原生 ODBC 驱动连接几乎任何数据库。</tip>
+    <tip>DBeaver 中的 <a href="https://dbeaver.com/docs/dbeaver/AI-Smart-Assistance/">AI 聊天</a>可让您自动构建 SQL 查询。要试用此功能，请打开 SQL 编辑器右侧的 <b>AI 聊天</b>选项卡。</tip>
+    <tip product="ce,le,ee,ue">您可以配置 DBeaver 与 Tableau 的集成，以便创建数据库连接和编辑自定义 SQL 查询。<br/>有关 DBeaver PRO 中 Tableau 集成的更多信息，请参阅<a href="https://dbeaver.com/docs/dbeaver/Tableau-integration-in-DBeaver/">此处</a>。</tip>
+    <tip product="ce">您可以在 DBeaver PRO 中使用 DBeaver 团队创建的 <a href="https://dbeaver.com/docs/dbeaver/Database-driver-Salesforce/">Salesforce 驱动</a>连接 Salesforce 数据库。</tip>
+
+    <tip product="le">如果您正在为团队寻找轻量级 Web 数据管理器，请试用 <a href="https://dbeaver.com/cloudbeaver-enterprise/?utm_source=le&amp;utm_medium=cpc&amp;utm_campaign=tips">CloudBeaver Enterprise</a>。</tip>
+    <tip product="le">如果您正在寻找便捷的协作工具，希望无需额外请求即可快速访问数据，请试用 <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=le&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a>。轻松在团队之间实时共享数据集和脚本。</tip>
+    <tip product="le,ee,ue">如果您不熟悉 NoSQL，可以使用普通的 SQL 编辑器执行各种查询。</tip>
+    <tip product="le">在 DBeaver Enterprise 中，您可以使用高级选项比较两个相似表中的数据，以查看差异。有关 DBeaver Enterprise 数据比较功能的更多信息，请参阅<a href="https://dbeaver.com/docs/dbeaver/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <tip product="le">使用 DBeaver Enterprise，您可以<a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">安排任务</a>按指定周期执行，无需打开 DBeaver。</tip>
+    <tip product="le">使用 DBeaver Enterprise，您可以将多个任务分组为<a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">一个复合任务</a>，以便一键轻松执行一组操作。</tip>
+    <tip product="le,ee,ue">您可以在<a href="prefs://org.jkiss.dbeaver.preferences.main.truststore">此处</a>轻松管理 DBeaver 的根证书。</tip>
+    <tip product="le,ee,ue">您可以<a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">借助 DBeaver ODBC</a>，使用原生 ODBC 驱动连接几乎任何数据库。</tip>
+    <tip product="le,ee,ue">您可以使用 DBeaver 团队创建的 <a href="https://dbeaver.com/docs/dbeaver/Database-driver-Salesforce/">Salesforce 驱动</a>连接 Salesforce 数据库。</tip>
+    <tip product="le,ee,ue">要切换 ER 图的表示法，请右键点击图表，转到<b>表示法</b>菜单项，然后选择所需的表示法：Crow's Foot（乌鸦脚）或 Bachman。</tip>
+
+    <tip product="ee">DBeaver Enterprise 已与 <a href="https://dbeaver.com/docs/dbeaver/Project-team-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Git 版本控制系统</a>完全集成。将项目配置、脚本、图表、书签及其他项目文件保存在 Git 仓库中。</tip>
+    <tip product="ee,ue">如果您希望为团队提供便捷的数据协作工具，请试用 <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a>。轻松在团队之间实时共享连接、脚本和数据集，并获得 DBeaver Ultimate 和 CloudBeaver Enterprise 的全部功能。</tip>
+    <tip product="ee,ue">使用<a href="https://dbeaver.com/2022/02/10/how-does-visual-query-builder-help-optimize-your-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">可视化查询构建器工具</a>简化 SQL 脚本编写过程。</tip>
+    <tip product="ee,ue">您可以在数据网格、面板或 SQL 编辑器的结果集中使用<a href="https://dbeaver.com/2022/06/09/visualize-data-with-dbeaver/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">图表</a>，快速轻松地将数据可视化。</tip>
+    <tip product="ee">DBeaver Enterprise 允许您通过 ERD 编辑模式直接更改数据库模式。有关在 DBeaver Enterprise 中进行数据库开发的更多信息，请参阅<a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <tip product="ee,ue">如果需要创建大量逼真的测试样本数据，并希望避免手动输入测试数据的繁琐耗时工作，请使用<a href="https://dbeaver.com/docs/dbeaver/Mock-Data-Generation/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">模拟数据生成器</a>。</tip>
+    <tip product="ee,ue">使用<a href="https://dbeaver.com/docs/dbeaver/Query-Execution-Plan/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">查询执行计划</a>的图形模式，可以查看和估算查询或脚本的执行速度，并确定开销最大的计划节点。</tip>
+    <tip product="ee,ue"><a href="https://dbeaver.com/2022/06/23/import-data-with-dbeaver/?utm_source=ce&amp;utm&amp;medium=cpc&amp;utm_campaign=tips">导入和导出文件</a>，支持 XLS、XLSL、XML 等任意格式。</tip>
+    <tip product="ee,ue">使用高级选项比较两个相似表中的数据，以查看差异。有关 DBeaver PRO 数据比较功能的更多信息，请参阅<a href="https://dbeaver.com/docs/dbeaver/Data-compare?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <tip product="ee,ue"><a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">安排任务</a>按指定周期执行，无需打开 DBeaver。</tip>
+    <tip product="ee">将多个任务分组为一个复合任务，以便一键轻松执行一组操作。有关 DBeaver PRO 高级任务管理的更多信息，请参阅<a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <tip product="ee,ue">您可以使用<a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">模式比较/迁移功能</a>创建数据库模式备份，并将其保存为任务。此外，您还可以使用任务调度器自动执行此任务。</tip>
+    <tip product="ee,ue">比较同一数据库或不同数据库中的模式，包括所有元数据对象。有关 DBeaver PRO 强大的模式比较功能的更多信息，请参阅<a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <!--        Tips for UE   -->
+    <tip product="ue">DBeaver Ultimate 已与 <a href="https://dbeaver.com/docs/dbeaver/Project-team-work/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">Git 版本控制系统</a>完全集成。将项目配置、脚本、图表、书签及其他项目文件保存在 Git 仓库中。</tip>
+    <tip product="ue">同时操作通过 AWS、Google Cloud 和 Microsoft Azure 访问的数据库，并轻松切换它们的配置。有关在 DBeaver Ultimate 中轻松使用混合云的更多信息，请参阅<a href="https://dbeaver.com/2023/06/01/hybrid-cloud-with-dbeaver-how-to-get-started/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <tip product="ue">使用 <a href="https://dbeaver.com/2022/04/21/easy-management-for-aws-s3-files/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">S3 浏览器</a>快速访问存储在 AWS 中的文件。</tip>
+    <tip product="ue">DBeaver Ultimate 允许您通过 ERD 编辑模式直接更改数据库模式。有关在 DBeaver Ultimate 中进行数据库开发的更多信息，请参阅<a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">此处</a>。</tip>
+    <tip product="ue">将多个任务分组为<a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">一个复合任务</a>，以便一键轻松执行一组操作。</tip>
+
+    <tip product="te">管理员可以创建数量不限的共享项目。</tip>
+    <tip product="te">使用管理面板创建、编辑和删除共享项目。</tip>
+    <tip product="te">使用管理面板创建、编辑和删除团队。</tip>
+    <tip product="te">使用管理面板创建、编辑和删除用户。</tip>
+    <tip product="te">在 Team Edition 的桌面版和 Web 版中，您可以创建连接并编辑现有连接。</tip>
+    <tip product="te">您可以创建数量不限的数据集，并与其他用户实时共享。</tip>
+    <tip product="te">您可以创建数量不限的脚本，并与其他用户实时共享。</tip>
+    <tip product="te">Team Edition 提供高级负载扩展能力。</tip>
+    <tip product="te">如果您希望增加用户角色的数量并更改用户角色，请<a href="mailto:sales@dbeaver.com">联系</a>我们的客户成功团队。</tip>
+    <tip product="te">使用 Team Edition Web 版中的查询管理器查看所有用户的查询。</tip>
+    <tip>在 <a href="https://dbeaver.com/docs/dbeaver/AI-chat/">AI 聊天</a>中，描述您需要的结果并提及相关的表和列，以获得更准确的 SQL 建议。</tip>
+    <tip>您可以在 <a href="https://dbeaver.com/docs/dbeaver/AI-chat/">AI 聊天</a>中通过后续消息完善回答。要求添加筛选条件、更改排序或解释建议的 SQL。</tip>
+    <tip>要打开 AI 聊天，请使用 <commandRef commandId="org.jkiss.dbeaver.ui.ai.showCompletion"/> 命令。</tip>
+</tips>

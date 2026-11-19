@@ -129,6 +129,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                         Map<String, Object> resultArgs = new HashMap<>();
                         resultArgs.put("messageId", message.id());
                         resultArgs.put("functionName", fc.getFunctionName());
+                        resultArgs.put("functionCallId", fc.getId().toString());
                         resultArgs.put("result", CommonUtils.notEmpty(result));
                         resultArgs.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
                         AIFunctionResult functionResult = message.message().getFunctionResult();
@@ -534,7 +535,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         createFunction("traverseOut", arguments -> {
             boolean forward = arguments.length < 1 || CommonUtils.toBoolean(arguments[0]);
             UIUtils.asyncExec(() -> {
-                if (browser.isDisposed()) {
+                if (browser.isDisposed() || browser.getShell() != browser.getDisplay().getActiveShell()) {
                     return;
                 }
                 if (forward) {
@@ -682,6 +683,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             args.put("messageId", message.id());
             args.put("text", text);
             args.put("functionName", functionName);
+            args.put("functionCallId", fc.getId().toString());
             args.put("confirmed", true);
             args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
             args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
@@ -718,6 +720,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             args.put("agentName", agentName);
             args.put("toolName", toolName);
             args.put("functionName", fc.getFunctionName());
+            args.put("functionCallId", fc.getId().toString());
             args.put("allowText", AIChatMessagesUI.ai_chat_confirm_approve);
             args.put("declineText", AIChatMessagesUI.ai_chat_confirm_deny);
             args.put("approvedText", NLS.bind(AIChatMessagesUI.ai_chat_confirm_approved, toolName));

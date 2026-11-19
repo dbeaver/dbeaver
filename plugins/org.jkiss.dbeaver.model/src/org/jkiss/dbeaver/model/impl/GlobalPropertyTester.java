@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -29,11 +31,12 @@ public class GlobalPropertyTester extends PropertyTester {
     public static final String PROP_STANDALONE = "standalone";
     public static final String PROP_DISTRIBUTED = "distributed";
     public static final String PROP_BUNDLE_INSTALLED = "bundleInstalled";
+    /** Expected value is the preference name; an optional first argument supplies an absent-value default. */
     public static final String PROP_HAS_PREFERENCE = "hasPreference";
     public static final String PROP_HAS_ENV_VARIABLE = "hasEnvVariable";
 
     @Override
-    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+    public boolean test(@Nullable Object receiver, @NotNull String property, @NotNull Object[] args, @Nullable Object expectedValue) {
         return switch (property) {
             case PROP_STANDALONE -> DBWorkbench.getPlatform().getApplication().isStandalone();
             case PROP_DISTRIBUTED -> DBWorkbench.isDistributed();
@@ -45,6 +48,8 @@ public class GlobalPropertyTester extends PropertyTester {
                     prefValue = System.getProperty(prefName);
                     if (prefValue != null && prefValue.isEmpty()) {
                         prefValue = Boolean.TRUE.toString();
+                    } else if (prefValue == null && args.length > 0) {
+                        prefValue = CommonUtils.toString(args[0]);
                     }
                 }
                 yield CommonUtils.toBoolean(prefValue);

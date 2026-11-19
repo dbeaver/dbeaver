@@ -40,7 +40,7 @@ public class DDProjectUnbindHandler extends DDProjectHandler<DDProjectUnbindJob>
     }
 
     @Override
-    protected void onSuccess(@NotNull DDProjectUnbindJob job) {
-        showMessage(DDTrackingUIMessages.project_sync_unbind_success);
+    protected void onSuccess(@NotNull DBPProject project, @NotNull DDProjectUnbindJob job) {
+        showMessage(project, DDTrackingUIMessages.project_sync_unbind_success);
     }
 }

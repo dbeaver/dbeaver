@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -32,13 +34,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 public class TipsXmlHandler extends DefaultHandler {
     private static final Log log = Log.getLog(TipsXmlHandler.class);
 
-    private static final String TIPS_XML_FILE = "tips.xml";
+    private static final String TIPS_RESOURCE_BASE = "/OSGI-INF/l10n/tips";
     private static final String TIPS_SCHEMA_XML_FILE = "tips.xsd";
 
     private static final String TIP = "tip";
@@ -103,7 +107,21 @@ public class TipsXmlHandler extends DefaultHandler {
 
     @NotNull
     public static InputStream openTipsFile() {
-        return ShowTipOfTheDayHandler.class.getResourceAsStream(TIPS_XML_FILE);
+        return openTipsFile(DBPPlatformDesktop.getInstance().getPlatformLanguage());
+    }
+
+    @NotNull
+    public static InputStream openTipsFile(@NotNull DBPPlatformLanguage language) {
+        Locale tipsLocale = Locale.forLanguageTag(language.getCode().replace('_', '-'));
+        ResourceBundle.Control control = ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_DEFAULT);
+        for (Locale locale : control.getCandidateLocales(TIPS_RESOURCE_BASE, tipsLocale)) {
+            String resourceName = control.toBundleName(TIPS_RESOURCE_BASE, locale) + ".xml";
+            InputStream stream = TipsXmlHandler.class.getResourceAsStream(resourceName);
+            if (stream != null) {
+                return stream;
+            }
+        }
+        throw new IllegalStateException("Missing default tips resource: " + TIPS_RESOURCE_BASE + ".xml");
     }
 
     @NotNull
