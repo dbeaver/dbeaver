@@ -112,7 +112,11 @@ public class DatabaseURL {
 
     private static final Log log = Log.getLog(DatabaseURL.class);
     private static final String OPTIONAL_HOST_PORT = "{host}[:{port}]";
+    private static final String POSTGRESQL_JDBC_PREFIX = "jdbc:postgresql:";
     private static final String URL_SUFFIX_PARAMETER = "dbeaverUrlSuffix";
+    private static final java.util.regex.Pattern POSTGRESQL_SHORT_URL = java.util.regex.Pattern.compile(
+        POSTGRESQL_JDBC_PREFIX + "([^/?#]*)(\\?.*)?"
+    );
     private static final java.util.regex.Pattern POSTGRESQL_ENDPOINT_OPTIONS = java.util.regex.Pattern.compile(
         "(^|&)(PGHOST|PGPORT)(?:=[^&]*)?(?=&|$)"
     );
@@ -215,6 +219,13 @@ public class DatabaseURL {
         if (CommonUtils.isEmpty(hostName) || hostPort < 1 || hostPort > 65535) {
             throw new DBException("Invalid tunnel endpoint");
         }
+        String localHost = hostName.indexOf(':') >= 0 && !hostName.startsWith("[") ? "[" + hostName + "]" : hostName;
+        Matcher shortUrl = POSTGRESQL_SHORT_URL.matcher(url);
+        if (shortUrl.matches()) {
+            String updated = POSTGRESQL_JDBC_PREFIX + "//" + localHost + ":" + hostPort + "/"
+                + shortUrl.group(1) + CommonUtils.notEmpty(shortUrl.group(2));
+            return replacePostgreSqlEndpointOptions(updated, localHost, hostPort);
+        }
         String sampleUrl = CommonUtils.isNotEmpty(driver.getSampleURL()) ? driver.getSampleURL() : Generic.TEMPLATE;
         StringTemplate template = StringTemplate.parseTemplate(
             sampleUrl + "{" + URL_SUFFIX_PARAMETER + "}", parameter -> switch (parameter.name()) {
@@ -231,7 +242,6 @@ public class DatabaseURL {
         int queryStart = url.indexOf('?');
         boolean validSuffix = suffix != null && (suffix.isEmpty() || "?;#".indexOf(suffix.charAt(0)) >= 0
             || queryStart >= 0 && queryStart < url.length() - suffix.length());
-        String localHost = hostName.indexOf(':') >= 0 && !hostName.startsWith("[") ? "[" + hostName + "]" : hostName;
         if (validSuffix) {
             boolean addPort = !parameters.containsKey(DBConstants.PROP_PORT) && sampleUrl.contains(OPTIONAL_HOST_PORT);
             Map<String, String> replacements = addPort
@@ -248,7 +258,7 @@ public class DatabaseURL {
     @NotNull
     private static String replacePostgreSqlEndpointOptions(@NotNull String url, @NotNull String host, int port) {
         int queryStart = url.indexOf('?');
-        if (!url.startsWith("jdbc:postgresql:") || queryStart < 0) {
+        if (!url.startsWith(POSTGRESQL_JDBC_PREFIX) || queryStart < 0) {
             return url;
         }
         // pgjdbc gives these query parameters precedence over the URL authority

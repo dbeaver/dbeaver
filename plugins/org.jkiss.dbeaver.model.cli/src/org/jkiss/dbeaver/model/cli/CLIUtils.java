@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -48,6 +49,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -234,6 +236,10 @@ public class CLIUtils {
         if (CommonUtils.isNotEmpty(dataSourceOptions.getUrl())) {
             connectionConfiguration.setUrl(dataSourceOptions.getUrl());
             connectionConfiguration.setConfigurationType(DBPDriverConfigurationType.URL);
+        } else if (dataSourceOptions.hasConnectionDetails()
+            && connectionConfiguration.getConfigurationType() == DBPDriverConfigurationType.URL
+        ) {
+            useManualConnectionConfiguration(connectionConfiguration);
         }
         if (CommonUtils.isNotEmpty(dataSourceOptions.getHost())) {
             connectionConfiguration.setHostName(dataSourceOptions.getHost());
@@ -252,6 +258,25 @@ public class CLIUtils {
             connectionConfiguration.setAuthModelId(dataSourceOptions.getAuthModel());
         }
         return connectionConfiguration;
+    }
+
+    private static void useManualConnectionConfiguration(@NotNull DBPConnectionConfiguration configuration) {
+        DBPConnectionConfiguration parsed = DatabaseURL.extractConfigurationFromUrl(
+            DatabaseURL.Generic.getUrlPatternWithParamGroups(), CommonUtils.notEmpty(configuration.getUrl())
+        );
+        if (parsed != null) {
+            if (CommonUtils.isNotEmpty(parsed.getHostName())) {
+                configuration.setHostName(parsed.getHostName());
+            }
+            if (CommonUtils.isNotEmpty(parsed.getHostPort())) {
+                configuration.setHostPort(parsed.getHostPort());
+            }
+            if (CommonUtils.isNotEmpty(parsed.getDatabaseName())) {
+                configuration.setDatabaseName(URLDecoder.decode(parsed.getDatabaseName(), StandardCharsets.UTF_8));
+            }
+        }
+        configuration.setConfigurationType(DBPDriverConfigurationType.MANUAL);
+        configuration.setUrl(null);
     }
 
 

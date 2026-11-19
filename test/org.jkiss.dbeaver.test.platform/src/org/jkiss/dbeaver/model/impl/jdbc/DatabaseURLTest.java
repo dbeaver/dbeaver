@@ -72,6 +72,21 @@ public class DatabaseURLTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void redirectsShortPostgreSqlUrlsThroughTheTunnel() throws DBException {
+        DBPDriver driver = driver("jdbc:postgresql://{host}[:{port}]/[{database}]");
+        Assertions.assertEquals(
+            "jdbc:postgresql://[::1]:49505/my%20db?PGHOST=%5B%3A%3A1%5D&PGPORT=49505&sslmode=require",
+            DatabaseURL.replaceHostAndPort(
+                driver, "jdbc:postgresql:my%20db?PGHOST=other&PGPORT=5433&sslmode=require", "::1", 49505
+            )
+        );
+        Assertions.assertEquals(
+            "jdbc:postgresql://localhost:49505/?PGDBNAME=demo",
+            DatabaseURL.replaceHostAndPort(driver, "jdbc:postgresql:?PGDBNAME=demo", "localhost", 49505)
+        );
+    }
+
+    @Test
     public void preservesVendorSpecificEndpointSyntaxAndOptions() throws DBException {
         String[][] cases = {
             {"jdbc:sqlserver://{host}[:{port}][;databaseName={database}]",

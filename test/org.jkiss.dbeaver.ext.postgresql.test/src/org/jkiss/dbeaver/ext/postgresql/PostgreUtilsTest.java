@@ -76,6 +76,26 @@ public class PostgreUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void resolvesAndUpdatesPgDbNameOptions() throws Exception {
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+        configuration.setConfigurationType(DBPDriverConfigurationType.URL);
+        String url = "jdbc:postgresql://host/ignored?PGDBNAME=first&sslrootcert=/tmp/root.crt&PGDBNAME=actual%20db";
+        configuration.setUrl(url);
+        Assertions.assertEquals("actual db", PostgreUtils.getDatabaseNameFromConfiguration(configuration));
+        Assertions.assertEquals(
+            "jdbc:postgresql://host/new%20db?PGDBNAME=new%20db&sslrootcert=/tmp/root.crt&PGDBNAME=new%20db",
+            PostgreUtils.updateDatabaseNameInURL(url, "new db")
+        );
+
+        configuration.setUrl("jdbc:postgresql:?PGDBNAME=actual%20db");
+        Assertions.assertEquals("actual db", PostgreUtils.getDatabaseNameFromConfiguration(configuration));
+        Assertions.assertEquals(
+            "jdbc:postgresql:new%20db?PGDBNAME=new%20db",
+            PostgreUtils.updateDatabaseNameInURL(configuration.getUrl(), "new db")
+        );
+    }
+
+    @Test
     public void unresolvedResultColumnRowTypeDoesNotLogOrRetrySameDatabase() throws Exception {
         Mockito.when(session.getProgressMonitor()).thenReturn(monitor);
         Mockito.when(session.getExecutionContext()).thenReturn(context);

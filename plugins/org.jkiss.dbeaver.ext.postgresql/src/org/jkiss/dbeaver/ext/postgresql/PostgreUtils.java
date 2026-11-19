@@ -87,6 +87,7 @@ public class PostgreUtils {
     private static final Pattern DATABASE_URL_PATTERN = Pattern.compile(
         "^((?:jdbc:)?[\\w-]+://[^/?#]*/|jdbc:[\\w-]+:(?!/))([^/?#]*)([?#].*)?$"
     );
+    private static final Pattern DATABASE_OPTION_PATTERN = Pattern.compile("(^\\?|&)PGDBNAME(?:=([^&]*))?(?=&|$)");
 
     public static String getObjectComment(
         @NotNull DBRProgressMonitor monitor,
@@ -1086,12 +1087,21 @@ public class PostgreUtils {
             String defaultDatabase = configuration.getBootstrap().getDefaultCatalogName();
             return CommonUtils.isNotEmpty(defaultDatabase) ? defaultDatabase : configuration.getDatabaseName();
         }
-        Matcher matcher = DATABASE_URL_PATTERN.matcher(CommonUtils.notEmpty(configuration.getUrl()));
-        if (!matcher.matches() || matcher.group(2).isEmpty()) {
+        String url = CommonUtils.notEmpty(configuration.getUrl());
+        Matcher matcher = DATABASE_URL_PATTERN.matcher(url);
+        if (!matcher.matches()) {
             return null;
         }
+        String databaseName = matcher.group(2);
+        String suffix = CommonUtils.notEmpty(matcher.group(3));
+        if (hasPostgreSqlQuery(url, suffix)) {
+            Matcher options = DATABASE_OPTION_PATTERN.matcher(suffix);
+            while (options.find()) {
+                databaseName = CommonUtils.notEmpty(options.group(2));
+            }
+        }
         try {
-            return URLDecoder.decode(matcher.group(2), StandardCharsets.UTF_8);
+            return databaseName.isEmpty() ? null : URLDecoder.decode(databaseName, StandardCharsets.UTF_8);
         } catch (IllegalArgumentException e) {
             return null;
         }
@@ -1104,7 +1114,15 @@ public class PostgreUtils {
             throw new DBCException("Cannot change the database name in the PostgreSQL connection URL");
         }
         String encodedName = URLEncoder.encode(dbName, StandardCharsets.UTF_8).replace("+", "%20");
-        return matcher.group(1) + encodedName + CommonUtils.notEmpty(matcher.group(3));
+        String suffix = CommonUtils.notEmpty(matcher.group(3));
+        if (hasPostgreSqlQuery(url, suffix)) {
+            suffix = DATABASE_OPTION_PATTERN.matcher(suffix).replaceAll("$1PGDBNAME=" + encodedName);
+        }
+        return matcher.group(1) + encodedName + suffix;
+    }
+
+    private static boolean hasPostgreSqlQuery(@NotNull String url, @NotNull String suffix) {
+        return url.startsWith("jdbc:postgresql:") && suffix.startsWith("?");
     }
 
     public static boolean isPgObject(@NotNull DBPDataSource dataSource, @Nullable Object object) {

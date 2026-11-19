@@ -88,6 +88,10 @@ public class DataSourceOptions implements DataSourceUpdater {
         return folder;
     }
 
+    public boolean hasConnectionDetails() {
+        return connectionOptions != null && connectionOptions.connectionDetails != null;
+    }
+
     @Nullable
     public String getHost() {
         if (connectionOptions != null && connectionOptions.connectionDetails != null) {
