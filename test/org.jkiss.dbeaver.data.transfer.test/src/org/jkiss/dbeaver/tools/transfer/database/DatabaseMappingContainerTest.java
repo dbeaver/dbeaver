@@ -204,7 +204,7 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void recreateWithEncodedTargetNameResolvesDecodedTable() throws Exception {
+    public void newRecreateTaskWithEncodedTargetNameResolvesDecodedTable() throws Exception {
         DBSDataContainer source = mockSource("source", Mockito.mock(DBPDataSource.class));
         DBPDataSource targetDataSource = Mockito.mock(DBPDataSource.class);
         SQLDialect targetDialect = Mockito.mock(SQLDialect.class);
@@ -224,7 +224,8 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
         DatabaseMappingContainer mapping = new DatabaseMappingContainer(settings, source);
         mapping.loadSettings(Mockito.mock(DBRRunnableContext.class), Map.of(
             "targetName", "\"foo\"",
-            "mappingType", DatabaseMappingType.recreate.name()
+            "mappingType", DatabaseMappingType.recreate.name(),
+            "targetNameIsRaw", false
         ));
 
         Assertions.assertSame(decodedTarget, mapping.getTarget());
@@ -232,7 +233,7 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void recreateWithEncodedTargetNameDoesNotBindLiteralTable() throws Exception {
+    public void newRecreateTaskWithEncodedTargetNameDoesNotBindLiteralTable() throws Exception {
         DBSDataContainer source = mockSource("source", Mockito.mock(DBPDataSource.class));
         DBPDataSource targetDataSource = Mockito.mock(DBPDataSource.class);
         SQLDialect targetDialect = Mockito.mock(SQLDialect.class);
@@ -250,7 +251,8 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
         DatabaseMappingContainer mapping = new DatabaseMappingContainer(settings, source);
         mapping.loadSettings(Mockito.mock(DBRRunnableContext.class), Map.of(
             "targetName", "\"foo\"",
-            "mappingType", DatabaseMappingType.recreate.name()
+            "mappingType", DatabaseMappingType.recreate.name(),
+            "targetNameIsRaw", false
         ));
 
         Assertions.assertNull(mapping.getTarget());
@@ -292,7 +294,7 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void legacyTaskWithoutProvenanceDecodesTargetName() throws Exception {
+    public void legacyExistingTaskWithoutProvenanceResolvesRawName() throws Exception {
         DBSDataContainer source = mockSource("source", Mockito.mock(DBPDataSource.class));
         DBPDataSource targetDataSource = Mockito.mock(DBPDataSource.class);
         SQLDialect targetDialect = Mockito.mock(SQLDialect.class);
@@ -315,8 +317,36 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
             "mappingType", DatabaseMappingType.existing.name()
         ));
 
-        Assertions.assertSame(decodedTarget, mapping.getTarget());
+        Assertions.assertSame(literalTarget, mapping.getTarget());
         Assertions.assertEquals(DatabaseMappingType.existing, mapping.getMappingType());
+    }
+
+    @Test
+    public void legacyRecreateTaskWithoutProvenanceResolvesRawName() throws Exception {
+        DBSDataContainer source = mockSource("source", Mockito.mock(DBPDataSource.class));
+        DBPDataSource targetDataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialect targetDialect = Mockito.mock(SQLDialect.class);
+        Mockito.when(targetDataSource.getSQLDialect()).thenReturn(targetDialect);
+        Mockito.when(targetDialect.getUnquotedIdentifier("\"foo\"", true)).thenReturn("foo");
+
+        DBSObjectContainer targetContainer = Mockito.mock(DBSObjectContainer.class);
+        Mockito.when(targetContainer.getDataSource()).thenReturn(targetDataSource);
+        DBSDataManipulator literalTarget = Mockito.mock(DBSDataManipulator.class);
+        DBSDataManipulator decodedTarget = Mockito.mock(DBSDataManipulator.class);
+        Mockito.when(targetContainer.getChild(Mockito.any(), Mockito.eq("\"foo\""))).thenReturn(literalTarget);
+        Mockito.when(targetContainer.getChild(Mockito.any(), Mockito.eq("foo"))).thenReturn(decodedTarget);
+
+        DatabaseConsumerSettings settings = Mockito.mock(DatabaseConsumerSettings.class);
+        Mockito.when(settings.getContainer()).thenReturn(targetContainer);
+
+        DatabaseMappingContainer mapping = new DatabaseMappingContainer(settings, source);
+        mapping.loadSettings(Mockito.mock(DBRRunnableContext.class), Map.of(
+            "targetName", "\"foo\"",
+            "mappingType", DatabaseMappingType.recreate.name()
+        ));
+
+        Assertions.assertSame(literalTarget, mapping.getTarget());
+        Assertions.assertEquals(DatabaseMappingType.recreate, mapping.getMappingType());
     }
 
     @Test
@@ -473,7 +503,7 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(
             "version_A22",
-            DatabaseTransferUtils.getTableFinalName("version_A22", DBSTable.class, table, false)
+            DatabaseTransferUtils.getTableFinalName("version_A22", DBSTable.class, table, false, false)
         );
         Mockito.verify((DBPNamedObject2) table).setName("version_A22");
     }
@@ -542,6 +572,74 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
         Assertions.assertEquals(autoName, displayName);
     }
 
+    @Test
+    public void recreateWithoutTargetPreservesRawNameCase() throws Exception {
+        DBPDataSource dataSource = mockLowerCaseDataSource();
+        SQLDialect dialect = dataSource.getSQLDialect();
+        Mockito.when(dialect.getQuotedIdentifier("version_A22", true, false)).thenReturn("\"version_A22\"");
+        DBSTable table = (DBSTable) Mockito.mock(
+            DBSTable.class,
+            Mockito.withSettings().extraInterfaces(DBPNamedObject2.class)
+        );
+        Mockito.when(table.getDataSource()).thenReturn(dataSource);
+
+        Assertions.assertEquals(
+            "\"version_A22\"",
+            DatabaseTransferUtils.getTableFinalName("version_A22", DBSTable.class, table, true, true)
+        );
+        Mockito.verify((DBPNamedObject2) table).setName("\"version_A22\"");
+    }
+
+    @Test
+    public void loadedRawNameKeepsProvenanceWhenTargetIsMissing() throws Exception {
+        DBSDataContainer source = mockSource("source", Mockito.mock(DBPDataSource.class));
+        DBPDataSource targetDataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialect targetDialect = Mockito.mock(SQLDialect.class);
+        Mockito.when(targetDataSource.getSQLDialect()).thenReturn(targetDialect);
+        Mockito.when(targetDialect.getUnquotedIdentifier("version_A22", true)).thenReturn("version_A22");
+
+        DBSObjectContainer targetContainer = Mockito.mock(DBSObjectContainer.class);
+        Mockito.when(targetContainer.getDataSource()).thenReturn(targetDataSource);
+
+        DatabaseConsumerSettings settings = Mockito.mock(DatabaseConsumerSettings.class);
+        Mockito.when(settings.getContainer()).thenReturn(targetContainer);
+
+        DatabaseMappingContainer mapping = new DatabaseMappingContainer(settings, source);
+        mapping.loadSettings(Mockito.mock(DBRRunnableContext.class), Map.of(
+            "targetName", "version_A22",
+            "mappingType", DatabaseMappingType.recreate.name(),
+            "targetNameIsRaw", true
+        ));
+        Assertions.assertNull(mapping.getTarget());
+        Assertions.assertTrue(mapping.isTargetNameRaw());
+
+        Map<String, Object> saved = new LinkedHashMap<>();
+        mapping.saveSettings(saved);
+
+        Assertions.assertEquals("version_A22", saved.get("targetName"));
+        Assertions.assertEquals(true, saved.get("targetNameIsRaw"));
+    }
+
+    @Test
+    public void clearedTargetDoesNotOverrideConflictNameOnSave() {
+        DatabaseConsumerSettings settings = Mockito.mock(DatabaseConsumerSettings.class);
+        DBSDataContainer source = mockSource("source", Mockito.mock(DBPDataSource.class));
+        DatabaseMappingContainer mapping = new DatabaseMappingContainer(settings, source);
+        DBSDataManipulator oldTarget = Mockito.mock(DBSDataManipulator.class);
+        Mockito.when(oldTarget.getName()).thenReturn("old_target");
+        mapping.setTarget(oldTarget);
+        mapping.setMappingType(DatabaseMappingType.existing);
+        mapping.setTarget(null);
+        mapping.setTargetName("conflict_name");
+        mapping.setMappingType(DatabaseMappingType.unspecified);
+
+        Map<String, Object> saved = new LinkedHashMap<>();
+        mapping.saveSettings(saved);
+
+        Assertions.assertEquals("conflict_name", saved.get("targetName"));
+        Assertions.assertEquals(false, saved.get("targetNameIsRaw"));
+    }
+
     private static void assertNewTableTargetName(String targetName, String expectedName) throws Exception {
         DBPDataSource dataSource = mockBasicDataSource();
         DBSTable table = (DBSTable) Mockito.mock(
@@ -552,7 +650,7 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(
             expectedName,
-            DatabaseTransferUtils.getTableFinalName(targetName, DBSTable.class, table, true)
+            DatabaseTransferUtils.getTableFinalName(targetName, DBSTable.class, table, true, false)
         );
         Mockito.verify((DBPNamedObject2) table).setName(expectedName);
         // Stored names are already quoted, so the DDL formatter must not quote them again.

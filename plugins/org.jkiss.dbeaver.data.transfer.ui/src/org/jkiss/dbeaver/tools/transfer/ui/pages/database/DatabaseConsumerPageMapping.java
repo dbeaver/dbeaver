@@ -1343,6 +1343,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     if (existingObject instanceof DBSDataManipulator) {
                         targetDataContainer = (DBSDataManipulator) existingObject;
                     } else {
+                        containerMapping.setTarget(null);
                         containerMapping.setTargetName(name);
                         containerMapping.refreshMappingType(
                             monitor,

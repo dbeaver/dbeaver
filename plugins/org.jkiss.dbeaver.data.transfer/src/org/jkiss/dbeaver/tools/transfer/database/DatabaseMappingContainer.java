@@ -60,6 +60,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     private final DBSDataContainer source;
     private DBSDataManipulator target;
     private String targetName;
+    private boolean targetNameIsRaw;
     private DatabaseMappingType mappingType;
     private final List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
     private Map<DBPPropertyDescriptor, Object> changedPropertiesMap;
@@ -76,6 +77,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
+        this.targetNameIsRaw = targetObject != null;
         refreshMappingType(monitor, DatabaseMappingType.existing, false, false);
     }
 
@@ -84,6 +86,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.source = sourceObject;
         this.target = container.target;
         this.targetName = container.targetName;
+        this.targetNameIsRaw = container.targetNameIsRaw;
         this.mappingType = container.mappingType;
         for (DatabaseMappingAttribute attribute : container.attributeMappings) {
             this.attributeMappings.add(new DatabaseMappingAttribute(attribute, this));
@@ -103,6 +106,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     public void setTarget(DBSDataManipulator target) {
         this.target = target;
         this.targetName = null;
+        this.targetNameIsRaw = target != null;
     }
 
     @NotNull
@@ -225,7 +229,19 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void setTargetName(@NotNull String targetName) {
+        setTargetName(targetName, false);
+    }
+
+    void setTargetName(@NotNull String targetName, boolean isRaw) {
         this.targetName = targetName;
+        this.targetNameIsRaw = isRaw;
+    }
+
+    /**
+     * Returns true if the stored target name is a raw database name rather than a SQL-encoded value.
+     */
+    boolean isTargetNameRaw() {
+        return targetNameIsRaw;
     }
 
     /**
@@ -327,11 +343,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     public void saveSettings(@NotNull Map<String, Object> settings) {
         if (target != null) {
             // The target object holds the real database name; targetName may be a stale encoded value.
+            targetNameIsRaw = true;
             settings.put("targetName", target.getName());
             settings.put(SETTING_TARGET_NAME_IS_RAW, true);
         } else if (!CommonUtils.isEmpty(targetName)) {
             settings.put("targetName", targetName);
-            settings.put(SETTING_TARGET_NAME_IS_RAW, false);
+            settings.put(SETTING_TARGET_NAME_IS_RAW, targetNameIsRaw);
         }
         if (mappingType != null) {
             settings.put("mappingType", mappingType.name());
@@ -367,15 +384,17 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         if (settings.get("mappingType") != null) {
             try {
                 DatabaseMappingType newMappingType = DatabaseMappingType.valueOf((String) settings.get("mappingType"));
+                // New tasks persist the provenance. Legacy tasks stored raw target names for
+                // existing/recreate mappings and encoded names for generated targets.
+                targetNameIsRaw = JSONUtils.getBoolean(
+                    settings,
+                    SETTING_TARGET_NAME_IS_RAW,
+                    newMappingType == DatabaseMappingType.existing
+                        || newMappingType == DatabaseMappingType.recreate);
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSObjectContainer objectContainer = consumerSettings.getContainer();
                     if (objectContainer != null) {
-                        // Tasks saved by older versions have no provenance marker. Decode first: it never
-                        // binds a literal-quoted table for an encoded target name.
-                        boolean storedNameIsRaw = JSONUtils.getBoolean(
-                            settings,
-                            SETTING_TARGET_NAME_IS_RAW,
-                            false);
+                        boolean storedNameIsRaw = targetNameIsRaw;
                         VoidProgressMonitor monitor = new VoidProgressMonitor();
                         DBSObject child = DatabaseTransferUtils.findChildByStoredName(
                             objectContainer,
