@@ -84,8 +84,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
-    private static final Reply REPLY_KEEP = new Reply("&Keep");
-    private static final Reply REPLY_REMOVE = new Reply("&Remove");
+    private static final Reply REPLY_KEEP = new Reply(UIConnectionMessages.dialog_connection_network_profile_keep);
+    private static final Reply REPLY_REMOVE = new Reply(UIConnectionMessages.dialog_connection_network_profile_remove);
 
     // Sort network handler pages to be last
     private static final Comparator<IDialogPage> PAGE_COMPARATOR = Comparator
@@ -461,7 +461,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 || (getProject().isPrivateProject() && DBWorkbench.getPlatform().getWorkspace()
                 .hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER))
             ) {
-                manager.add(new Action("Edit profiles...", DBeaverIcons.getImageDescriptor(UIIcon.RENAME)) {
+                manager.add(new Action(UIConnectionMessages.dialog_connection_network_profile_edit, DBeaverIcons.getImageDescriptor(UIIcon.RENAME)) {
                     @Override
                     public void run() {
                         DBWNetworkProfile profile = getActiveProfile();
@@ -499,8 +499,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         });
 
         var toolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
-        toolItem.setText("N/A");
-        toolItem.setToolTipText("Active profile");
+        toolItem.setText(UIConnectionMessages.dialog_connection_network_profile_no_profile);
+        toolItem.setToolTipText(UIConnectionMessages.dialog_connection_network_profile_active);
         toolItem.setImage(DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT));
         toolItem.addDisposeListener(e -> profileManager.dispose());
         toolItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -547,12 +547,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         DBIcon icon = DBIcon.TYPE_DOCUMENT;
         if (profile != null) {
             String profileName = profile.getProfileName();
-            profileItem.setText(NLS.bind("Profile ''{0}''", profileName));
-            profileItem.setToolTipText(NLS.bind("Active profile is ''{0}''", profileName));
+            profileItem.setText(NLS.bind(UIConnectionMessages.dialog_connection_network_profile_name, profileName));
+            profileItem.setToolTipText(NLS.bind(UIConnectionMessages.dialog_connection_network_profile_active_name, profileName));
             icon = profile.isGlobal() ? DBIcon.GLOBAL_PROFILE : DBIcon.CONNECTION_PROFILE;
         } else {
-            profileItem.setText("No profile");
-            profileItem.setToolTipText("No active profile is set");
+            profileItem.setText(UIConnectionMessages.dialog_connection_network_profile_no_profile);
+            profileItem.setToolTipText(UIConnectionMessages.dialog_connection_network_profile_no_active);
         }
         profileItem.setImage(DBeaverIcons.getImage(icon));
         updateFolderToolbar();
@@ -585,9 +585,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
         if (!handlersToRemove.isEmpty()) {
             Reply reply = MessageBoxBuilder.builder()
-                .setTitle("Change profile")
+                .setTitle(UIConnectionMessages.dialog_connection_network_profile_change)
                 .setMessage(NLS.bind(
-                    "Do you want to keep {0} after unselecting the active profile?",
+                    UIConnectionMessages.dialog_connection_network_profile_unselect_confirmation,
                     handlersToRemove.stream().map(DBWHandlerDescriptor::getCodeName).collect(Collectors.joining(", "))
                 ))
                 .setPrimaryImage(DBIcon.STATUS_QUESTION)
@@ -646,11 +646,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
         if (!handlersToRemove.isEmpty()) {
             String message = NLS.bind(
-                "Changing the profile to ''{0}'' will remove {1}.\n\nDo you want to continue?",
+                UIConnectionMessages.dialog_connection_network_profile_change_confirmation,
                 profile.getProfileName(),
                 handlersToRemove.stream().map(DBWHandlerDescriptor::getCodeName).collect(Collectors.joining(", "))
             );
-            if (!UIUtils.confirmAction(getShell(), "Change profile", message)) {
+            if (!UIUtils.confirmAction(getShell(), UIConnectionMessages.dialog_connection_network_profile_change, message)) {
                 return false;
             }
         }
@@ -1213,7 +1213,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         private final DBWNetworkProfile profile;
 
         public ChooseNetworkProfileAction() {
-            super("None", AS_RADIO_BUTTON);
+            super(UIConnectionMessages.dialog_connection_network_profile_none, AS_RADIO_BUTTON);
             this.profile = null;
         }
 

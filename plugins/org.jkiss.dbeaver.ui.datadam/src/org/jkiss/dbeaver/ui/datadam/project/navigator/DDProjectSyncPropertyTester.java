@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.navigator;
 
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -24,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.BindingStatus;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -33,6 +36,7 @@ import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 public class DDProjectSyncPropertyTester extends PropertyTester {
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.datadam.projectSync";
     public static final String PROP_ENABLED = "enabled";
+    public static final String PROP_CAN_IMPORT = "canImport";
     public static final String PROP_CAN_SHARE = "canShare";
     public static final String PROP_CAN_SYNC = "canSync";
 
@@ -51,7 +55,14 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
         DDProjectUIManager manager = DDProjectUIManager.getInstance();
 
         if (receiver instanceof IWorkbenchWindow) {
-            return PROP_ENABLED.equals(property) && manager.isProjectSyncReady();
+            if (!manager.isProjectSyncReady()) {
+                return false;
+            }
+            if (PROP_CAN_IMPORT.equals(property)) {
+                DDRemoteDamSettings settings = DDRemoteDamSettingsStore.getInstance().getSettings();
+                return settings == null || !settings.isDamEnabled(DDRemoteDamSettingKeys.PROJECTS_STREAM_SYNC, false);
+            }
+            return PROP_ENABLED.equals(property);
         }
         if (!(receiver instanceof DBNProject projectNode)) {
             return false;
@@ -78,6 +89,7 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
     public static void firePropertyChange() {
         UIUtils.asyncExec(() -> {
             ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_ENABLED);
+            ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_CAN_IMPORT);
             ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_CAN_SHARE);
             ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_CAN_SYNC);
             PlatformUI.getWorkbench().getDecoratorManager().update(DDProjectDecorator.DECORATOR_ID);

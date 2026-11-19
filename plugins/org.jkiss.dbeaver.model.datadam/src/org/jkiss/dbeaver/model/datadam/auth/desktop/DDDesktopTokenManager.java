@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
 import com.dbeaver.datadam.sso.api.DDSsoConstants;
 import com.dbeaver.datadam.sso.api.DDSsoScopes;
-import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
 import com.google.gson.JsonObject;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
@@ -26,10 +25,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoLogin;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.net.URI;
 import java.time.Instant;
@@ -43,13 +42,13 @@ class DDDesktopTokenManager {
     public enum Status { SIGNED_OUT, SIGNED_IN, INVALID_TOKEN }
 
     private static final Log log = Log.getLog(DDDesktopTokenManager.class);
-    private static final String PREF_LOGGED_IN = "datadam.desktop.sso.logged-in";
     private static final DDDesktopTokenManager INSTANCE = new DDDesktopTokenManager(
         DDDesktopTokenStore.INSTANCE, new DDDesktopTokenValidator(), new DDDesktopSsoLogin());
 
     private final DDDesktopTokenStore store;
     private final DDDesktopTokenValidator validator;
     private final DDDesktopSsoLogin login;
+    private volatile boolean sessionPresent;
     @Nullable
     private volatile DDDesktopUserToken token;
 
@@ -69,12 +68,11 @@ class DDDesktopTokenManager {
 
     @NotNull
     Status getStatus() {
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
-            return Status.SIGNED_OUT;
-        }
         var current = token;
-        return current == null || (validator.isExpired(current) && current.refreshToken() == null)
-            ? Status.INVALID_TOKEN : Status.SIGNED_IN;
+        if (current == null) {
+            return sessionPresent ? Status.INVALID_TOKEN : Status.SIGNED_OUT;
+        }
+        return validator.isExpired(current) && current.refreshToken() == null ? Status.INVALID_TOKEN : Status.SIGNED_IN;
     }
 
     @Nullable
@@ -91,13 +89,15 @@ class DDDesktopTokenManager {
     }
 
     synchronized void load(@NotNull URI resource) throws DBException {
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
+        // The token is shared by workspaces; checking its key does not decrypt its value.
+        sessionPresent = store.hasSavedToken();
+        if (!sessionPresent) {
             return;
         }
         log.debug("Loading DataDam desktop token");
         DDDesktopUserToken saved = store.load();
-        if (saved != null && !validator.matchesResource(saved, resource)) {
-            log.debug("Saved DataDam desktop token does not match the requested endpoint");
+        if (saved != null && (!validator.matchesResource(saved, resource) || !validator.matchesIssuer(saved))) {
+            log.debug("Saved DataDam desktop token does not match the configured endpoints");
             saved = null;
         }
         if (saved == null) {
@@ -129,12 +129,10 @@ class DDDesktopTokenManager {
 
     @NotNull
     private DDDesktopUserToken requireSignedInToken() throws DBException {
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
-            throw new DBException("Sign in to DataDam first");
-        }
         DDDesktopUserToken current = token;
         if (current == null) {
-            throw new DBException("DataDam authorization is invalid. Sign in again");
+            throw new DBException(sessionPresent
+                ? "DataDam authorization is invalid. Sign in again" : "Sign in to DataDam first");
         }
         return current;
     }
@@ -146,10 +144,13 @@ class DDDesktopTokenManager {
             throw new DBException("DataDam authorization cannot be refreshed. Sign in again");
         }
         log.debug("Refreshing DataDam desktop token");
-        try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(current.issuer()))) {
+        try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(DDEndpoints.getSsoBaseUrl()))) {
             var response = client.refresh(refreshToken, DDSsoScopes.format(current.scopes()));
             DDDesktopUserToken rotated = new DDDesktopUserToken(
-                response.accessToken(), current.issuer(), current.endpoints(), current.scopes(), response.refreshToken());
+                response.accessToken(), validator.getIssuer(response.accessToken()), current.endpoints(), current.scopes(), response.refreshToken());
+            if (!validator.matchesIssuer(rotated)) {
+                throw new DBException("Refreshed DataDam token has an unexpected issuer");
+            }
             if (validator.isExpired(rotated)) {
                 throw new DBException("Refreshed DataDam token has expired");
             }
@@ -178,14 +179,16 @@ class DDDesktopTokenManager {
         @NotNull DDDesktopSsoLogin.BrowserOpener browser
     ) throws DBException, InterruptedException {
         log.debug("Signing in to DataDam desktop access");
-        var config = discover(accountUrl);
-        var result = login.login(URI.create(config.issuer()), null,
+        var result = login.login(URI.create(DDEndpoints.getSsoBaseUrl()), null,
             Set.of(DDSsoConstants.SCOPE_ACCOUNT_FULL_ACCESS, DDSsoConstants.SCOPE_DBEAVER_STORAGE_FULL_ACCESS,
                 DDSsoConstants.SCOPE_MCP_CONNECT), monitor, browser);
         DDDesktopUserToken saved = new DDDesktopUserToken(
-            result.accessToken(), config.issuer(), Set.of(accountUrl.toString(), storageUrl.toString()),
+            result.accessToken(), validator.getIssuer(result.accessToken()), Set.of(accountUrl.toString(), storageUrl.toString()),
             DDSsoScopes.parse(result.scope()), result.refreshToken()
         );
+        if (!validator.matchesIssuer(saved)) {
+            throw new DBException("DataDam desktop token has an unexpected issuer");
+        }
         if (validator.isExpired(saved)) {
             throw new DBException("DataDam desktop token has expired");
         }
@@ -195,16 +198,16 @@ class DDDesktopTokenManager {
     private synchronized void saveToken(@NotNull DDDesktopUserToken saved) throws DBException {
         store.save(saved);
         token = saved;
+        sessionPresent = true;
         log.debug("Stored DataDam desktop token");
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, true);
     }
 
     synchronized void signOut() throws DBException {
         log.debug("Signing out of DataDam desktop access");
         DDDesktopUserToken previous = token;
         try {
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
             token = null;
+            sessionPresent = false;
             store.clear();
             log.debug("Cleared DataDam desktop token");
         } finally {
@@ -221,10 +224,12 @@ class DDDesktopTokenManager {
             if (refreshToken == null) {
                 return;
             }
-            String issuer = previous.issuer();
+            if (!DDEndpoints.getSsoBaseUrl().equals(previous.issuer())) {
+                return;
+            }
             Job.createSystem(
                 "Revoke DataDam desktop token", monitor -> {
-                    try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(issuer))) {
+                    try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(DDEndpoints.getSsoBaseUrl()))) {
                         client.revoke(refreshToken);
                     } catch (Exception e) {
                         log.warn("DataDam credentials cleared locally, but server revocation could not be confirmed", e);
@@ -233,13 +238,6 @@ class DDDesktopTokenManager {
             ).schedule();
         } catch (Exception e) {
             log.warn("Could not revoke DataDam desktop token", e);
-        }
-    }
-
-    @NotNull
-    private DDSsoConfigResponse discover(@NotNull URI accountUrl) throws DBException {
-        try (DDDesktopSsoClient client = new DDDesktopSsoClient(accountUrl)) {
-            return client.discover();
         }
     }
 }

@@ -13,11 +13,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceType">
-        <type id="er-diagram" name="ER Diagram"
+        <type id="er-diagram" name="%resource.root.diagrams"
               icon="icons/erd.svg"
               folderIcon="icons/erd_folder.svg"
               managable="true">
-            <root folder="Diagrams"/>
+            <root folder="Diagrams" label="%resource.root.diagrams"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>
         </type>
     </extension>

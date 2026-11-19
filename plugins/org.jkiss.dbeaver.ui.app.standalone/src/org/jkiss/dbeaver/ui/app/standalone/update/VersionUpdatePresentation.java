@@ -17,11 +17,13 @@
 package org.jkiss.dbeaver.ui.app.standalone.update;
 
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor.PatchSeverity;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.utils.CommonUtils;
@@ -35,6 +37,12 @@ import java.util.List;
  */
 final class VersionUpdatePresentation {
     private VersionUpdatePresentation() {
+    }
+
+    @NotNull
+    static Color getUpdateBackground(boolean majorUpdate) {
+        var settings = BaseThemeSettings.instance;
+        return majorUpdate ? settings.colorBackgroundGreen : settings.colorBackgroundBlue;
     }
 
     @NotNull

@@ -606,11 +606,7 @@ public class AIChatSession {
     }
 
     public void updateScopeSettingsIfNeeded(@NotNull AIContextSettings settings, @NotNull DBPDataSourceContainer container) {
-        if (settings.getScope() != null || !container.isConnected()) {
-            return;
-        }
-        DBCExecutionContext executionContext = contextProvider.getExecutionContext(container);
-        AIUtils.updateScopeSettingsIfNeeded(settings, container, executionContext);
+        AIUtils.updateScopeSettingsIfNeeded(settings, container, null);
     }
 
     private boolean isContextChanged(

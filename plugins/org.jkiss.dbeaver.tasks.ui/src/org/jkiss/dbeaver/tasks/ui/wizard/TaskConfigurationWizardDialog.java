@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -58,7 +59,6 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
     private static final Log log = Log.getLog(TaskConfigurationWizardDialog.class);
     private TaskConfigurationWizard<?> nestedTaskWizard;
-    private TaskConfigurationWizardPageTask taskEditPage;
     private boolean editMode;
     private boolean selectorMode;
 
@@ -205,7 +205,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             if (!getCurrentPage().isPageComplete()) {
                 return;
             }
-            taskEditPage = getTaskPage();
+            TaskConfigurationWizardPageTask taskEditPage = getTaskPage();
             try {
                 TaskConfigurationWizard<?> nextTaskWizard = taskEditPage.getTaskWizard();
                 if (nextTaskWizard != nestedTaskWizard) {
@@ -241,14 +241,14 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         super.updateButtons();
         var wizard = getWizard();
         wizard.updateTaskButtons();
+        Button saveButton = getButton(SAVE_BUTTON_ID);
+        if (saveButton != null && !saveButton.isDisposed()) {
+            saveButton.setEnabled(wizard.canFinish());
+        }
         if (wizard.canFinish()) {
             Button finishButton = getButton(IDialogConstants.OK_ID);
             if (finishButton != null && !finishButton.isDisposed()) {
                 getShell().setDefaultButton(finishButton);
-            }
-            Button saveButton = getButton(SAVE_BUTTON_ID);
-            if (saveButton != null && !saveButton.isDisposed()) {
-                saveButton.setEnabled(true);
             }
         }
     }
@@ -258,14 +258,11 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         return super.createContents(parent);
     }
 
+    @Nullable
     TaskConfigurationWizardPageTask getTaskPage() {
-        if (taskEditPage != null) {
-            return taskEditPage;
-        } else {
-            IWizardPage[] pages = getWizard().getPages();
-            if (pages.length > 0 && pages[0] instanceof TaskConfigurationWizardPageTask) {
-                return (TaskConfigurationWizardPageTask)pages[0];
-            }
+        IWizardPage[] pages = getWizard().getPages();
+        if (pages.length > 0 && pages[0] instanceof TaskConfigurationWizardPageTask taskPage) {
+            return taskPage;
         }
         return null;
     }

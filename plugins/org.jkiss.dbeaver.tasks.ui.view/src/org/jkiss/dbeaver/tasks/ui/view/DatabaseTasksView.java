@@ -217,7 +217,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         BaseThemeSettings.instance.addPropertyListener(
             BaseEditorColors.COLOR_ERROR,
-            s -> tasksTree.refresh(),
+            s -> {
+                tasksTree.refresh();
+                taskRunViewer.refresh();
+            },
             taskrunTree
         );
 
@@ -259,6 +262,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             manager.add(ActionUtils.makeCommandContribution(getSite(), RUN_TASK_CMD_ID));
             if (isVisible) {
                 manager.add(ActionUtils.makeCommandContribution(getSite(), EDIT_TASK_CMD_ID));
+                manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_RENAME));
                 manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
             }
             manager.add(ActionUtils.makeCommandContribution(getSite(), COPY_TASK_CMD_ID));

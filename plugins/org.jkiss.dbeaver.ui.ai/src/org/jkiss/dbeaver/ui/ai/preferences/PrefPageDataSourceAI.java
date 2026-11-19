@@ -24,11 +24,14 @@ import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -38,7 +41,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
-import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
@@ -49,6 +51,8 @@ import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
+import org.jkiss.dbeaver.ui.forms.HintLabel;
+import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -56,15 +60,15 @@ import java.util.Map;
 
 public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbenchPropertyPage {
     private static final Log log = Log.getLog(PrefPageDataSourceAI.class);
-    private static final String CSS_CLASS_FORM_HINT = "dbeaverFormHint";
 
     private IAdaptable element;
     private AIContextSettingsDataSource settings;
     private Button enableAiCheck;
     private Combo metadataScopeCombo;
     private IObjectPropertyConfigurator<AIContextSettingsDataSource, PrefPageDataSourceAI> aiConfigurator;
-    private Composite aiConfiguratorContent;
+    private Composite aiSettingsContent;
     private ControlEnableState aiConfiguratorEnableState;
+    private Composite mcpSettingsGroup;
 
     @NotNull
     @Override
@@ -74,37 +78,62 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
         if (connection != null) {
             settings = new AIContextSettingsDataSource(connection);
             createConnectionSettings(content, connection);
-            injectConfigurators(content);
+            aiSettingsContent = UIUtils.createComposite(content, 1);
+            aiSettingsContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+            mcpSettingsGroup = UIUtils.createTitledComposite(
+                aiSettingsContent, AIUIMessages.ai_connection_settings_mcp_group, 1, GridData.HORIZONTAL_ALIGN_BEGINNING);
+            enableAiCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(
+                event -> updateConfiguratorEnablement(aiSettingsContent)));
+            updateMcpSettingsLayout();
             UIPropertyConfiguratorDescriptor descriptor = UIPropertyConfiguratorRegistry.getInstance()
                 .getDescriptor(AIContextSettingsDataSource.class.getName());
             if (descriptor != null) {
                 try {
                     IObjectPropertyConfigurator<AIContextSettingsDataSource, PrefPageDataSourceAI> configurator =
                         descriptor.createConfigurator();
-                    aiConfiguratorContent = UIUtils.createComposite(content, 1);
+                    Composite aiConfiguratorContent = UIUtils.createComposite(aiSettingsContent, 1);
                     aiConfiguratorContent.setLayoutData(new GridData(GridData.FILL_BOTH));
                     configurator.createControl(aiConfiguratorContent, settings, () -> {});
                     configurator.loadSettings(this);
-                    enableAiCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(
-                        event -> updateConfiguratorEnablement(aiConfiguratorContent)));
-                    updateConfiguratorEnablement(aiConfiguratorContent);
+                    updateConfiguratorEnablement(aiSettingsContent);
                     aiConfigurator = configurator;
                 } catch (DBException e) {
                     log.error("Cannot load AI connection settings", e);
                 }
             }
+            injectConfigurators(aiSettingsContent);
+            updateMcpSettingsLayout();
         }
         return content;
     }
 
+    @NotNull
+    public Composite getMcpSettingsGroup() {
+        return mcpSettingsGroup;
+    }
+
+    public void updateMcpSettingsLayout() {
+        int columns = 0;
+        for (Control child : mcpSettingsGroup.getChildren()) {
+            if (child.getVisible()) {
+                columns++;
+            }
+        }
+        GridLayout layout = (GridLayout) mcpSettingsGroup.getLayout();
+        layout.numColumns = Math.max(1, columns);
+        updateConfiguratorEnablement(aiSettingsContent);
+        UIUtils.setControlVisible(mcpSettingsGroup.getParent(), columns > 0);
+        mcpSettingsGroup.getShell().layout(new Control[] {mcpSettingsGroup.getParent()});
+    }
+
     private void updateConfiguratorEnablement(@NotNull Composite content) {
         boolean enabled = enableAiCheck.getSelection();
-        if (enabled) {
-            restoreConfiguratorEnablement(content);
-        } else if (aiConfiguratorEnableState == null) {
+        // Restore first so newly contributed controls are included in the disabled state.
+        restoreConfiguratorEnablement(content);
+        if (!enabled) {
             aiConfiguratorEnableState = ControlEnableState.disable(content);
         }
-        CSSUtils.setCSSClass(content, enabled ? null : CSS_CLASS_FORM_HINT);
+        CSSUtils.setCSSClass(content, enabled ? null : HintLabel.CSS_CLASS);
         CSSUtils.applyStyles(content);
     }
 
@@ -129,20 +158,25 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
 
     private void createConnectionSettings(@NotNull Composite parent, @NotNull DBPDataSourceContainer connection) {
         Composite settingsGroup = UIUtils.createTitledComposite(
-            parent, AIUIMessages.ai_connection_settings_group, 2, GridData.HORIZONTAL_ALIGN_BEGINNING);
-        enableAiCheck = UIUtils.createCheckbox(
-            settingsGroup,
-            AIUIMessages.ai_connection_settings_enable_label,
-            AIUIMessages.ai_connection_settings_enable_tip,
-            settings.isMetaTransferConfirmed(),
-            2
-        );
+            parent, AIUIMessages.ai_connection_settings_group, 3, GridData.HORIZONTAL_ALIGN_BEGINNING);
+        Control enableAiControl = UIPanelBuilder.build(settingsGroup, panel -> panel
+            .margins(0, 0)
+            .row(row -> row.withHint(AIUIMessages.ai_connection_settings_enable_tip, checkRow -> checkRow
+                .control(checkParent -> enableAiCheck = UIUtils.createCheckbox(
+                    checkParent,
+                    AIUIMessages.ai_connection_settings_enable_label,
+                    settings.isMetaTransferConfirmed()
+                )))));
+        GridData enableAiData = new GridData(GridData.FILL_HORIZONTAL);
+        enableAiData.horizontalSpan = 3;
+        enableAiControl.setLayoutData(enableAiData);
         metadataScopeCombo = UIUtils.createLabelCombo(
             settingsGroup,
             AIUIMessages.ai_connection_settings_scope_label,
             AIUIMessages.ai_connection_settings_scope_tip,
             SWT.DROP_DOWN | SWT.READ_ONLY
         );
+        metadataScopeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         for (AIDatabaseScope scope : AIDatabaseScope.values()) {
             metadataScopeCombo.add(scope.getTitle());
         }
@@ -158,20 +192,15 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
                 }
             }
         }));
-        Button scopeButton = UIUtils.createDialogButton(
-            settingsGroup,
+        ToolBar scopeToolBar = new ToolBar(settingsGroup, SWT.FLAT);
+        scopeToolBar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        ToolItem scopeItem = UIUtils.createToolItem(
+            scopeToolBar,
             AIUIMessages.ai_connection_settings_custom_scope_label,
-            AIUIMessages.ai_connection_settings_custom_scope_tip,
             UIIcon.CONFIGURATION,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> configureCustomScope(connection))
         );
-        GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gridData.horizontalSpan = 2;
-        scopeButton.setLayoutData(gridData);
-        scopeButton.setEnabled(connection.getRegistry().getDataSource(connection.getId()) != null);
-        if (settings.getScope() == null) {
-            AIUtils.updateScopeSettingsIfNeeded(settings, connection, DBUtils.getDefaultContext(connection, true));
-        }
+        scopeItem.setEnabled(connection.getRegistry().getDataSource(connection.getId()) != null);
         updateScopeSelection();
     }
 
@@ -189,12 +218,7 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
     }
 
     private void updateScopeSelection() {
-        AIDatabaseScope scope = settings.getScope();
-        if (scope == null) {
-            metadataScopeCombo.deselectAll();
-        } else {
-            metadataScopeCombo.select(scope.ordinal());
-        }
+        metadataScopeCombo.select(settings.getScope().ordinal());
     }
 
     @Override
@@ -238,11 +262,12 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
         enableAiCheck.setSelection(settings.isMetaTransferConfirmed());
         updateScopeSelection();
         if (aiConfigurator != null) {
-            restoreConfiguratorEnablement(aiConfiguratorContent);
+            restoreConfiguratorEnablement(aiSettingsContent);
             aiConfigurator.resetSettings(this);
             aiConfigurator.loadSettings(this);
-            updateConfiguratorEnablement(aiConfiguratorContent);
+            updateConfiguratorEnablement(aiSettingsContent);
         }
+        updateMcpSettingsLayout();
     }
 
     private void persistConnection() {

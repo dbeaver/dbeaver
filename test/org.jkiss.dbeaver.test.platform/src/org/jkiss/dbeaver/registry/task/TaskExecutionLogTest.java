@@ -34,6 +34,7 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 
 public class TaskExecutionLogTest extends DBeaverUnitTest {
     @TempDir
@@ -61,6 +62,9 @@ public class TaskExecutionLogTest extends DBeaverUnitTest {
             Assertions.assertNotNull(first);
             Assertions.assertNotNull(second);
             Assertions.assertNotEquals(first.getRun().getId(), second.getRun().getId());
+            Assertions.assertEquals(7, UUID.fromString(first.getRun().getId()).version());
+            Assertions.assertEquals(7, UUID.fromString(second.getRun().getId()).version());
+            Assertions.assertTrue(first.getRun().getId().compareTo(second.getRun().getId()) < 0);
             firstPath = task.getRunLog(first.getRun());
             secondPath = task.getRunLog(second.getRun());
             first.run(true, true, monitor -> {
