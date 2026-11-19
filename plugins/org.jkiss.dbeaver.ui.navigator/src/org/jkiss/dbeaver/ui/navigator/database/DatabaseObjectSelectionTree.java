@@ -30,6 +30,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -75,11 +76,13 @@ public class DatabaseObjectSelectionTree extends FilteredTree {
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DBSObjectContainer root
     ) {
-        super(parent, SWT.MULTI | SWT.BORDER | SWT.CHECK, new EntityPatternFilter(), true, true);
+        super(parent, SWT.MULTI | SWT.BORDER | SWT.CHECK | SWT.NO_SCROLL | SWT.V_SCROLL, new EntityPatternFilter(), true, true);
         this.root = root;
         this.runnableContext = runnableContext;
         ((GridLayout) getLayout()).verticalSpacing = 0;
         CheckboxTreeViewer viewer = getCheckboxViewer();
+        Font boldFont = UIUtils.makeBoldFont(viewer.getTree().getFont());
+        viewer.getTree().addDisposeListener(event -> boldFont.dispose());
         TreeColumnLayout columnLayout = new TreeColumnLayout();
         viewer.getTree().getParent().setLayout(columnLayout);
         viewer.getTree().setHeaderVisible(false);
@@ -98,6 +101,19 @@ public class DatabaseObjectSelectionTree extends FilteredTree {
             public Image getImage(@NotNull Object element) {
                 return element instanceof DBSObject object ?
                     DBeaverIcons.getImage(DBValueFormatting.getObjectImage(object)) : null;
+            }
+
+            @Nullable
+            @Override
+            public Font getFont(@NotNull Object element) {
+                return element instanceof DBSObject object && selection.isExplicitlyChecked(object) ? boldFont : null;
+            }
+
+            @Nullable
+            @Override
+            public Color getForeground(@NotNull Object element) {
+                return element instanceof DBSObject object && selection.isImplicitlyChecked(object) ?
+                    getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW) : null;
             }
         });
         TreeViewerColumn descriptionColumn = new TreeViewerColumn(viewer, SWT.LEFT);
@@ -139,7 +155,7 @@ public class DatabaseObjectSelectionTree extends FilteredTree {
         });
         viewer.addCheckStateListener(event -> {
             if (event.getElement() instanceof DBSObject object) {
-                selection.setChecked(object, event.getChecked());
+                selection.setChecked(object, event.getChecked() || selection.isGrayed(object));
             }
             refreshChecks();
         });

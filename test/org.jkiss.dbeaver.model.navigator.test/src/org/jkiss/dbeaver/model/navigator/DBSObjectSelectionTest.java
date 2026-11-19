@@ -40,6 +40,10 @@ class DBSObjectSelectionTest {
         selection.setChecked(schema, true);
 
         Assertions.assertTrue(selection.isChecked(table));
+        Assertions.assertTrue(selection.isExplicitlyChecked(schema));
+        Assertions.assertTrue(selection.isImplicitlyChecked(table));
+        Assertions.assertFalse(selection.isExplicitlyChecked(table));
+        Assertions.assertFalse(selection.isImplicitlyChecked(schema));
         Assertions.assertFalse(selection.isGrayed(schema));
         Assertions.assertEquals(List.of(schema), selection.getSelectedObjects());
     }
@@ -67,7 +71,7 @@ class DBSObjectSelectionTest {
     }
 
     @Test
-    void derivesPartialAndCompleteStatesFromCachedChildren() {
+    void selectingAllCurrentTablesDoesNotSelectSchemaOrFutureTables() {
         TestObject schema = new TestObject("schema", null);
         TestObject table = new TestObject("table", schema);
         TestObject view = new TestObject("view", schema);
@@ -77,10 +81,44 @@ class DBSObjectSelectionTest {
         selection.setChecked(table, true);
         Assertions.assertTrue(selection.isGrayed(schema));
         selection.setChecked(view, true);
-        Assertions.assertFalse(selection.isGrayed(schema));
+        Assertions.assertTrue(selection.isGrayed(schema));
+        Assertions.assertFalse(selection.isExplicitlyChecked(schema));
+        Assertions.assertFalse(selection.isImplicitlyChecked(schema));
+        Assertions.assertTrue(selection.isExplicitlyChecked(table));
+        Assertions.assertTrue(selection.isExplicitlyChecked(view));
+        Assertions.assertFalse(selection.isImplicitlyChecked(table));
+        Assertions.assertFalse(selection.isChecked(new TestObject("futureTable", schema)));
+        Assertions.assertEquals(Set.of(table, view), Set.copyOf(selection.getSelectedObjects()));
         selection.setChecked(table, false);
         Assertions.assertTrue(selection.isGrayed(schema));
         Assertions.assertFalse(selection.isChecked(table));
+    }
+
+    @Test
+    void selectingSchemaReplacesExplicitTablesAndIncludesFutureTables() {
+        TestObject schema = new TestObject("schema", null);
+        TestObject table = new TestObject("table", schema);
+        TestObject view = new TestObject("view", schema);
+        DBSObjectSelection selection = new DBSObjectSelection(DBSObject::getParentObject,
+            object -> object == schema ? List.of(table, view) : List.of());
+        selection.setChecked(table, true);
+        selection.setChecked(view, true);
+
+        selection.setChecked(schema, true);
+
+        Assertions.assertEquals(List.of(schema), selection.getSelectedObjects());
+        Assertions.assertTrue(selection.isExplicitlyChecked(schema));
+        Assertions.assertFalse(selection.isGrayed(schema));
+        Assertions.assertFalse(selection.isExplicitlyChecked(table));
+        Assertions.assertTrue(selection.isImplicitlyChecked(table));
+        Assertions.assertTrue(selection.isImplicitlyChecked(view));
+        Assertions.assertTrue(selection.isImplicitlyChecked(new TestObject("futureTable", schema)));
+
+        selection.setChecked(schema, false);
+
+        Assertions.assertTrue(selection.getSelectedObjects().isEmpty());
+        Assertions.assertFalse(selection.isChecked(table));
+        Assertions.assertFalse(selection.isImplicitlyChecked(table));
     }
 
     @Test

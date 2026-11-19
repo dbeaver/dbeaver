@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.ui.ai.controls;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -36,12 +38,17 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectSelectionTree;
@@ -61,6 +68,7 @@ public class ScopeSelectorDialog extends BaseDialog {
     private final DBPDataSourceContainer dataSourceContainer;
     private final DBCExecutionContext executionContext;
     private DatabaseObjectSelectionTree selectorTree;
+    private Label scopeInfoLabel;
     private List<? extends DBNNode> selectedNodes;
 
     public ScopeSelectorDialog(
@@ -70,7 +78,7 @@ public class ScopeSelectorDialog extends BaseDialog {
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<? extends DBNNode> selectedNodes
     ) {
-        super(parentShell, "Customize database objects accessible to AI", null);
+        super(parentShell, AIUIMessages.scope_selector_title, null);
         this.runnableContext = runnableContext;
         this.dataSourceContainer = container;
         this.executionContext = executionContext;
@@ -94,6 +102,7 @@ public class ScopeSelectorDialog extends BaseDialog {
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
+        UIUtils.createInfoLabel(dialogArea, AIUIMessages.scope_selector_hint);
 
         DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, dataSourceContainer.getDataSource());
         DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
@@ -130,12 +139,51 @@ public class ScopeSelectorDialog extends BaseDialog {
             } catch (InterruptedException e) {
                 // Keep the current selection if loading was cancelled.
             }
-            selectorTree.addCheckListener(this::updateOkButton);
         }
 
-        UIUtils.createInfoLabel(dialogArea, "Customize database metadata accessible to AI.");
+        scopeInfoLabel = new Label(dialogArea, SWT.WRAP);
+        scopeInfoLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        CSSUtils.applyStyles(scopeInfoLabel);
+        updateScopeInfo();
+        if (selectorTree != null) {
+            selectorTree.addCheckListener(() -> {
+                updateOkButton();
+                updateScopeInfo();
+            });
+        }
 
         return dialogArea;
+    }
+
+    private void updateScopeInfo() {
+        int catalogs = 0;
+        int schemas = 0;
+        int tables = 0;
+        if (selectorTree != null) {
+            for (DBSObject object : selectorTree.getCheckedObjects()) {
+                if (object instanceof DBSCatalog) {
+                    catalogs++;
+                } else if (object instanceof DBSSchema) {
+                    schemas++;
+                } else if (object instanceof DBSEntity) {
+                    tables++;
+                }
+            }
+        }
+        List<String> summary = new ArrayList<>();
+        if (catalogs > 0) {
+            summary.add(NLS.bind(AIUIMessages.scope_selector_selection_catalogs, catalogs));
+        }
+        if (schemas > 0) {
+            summary.add(NLS.bind(AIUIMessages.scope_selector_selection_schemas, schemas));
+        }
+        if (tables > 0) {
+            summary.add(NLS.bind(AIUIMessages.scope_selector_selection_tables, tables));
+        }
+        boolean emptyScope = summary.isEmpty();
+        scopeInfoLabel.setText(emptyScope ? AIUIMessages.scope_selector_empty_scope : String.join(", ", summary));
+        scopeInfoLabel.setForeground(emptyScope ? BaseThemeSettings.instance.colorErrorForeground : null);
+        scopeInfoLabel.requestLayout();
     }
 
     @Override

@@ -78,7 +78,16 @@ public class DBSObjectSelection {
     }
 
     public boolean isGrayed(@NotNull DBSObject object) {
-        return descendantCounts.containsKey(object) && !isSubtreeFullyChecked(object);
+        // Selecting every current child does not select the container or its future children.
+        return descendantCounts.containsKey(object) && !isFullyChecked(object);
+    }
+
+    public boolean isExplicitlyChecked(@NotNull DBSObject object) {
+        return selected.contains(object);
+    }
+
+    public boolean isImplicitlyChecked(@NotNull DBSObject object) {
+        return !isExplicitlyChecked(object) && isFullyChecked(object);
     }
 
     @NotNull
@@ -102,17 +111,6 @@ public class DBSObjectSelection {
             descendantCounts.computeIfPresent(ancestor, (key, count) -> count == 1 ? null : count - 1);
         }
         return true;
-    }
-
-    private boolean isSubtreeFullyChecked(@NotNull DBSObject object) {
-        if (isFullyChecked(object)) {
-            return true;
-        }
-        if (!descendantCounts.containsKey(object)) {
-            return false;
-        }
-        List<DBSObject> children = cachedChildren.apply(object);
-        return !children.isEmpty() && children.stream().allMatch(this::isSubtreeFullyChecked);
     }
 
     private boolean isFullyChecked(@NotNull DBSObject object) {
