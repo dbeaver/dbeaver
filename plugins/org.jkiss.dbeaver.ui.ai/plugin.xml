@@ -272,7 +272,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.notifications">
-        <notification id="ai.model.load" name="AI models loaded"/>
+        <notification id="ai.model.load" name="%notification.ai_model_load.name"/>
     </extension>
 
 </plugin>

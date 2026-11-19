@@ -1186,14 +1186,14 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.notifications">
-        <notification id="commit" name="Transaction commit"/>
-        <notification id="disconnect.idle" name="Disconnect from a database after long idle period"/>
-        <notification id="rollback" name="Transaction rollback"/>
-        <notification id="rollback.idle" name="Transaction rollback after long idle period"/>
-        <notification id="reconnect.success" name="Datasource invalidation success"/>
-        <notification id="reconnect.failure" name="Datasource invalidation failure"/>
-        <notification id="agent.notify" name="Long-time operations" description="This is a notification for long-time operations.&#10;It will be shown for all operations that have exceeded the specified timeout." soundEnabled="true"/>
-        <notification id="perspective.reset" name="Perspective Reset"/>
+        <notification id="commit" name="%notification.commit.name"/>
+        <notification id="disconnect.idle" name="%notification.disconnect_idle.name"/>
+        <notification id="rollback" name="%notification.rollback.name"/>
+        <notification id="rollback.idle" name="%notification.rollback_idle.name"/>
+        <notification id="reconnect.success" name="%notification.reconnect_success.name"/>
+        <notification id="reconnect.failure" name="%notification.reconnect_failure.name"/>
+        <notification id="agent.notify" name="%notification.agent_notify.name" description="%notification.agent_notify.description" soundEnabled="true"/>
+        <notification id="perspective.reset" name="%notification.perspective_reset.name"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.clearHistoryHandler">
