@@ -48,6 +48,14 @@ public class MySqlProceduralTest extends ProceduralDialectTestBase {
     }
 
     @Test
+    void updateSetDoesNotOfferLocalVariablesAsTargets() throws DBException {
+        String sql = "CREATE PROCEDURE p() BEGIN DECLARE local_value int; " +
+            "CREATE TEMPORARY TABLE tab (id int); UPDATE tab SET |; END";
+        assertProposes(sql, "id");
+        assertDoesNotPropose(sql, "local_value");
+    }
+
+    @Test
     void selectIntoInsideProcedureBindsTargetsAndTemporaryTable() {
         String sql = "CREATE PROCEDURE p() BEGIN " +
             "DECLARE chosen_id int; DECLARE chosen_amount decimal(10, 2); " +

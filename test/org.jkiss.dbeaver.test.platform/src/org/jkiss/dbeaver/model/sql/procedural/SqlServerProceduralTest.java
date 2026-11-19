@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class SqlServerProceduralTest extends ProceduralDialectTestBase {
     @NotNull
@@ -312,6 +313,13 @@ public class SqlServerProceduralTest extends ProceduralDialectTestBase {
 
         assertProposes("CREATE OR ALTER PROC p AS BEGIN DECLARE @value int; " +
             "UPDATE tab SET @val| = 1, id = 2; END", "@value");
+
+        var request = RequestBuilder.tables(tables -> tables.table("tab", table -> table.attribute("id")))
+            .dialect(dialect()).prepare();
+        Set<String> emptyTargetProposals = request.requestNewStrings(
+            "CREATE OR ALTER PROC p AS BEGIN DECLARE @value int; UPDATE tab SET |; END");
+        Assertions.assertTrue(emptyTargetProposals.contains("@value"), emptyTargetProposals.toString());
+        Assertions.assertTrue(emptyTargetProposals.contains("id"), emptyTargetProposals.toString());
     }
 
     /**
