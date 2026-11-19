@@ -246,13 +246,8 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
     /**
      * Returns the grantee name for the generated DDL.
-     * The pseudo-role is the reserved role name {@code public}. It must stay unquoted: unquoted
-     * names are folded to lowercase, so {@code PUBLIC} resolves to {@code public}, while a quoted
-     * {@code "PUBLIC"} would name a different, case-sensitive role.
-     * Role names come from the catalog and are compared case-sensitively, so only the exact name
-     * {@code public} is treated as the pseudo-role. A real role named {@code PUBLIC} is quoted:
-     * {@code GRANT SELECT ON TABLE mytab TO "PUBLIC"}.
-     * It is written as unquoted {@code PUBLIC} only to match pg_dump output.
+     * The pseudo-role {@code public} is written as {@code PUBLIC} to match pg_dump output.
+     * Other role names are quoted as needed.
      */
     @NotNull
     private static String getGranteeName(@NotNull PostgrePrivilegeOwner object, @Nullable String roleName) {
