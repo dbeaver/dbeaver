@@ -11,6 +11,7 @@
     <launcherArgs>
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
+            -XX:-UseBASE64Intrinsics
             -Dosgi.requiredJavaVersion=21
             -Dfile.encoding=UTF-8
             --sun-misc-unsafe-memory-access=allow
