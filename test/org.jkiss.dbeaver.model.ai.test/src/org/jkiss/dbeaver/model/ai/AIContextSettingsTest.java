@@ -16,11 +16,19 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class AIContextSettingsTest extends DBeaverUnitTest {
     @Test
@@ -31,6 +39,107 @@ public class AIContextSettingsTest extends DBeaverUnitTest {
 
         Assertions.assertTrue(settings.isMetaTransferConfirmed());
         Assertions.assertFalse(settings.isMcpEnabled());
+    }
+
+    @Test
+    public void datasourceDefaultsToCurrentDatasourceWithoutConnecting() {
+        AIContextSettingsDataSource settings = createDataSourceSettings(Map.of());
+
+        Assertions.assertEquals(AIDatabaseScope.CURRENT_DATASOURCE, settings.getScope());
+        Assertions.assertFalse(settings.isMetaTransferConfirmed());
+        Assertions.assertFalse(settings.isMcpEnabled());
+        Mockito.verify(settings.getDataSourceContainer(), Mockito.never()).getDataSource();
+        Assertions.assertNull(settings.saveSettingsToMap().get("scope"));
+    }
+
+    @Test
+    public void datasourceDefaultsAfterResetAndExplicitNullScope() {
+        AIContextSettingsDataSource settings = createDataSourceSettings(Map.of("scope", "CURRENT_SCHEMA"));
+
+        settings.loadSettingsFromMap(Map.of());
+        Assertions.assertEquals(AIDatabaseScope.CURRENT_DATASOURCE, settings.getScope());
+
+        settings.loadSettingsFromMap(Collections.singletonMap("scope", null));
+        Assertions.assertEquals(AIDatabaseScope.CURRENT_DATASOURCE, settings.getScope());
+    }
+
+    @Test
+    public void datasourcePreservesExplicitScopes() {
+        for (AIDatabaseScope scope : AIDatabaseScope.values()) {
+            AIContextSettingsDataSource settings = createDataSourceSettings(Map.of("scope", scope.name()));
+
+            Assertions.assertEquals(scope, settings.getScope());
+        }
+    }
+
+    @Test
+    public void initializesUnsetScopeWithoutInspectingConnectionOrExecutionContext() {
+        AIContextSettings settings = new TestContextSettings();
+        DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
+        DBCExecutionContext executionContext = Mockito.mock(DBCExecutionContext.class);
+        Assertions.assertNull(settings.getScope());
+
+        AIUtils.updateScopeSettingsIfNeeded(settings, container, executionContext);
+
+        Assertions.assertEquals(AIDatabaseScope.CURRENT_DATASOURCE, settings.getScope());
+        Mockito.verifyNoInteractions(container, executionContext);
+    }
+
+    @Test
+    public void defaultInitializationPreservesExplicitScopesAndCustomObjects() {
+        DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
+        for (AIDatabaseScope scope : AIDatabaseScope.values()) {
+            AIContextSettings settings = new TestContextSettings();
+            settings.setScope(scope);
+            settings.setCustomObjectIds(new String[] {"schema/table"});
+
+            AIUtils.updateScopeSettingsIfNeeded(settings, container, null);
+
+            Assertions.assertEquals(scope, settings.getScope());
+            Assertions.assertArrayEquals(new String[] {"schema/table"}, settings.getCustomObjectIds());
+        }
+    }
+
+    @Test
+    public void conversationInheritsCustomDatasourceScope() {
+        AIContextSettingsDataSource dataSourceSettings = createDataSourceSettings(Map.of(
+            "scope", "CUSTOM",
+            "objects", List.of("schema/table")
+        ));
+        AIContextSettingsChatConversation settings = createConversationSettings(dataSourceSettings);
+        Assertions.assertNull(settings.getScope());
+
+        settings.loadDataSourceDefaults();
+
+        Assertions.assertEquals(AIDatabaseScope.CUSTOM, settings.getScope());
+        Assertions.assertArrayEquals(new String[] {"schema/table"}, settings.getCustomObjectIds());
+    }
+
+    @Test
+    public void conversationInheritsGlobalDefaultButPreservesExplicitScope() {
+        AIContextSettingsDataSource dataSourceSettings = createDataSourceSettings(Map.of());
+        AIContextSettingsChatConversation settings = createConversationSettings(dataSourceSettings);
+
+        settings.loadDataSourceDefaults();
+        Assertions.assertEquals(AIDatabaseScope.CURRENT_DATASOURCE, settings.getScope());
+
+        settings.setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        settings.loadDataSourceDefaults();
+        Assertions.assertEquals(AIDatabaseScope.CURRENT_SCHEMA, settings.getScope());
+    }
+
+    @NotNull
+    private AIContextSettingsDataSource createDataSourceSettings(@NotNull Map<String, Object> config) {
+        DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
+        Mockito.when(container.getExtension(AIContextSettingsDataSource.AI_DS_EXTENSION)).thenReturn(config);
+        return new AIContextSettingsDataSource(container);
+    }
+
+    @NotNull
+    private AIContextSettingsChatConversation createConversationSettings(@NotNull AIContextSettingsDataSource dataSourceSettings) {
+        AIChatConversation conversation = Mockito.mock(AIChatConversation.class);
+        Mockito.when(conversation.getDataSource()).thenReturn(dataSourceSettings.getDataSourceContainer());
+        return new AIContextSettingsChatConversation(Mockito.mock(AIChatSession.class), conversation);
     }
 
     private static class TestContextSettings extends AIContextSettings {

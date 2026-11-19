@@ -20,6 +20,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class AIUIMessages extends NLS {
     public static String ai_connection_settings_group;
+    public static String ai_connection_settings_mcp_group;
     public static String ai_connection_settings_enable_label;
     public static String ai_connection_settings_enable_tip;
     public static String ai_connection_settings_scope_label;
