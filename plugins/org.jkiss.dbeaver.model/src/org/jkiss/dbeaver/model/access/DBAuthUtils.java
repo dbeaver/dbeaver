@@ -21,9 +21,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -46,20 +49,32 @@ public class DBAuthUtils {
         }
     }
 
-    /**
-     *
-     * @param monitor to execute query changing password
-     * @param dataSourceContainer for connection configuration using and changing
-     * @param passwordChangeManager manage syntax of password changing
-     * @return First, it will check the program on the headless mode and returns false if it is in this mode.
-     * If not, the dialog for changing the current password will be shown.
-     * If the user inputs a new password - the password will be changed in the database.
-     * Other cases - false will be returned.
-     */
+    public static boolean canChangeCurrentUserPassword(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        if (dataSourceContainer.isSharedCredentialsRevoked()) {
+            return false;
+        }
+        DBPProject project = dataSourceContainer.getProject();
+        if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
+            return true;
+        }
+        return !dataSourceContainer.isSharedCredentials()
+            && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_VIEW)
+            && project.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_SQL_EXECUTE_QUERY);
+    }
+
     public static boolean promptAndChangePasswordForCurrentUser(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer dataSourceContainer,
         @NotNull DBAUserPasswordManager passwordChangeManager
+    ) {
+        return promptAndChangePasswordForCurrentUser(monitor, dataSourceContainer, passwordChangeManager, true);
+    }
+
+    public static boolean promptAndChangePasswordForCurrentUser(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @NotNull DBAUserPasswordManager passwordChangeManager,
+        boolean saveCredentials
     ) {
         if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
             return false;
@@ -73,29 +88,54 @@ public class DBAuthUtils {
             userName,
             oldPassword,
             false,
-            false);
-        if (userPassword != null) {
-            String newPassword = userPassword.getNewPassword();
+            true);
+        if (userPassword == null) {
+            return false;
+        }
+        String newPassword = userPassword.getNewPassword();
+        try {
+            passwordChangeManager.changeUserPassword(monitor, userName, newPassword, userPassword.getOldPassword());
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                ModelMessages.dialog_user_password_change_label,
+                ModelMessages.dialog_user_password_change_error_message + userName, e);
+            return false;
+        }
+
+        // the database password has changed even if saving is declined or fails
+        actualConnectionConfiguration.setUserPassword(newPassword);
+        if (saveCredentials && !dataSourceContainer.isTemporary() && DBWorkbench.getPlatformUI().confirmAction(
+            ModelMessages.dialog_user_password_change_question_label,
+            ModelMessages.dialog_user_password_change_question_message)
+        ) {
             try {
-                passwordChangeManager.changeUserPassword(monitor, userName, newPassword, oldPassword);
-                if (DBWorkbench.getPlatformUI().confirmAction(
-                    ModelMessages.dialog_user_password_change_question_label,
-                    ModelMessages.dialog_user_password_change_question_message)
-                ) {
-                    actualConnectionConfiguration.setUserPassword(newPassword);
-                    connectionInfo.setUserPassword(newPassword);
-                    if (!dataSourceContainer.isTemporary()) {
-                        dataSourceContainer.persistConfiguration();
+                connectionInfo.setUserPassword(newPassword);
+                dataSourceContainer.setSavePassword(true);
+                if (DBWorkbench.isDistributed()) {
+                    DBSSecretController secretController = DBSSecretController.getProjectSecretController(dataSourceContainer.getProject());
+                    long requiredFeature = dataSourceContainer.isSharedCredentials()
+                        ? DBSSecretController.FEATURE_SHARED_SECRETS_EDIT
+                        : DBSSecretController.FEATURE_PRIVATE_SECRETS_EDIT;
+                    if (!CommonUtils.isBitSet(secretController.getSupportedFeatures(), requiredFeature)) {
+                        throw new DBException("The credential storage does not support updating these credentials");
                     }
-                    return true;
+                    connectionInfo.setUserName(userName);
+                    dataSourceContainer.persistSecrets(secretController);
+                } else {
+                    if (!dataSourceContainer.persistConfiguration()) {
+                        throw new DBException("Could not save the connection credentials");
+                    }
+                    if (dataSourceContainer.getProject().isUseSecretStorage()) {
+                        DBSSecretController.getProjectSecretController(dataSourceContainer.getProject()).flushChanges();
+                    }
                 }
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
                     ModelMessages.dialog_user_password_change_label,
-                    ModelMessages.dialog_user_password_change_error_message + userName, e);
+                    ModelMessages.dialog_user_password_change_save_error_message, e);
             }
         }
-        return false;
+        return true;
     }
 
     public static void changePasswordForCurrentUser(

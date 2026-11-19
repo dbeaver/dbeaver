@@ -998,10 +998,15 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
 
         @Override
-        protected Composite createFilterControls(Composite parent) {
+        @NotNull
+        protected Composite createFilterControls(@NotNull Composite parent) {
             super.createFilterControls(parent);
 
             if (navigatorFilter instanceof DatabaseNavigatorTreeFilter dnf && !dnf.isConnectionsOnly()) {
+                var supportedObjectTypes = dnf.getSupportedObjectTypes();
+                if (supportedObjectTypes.size() <= 1 && !supportedObjectTypes.contains(DatabaseNavigatorTreeFilterObjectType.connection)) {
+                    return parent;
+                }
                 ((GridLayout) parent.getLayout()).numColumns++;
 
                 final ToolBarManager filterManager = new ToolBarManager();
@@ -1012,7 +1017,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     workbenchWindow = UIUtils.getActiveWorkbenchWindow();
                 }
 
-                var supportedObjectTypes = dnf.getSupportedObjectTypes();
                 final IMenuService menuService = workbenchWindow.getService(IMenuService.class);
                 if (menuService != null && !CommonUtils.isEmpty(supportedObjectTypes) && supportedObjectTypes.size() > 1) {
                     menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_TYPE_CONTRIBUTION_ID);

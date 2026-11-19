@@ -472,6 +472,11 @@ public class DataSourceDescriptor
         return sharedCredentials;
     }
 
+    @Override
+    public boolean isSharedCredentialsRevoked() {
+        return sharedCredentialsRevoked;
+    }
+
     //ignore changed store type
     public void forceSetSharedCredentials(boolean sharedCredentials) {
         if (sharedCredentials) {

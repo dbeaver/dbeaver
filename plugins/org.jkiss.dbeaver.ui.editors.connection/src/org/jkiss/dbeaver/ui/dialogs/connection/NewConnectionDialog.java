@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -48,8 +49,12 @@ public class NewConnectionDialog extends ActiveWizardDialog {
 
     private Button testButton;
 
-    private NewConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard) {
-        super(window, wizard);
+    private NewConnectionDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull ConnectionWizard wizard,
+        @Nullable IStructuredSelection selection
+    ) {
+        super(window, wizard, selection);
         setAdaptContainerSizeToPages(true);
     }
 
@@ -117,6 +122,10 @@ public class NewConnectionDialog extends ActiveWizardDialog {
         return openNewConnectionDialog(window, null, null);
     }
 
+    public static boolean openNewConnectionDialog(@NotNull IWorkbenchWindow window, @NotNull IStructuredSelection selection) {
+        return openNewConnectionDialog(window, null, null, null, selection);
+    }
+
     public static boolean openNewConnectionDialog(
         @NotNull IWorkbenchWindow window,
         @Nullable DBPDriver initialDriver,
@@ -131,6 +140,16 @@ public class NewConnectionDialog extends ActiveWizardDialog {
         @Nullable DBPConnectionConfiguration initialConfiguration,
         @Nullable Consumer<NewConnectionWizard> wizardConfigurer
     ) {
+        return openNewConnectionDialog(window, initialDriver, initialConfiguration, wizardConfigurer, null);
+    }
+
+    private static boolean openNewConnectionDialog(
+        @NotNull IWorkbenchWindow window,
+        @Nullable DBPDriver initialDriver,
+        @Nullable DBPConnectionConfiguration initialConfiguration,
+        @Nullable Consumer<NewConnectionWizard> wizardConfigurer,
+        @Nullable IStructuredSelection selection
+    ) {
         if (dialogInstance != null) {
             dialogInstance.getShell().forceActive();
             return true;
@@ -139,7 +158,7 @@ public class NewConnectionDialog extends ActiveWizardDialog {
             if (wizardConfigurer != null) {
                 wizardConfigurer.accept(wizard);
             }
-            dialogInstance = new NewConnectionDialog(window, wizard);
+            dialogInstance = new NewConnectionDialog(window, wizard, selection);
             try {
                 return dialogInstance.open() == IDialogConstants.OK_ID;
             } finally {

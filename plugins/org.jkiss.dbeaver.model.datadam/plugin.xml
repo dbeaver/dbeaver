@@ -18,6 +18,7 @@
 
     <extension point="org.jkiss.dbeaver.model.datadam.desktopRpcService">
         <service id="mcp" class="org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopRpcRegistration"/>
+        <service id="sharedProjects" class="org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectDesktopRpcRegistration"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.pluginService">

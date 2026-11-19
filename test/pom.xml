@@ -25,6 +25,7 @@
         <module>org.jkiss.dbeaver.ext.greenplum.test</module>
         <module>org.jkiss.dbeaver.ext.hana.test</module>
         <module>org.jkiss.dbeaver.ext.hive.test</module>
+        <module>org.jkiss.dbeaver.ext.manticore.test</module>
         <module>org.jkiss.dbeaver.ext.mysql.test</module>
         <module>org.jkiss.dbeaver.ext.mimer.test</module>
         <module>org.jkiss.dbeaver.ext.oracle.test</module>
