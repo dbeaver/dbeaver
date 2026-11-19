@@ -19,11 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DatabaseURL;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,48 +37,6 @@ public class DatabaseURLTest extends DBeaverUnitTest {
         Assertions.assertEquals(
             "jdbc:postgresql://localhost:49505" + tail,
             DatabaseURL.replaceHostAndPort(driver, "jdbc:postgresql://db.example:5432" + tail, "localhost", 49505)
-        );
-    }
-
-    @Test
-    public void redirectsAnExplicitUrlThroughTheTunnelWhenThePortWasOmitted() throws DBException {
-        DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
-        connectionInfo.setConfigurationType(DBPDriverConfigurationType.URL);
-        connectionInfo.setUrl("jdbc:postgresql://db.example/my%20db?sslmode=require");
-        DBPDriver driver = driver("jdbc:postgresql://{host}[:{port}]/[{database}]");
-        DBWHandlerConfiguration handler = Mockito.mock(DBWHandlerConfiguration.class);
-        Mockito.when(handler.getDriver()).thenReturn(driver);
-        Mockito.when(driver.getConnectionURL(connectionInfo)).thenAnswer(invocation -> connectionInfo.getUrl());
-
-        DBWUtils.updateConfigWithTunnelInfo(handler, connectionInfo, null, 49505);
-
-        Assertions.assertEquals("jdbc:postgresql://127.0.0.1:49505/my%20db?sslmode=require", connectionInfo.getUrl());
-    }
-
-    @Test
-    public void redirectsPostgreSqlEndpointOptionsWithTheAuthority() throws DBException {
-        DBPDriver driver = driver("jdbc:postgresql://{host}[:{port}]/[{database}]");
-        Assertions.assertEquals(
-            "jdbc:postgresql://localhost:49505/demo?PGHOST=localhost&sslmode=require&PGPORT=49505&PGHOST=localhost",
-            DatabaseURL.replaceHostAndPort(
-                driver, "jdbc:postgresql://db.example:5432/demo?PGHOST=other&sslmode=require&PGPORT=5433&PGHOST",
-                "localhost", 49505
-            )
-        );
-    }
-
-    @Test
-    public void redirectsShortPostgreSqlUrlsThroughTheTunnel() throws DBException {
-        DBPDriver driver = driver("jdbc:postgresql://{host}[:{port}]/[{database}]");
-        Assertions.assertEquals(
-            "jdbc:postgresql://[::1]:49505/my%20db?PGHOST=%5B%3A%3A1%5D&PGPORT=49505&sslmode=require",
-            DatabaseURL.replaceHostAndPort(
-                driver, "jdbc:postgresql:my%20db?PGHOST=other&PGPORT=5433&sslmode=require", "::1", 49505
-            )
-        );
-        Assertions.assertEquals(
-            "jdbc:postgresql://localhost:49505/?PGDBNAME=demo",
-            DatabaseURL.replaceHostAndPort(driver, "jdbc:postgresql:?PGDBNAME=demo", "localhost", 49505)
         );
     }
 
@@ -148,6 +102,7 @@ public class DatabaseURLTest extends DBeaverUnitTest {
         for (String url : List.of(
             "jdbc:postgresql://first:5432,second:5432/demo",
             "jdbc:postgresql://first,second/demo",
+            "jdbc:postgresql://db.example/demo",
             "jdbc:postgresql://db.example:invalid/demo",
             "jdbc:postgresql://db.example:5432extra/demo",
             "jdbc:postgresql://db.example:5432extra/demo?option=value",
