@@ -21,11 +21,11 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import picocli.CommandLine;
 
-import java.net.URI;
 import java.nio.file.Path;
+import java.util.regex.Pattern;
 
 public class OutputFileOption extends AbstractFileOption {
-    //stdin file name
+    private static final Pattern URI_SCHEME_PREFIX = Pattern.compile("^[A-Za-z][A-Za-z0-9+.-]*:");
 
     @Nullable
     @CommandLine.Option(
@@ -37,12 +37,12 @@ public class OutputFileOption extends AbstractFileOption {
 
     @Nullable
     public Path getOutputFile() {
-        String launchDirectory = System.getenv("DBVR_LAUNCH_CWD");
-        if (!CommonUtils.isEmpty(launchDirectory)
-            && !CommonUtils.isEmpty(outputFile)
-            && (IOUtils.isLocalFile(outputFile) || !URI.create(outputFile).isAbsolute())
+        if (!CommonUtils.isEmpty(outputFile)
+            && (IOUtils.isLocalFile(outputFile) || !URI_SCHEME_PREFIX.matcher(outputFile).find())
         ) {
-            return Path.of(launchDirectory).resolve(outputFile);
+            String launchDirectory = System.getenv("DBVR_LAUNCH_CWD");
+            Path path = Path.of(outputFile);
+            return CommonUtils.isEmpty(launchDirectory) ? path.toAbsolutePath() : Path.of(launchDirectory).resolve(path);
         }
         return getPath(outputFile);
     }
