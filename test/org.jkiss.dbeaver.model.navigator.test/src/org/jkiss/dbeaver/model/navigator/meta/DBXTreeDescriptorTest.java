@@ -80,7 +80,7 @@ public class DBXTreeDescriptorTest extends DBeaverUnitTest {
     @Test
     public void injectedFolderSubtypeIsUsedOnlyWhenRequested() {
         AbstractDescriptor source = Mockito.mock(AbstractDescriptor.class);
-        Mockito.when(source.getObjectClass(ExtendedTable.class.getName())).thenReturn(ExtendedTable.class);
+        Mockito.doReturn(ExtendedTable.class).when(source).getObjectClass(ExtendedTable.class.getName());
         IConfigurationElement config = Mockito.mock(IConfigurationElement.class);
         DBXTreeDescriptor root = new DBXTreeDescriptor(
             source, null, null, "test", null, false, true, false, false, false, null, null);
@@ -96,7 +96,7 @@ public class DBXTreeDescriptorTest extends DBeaverUnitTest {
             DBXTreeDescriptor.findImplementorTypeInDataSourceTree(root, DataSource.class, Table.class, null, true));
 
         tables.setType(Schema.class.getName());
-        Mockito.when(source.getObjectClass(Schema.class.getName())).thenReturn(Schema.class);
+        Mockito.doReturn(Schema.class).when(source).getObjectClass(Schema.class.getName());
         Assertions.assertEquals(Table.class,
             DBXTreeDescriptor.findImplementorTypeInDataSourceTree(root, DataSource.class, Table.class, null, true));
     }
