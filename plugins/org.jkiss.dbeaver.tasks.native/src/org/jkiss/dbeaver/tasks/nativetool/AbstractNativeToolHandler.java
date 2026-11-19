@@ -58,7 +58,16 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
     @Override
     public boolean transformTaskState(@NotNull Map<String, Object> state, @NotNull Map<String, String> projectNames) {
-        return DBTTaskImportTransformer.remapProjectReference(state, projectNames);
+        boolean changed = DBTTaskImportTransformer.remapProjectReference(state, projectNames);
+        if (state.get("inputResourceProjectName") instanceof String sourceName) {
+            String targetName = projectNames.get(sourceName);
+            if (targetName != null && !targetName.equals(sourceName)) {
+                state.put("inputResourceProjectName", targetName);
+                state.put("inputResourceProjectId", "");
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     @Override
