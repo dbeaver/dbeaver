@@ -1,7 +1,6 @@
 ---
 name: java
 description: Work with java source code and project build
-license: Proprietary
 ---
 
 ## Code:
