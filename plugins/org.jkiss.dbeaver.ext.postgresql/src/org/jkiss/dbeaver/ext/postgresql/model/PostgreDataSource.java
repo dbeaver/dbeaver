@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerGCloud;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach.PostgreServerCockroachDB;
@@ -571,6 +572,33 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     ////////////////////////////////////////////
     // Connections
+
+    @Nullable
+    @Override
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
+        String url = super.getConnectionURL(connectionInfo);
+        String instanceName = connectionInfo.getHostName();
+        if (url == null || connectionInfo.getConfigurationType() != DBPDriverConfigurationType.MANUAL
+            || CommonUtils.isEmpty(instanceName) || !PostgreServerGCloud.TYPE_ID.equals(getType().getId())) {
+            return url;
+        }
+
+        int queryStart = url.indexOf('?');
+        if (queryStart < 0) {
+            return url;
+        }
+
+        // older versions saved Cloud SQL instance names with IPv6 brackets
+        String parameterPrefix = "cloudSqlInstance=";
+        String savedParameter = parameterPrefix + "[" + instanceName + "]";
+        String[] parameters = url.substring(queryStart + 1).split("&", -1);
+        for (int index = 0; index < parameters.length; index++) {
+            if (savedParameter.equals(parameters[index])) {
+                parameters[index] = parameterPrefix + instanceName;
+            }
+        }
+        return url.substring(0, queryStart + 1) + String.join("&", parameters);
+    }
 
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
