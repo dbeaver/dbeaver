@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -44,6 +45,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
 
 import java.lang.reflect.InvocationTargetException;
@@ -139,7 +142,25 @@ public class ScopeSelectorDialog extends BaseDialog {
                 return obj instanceof DBSStructContainer || obj instanceof DBSEntityContainer || obj instanceof DBSEntity;
             }
 
+            @NotNull
+            @Override
+            protected DatabaseNavigatorTreeFilter createNavigatorFilter() {
+                return new DatabaseNavigatorTreeFilter() {
+                    @Override
+                    public boolean select(@Nullable Object element) {
+                        return isElementAccepted(element);
+                    }
+
+                    @NotNull
+                    @Override
+                    public Set<DatabaseNavigatorTreeFilterObjectType> getSupportedObjectTypes() {
+                        return Set.of(DatabaseNavigatorTreeFilterObjectType.table);
+                    }
+                };
+            }
+
         };
+        selectorPanel.getNavigatorTree().setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.table);
         selectorPanel.getCheckboxTreeManager().enableLazyCheck(ScopeSelectorDialog::isSupportedNode);
         selectorPanel.getNavigatorTree().getViewer().expandToLevel(2);
         selectorPanel.checkNodes(selectedNodes, true);
