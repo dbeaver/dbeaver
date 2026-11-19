@@ -121,10 +121,23 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
                 return null;
             }
             DBCExecutionContext executionContext = DBUtils.getOrOpenDefaultContext(dataSource, false);
-            return new AIDatabaseContext.Builder(new DBSLogicalDataSource(connection))
-                .setExecutionContext(executionContext)
-                .setScope(AIDatabaseScope.CURRENT_DATASOURCE)
-                .build();
+            AIContextSettingsDataSource settings = new AIContextSettingsDataSource(connection);
+            AIDatabaseScope scope = DDMcpScopeUtils.getScope(settings, connection, executionContext);
+            AIDatabaseContext.Builder builder = new AIDatabaseContext.Builder(new DBSLogicalDataSource(connection))
+                .setExecutionContext(executionContext);
+            if (scope != null) {
+                builder.setScope(scope);
+            }
+            if (scope == AIDatabaseScope.CUSTOM) {
+                builder.setCustomEntities(DDMcpScopeUtils.loadCustomEntities(settings, monitor, dataSource));
+            }
+            try {
+                return builder.build();
+            } catch (DBException e) {
+                log.debug("Cannot apply DataDam MCP datasource scope", e);
+                throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
+                    "Cannot apply DataDam MCP datasource scope", null);
+            }
         } catch (DBException e) {
             log.debug("Cannot create DataDam MCP database context", e);
             return null;
