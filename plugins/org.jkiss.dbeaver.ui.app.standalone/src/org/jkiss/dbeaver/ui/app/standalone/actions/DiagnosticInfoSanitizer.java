@@ -57,14 +57,36 @@ final class DiagnosticInfoSanitizer {
             + "(?:[a-z][a-z0-9-]+|[A-Z]{2,})(?![\\w.-])"
     );
     private static final Pattern QUOTED_PATH = Pattern.compile(
-        "(?i)([\\\"'])(?:[a-z]:\\\\|/)[^\\r\\n\\\"']+\\1"
+        "(?i)([\\\"'])(?:[a-z]:\\\\|/)[^\\r\\n\\\"'<>]+\\1"
     );
     private static final Pattern PATH = Pattern.compile(
         "(?<![\\w:/])(?:[a-zA-Z]:\\\\|/)(?:[^\\s\\\"'<>;,]+[/\\\\])*[^\\s\\\"'<>;,]+"
     );
     private static final Pattern WINDOWS_PATH = Pattern.compile(
-        "(?<![\\w:/])(?:[a-zA-Z]:\\\\(?:[^\\\\\\\"'<>;,\\r\\n]*\\\\)+[^\\\\\\\"'<>;,\\r\\n]+?)(?=\\s+--|\\s*$|[,;])"
+        "(?m)(?<![\\w:/])(?:[a-zA-Z]:[/\\\\]|[a-zA-Z]\\\\:\\\\\\\\)[^\\\"'<>;,\\r\\n]+?"
+            + "(?=[\\t ]+-{1,2}[a-zA-Z]|[\\t ]*\\r?$|[\\\"'<>;,])"
     );
+    private static final Pattern FILE_URI = Pattern.compile(
+        "(?im)\\bfile:(?:/+[a-z]:/|[a-z]:/|/)[^\\\"'<>;,\\r\\n]+?"
+            + "(?=[\\t ]+-{1,2}[a-zA-Z]|[\\t ]*\\r?$|[\\\"'<>;,])"
+    );
+    private static final Pattern PREFERENCE = Pattern.compile(
+        "(?m)^((?:\\\\!/|/(?:bundle_defaults|configuration|instance|project|user)/|@(?:org|com)\\.)"
+            + "(?:\\\\.|[^=\\\\\\r\\n])*=)([^\\r\\n]*)"
+    );
+    private static final Pattern TECHNICAL_RESOURCE = Pattern.compile(
+        "(?:reference:file:(?:plugins/)?[\\w.-]+|org\\.eclipse\\.ui\\.workbench/[\\w.-]+"
+            + "|file:org\\.eclipse\\.[\\w.-]+/[\\w.-]+|@config\\.dir/\\.\\./p2)"
+    );
+    private static final Pattern PLUGIN_LABEL = Pattern.compile(
+        "^[\\t ]*[\\w.-]+ \\(\\d+(?:\\.[\\w-]+)+\\) \"[^\"\\r\\n]*\" \\[(?:Resolved|Active|Starting)\\]\\r?$"
+    );
+    private static final Pattern SECURITY_OID = Pattern.compile(
+        "\\b(?:Aliases|Algorithm):[\\t ]+(?:OID\\.)?[012](?:\\.\\d+)+"
+    );
+    private static final Pattern SECURITY_CLASS = Pattern.compile("\\bClass:[\\t ]+[\\w.$]+");
+    private static final Pattern SECURITY_ALIAS = Pattern.compile("\\bAliases:[\\t ]+[A-Z0-9()_-]+/[A-Z0-9_-]+");
+    private static final Pattern XML_CLOSING_TAG = Pattern.compile("</[\\w:.-]+>");
 
     private static final Pattern STACK_FRAME = Pattern.compile(
         "[\\t ]*at[\\t ]+(?:[\\w.]+/)?[\\w.$]+(?:\\.[\\w$<>]+)+"
@@ -103,12 +125,19 @@ final class DiagnosticInfoSanitizer {
     private static final Pattern DEBIAN_VERSION = Pattern.compile("\\bDebian[\\t ]+\\d+(?:\\.\\d+)+(?:[-+~][\\w.+~:-]+)*");
 
     private final List<Pattern> environmentValues;
+    private final List<Pattern> secretEnvironmentValues;
 
     DiagnosticInfoSanitizer() {
         this(System.getenv());
     }
 
     DiagnosticInfoSanitizer(@NotNull Map<String, String> environment) {
+        secretEnvironmentValues = environment.entrySet().stream()
+            .filter(entry -> entry.getValue() != null && !entry.getValue().isBlank()
+                && SENSITIVE_ENV_KEY.matcher(entry.getKey()).find())
+            .sorted(Comparator.comparingInt((Map.Entry<String, String> entry) -> entry.getValue().length()).reversed())
+            .map(entry -> Pattern.compile(Pattern.quote(entry.getValue())))
+            .toList();
         // Longer values first so a short value cannot split a longer secret.
         environmentValues = environment.entrySet().stream()
             // Build numbers, version strings and shell counters are not secrets; replacing them destroys support information.
@@ -145,6 +174,31 @@ final class DiagnosticInfoSanitizer {
 
     @NotNull
     private String sanitizeText(@NotNull String text) {
+        // Eclipse preference keys use slash-separated scopes, not filesystem paths.
+        Matcher preferences = PREFERENCE.matcher(text);
+        StringBuilder result = new StringBuilder(text.length());
+        int offset = 0;
+        while (preferences.find()) {
+            result.append(sanitizeValues(text.substring(offset, preferences.start())));
+            String key = preferences.group(1);
+            String value = preferences.group(2);
+            result.append(key);
+            int nameStart = key.lastIndexOf('/') + 1;
+            String name = key.startsWith("@") ? "version=" : key.substring(nameStart);
+            if (!PROPERTY_NAME.matcher(name).lookingAt()) {
+                name = "preference=";
+            }
+            // Retain the credential key so the ordinary credential rules also apply to preference values.
+            String sanitized = sanitizeValues(name + value);
+            result.append(sanitized.substring(name.length()));
+            offset = preferences.end();
+        }
+        result.append(sanitizeValues(text.substring(offset)));
+        return result.toString();
+    }
+
+    @NotNull
+    private String sanitizeValues(@NotNull String text) {
         String result = CONNECTION.matcher(text).replaceAll(m -> Matcher.quoteReplacement(redactLocation(m.group())));
         result = URI_WITH_USERINFO.matcher(result).replaceAll(m -> Matcher.quoteReplacement(redactLocation(m.group())));
         result = AUTHORIZATION_HEADER.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
@@ -161,10 +215,15 @@ final class DiagnosticInfoSanitizer {
         result = HOST.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
         result = LICENSE.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
         result = QUOTED_PATH.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED + m.group(1)));
-        result = WINDOWS_PATH.matcher(result).replaceAll(REDACTED);
+        result = FILE_URI.matcher(result).replaceAll(m -> Matcher.quoteReplacement(redactLocation(m.group())));
+        result = WINDOWS_PATH.matcher(result).replaceAll(m -> Matcher.quoteReplacement(redactLocation(m.group())));
         String beforePaths = result;
         result = PATH.matcher(result).replaceAll(m ->
-            Matcher.quoteReplacement(isStackFrame(beforePaths, m.start()) || isWithin(MODULE_ARGUMENT, beforePaths, m.start(), m.end())
+            Matcher.quoteReplacement(isStackFrame(beforePaths, m.start())
+                || isWithin(TECHNICAL_RESOURCE, beforePaths, m.start(), m.end())
+                || isWithin(SECURITY_ALIAS, beforePaths, m.start(), m.end())
+                || isWithin(XML_CLOSING_TAG, beforePaths, m.start(), m.end())
+                || isWithin(MODULE_ARGUMENT, beforePaths, m.start(), m.end())
                 ? m.group() : redactLocation(m.group())));
         String beforeAddresses = result;
         result = ADDRESS.matcher(result).replaceAll(m -> {
@@ -175,7 +234,8 @@ final class DiagnosticInfoSanitizer {
             boolean version = VERSION.matcher(line).results().anyMatch(v -> v.start() <= offset && v.end() >= offset + m.group().length());
             boolean sqlServerVersion = SQL_SERVER_VERSION.matcher(line).results()
                 .anyMatch(v -> v.start() <= offset && v.end() >= offset + m.group().length());
-            return productVersion || version || sqlServerVersion ? Matcher.quoteReplacement(m.group()) : REDACTED;
+            boolean oid = isWithin(SECURITY_OID, beforeAddresses, m.start(), m.end());
+            return productVersion || version || sqlServerVersion || oid ? Matcher.quoteReplacement(m.group()) : REDACTED;
         });
         String beforeDomains = result;
         result = DOMAIN.matcher(result).replaceAll(m -> {
@@ -189,29 +249,33 @@ final class DiagnosticInfoSanitizer {
                 || isWithin(LAUNCHER_ARGUMENT, beforeDomains, m.start(), m.end())
                 || isWithin(FRAMEWORK_ARGUMENT, beforeDomains, m.start(), m.end())
                 || isWithin(BUNDLE_IDENTIFIER, beforeDomains, m.start(), m.end())
+                || isWithin(TECHNICAL_RESOURCE, beforeDomains, m.start(), m.end())
+                || isWithin(SECURITY_CLASS, beforeDomains, m.start(), m.end())
                 || isSystemMetadataIdentifier(beforeDomains, m.start(), m.end())
                 || isWithin(DEBIAN_VERSION, beforeDomains, m.start(), m.end());
             return isStackFrame(beforeDomains, m.start()) || bundle || propertyName || identifier || metadata
                 ? Matcher.quoteReplacement(m.group()) : REDACTED;
         });
-        // Environment values can also occur in property names. Only replace them outside the key.
-        Matcher properties = PROPERTY_NAME.matcher(result);
-        StringBuilder sanitized = new StringBuilder(result.length());
-        int offset = 0;
-        while (properties.find()) {
-            sanitized.append(sanitizeEnvironmentValues(result.substring(offset, properties.start())));
-            sanitized.append(properties.group());
-            offset = properties.end();
-        }
-        sanitized.append(sanitizeEnvironmentValues(result.substring(offset)));
-        return sanitized.toString();
+        return sanitizeEnvironmentValues(result);
     }
 
     @NotNull
     private String sanitizeEnvironmentValues(@NotNull String text) {
         String result = text;
         for (Pattern pattern : environmentValues) {
-            result = pattern.matcher(result).replaceAll(REDACTED);
+            String before = result;
+            result = pattern.matcher(result).replaceAll(m -> Matcher.quoteReplacement(
+                isWithin(PROPERTY_NAME, before, m.start(), m.end())
+                    || isWithin(TECHNICAL_RESOURCE, before, m.start(), m.end())
+                    || isWithin(SECURITY_CLASS, before, m.start(), m.end())
+                    || PLUGIN_LABEL.matcher(lineAt(before, m.start())).matches()
+                    ? m.group() : REDACTED));
+        }
+        // Technical metadata exemptions must never preserve a known secret.
+        for (Pattern pattern : secretEnvironmentValues) {
+            String before = result;
+            result = pattern.matcher(result).replaceAll(m -> Matcher.quoteReplacement(
+                isWithin(PROPERTY_NAME, before, m.start(), m.end()) ? m.group() : REDACTED));
         }
         return result;
     }

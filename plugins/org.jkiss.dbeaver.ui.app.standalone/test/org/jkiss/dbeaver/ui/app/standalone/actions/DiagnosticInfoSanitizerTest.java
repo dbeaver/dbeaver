@@ -148,6 +148,80 @@ public class DiagnosticInfoSanitizerTest {
         check(sanitizer,
             "Transfer data from \"private.customer.example@backup\" into \"private.customer.example [Existing]\"",
             "Transfer data from \"[REDACTED]@backup\" into \"[REDACTED] [Existing]\"");
+        checkDiagnosticConfiguration();
+    }
+
+    private static void checkDiagnosticConfiguration() {
+        DiagnosticInfoSanitizer sanitizer = new DiagnosticInfoSanitizer(Map.of(
+            "SESSIONNAME", "Console", "HOMEDRIVE", "C:", "USERNAME", "tester", "ProgramFiles", "C:\\Program Files"
+        ));
+        String install = "C:\\Users\\tester\\Downloads\\dbeaver (9)\\dbeaver";
+        check(sanitizer, "java.home=" + install + "\\jre\r\nuser.dir=" + install,
+            "java.home=[REDACTED]\r\nuser.dir=[REDACTED]");
+        check(sanitizer, "--launcher.library\n" + install + "\\\\plugins/org.eclipse.launcher_1.0.jar\n-startup\n"
+            + install + "\\launcher.jar", "--launcher.library\n[REDACTED]\n-startup\n[REDACTED]");
+        check(sanitizer, "Framework arguments: -eclipse.keyring " + install + "\\secure storage -os win32",
+            "Framework arguments: -eclipse.keyring [REDACTED] -os win32");
+        check(sanitizer, "ProgramFiles=C:\\Program Files\nCommonProgramFiles=C:\\Program Files\\Common Files",
+            "ProgramFiles=[REDACTED]\nCommonProgramFiles=[REDACTED]");
+        check(sanitizer, "Open (C:\\Program Files\\DBeaver (9)\\file.txt)", "Open ([REDACTED])");
+        check(sanitizer, "java.library.path=" + install + ";C:\\Program Files\\dotnet\\;C:\\Windows;.",
+            "java.library.path=[REDACTED];[REDACTED];[REDACTED];.");
+        check(sanitizer, "Instance path: 'file:/C:/Users/tester/AppData/workspace6/'",
+            "Instance path: '[REDACTED]'");
+        check(sanitizer, "osgi.framework=file:/c:/Users/tester/Downloads/dbeaver (9)/plugins/framework.jar\r\n"
+            + "osgi.frameworkClassPath=., file:c:/Users/tester/Downloads/dbeaver (9)/plugins/framework.jar",
+            "osgi.framework=[REDACTED]\r\nosgi.frameworkClassPath=., [REDACTED]");
+        check(sanitizer, "Path=C:/Users/tester/Downloads/dbeaver (9)/jre/bin;C:\\Program Files\\Java;",
+            "Path=[REDACTED];[REDACTED];");
+        check(sanitizer, "/bundle_defaults/com.dbeaver.ee.qmdb.core/qm.skipMetadataQueries=false\r\n"
+            + "/instance/org.eclipse.ui.editors/background=255,255,255\r\n"
+            + "@org.eclipse.core.net=1.5.900.v20260507-0401",
+            "/bundle_defaults/com.dbeaver.ee.qmdb.core/qm.skipMetadataQueries=false\r\n"
+            + "/instance/org.eclipse.ui.editors/background=255,255,255\r\n"
+            + "@org.eclipse.core.net=1.5.900.v20260507-0401");
+        check(sanitizer, "/instance/org.jkiss.dbeaver.core/dialog.default.folder=C\\:\\\\Users\\\\tester\\\\Private folder (9)",
+            "/instance/org.jkiss.dbeaver.core/dialog.default.folder=[REDACTED]");
+        check(sanitizer, "/instance/org.jkiss.dbeaver.core/dialog.default.folder=C\\:\\\\Users\\\\tester\\\\Private \\u0438\\u043D\\u0444",
+            "/instance/org.jkiss.dbeaver.core/dialog.default.folder=[REDACTED]");
+        check(sanitizer, "/instance/org.jkiss.dbeaver.ui.editors.erd/Palette\\ state=4",
+            "/instance/org.jkiss.dbeaver.ui.editors.erd/Palette\\ state=4");
+        check(sanitizer, "\\!/=", "\\!/=");
+        String commands = "/instance/org.eclipse.ui.workbench/org.eclipse.ui.commands="
+            + "<?xml version\\=\"1.0\" encoding\\=\"UTF-8\"?>\\r\\n<org.eclipse.ui.commands>\\r\\n"
+            + "<keyBinding keySequence\\=\"CTRL+I\"/>\\r\\n"
+            + "<keyBinding commandId\\=\"org.jkiss.dbeaver.ui.ai.showCompletion\"/>\\r\\n</org.eclipse.ui.commands>";
+        check(sanitizer, commands, commands);
+        check(sanitizer, "/instance/org.jkiss.dbeaver.core/password=\"private value\"\n"
+            + "/instance/org.jkiss.dbeaver.core/host=db.example.test",
+            "/instance/org.jkiss.dbeaver.core/password=\"[REDACTED]\"\n"
+            + "/instance/org.jkiss.dbeaver.core/host=[REDACTED]");
+        check(sanitizer, "applicationXMI=org.eclipse.ui.workbench/LegacyIDE.e4xmi\n"
+            + "eclipse.p2.data.area=@config.dir/../p2\n"
+            + "org.eclipse.equinox.simpleconfigurator.configUrl=file:org.eclipse.equinox.simpleconfigurator/bundles.info",
+            "applicationXMI=org.eclipse.ui.workbench/LegacyIDE.e4xmi\n"
+            + "eclipse.p2.data.area=@config.dir/../p2\n"
+            + "org.eclipse.equinox.simpleconfigurator.configUrl=file:org.eclipse.equinox.simpleconfigurator/bundles.info");
+        check(sanitizer, "osgi.bundles=reference:file:org.eclipse.osgi_1.0.v20251022-1724.jar,"
+            + "reference:file:org.eclipse.config_1.0.v20251111-1031.jar@1:start",
+            "osgi.bundles=reference:file:org.eclipse.osgi_1.0.v20251022-1724.jar,"
+            + "reference:file:org.eclipse.config_1.0.v20251111-1031.jar@1:start");
+        check(sanitizer, "org.eclipse.ui.console (3.17.100.v20260804-1532) \"Console\" [Active]",
+            "org.eclipse.ui.console (3.17.100.v20260804-1532) \"Console\" [Active]");
+        check(sanitizer, "Id: org.eclipse.core.commands, Version: 3.13.0.v20260605-1749, "
+            + "Location: reference:file:plugins/org.eclipse.core.commands_3.13.0.v20260605-1749.jar",
+            "Id: org.eclipse.core.commands, Version: 3.13.0.v20260605-1749, "
+            + "Location: reference:file:plugins/org.eclipse.core.commands_3.13.0.v20260605-1749.jar");
+        check(sanitizer, "   Service: Signature, Algorithm: SHA256withDSA, Class: sun.security.provider.DSA$SHA256withDSA\n"
+            + "    Aliases: 1.3.101.110\n    Aliases: SHA512(256)/RSA\nConnect to 1.3.101.110",
+            "   Service: Signature, Algorithm: SHA256withDSA, Class: sun.security.provider.DSA$SHA256withDSA\n"
+            + "    Aliases: 1.3.101.110\n    Aliases: SHA512(256)/RSA\nConnect to [REDACTED]");
+        check(new DiagnosticInfoSanitizer(Map.of("SESSIONNAME", "SHA")),
+            "Class: sun.security.provider.SHA\nSESSIONNAME=SHA",
+            "Class: sun.security.provider.SHA\nSESSIONNAME=[REDACTED]");
+        check(new DiagnosticInfoSanitizer(Map.of("API_TOKEN", "private_token")),
+            "Class: sun.security.private_token\norg.example.plugin (1.0.0) \"private_token\" [Active]",
+            "Class: sun.security.[REDACTED]\norg.example.plugin (1.0.0) \"[REDACTED]\" [Active]");
     }
 
     private static void check(@NotNull DiagnosticInfoSanitizer sanitizer, @NotNull String input, @NotNull String expected) {
