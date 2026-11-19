@@ -2,10 +2,18 @@
 <?eclipse version="3.2"?>
 <plugin>
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="polardbx"
+            label="PolarDB-X"
+            description="PolarDB-X JDBC Driver"
+            icon="icons/polardbx_icon.svg"
+            iconBig="icons/polardbx_icon_big.svg"
+            logoImage="icons/polardbx_logo.svg"/>
         <datasource
             class="org.jkiss.dbeaver.ext.polardbx.PolarDBXDataSourceProvider"
             description="PolarDB-X"
             id="polardbx"
+            dataSourceType="polardbx"
             parent="mysql"
             dialect="polardbx"
             label="PolarDB-X"

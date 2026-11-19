@@ -69,7 +69,7 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
             .create());
         subscription = endpoint.register(
             DDMcpFunctionService.SERVICE_ID, DDMcpFunctionService.class,
-            new DDMcpDesktopFunctionService(), codec);
+            new DDMcpTrackingFunctionService(new DDMcpDesktopFunctionService()), codec);
     }
 
     private void unregister() {

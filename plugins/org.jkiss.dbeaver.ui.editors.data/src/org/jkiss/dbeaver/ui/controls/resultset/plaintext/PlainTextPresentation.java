@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 import java.util.*;
@@ -65,11 +64,14 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     public static final int FIRST_ROW_LINE = 2;
     public static final Color COLOR_GREEN_CONTRAST = new Color(null, 23, 135, 58);
 
+    private static final String DISABLE_CSS = "org.eclipse.e4.ui.css.disabled";
+
     private StyledText text;
     private DBDAttributeBinding curAttribute;
     private StyledTextFindReplaceTarget findReplaceTarget;
     public boolean activated;
     private Color curLineColor;
+    private Color curLineForeground;
 
     private int[] colWidths;
     private int startOffset;
@@ -89,8 +91,6 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         text.setBlockSelection(true);
         text.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_IBEAM));
         text.setMargins(4, 4, 4, 4);
-        text.setForeground(UIStyles.getDefaultTextForeground());
-        text.setBackground(UIStyles.getDefaultTextBackground());
         text.setTabs(controller.getPreferenceStore().getInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE));
         text.setTabStops(null);
         text.setFont(UIUtils.getMonospaceFont());
@@ -100,7 +100,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
                 curSelection = text.getSelectionText();
                 fireSelectionChanged(new PlainTextSelectionImpl());
             }));
-        CSSUtils.setExcludeFromStyling(text);
+        // Like AbstractTextEditor, manage text colors through editor preferences rather than CSS.
+        text.setData(DISABLE_CSS, Boolean.TRUE);
 
         final ScrollBar verticalBar = text.getVerticalBar();
         verticalBar.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -146,13 +147,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     @Override
     protected void applyThemeSettings(@NotNull ITheme currentTheme) {
         text.setFont(BaseThemeSettings.instance.monospaceFont);
-        if (UIStyles.isDarkHighContrastTheme()) {
-            text.setBackground(UIStyles.getDefaultWidgetBackground());
-            text.setForeground(UIStyles.COLOR_WHITE);
-            curLineColor = COLOR_GREEN_CONTRAST;
-        } else {
-            curLineColor = ResultSetThemeSettings.instance.backgroundOdd;
-        }
+        text.setBackground(UIStyles.getDefaultTextBackground());
+        text.setForeground(UIStyles.getDefaultTextForeground());
+        curLineColor = UIStyles.getInvertedColor(text.getBackground());
+        curLineForeground = UIStyles.getInvertedColor(text.getForeground());
     }
 
     private void onCursorChange(int offset) {
@@ -216,7 +214,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
                     curLineRange = new StyleRange(
                         lineOffset + horOffsetBegin,
                         horOffsetEnd - horOffsetBegin - 1,
-                        null,
+                        curLineForeground,
                         curLineColor);
                     text.setStyleRanges(new StyleRange[]{curLineRange});
                     text.redraw();
