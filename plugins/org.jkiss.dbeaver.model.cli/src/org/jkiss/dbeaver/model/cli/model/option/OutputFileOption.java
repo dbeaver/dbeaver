@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.cli.CLIConstants;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import picocli.CommandLine;
@@ -40,7 +41,7 @@ public class OutputFileOption extends AbstractFileOption {
         if (!CommonUtils.isEmpty(outputFile)
             && (IOUtils.isLocalFile(outputFile) || !URI_SCHEME_PREFIX.matcher(outputFile).find())
         ) {
-            String launchDirectory = System.getenv("DBVR_LAUNCH_CWD");
+            String launchDirectory = System.getenv(CLIConstants.ENV_LAUNCH_DIRECTORY);
             Path path = Path.of(outputFile);
             return CommonUtils.isEmpty(launchDirectory) ? path.toAbsolutePath() : Path.of(launchDirectory).resolve(path);
         }
