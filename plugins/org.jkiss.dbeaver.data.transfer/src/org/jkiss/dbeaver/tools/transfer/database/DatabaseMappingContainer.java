@@ -242,6 +242,15 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             && sourceDataSource.getSQLDialect().mustBeQuoted(sourceName, true);
     }
 
+    /**
+     * Returns true if the target name must keep the case of a quoted source name.
+     * Only an unchanged auto-derived target name is preserved: existing and recreated mappings
+     * already hold a real database name, and explicitly typed names follow the target naming rules.
+     */
+    public boolean shouldPreserveSourceCase(@NotNull String targetName) {
+        return isSourceNameQuoted() && targetName.equals(getTargetName());
+    }
+
     @Nullable
     public Object getExtraMappingState() {
         return extraMappingState;
@@ -357,12 +366,13 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSObjectContainer objectContainer = consumerSettings.getContainer();
                     if (objectContainer != null) {
-                        // Target name may be persisted quoted to preserve its case. Container lookup expects a raw name.
-                        DBPDataSource dataSource = objectContainer.getDataSource();
-                        String targetNameForSearch = dataSource == null
-                            ? targetName
-                            : DBUtils.getUnQuotedIdentifier(dataSource, targetName);
-                        DBSObject child = objectContainer.getChild(new VoidProgressMonitor(), targetNameForSearch);
+                        // Persisted names may be quoted to preserve their case, but a raw name may also
+                        // literally start and end with the quote delimiter. Resolve the raw name first.
+                        VoidProgressMonitor monitor = new VoidProgressMonitor();
+                        DBSObject child = DatabaseTransferUtils.findChildByStoredName(
+                            objectContainer,
+                            monitor,
+                            targetName);
                         if (child instanceof DBSDataManipulator) {
                             target = (DBSDataManipulator) child;
                         }

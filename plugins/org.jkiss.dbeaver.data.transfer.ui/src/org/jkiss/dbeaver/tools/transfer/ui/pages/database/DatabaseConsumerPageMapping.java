@@ -700,7 +700,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     DatabaseMappingObject dmo = (DatabaseMappingObject) element;
                     DBPDataSource dataSource = settings.getTargetDataSource(dmo);
                     boolean keepSourceCase = dmo instanceof DatabaseMappingContainer container
-                        && container.isSourceNameQuoted();
+                        && container.shouldPreserveSourceCase(name);
                     if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE)
                         && !isConfigurationRow(dmo)
                         && dataSource != null && !DBUtils.isQuotedIdentifier(dataSource, name)
@@ -1305,7 +1305,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     ) throws DBException {
         // container's tables
         DBSObjectContainer container = settings.getContainer();
-        String unQuotedNameForSearch = DBUtils.getUnQuotedIdentifier(container.getDataSource(), name);
+        String unquotedName = DBUtils.getUnQuotedIdentifier(container.getDataSource(), name);
 
         DBSDataManipulator targetDataContainer = null;
 
@@ -1315,7 +1315,16 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         if (namespaceContainer != null) {
             ns = namespaceContainer.getNamespaceForObjectType(RelationalObjectType.TYPE_TABLE);
             if (ns != null) {
-                DBSObject existingObject = ns.getObjectByName(monitor, unQuotedNameForSearch);
+                // Raw names may literally start and end with the quote delimiter, so resolve them first.
+                String lookupName = name;
+                DBSObject existingObject = ns.getObjectByName(monitor, lookupName);
+                if (!(existingObject instanceof DBSDataManipulator) && !unquotedName.equals(name)) {
+                    DBSObject unquotedObject = ns.getObjectByName(monitor, unquotedName);
+                    if (unquotedObject instanceof DBSDataManipulator || existingObject == null) {
+                        lookupName = unquotedName;
+                        existingObject = unquotedObject;
+                    }
+                }
                 if (existingObject != null) {
                     if (existingObject instanceof DBSDataManipulator) {
                         targetDataContainer = (DBSDataManipulator) existingObject;
@@ -1327,7 +1336,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             false,
                             false);
                         mappingErrorMessage =
-                            "Name '" + unQuotedNameForSearch + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
+                            "Name '" + lookupName + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
 
                         UIUtils.asyncExec(() -> mappingViewer.refresh());
                         return true;
@@ -1340,9 +1349,17 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             // Without a namespace, search for an existing data manipulator (writable table).
             // A namespace lookup already covers a missing name without loading every child in the container.
             for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
-                if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
+                if (!(child instanceof DBSDataManipulator)) {
+                    continue;
+                }
+                String childName = child.getName();
+                if (name.equals(childName)) {
+                    // Prefer the raw name over a case-insensitive unquoted match
                     targetDataContainer = (DBSDataManipulator) child;
                     break;
+                }
+                if (targetDataContainer == null && unquotedName.equalsIgnoreCase(childName)) {
+                    targetDataContainer = (DBSDataManipulator) child;
                 }
             }
         }

@@ -115,7 +115,7 @@ public class DatabaseTransferUtils {
             if (updateMappingTarget || force) {
                 monitor.subTask("Refresh database mappings");
 
-                DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
+                DBSObject newTarget = findChildByStoredName(container, monitor, containerMapping.getTargetName());
                 if (newTarget == null) {
                     throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
                 } else if (!(newTarget instanceof DBSDataManipulator)) {
@@ -145,6 +145,38 @@ public class DatabaseTransferUtils {
         if (containerMapping.getMappingType() == DatabaseMappingType.create) {
             containerMapping.setMappingType(DatabaseMappingType.existing);
         }
+    }
+
+    /**
+     * Finds a container child by a name stored in task settings.
+     * Stored names may be quoted to preserve their case, but a raw name may also literally start
+     * and end with the dialect quote delimiter. Resolve the raw name first. If it is not a usable
+     * data manipulator, prefer the unquoted form. When both names point to data manipulators, the
+     * literal raw name wins because the stored value is expected to be the actual target name.
+     */
+    @Nullable
+    static DBSObject findChildByStoredName(
+        @NotNull DBSObjectContainer container,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String storedName
+    ) throws DBException {
+        DBSObject child = container.getChild(monitor, storedName);
+        if (child instanceof DBSDataManipulator) {
+            return child;
+        }
+        DBPDataSource dataSource = container.getDataSource();
+        if (dataSource == null) {
+            return child;
+        }
+        String unquotedName = DBUtils.getUnQuotedIdentifier(dataSource, storedName);
+        if (unquotedName.equals(storedName)) {
+            return child;
+        }
+        DBSObject unquotedChild = container.getChild(monitor, unquotedName);
+        if (unquotedChild instanceof DBSDataManipulator || child == null) {
+            return unquotedChild;
+        }
+        return child;
     }
 
     /**
