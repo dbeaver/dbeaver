@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shared patch presentation for the update dialog and toolbar contribution.
+ * Shared update presentation for the update dialog and toolbar contribution.
  */
 final class VersionUpdatePresentation {
     private VersionUpdatePresentation() {
@@ -56,16 +56,6 @@ final class VersionUpdatePresentation {
     }
 
     @NotNull
-    static String getSeverityLabel(@NotNull PatchSeverity severity) {
-        return switch (severity) {
-            case NONE -> "";
-            case MEDIUM -> CoreApplicationMessages.dialog_version_update_severity_medium;
-            case HIGH -> CoreApplicationMessages.dialog_version_update_severity_high;
-            case CRITICAL -> CoreApplicationMessages.dialog_version_update_severity_critical;
-        };
-    }
-
-    @NotNull
     static String getReleaseNotes(@NotNull VersionDescriptor descriptor, @NotNull Version currentVersion, int currentPatch) {
         List<String> sections = new ArrayList<>();
         var patches = descriptor.getApplicablePatches(currentVersion, currentPatch);
@@ -79,12 +69,21 @@ final class VersionUpdatePresentation {
         }
         for (var patch : patches) {
             String heading = NLS.bind(CoreApplicationMessages.dialog_version_update_patch_notes, patch.number(), patch.date());
-            if (patch.severity() != PatchSeverity.NONE) {
-                heading += " - " + getSeverityLabel(patch.severity());
-            }
             sections.add(heading + "\n" + formatNotes(patch.releaseNotes()));
         }
         return String.join("\n\n", sections);
+    }
+
+    @NotNull
+    static String getCriticalUpdateDetails(@NotNull VersionDescriptor descriptor, @NotNull Version currentVersion, int currentPatch) {
+        List<String> descriptions = new ArrayList<>();
+        for (var update : descriptor.getApplicableCriticalUpdates(currentVersion, currentPatch)) {
+            String description = update.description().strip();
+            if (!description.isEmpty()) {
+                descriptions.add("\u2022 " + description);
+            }
+        }
+        return String.join("\n", descriptions);
     }
 
     @NotNull

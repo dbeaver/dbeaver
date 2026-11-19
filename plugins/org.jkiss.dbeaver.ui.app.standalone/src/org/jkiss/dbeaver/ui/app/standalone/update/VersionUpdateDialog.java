@@ -25,14 +25,19 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
@@ -72,6 +77,7 @@ public class VersionUpdateDialog extends Dialog {
     private static final int INFO_ID = 1000;
     private static final int UPGRADE_ID = 1001;
     private static final int CHECK_EA_ID = 1002;
+    private static final int CRITICAL_DIALOG_WIDTH = 300;
 
     @NotNull
     private final Version currentVersion;
@@ -118,10 +124,17 @@ public class VersionUpdateDialog extends Dialog {
         return newVersion.isNewerThan(currentVersion, currentPatch);
     }
 
+    private boolean isCriticalUpdate() {
+        return isNewVersionAvailable() && newVersion.getUpdateSeverity(currentVersion, currentPatch) == PatchSeverity.CRITICAL;
+    }
+
     @NotNull
     @Override
     protected Control createDialogArea(@NotNull Composite parent)
     {
+        if (isCriticalUpdate()) {
+            return createCriticalDialogArea(parent);
+        }
         getShell().setText(CoreApplicationMessages.dialog_version_update_title);
 
         Composite composite = new Composite(parent, SWT.NONE);
@@ -137,8 +150,8 @@ public class VersionUpdateDialog extends Dialog {
         createTopArea(composite);
 
         final Label titleLabel = new Label(propGroup, SWT.NONE);
-        titleLabel.setText(
-            NLS.bind(!isNewVersionAvailable() ? CoreApplicationMessages.dialog_version_update_no_new_version : CoreApplicationMessages.dialog_version_update_available_new_version, GeneralUtils.getProductName()));
+        titleLabel.setText(NLS.bind(!isNewVersionAvailable() ? CoreApplicationMessages.dialog_version_update_no_new_version
+            : CoreApplicationMessages.dialog_version_update_available_new_version, GeneralUtils.getProductName()));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         titleLabel.setLayoutData(gd);
@@ -155,13 +168,6 @@ public class VersionUpdateDialog extends Dialog {
                 + "    (" + CommonUtils.notEmpty(newVersion.getPatchUpdateTime()) + ")");
 
         if (isNewVersionAvailable()) {
-            PatchSeverity severity = newVersion.getMaxSeverity(currentVersion, currentPatch);
-            if (severity != PatchSeverity.NONE) {
-                Label severityLabel = new Label(propGroup, SWT.NONE);
-                severityLabel.setText(NLS.bind(
-                    CoreApplicationMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
-                severityLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-            }
             final Label notesLabel = UIUtils.createControlLabel(propGroup, CoreApplicationMessages.dialog_version_update_notes);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
@@ -190,6 +196,104 @@ public class VersionUpdateDialog extends Dialog {
         return parent;
     }
 
+    @NotNull
+    private Control createCriticalDialogArea(@NotNull Composite parent) {
+        getShell().setText(CoreApplicationMessages.dialog_version_update_critical_title);
+        Composite body = UIUtils.createComposite(parent, 1);
+        GridData bodyData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        bodyData.widthHint = convertHorizontalDLUsToPixels(CRITICAL_DIALOG_WIDTH);
+        body.setLayoutData(bodyData);
+        GridLayout bodyLayout = (GridLayout) body.getLayout();
+        bodyLayout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
+        bodyLayout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
+
+        createTopArea(body);
+        Composite header = UIUtils.createComposite(body, 2);
+        header.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+        GridLayout headerLayout = (GridLayout) header.getLayout();
+        headerLayout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
+        Label icon = UIUtils.createLabel(header, DBIcon.STATUS_WARNING);
+        icon.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
+        Composite messageArea = UIUtils.createComposite(header, 1);
+        messageArea.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+        GridLayout messageLayout = (GridLayout) messageArea.getLayout();
+        messageLayout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
+        Label heading = UIUtils.createLabel(messageArea, CoreApplicationMessages.dialog_version_update_critical_title, SWT.WRAP);
+        heading.setFont(BaseThemeSettings.instance.baseFontBold);
+        heading.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+        Label message = UIUtils.createLabel(messageArea,
+            NLS.bind(CoreApplicationMessages.dialog_version_update_critical_message,
+                GeneralUtils.getProductName(), newVersion.getUpdateVersion()), SWT.WRAP);
+        message.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+
+        var expander = UIUtils.createExpandableComposite(
+            body,
+            SWT.NONE,
+            ExpandableComposite.TWISTIE | ExpandableComposite.COMPACT | ExpandableComposite.CLIENT_INDENT
+        );
+        expander.setText(CoreApplicationMessages.dialog_version_update_view_details);
+        expander.setShowTextAsTitle(true);
+        GridData expanderData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        expanderData.verticalIndent = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
+        expander.setLayoutData(expanderData);
+        Composite details = UIUtils.createComposite(expander, 1);
+        Text descriptions = UIUtils.createText(details,
+            VersionUpdatePresentation.getCriticalUpdateDetails(newVersion, currentVersion, currentPatch),
+            SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
+        descriptions.setBackground(details.getBackground());
+        GridData descriptionsData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        descriptionsData.verticalIndent = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
+        descriptionsData.heightHint = CommonUtils.clamp(descriptions.getLineCount(), 3, 12) * descriptions.getLineHeight();
+        descriptions.setLayoutData(descriptionsData);
+
+        expander.setClient(details);
+        expander.setExpanded(false);
+        expander.addExpansionListener(new ExpansionAdapter() {
+            @Override
+            public void expansionStateChanged(@NotNull ExpansionEvent event) {
+                expander.setText(expander.isExpanded()
+                    ? CoreApplicationMessages.dialog_version_update_hide_details
+                    : CoreApplicationMessages.dialog_version_update_view_details);
+                resizeCriticalDialog();
+            }
+        });
+        // License information supplied by Pro must remain visible even while advisory details are collapsed.
+        createBottomArea(body);
+        return parent;
+    }
+
+    @NotNull
+    @Override
+    protected Point getInitialSize() {
+        if (isCriticalUpdate()) {
+            Shell shell = getShell();
+            Point size = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            var area = shell.getMonitor().getClientArea();
+            if (size.x > area.width) {
+                // Recompute the height at the available width so wrapped labels remain visible.
+                size = shell.computeSize(area.width, SWT.DEFAULT);
+            }
+            size.x = Math.min(size.x, area.width);
+            size.y = Math.min(size.y, area.height);
+            // Notes can scroll when the preferred size does not fit on the current monitor.
+            shell.setMinimumSize(size);
+            return size;
+        }
+        return super.getInitialSize();
+    }
+
+    private void resizeCriticalDialog() {
+        Shell shell = getShell();
+        Point size = getInitialSize();
+        var area = shell.getMonitor().getClientArea();
+        Point location = shell.getLocation();
+        shell.setBounds(
+            CommonUtils.clamp(location.x, area.x, area.x + area.width - size.x),
+            CommonUtils.clamp(location.y, area.y, area.y + area.height - size.y),
+            size.x, size.y);
+        shell.layout(true, true);
+    }
+
     protected void createTopArea(@NotNull Composite composite) {
 
     }
@@ -200,6 +304,10 @@ public class VersionUpdateDialog extends Dialog {
 
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        if (isCriticalUpdate()) {
+            createCriticalButtons(parent);
+            return;
+        }
         if (showConfig && isNewVersionAvailable()) {
             ((GridLayout) parent.getLayout()).numColumns++;
             dontShowAgainCheck = UIUtils.createCheckbox(parent,
@@ -224,12 +332,10 @@ public class VersionUpdateDialog extends Dialog {
             );
             // Apply after the dialog's initial theme styling.
             UIUtils.asyncExec(updateBackground);
-            PatchSeverity severity = newVersion.getMaxSeverity(currentVersion, currentPatch);
+            PatchSeverity severity = newVersion.getUpdateSeverity(currentVersion, currentPatch);
             if (severity != PatchSeverity.NONE) {
                 // Native buttons may ignore custom colors; the icon and text also communicate severity.
                 upgradeButton.setImage(DBeaverIcons.getImage(VersionUpdatePresentation.getSeverityIcon(severity)));
-                upgradeButton.setToolTipText(NLS.bind(
-                    CoreApplicationMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
                 upgradeButton.setForeground(switch (severity) {
                     case CRITICAL -> BaseThemeSettings.instance.colorErrorForeground;
                     case HIGH -> BaseThemeSettings.instance.colorWarningForeground;
@@ -256,6 +362,12 @@ public class VersionUpdateDialog extends Dialog {
             IDialogConstants.CLOSE_ID,
             IDialogConstants.CLOSE_LABEL,
                 !isNewVersionAvailable());
+    }
+
+    private void createCriticalButtons(@NotNull Composite parent) {
+        Button update = createButton(parent, UPGRADE_ID, CoreApplicationMessages.dialog_version_update_button_update, true);
+        createButton(parent, IDialogConstants.CANCEL_ID, CoreApplicationMessages.dialog_version_update_not_now, false);
+        update.setFocus();
     }
 
     @Override

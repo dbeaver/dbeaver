@@ -108,6 +108,10 @@
         <command
                 id="org.jkiss.dbeaver.ui.versionUpdate.releaseNotes"
                 name="%command.org.jkiss.dbeaver.ui.versionUpdate.releaseNotes.name"/>
+        <command
+                id="org.jkiss.dbeaver.ui.versionUpdate.install"
+                name="%command.org.jkiss.dbeaver.ui.versionUpdate.name"
+                description="%command.org.jkiss.dbeaver.ui.versionUpdate.description"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -216,6 +220,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.window.minimize" class="org.jkiss.dbeaver.ui.app.standalone.actions.MinimizeWindowHandler"/>
         <handler commandId="org.jkiss.dbeaver.ui.versionUpdate" class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateHandler"/>
         <handler commandId="org.jkiss.dbeaver.ui.versionUpdate.releaseNotes" class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateHandler$ReleaseNotes"/>
+        <handler commandId="org.jkiss.dbeaver.ui.versionUpdate.install" class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -553,6 +558,9 @@
         <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.ui.internal.introview"/>
         <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.gef.ui.palette_view"/>
         <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.graphiti.ui.internal.editor.thumbnailview"/>
+
+        <!-- Hide the internal update installation command from Quick Access -->
+        <activityPatternBinding activityId="hideE4Activity" isEqualityPattern="true" pattern="org.jkiss.dbeaver.ui.app.standalone/org.jkiss.dbeaver.ui.versionUpdate.install"/>
 
         <activity id="dbeaver.app.StandaloneActivity" name="DBeaver standalone application activity"/>
         <category id="dbeaver.app.StandaloneCategory" name="DBeaver standalone application activity category"/>

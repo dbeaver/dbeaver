@@ -20,7 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.osgi.util.NLS;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.osgi.framework.Version;
 
@@ -49,6 +50,7 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
     private static final int ANIMATION_DELAY = 100;
 
     public static final String COMMAND_UPDATE = "org.jkiss.dbeaver.ui.versionUpdate";
+    private static final String COMMAND_INSTALL = "org.jkiss.dbeaver.ui.versionUpdate.install";
     public static final String COMMAND_RELEASE_NOTES = "org.jkiss.dbeaver.ui.versionUpdate.releaseNotes";
     public static final String PROPERTY_AVAILABLE = "org.jkiss.dbeaver.ui.versionUpdate.available";
 
@@ -75,13 +77,26 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
         return newVersion != null && newVersion.isMajorUpdate();
     }
 
+    static boolean isCriticalUpdate() {
+        return currentVersion != null && newVersion != null && newVersion.isNewerThan(currentVersion, currentPatch)
+            && getUpdateSeverity() == PatchSeverity.CRITICAL;
+    }
+
+    @NotNull
+    private static PatchSeverity getUpdateSeverity() {
+        return currentVersion == null || newVersion == null
+            ? PatchSeverity.NONE
+            : newVersion.getUpdateSeverity(currentVersion, currentPatch);
+    }
+
     static void startUpdate(@NotNull Version current, @NotNull VersionDescriptor available) {
         UIUtils.runInUIThread(() -> {
             if (!updateStarted) {
                 currentVersion = current;
                 currentPatch = DBeaverVersionChecker.getProductPatchNumber();
                 newVersion = available;
-                ActionUtils.runCommand(COMMAND_UPDATE, PlatformUI.getWorkbench());
+                // Dialog confirmation must install directly, even when the toolbar opens a critical notification.
+                ActionUtils.runCommand(COMMAND_INSTALL, PlatformUI.getWorkbench());
             }
         });
     }
@@ -99,7 +114,8 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
         if (current == null || available == null) {
             return null;
         }
-        if (COMMAND_RELEASE_NOTES.equals(event.getCommand().getId())) {
+        String commandId = event.getCommand().getId();
+        if (COMMAND_RELEASE_NOTES.equals(commandId) || (COMMAND_UPDATE.equals(commandId) && isCriticalUpdate())) {
             DBeaverApplication.getInstance().notifyVersionUpgrade(current, available, true);
             if (DBeaverVersionChecker.isSuppressed(available)) {
                 newVersion = null;
@@ -124,22 +140,20 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
 
     @Override
     public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
-        var severity = currentVersion == null || newVersion == null
-            ? PatchSeverity.NONE
-            : newVersion.getMaxSeverity(currentVersion, currentPatch);
+        var severity = getUpdateSeverity();
         var icon = downloading
             ? UIIcon.LOADING.get(animationFrame % UIIcon.LOADING.size())
             : VersionUpdatePresentation.getSeverityIcon(severity);
         element.setIcon(DBeaverIcons.getImageDescriptor(icon));
-        String tooltip = CoreApplicationMessages.dialog_version_update_title;
+        element.setText(isCriticalUpdate()
+            ? CoreApplicationMessages.dialog_version_update_critical_title
+            : Platform.getResourceBundle(CoreApplicationActivator.getDefault().getBundle())
+                .getString("command." + COMMAND_UPDATE + ".name"));
+        String tooltip = isCriticalUpdate()
+            ? CoreApplicationMessages.dialog_version_update_critical_title
+            : CoreApplicationMessages.dialog_version_update_title;
         if (isUpdateAvailable() && isMajorUpdate()) {
             tooltip += "\n" + CoreApplicationMessages.dialog_version_update_major_version;
-        }
-        if (severity != PatchSeverity.NONE) {
-            tooltip += "\n" + NLS.bind(
-                CoreApplicationMessages.dialog_version_update_severity,
-                VersionUpdatePresentation.getSeverityLabel(severity)
-            );
         }
         element.setTooltip(tooltip);
     }

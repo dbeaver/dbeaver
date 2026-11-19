@@ -772,8 +772,13 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Label createLabel(@NotNull Composite parent, String label) {
-        Label textLabel = new Label(parent, SWT.NONE);
+    public static Label createLabel(@NotNull Composite parent, @NotNull String label) {
+        return createLabel(parent, label, SWT.NONE);
+    }
+
+    @NotNull
+    public static Label createLabel(@NotNull Composite parent, @NotNull String label, int style) {
+        Label textLabel = new Label(parent, style);
         textLabel.setText(label);
         return textLabel;
     }
@@ -917,16 +922,21 @@ public class UIUtils {
     ) {
         createControlLabel(parent, label);
 
+        Text text = createText(parent, value, style);
+        if (layoutData != null) {
+            text.setLayoutData(layoutData);
+        }
+
+        return text;
+    }
+
+    @NotNull
+    public static Text createText(@NotNull Composite parent, @Nullable String value, int style) {
         Text text = new Text(parent, style);
         fixReadonlyTextBackground(text);
         if (value != null) {
             text.setText(value);
         }
-
-        if (layoutData != null) {
-            text.setLayoutData(layoutData);
-        }
-
         return text;
     }
 
@@ -2883,11 +2893,23 @@ public class UIUtils {
     }
 
     /**
-     * Creates an {@link ExpandableComposite} that paints a separator on top.
+     * Creates an {@link ExpandableCompositeEx} with the supplied control and expansion styles.
      *
      * @param parent         the parent
      * @param style          the control style (as expected by SWT subclass)
      * @param expansionStyle the style of the expansion widget (see {@link ExpandableComposite})
+     */
+    @NotNull
+    public static ExpandableCompositeEx createExpandableComposite(
+        @NotNull Composite parent,
+        int style,
+        int expansionStyle
+    ) {
+        return new ExpandableCompositeEx(parent, style, expansionStyle);
+    }
+
+    /**
+     * Creates an expandable composite with a separator beside its heading.
      */
     @NotNull
     public static ExpandableCompositeEx createExpandableCompositeWithSeparator(
@@ -2895,7 +2917,7 @@ public class UIUtils {
         int style,
         int expansionStyle
     ) {
-        return new ExpandableCompositeEx(parent, style | SWT.SEPARATOR, expansionStyle);
+        return createExpandableComposite(parent, style | SWT.SEPARATOR, expansionStyle);
     }
 
     /**
