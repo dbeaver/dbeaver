@@ -3992,7 +3992,13 @@ public class SQLEditor extends SQLEditorBase implements
             // With a selection only the selected text is formatted
             Point selection = viewer.getSelectedRange();
             viewer.setSelectedRange(selection.x, 0);
-            target.doOperation(ISourceViewer.FORMAT);
+            // "Format active query only" must not apply here, the whole script is formatted
+            setFormatWholeScript(true);
+            try {
+                target.doOperation(ISourceViewer.FORMAT);
+            } finally {
+                setFormatWholeScript(false);
+            }
         }
     }
 

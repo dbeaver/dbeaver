@@ -41,7 +41,7 @@ class SQLContentFormatter extends ContentFormatter implements IContentFormatterE
         }
 
         IRegion region;
-        if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY)) {
+        if (!editor.isFormatWholeScript() && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY)) {
             SQLScriptElement activeQuery = editor.extractActiveQuery();
             if (activeQuery == null) {
                 return;

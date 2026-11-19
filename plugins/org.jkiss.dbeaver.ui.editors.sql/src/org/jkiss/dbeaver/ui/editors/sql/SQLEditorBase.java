@@ -150,6 +150,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     //private IAnnotationAccess annotationAccess;
     private boolean hasVerticalRuler = true;
+    private boolean formatWholeScript;
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
     private final AbstractUIJob themeUpdateJob;
@@ -1430,6 +1431,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) this.getSourceViewer();
         sourceViewer.unconfigure();
         sourceViewer.configure(configuration);
+    }
+
+    /**
+     * When set, the formatter formats the whole script even if "Format active query only" is enabled.
+     */
+    boolean isFormatWholeScript() {
+        return formatWholeScript;
+    }
+
+    void setFormatWholeScript(boolean formatWholeScript) {
+        this.formatWholeScript = formatWholeScript;
     }
 
     void setLastQueryErrorPosition(int lastQueryErrorPosition) {
