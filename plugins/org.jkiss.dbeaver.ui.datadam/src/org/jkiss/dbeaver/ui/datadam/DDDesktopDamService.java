@@ -82,6 +82,11 @@ public class DDDesktopDamService {
     }
 
     @NotNull
+    public DDAccountClient.DamSettingsState getDamSettings() throws DBException {
+        return account.getDamSettings(DDRemoteDamDesktopSessionService.getInstance().getClientDamId());
+    }
+
+    @NotNull
     public String suggestDamName() {
         String computer = System.getenv("COMPUTERNAME");
         if (computer == null || computer.isBlank()) {

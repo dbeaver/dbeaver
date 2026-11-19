@@ -61,7 +61,20 @@ public final class VerticaSSLUtils {
                 return false;
             }
         }
-        return VerticaConstants.TLS_MODE_REQUIRE.equalsIgnoreCase(settings.get(VerticaConstants.PROP_TLS_MODE))
+        String tlsMode = settings.get(VerticaConstants.PROP_TLS_MODE);
+        // tlsmode overrides the deprecated ssl flag in Vertica JDBC
+        boolean usesTLS;
+        if (tlsMode != null) {
+            usesTLS = VerticaConstants.TLS_MODE_PREFER.equalsIgnoreCase(tlsMode)
+                || VerticaConstants.TLS_MODE_REQUIRE.equalsIgnoreCase(tlsMode)
+                || VerticaConstants.TLS_MODE_VERIFY_CA.equalsIgnoreCase(tlsMode)
+                || VerticaConstants.TLS_MODE_VERIFY_FULL.equalsIgnoreCase(tlsMode);
+        } else {
+            String ssl = settings.get(VerticaConstants.PROP_SSL);
+            // the current driver defaults to prefer when neither property is set
+            usesTLS = ssl == null || "1".equals(ssl) || "true".equalsIgnoreCase(ssl);
+        }
+        return usesTLS
             && !settings.containsKey(VerticaConstants.PROP_KEYSTORE_PATH)
             && settings.getOrDefault(VerticaConstants.PROP_KEYSTORE_PASSWORD, "").isEmpty()
             && settings.getOrDefault(VerticaConstants.PROP_SSL_SOCKET_FACTORY, "").isEmpty()
