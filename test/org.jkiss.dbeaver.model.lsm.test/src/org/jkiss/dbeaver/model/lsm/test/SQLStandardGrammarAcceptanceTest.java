@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
@@ -809,6 +810,62 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         Assertions.assertFalse(types.isEmpty(), tree.toStringTree(parser));
         Assertions.assertTrue(types.iterator().next().getText().startsWith("Tuple("), tree.toStringTree(parser));
         Assertions.assertEquals(1, Trees.findAllRuleNodes(types.iterator().next(), SQLStandardParser.RULE_typeArguments).size());
+    }
+
+    @Test
+    void inspectsFollowingSeparatorAtCursorBoundary() {
+        Assertions.assertTrue(inspectAtCaret("SELECT a|, b FROM t").predictedWords().contains("AS"));
+        Assertions.assertFalse(inspectAtCaret("SELECT a,| b FROM t").predictedWords().contains("AS"));
+        Assertions.assertFalse(inspectAtCaret("UPDATE t SET a|= 1").predictedWords().contains("CAST"));
+        Assertions.assertTrue(inspectAtCaret("UPDATE t SET a=| 1").predictedWords().contains("CAST"));
+        var updateEquals = inspectAtCaret("UPDATE t SET a=|");
+        Assertions.assertEquals(updateEquals, inspectAtCaret("UPDATE t SET a= |"));
+        Assertions.assertTrue(updateEquals.expectingColumnReference());
+        Assertions.assertEquals(inspectAtCaret("UPDATE t SET a=1,|"), inspectAtCaret("UPDATE t SET a=1, |"));
+        var beforeWhere = inspectAtCaret("UPDATE t SET a=| WHERE a=2");
+        Assertions.assertTrue(beforeWhere.predictedWords().contains("CAST"));
+        Assertions.assertEquals(beforeWhere, inspectAtCaret("UPDATE t SET a= | WHERE a=2"));
+        var commaBeforeWhere = inspectAtCaret("UPDATE t SET a=1,| WHERE a=2");
+        Assertions.assertTrue(commaBeforeWhere.expectingColumnReference());
+        Assertions.assertEquals(commaBeforeWhere, inspectAtCaret("UPDATE t SET a=1, | WHERE a=2"));
+
+        var selectComma = inspectAtCaret("SELECT a,| FROM t");
+        Assertions.assertFalse(selectComma.expectingColumnName());
+        Assertions.assertTrue(selectComma.predictedWords().contains("CAST"));
+        var selectCommaSpace = inspectAtCaret("SELECT a, | FROM t");
+        Assertions.assertEquals(selectComma, selectCommaSpace);
+        Assertions.assertEquals(inspectAtCaret("SELECT COALESCE(x,|y) FROM t"),
+            inspectAtCaret("SELECT COALESCE(x, |y) FROM t"));
+        var openParen = inspectAtCaret("SELECT COALESCE(|x, y) FROM t");
+        Assertions.assertTrue(openParen.expectingColumnReference());
+        Assertions.assertEquals(openParen, inspectAtCaret("SELECT COALESCE( |x, y) FROM t"));
+        var closeParen = inspectAtCaret("SELECT COALESCE(x, y)| FROM t");
+        Assertions.assertTrue(closeParen.predictedWords().contains("AS"));
+        Assertions.assertEquals(closeParen, inspectAtCaret("SELECT COALESCE(x, y) | FROM t"));
+
+        Assertions.assertEquals(inspectAtCaret("SELECT x FROM t WHERE x=|"),
+            inspectAtCaret("SELECT x FROM t WHERE x= |"));
+        var plus = inspectAtCaret("SELECT x +| y FROM t");
+        Assertions.assertTrue(plus.predictedWords().contains("CAST"));
+        Assertions.assertEquals(plus, inspectAtCaret("SELECT x + | y FROM t"));
+        var lessThan = inspectAtCaret("SELECT x FROM t WHERE x<| y");
+        Assertions.assertTrue(lessThan.predictedWords().contains("CAST"));
+        Assertions.assertEquals(lessThan, inspectAtCaret("SELECT x FROM t WHERE x< | y"));
+        Assertions.assertEquals(inspectAtCaret("SELECT CAST(x AS INT)::|"),
+            inspectAtCaret("SELECT CAST(x AS INT):: |"));
+        Assertions.assertEquals(inspectAtCaret("SELECT x FROM t WHERE x=:|p"),
+            inspectAtCaret("SELECT x FROM t WHERE x=: |p"));
+        Assertions.assertTrue(inspectAtCaret("SELECT a FROM t;|").predictedWords().isEmpty());
+        Assertions.assertTrue(inspectAtCaret("SELECT a FROM t; |").predictedWords().isEmpty());
+    }
+
+    @NotNull
+    private static LSMInspections.SyntaxInspectionResult inspectAtCaret(@NotNull String marked) {
+        int position = marked.indexOf('|');
+        SQLStandardParser parser = makeParser(marked.substring(0, position) + marked.substring(position + 1));
+        var tree = parser.sqlQueries();
+        tree.fixup(parser);
+        return new LSMInspections(BasicSQLDialect.INSTANCE, tree).prepareAbstractSyntaxInspection(position);
     }
 
     private static void assertPartialNativeControlFlow(

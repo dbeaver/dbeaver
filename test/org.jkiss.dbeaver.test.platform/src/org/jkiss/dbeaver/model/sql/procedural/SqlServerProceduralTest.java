@@ -294,7 +294,7 @@ public class SqlServerProceduralTest extends ProceduralDialectTestBase {
         Assertions.assertSame(variableNames.getFirst(), variableNames.getLast().getDefinition());
         Assertions.assertInstanceOf(SQLQuerySymbolOrigin.ScriptVariableRef.class, variableNames.getLast().getOrigin());
         SQLQueryUpdateModel update = Assertions.assertInstanceOf(
-            SQLQueryUpdateModel.class, model.findNodeContaining(sql.indexOf("SET @value") + 5));
+            SQLQueryUpdateModel.class, model.findNodeContaining(sql.indexOf("UPDATE tab") + 1));
         SQLQueryValueTargetReferenceExpression variableTarget = Assertions.assertInstanceOf(
             SQLQueryValueTargetReferenceExpression.class, update.getSetClauseList().getFirst().targets.getFirst());
         Assertions.assertNotNull(variableTarget.getLocalVariable());

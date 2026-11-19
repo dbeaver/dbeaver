@@ -980,10 +980,12 @@ public abstract class SQLQueryCompletionContext {
                     }
 
                     @Override
-                    public void visitSyntaxBasedFromRowsData(SQLQuerySymbolOrigin.SyntaxBasedFromRowsData origin) {
+                    public void visitUpdateTarget(SQLQuerySymbolOrigin.UpdateTarget origin) {
                         SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsDataContext());
                         setContextInfo(contextInfo);
-                        prepareInspectedFreeCompletions(monitor, request, results);
+                        boolean qualify = request.getContext().isForceQualifiedColumnNames()
+                            || contextInfo.getKnownSources().getResolutionResults().size() > 1;
+                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(contextInfo, filterOrNull, qualify), results);
                     }
 
                     @Override
