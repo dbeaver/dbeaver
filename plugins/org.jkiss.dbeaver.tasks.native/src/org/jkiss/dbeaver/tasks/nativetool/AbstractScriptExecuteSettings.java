@@ -37,7 +37,6 @@ import java.util.Objects;
 public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extends AbstractNativeToolSettings<BASE_OBJECT> {
     private String inputFile;
     private String inputResourceProjectId;
-    private String inputResourceProjectName;
     private String inputResourcePath;
     private Path executionInputFile;
 
@@ -55,39 +54,25 @@ public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extend
     public void setInputFile(String inputFile) {
         if (!Objects.equals(this.inputFile, inputFile)) {
             inputResourceProjectId = null;
-            inputResourceProjectName = null;
             inputResourcePath = null;
         }
         this.inputFile = inputFile;
     }
 
-    public void setInputResource(@NotNull String projectId, @NotNull String resourcePath) throws DBException {
-        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProjectById(projectId);
-        if (project == null) {
-            throw new DBException("Project '" + projectId + "' not found");
-        }
+    public void setInputResource(@NotNull String projectId, @NotNull String resourcePath) {
         inputResourceProjectId = projectId;
-        inputResourceProjectName = project.getName();
         inputResourcePath = resourcePath;
         inputFile = resourcePath;
     }
 
     public void prepareInputFile(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if ((CommonUtils.isEmpty(inputResourceProjectId) && CommonUtils.isEmpty(inputResourceProjectName))
-            || CommonUtils.isEmpty(inputResourcePath)) {
+        if (CommonUtils.isEmpty(inputResourceProjectId) || CommonUtils.isEmpty(inputResourcePath)) {
             return;
         }
-        DBPProject project = CommonUtils.isEmpty(inputResourceProjectId)
-            ? null
-            : DBWorkbench.getPlatform().getWorkspace().getProjectById(inputResourceProjectId);
-        if (project == null && !CommonUtils.isEmpty(inputResourceProjectName)) {
-            project = DBWorkbench.getPlatform().getWorkspace().getProject(inputResourceProjectName);
-        }
+        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProjectById(inputResourceProjectId);
         RMControllerProvider provider = project == null ? null : DBUtils.getAdapter(RMControllerProvider.class, project);
         if (provider == null) {
-            throw new DBException("Project '" + (CommonUtils.isEmpty(inputResourceProjectName)
-                ? inputResourceProjectId : inputResourceProjectName)
-                + "' does not provide remote resources");
+            throw new DBException("Project '" + inputResourceProjectId + "' does not provide remote resources");
         }
         byte[] contents = provider.getResourceController().getResourceContents(project.getId(), inputResourcePath);
         Path file = null;
@@ -119,7 +104,6 @@ public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extend
         if (CommonUtils.isEmpty(inputFile)) {
             inputFile = preferenceStore.getString("inputFile");
             inputResourceProjectId = preferenceStore.getString("inputResourceProjectId");
-            inputResourceProjectName = preferenceStore.getString("inputResourceProjectName");
             inputResourcePath = preferenceStore.getString("inputResourcePath");
         }
         super.loadSettings(runnableContext, preferenceStore);
@@ -131,7 +115,6 @@ public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extend
 
         preferenceStore.setValue("inputFile", inputFile);
         preferenceStore.setValue("inputResourceProjectId", CommonUtils.toString(inputResourceProjectId));
-        preferenceStore.setValue("inputResourceProjectName", CommonUtils.toString(inputResourceProjectName));
         preferenceStore.setValue("inputResourcePath", CommonUtils.toString(inputResourcePath));
     }
 }
