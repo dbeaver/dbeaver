@@ -195,7 +195,7 @@
                     class="cubrid.jdbc.driver.CUBRIDDriver"
                     sampleURL="jdbc:CUBRID:{host}:{port}:{database}:::"
                     defaultPort="30000"
-                    description="Connect to CUBRID with its JDBC driver for relational SQL queries and administration."
+                    description="JDBC driver for CUBRID relational databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://www.cubrid.org/manual/en/11.2/api/jdbc.html#configuration-connection"
                     categories="sql">

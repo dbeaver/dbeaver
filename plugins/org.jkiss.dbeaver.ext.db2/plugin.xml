@@ -447,7 +447,7 @@
                     webURL="https://www-01.ibm.com/support/docview.wss?uid=swg21363866"
                     propertiesURL="https://www.ibm.com/docs/en/db2/latest?topic=pdsdjs-common-data-server-driver-jdbc-sqlj-properties-all-database-products"
                     databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
-                    description="Connect to IBM Db2 for Linux, Unix, and Windows through the IBM JDBC driver for relational SQL workloads."
+                    description="IBM JDBC driver for Db2 relational databases on Linux, Unix, and Windows."
                     promoted="1"
                     categories="sql">
 

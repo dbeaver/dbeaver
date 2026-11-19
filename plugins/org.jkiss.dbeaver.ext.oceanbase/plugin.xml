@@ -31,7 +31,7 @@
                     sampleURL="jdbc:oceanbase://{host}[:{port}][/{database}]"
                     defaultPort="2881"
                     webURL="https://open.oceanbase.com"
-                    description="Connect to an OceanBase MySQL tenant through the vendor JDBC driver for MySQL-compatible SQL workloads."
+                    description="OceanBase JDBC driver for distributed relational databases in MySQL compatibility mode."
                     supportedPageFields="host,port,database,server"
                     categories="sql">
 
@@ -69,7 +69,7 @@
                     sampleURL="jdbc:oceanbase://{host}[:{port}][/{database}]"
                     defaultPort="2881"
                     webURL="https://open.oceanbase.com"
-                    description="Connect to an OceanBase Oracle tenant through the vendor JDBC driver for Oracle-compatible SQL workloads."
+                    description="OceanBase JDBC driver for distributed relational databases in Oracle compatibility mode."
                     supportedPageFields="host,port,database,server"
                     categories="sql">
 

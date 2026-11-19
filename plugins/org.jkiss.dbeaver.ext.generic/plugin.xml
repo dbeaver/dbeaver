@@ -549,7 +549,7 @@
                     sampleURL="jdbc:sapdb://{host}[:{port}]/{database}"
                     defaultPort="7200"
                     webURL="https://www.sdn.sap.com/irj/sdn/maxdb"
-                    description="Connect to SAP MaxDB through the SAP JDBC driver for relational SQL queries and database administration."
+                    description="SAP JDBC driver for MaxDB relational databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
@@ -567,7 +567,7 @@
                     sampleURL="jdbc:opensearch://[{scheme}://][{host}][:{port}]"
                     defaultPort="443"
                     webURL="https://www.opensearch.org/"
-                    description="Connect to OpenSearch through its JDBC driver and query distributed search and analytics data with SQL."
+                    description="OpenSearch JDBC driver for SQL access to search and analytics data."
                     categories="sql">
                     <file type="jar" path="maven:/org.opensearch.driver:opensearch-sql-jdbc:RELEASE[1.4.0.1]"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
@@ -582,7 +582,7 @@
                     sampleURL="jdbc:informix-sqli://{host}:{port}/{database}:INFORMIXSERVER={server}"
                     defaultPort="1533"
                     webURL="https://www.developers.net/ibmshowcase/focus/Informix"
-                    description="Connect to IBM Informix Dynamic Server through the IBM JDBC driver for relational SQL queries and database work."
+                    description="IBM JDBC driver for Informix Dynamic Server relational databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
@@ -610,7 +610,7 @@
                     sampleURL="jdbc:derby:{folder}"
                     webURL="https://db.apache.org/"
                     embedded="true"
-                    description="Open Apache Derby databases directly in the application with the embedded JDBC driver. No separate database server is required."
+                    description="Embedded JDBC driver for Apache Derby relational databases, with in-process SQL access."
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
                     categories="sql,embedded">
@@ -639,7 +639,7 @@
                     sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
-                    description="Connect to an Apache Derby server through its JDBC network client for shared relational database access."
+                    description="Apache Derby JDBC network client for relational database servers."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
@@ -666,7 +666,7 @@
                     sampleURL="jdbc:hsqldb:hsql://{host}[:{port}]/[{database}]"
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
-                    description="Connect to a HyperSQL database server through its JDBC driver for shared relational database access."
+                    description="HyperSQL JDBC driver for relational database servers over the HSQL protocol."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
@@ -690,7 +690,7 @@
                     sampleURL="jdbc:hsqldb:file:{folder}"
                     webURL="http://hsqldb.org/"
                     embedded="true"
-                    description="Open HyperSQL databases directly in-process with the embedded JDBC driver for lightweight SQL workloads. No server is required."
+                    description="Embedded JDBC driver for HyperSQL relational database files."
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
                     categories="sql,embedded">
@@ -714,7 +714,7 @@
                     sampleURL="jdbc:Cache://{host}:{port}/{database}"
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/cache/"
-                    description="Connect to InterSystems Cach&#233; with its JDBC driver for SQL access to relational and object data."
+                    description="InterSystems Cach&#233; JDBC driver for SQL access to relational and object data."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
@@ -729,7 +729,7 @@
                     sampleURL="jdbc:IRIS://{host}:{port}/{database}"
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/iris/"
-                    description="Connect to InterSystems IRIS through its JDBC driver for SQL access to relational and object data and database management."
+                    description="InterSystems IRIS JDBC driver for SQL access to relational and object data."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
 <!--                    <replace provider="generic" driver="cache"/>-->
@@ -745,7 +745,7 @@
                     sampleURL="jdbc:ingres://{host}:{port}/{database}"
                     defaultPort="II7"
                     webURL="https://www.actian.com/databases/ingres/"
-                    description="Connect to Ingres with its JDBC driver for relational SQL queries and administration."
+                    description="Ingres JDBC driver for relational databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
                     <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE[12.0-4.4.4]" bundle="!drivers.ingres"/>
@@ -766,7 +766,7 @@
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
                     databaseDocumentationSuffixURL="Database-driver-Teradata"
-                    description="Connect to Teradata through its Type 4 JDBC driver for analytical SQL queries and data warehouse workloads."
+                    description="Teradata Type 4 JDBC driver for analytical databases and data warehouses."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
 
@@ -792,7 +792,7 @@
                     sampleURL="jdbc:relique:csv:{folder}"
                     embedded="true"
                     anonymous="true"
-                    description="Open CSV files with the basic CsvJdbc driver for straightforward SQL access to comma-separated tabular data."
+                    description="CsvJdbc driver for SQL access to comma-separated tabular data in CSV files."
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
                     webURL="http://csvjdbc.sourceforge.net/"
@@ -828,7 +828,7 @@
                     sampleURL="jdbc:relique:csv:{folder}"
                     embedded="true"
                     anonymous="true"
-                    description="Open DBF files through the CsvJdbc driver and query their structured records as tabular data with SQL."
+                    description="CsvJdbc driver with DBF library support for SQL access to DBF file records."
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
                     webURL="http://csvjdbc.sourceforge.net/"
@@ -858,7 +858,7 @@
                     class="io.github.jdbcx.WrappedDriver"
                     sampleURL="jdbcx:[extension:][vendor://{host}[:{port}][/{database}]]"
                     defaultPort=""
-                    description="Connect to federated data sources with JDBCX for dynamic, multi-language queries, optionally using its bridge server for cross-source access."
+                    description="JDBCX driver for federated data sources and multi-language queries, with optional bridge server support."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/jdbcx/jdbcx"
                     categories="sql,federated"
@@ -876,7 +876,7 @@
                     sampleURL="jdbc:ucanaccess://{file}"
                     webURL="https://spannm.github.io/ucanaccess/"
                     embedded="true"
-                    description="Open Microsoft Access database files directly through the UCanAccess JDBC driver for embedded SQL queries."
+                    description="UCanAccess JDBC driver for embedded SQL access to Microsoft Access database files."
                     supportedConfigurationTypes="MANUAL,URL"
                     supportsDistributedMode="false"
                     categories="sql,embedded,file">
@@ -895,7 +895,7 @@
                     defaultPort="5480"
                     webURL=""
                     databaseDocumentationSuffixURL="Database-driver-Netezza"
-                    description="Connect to Netezza through its JDBC driver for analytical SQL queries, reporting, and data warehouse workloads."
+                    description="Netezza JDBC driver for analytical databases and data warehouses."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
                 </driver>
@@ -907,7 +907,7 @@
                     class="com.nuodb.jdbc.Driver"
                     sampleURL="jdbc:com.nuodb://{host}[:{port}]/[{database}]"
                     defaultPort=""
-                    description="Connect to NuoDB through its JDBC driver for relational SQL access to a distributed, cloud-oriented database."
+                    description="NuoDB JDBC driver for distributed relational databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://www.nuodb.com/"
                     categories="sql,cloud">
@@ -924,7 +924,7 @@
                     sampleURL="jdbc:phoenix:{host}[:{port}]"
                     defaultPort="2181"
                     webURL="http://phoenix.apache.org/"
-                    description="Connect to Apache Phoenix with its standard JDBC client and use SQL to query data stored in Apache HBase."
+                    description="Apache Phoenix JDBC client for SQL access to Apache HBase data."
                     supportedConfigurationTypes="MANUAL,URL"
                     category="Hadoop"
                     categories="hadoop"
@@ -941,7 +941,7 @@
                     class="com.pivotal.gemfirexd.jdbc.ClientDriver"
                     sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
                     defaultPort="1527"
-                    description="Connect to Pivotal GemFire XD through its JDBC client for SQL access to distributed relational data."
+                    description="Pivotal GemFire XD JDBC network client for distributed relational databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://blog.pivotal.io/tag/gemfire-xd"
                     category="Hadoop"
@@ -956,7 +956,7 @@
                     class="io.snappydata.jdbc.ClientDriver"
                     sampleURL="jdbc:snappydata://{host}[:{port}]/"
                     defaultPort="1528"
-                    description="Connect to SnappyData through its JDBC client for SQL access to distributed data based on the GemFireXD interface."
+                    description="SnappyData JDBC network client for distributed SQL data, with the GemFireXD interface."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://snappydatainc.github.io/snappydata/"
                     category="Hadoop"
@@ -973,7 +973,7 @@
                     class="org.apache.hive.jdbc.HiveDriver"
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10000"
-                    description="Connect to Apache Spark Thrift Server through the Hive JDBC driver for distributed SQL analytics across Spark datasets."
+                    description="Hive JDBC driver for Apache Spark Thrift Server and distributed SQL analytics."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-sql-thrift-server.html"
                     category="Hadoop"
@@ -994,7 +994,7 @@
                     class="org.apache.kyuubi.jdbc.KyuubiHiveDriver"
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10009"
-                    description="Connect to an Apache Kyuubi Thrift Server through its JDBC driver and run distributed SQL queries against data lakes."
+                    description="Apache Kyuubi JDBC driver for Thrift Server SQL access to data lakes."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://kyuubi.apache.org/"
                     category="Hadoop"
@@ -1012,7 +1012,7 @@
                     label="Apache Drill"
                     class="org.apache.drill.jdbc.Driver"
                     sampleURL="jdbc:drill:zk={host}/{server}[;schema={database}]"
-                    description="Query distributed, schema-free data with Apache Drill through its JDBC driver, including data stored in Hadoop environments."
+                    description="Apache Drill JDBC driver for distributed SQL analytics on schema-free data sources."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://drill.apache.org/docs/using-the-jdbc-driver/"
                     category="Hadoop"
@@ -1035,7 +1035,7 @@
                     sampleURL="jdbc:impala://{host}:{port}/{database}"
                     defaultPort="21050"
                     supportsDistributedMode="false"
-                    description="Query data in Cloudera Impala with the vendor JDBC driver for distributed SQL analytics on Hadoop. Obtain the driver files from Cloudera."
+                    description="Cloudera Impala JDBC driver for distributed SQL analytics on Hadoop data."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://www.cloudera.com/downloads/connectors/impala/jdbc/2-5-41.html"
                     category="Hadoop"
@@ -1056,7 +1056,7 @@
                     class="virtuoso.jdbc4.Driver"
                     sampleURL="jdbc:virtuoso://{host}:{port}/DATABASE={database}/CHARSET=UTF-8"
                     defaultPort="1111"
-                    description="Connect to OpenLink Virtuoso through its open-source JDBC driver for SQL access to relational and object data."
+                    description="OpenLink Virtuoso open-source JDBC driver for SQL access to relational and object data."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/openlink/virtuoso-opensource"
                     categories="sql,object">
@@ -1072,7 +1072,7 @@
                     class="com.machbase.jdbc.MachDriver"
                     sampleURL="jdbc:machbase://{host}/mhdb"
                     defaultPort="5656"
-                    description="Connect to Machbase through its JDBC driver for querying and analyzing operational time-series data."
+                    description="Machbase JDBC driver for operational time-series databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://www.machbase.com"
                     categories="timeseries">
@@ -1088,7 +1088,7 @@
                     class="com.taosdata.jdbc.ws.WebSocketDriver"
                     sampleURL="jdbc:TAOS-WS://{host}:{port}/[{db}]"
                     defaultPort="6041"
-                    description="Connect to TDengine through its WebSocket JDBC driver to query and analyze operational time-series data."
+                    description="TDengine WebSocket JDBC driver for operational time-series databases."
                     supportedConfigurationTypes="MANUAL"
                     webURL="http://www.tdengine.com"
                     categories="timeseries">
@@ -1109,7 +1109,7 @@
                     class="com.taosdata.jdbc.ws.WebSocketDriver"
                     anonymous="true"
                     webURL="http://cloud.tdengine.com"
-                    description="Connect to the TDengine Cloud service through its WebSocket JDBC driver to query managed time-series data."
+                    description="TDengine WebSocket JDBC driver for the TDengine Cloud time-series database service."
                     categories="timeseries">
                     <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
@@ -1126,7 +1126,7 @@
                     class="com.dolphindb.jdbc.Driver"
                     sampleURL="jdbc:dolphindb://{host}:{port}"
                     defaultPort="8848"
-                    description="Connect to DolphinDB through its JDBC driver for SQL analysis and management of time-series and analytical data."
+                    description="DolphinDB JDBC driver for time-series databases and SQL analytics."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/dolphindb/jdbc"
                     categories="sql,analytic,timeseries">
@@ -1147,7 +1147,7 @@
                     class="com.orientechnologies.orient.jdbc.OrientJdbcDriver"
                     sampleURL="jdbc:orient:remote:{host}/{database}"
                     defaultPort=""
-                    description="Connect to OrientDB with its JDBC driver and query graph data using SQL."
+                    description="OrientDB JDBC driver for SQL access to graph and document data."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/orientechnologies/orientdb-jdbc"
                     categories="graph">
@@ -1165,7 +1165,7 @@
                     class="com.facebook.presto.jdbc.PrestoDriver"
                     sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                     defaultPort="8080"
-                    description="Connect to PrestoDB with the original Facebook JDBC driver and run distributed SQL queries across heterogeneous data sources."
+                    description="Facebook PrestoDB JDBC driver for distributed SQL across heterogeneous data sources."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://prestodb.io/"
                     categories="sql,bigdata,hadoop">
@@ -1189,7 +1189,7 @@
                         class="io.prestosql.jdbc.PrestoDriver"
                         sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                         defaultPort="8080"
-                        description="Connect to PrestoSQL through its community JDBC driver for federated queries. Use Trino for newer releases."
+                        description="Legacy PrestoSQL JDBC driver for distributed, federated SQL analytics."
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://prestosql.io/"
                         categories="sql,federated,bigdata,hadoop">
@@ -1208,7 +1208,7 @@
                     class="io.trino.jdbc.TrinoDriver"
                     sampleURL="jdbc:trino://{host}:{port}[/{database}]"
                     defaultPort="8080"
-                    description="Connect to Trino through its JDBC driver for distributed, federated SQL queries. Use it as the successor to PrestoSQL."
+                    description="Trino JDBC driver for distributed, federated SQL analytics across heterogeneous data sources."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://trino.io/"
                     categories="sql,federated,bigdata,hadoop">
@@ -1233,7 +1233,7 @@
                         class="cubrid.jdbc.driver.CUBRIDDriver"
                         sampleURL="jdbc:CUBRID:{host}:{port}:{database}:::"
                         defaultPort="33000"
-                        description="Legacy generic JDBC definition for querying CUBRID relational databases with the CUBRID JDBC driver. Hidden in favor of the dedicated CUBRID connector."
+                        description="Legacy JDBC connector for CUBRID relational databases, with the CUBRID driver."
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://www.cubrid.org/"
                         categories="sql">
@@ -1248,7 +1248,7 @@
                         class="org.apache.solr.client.solrj.io.sql.DriverImpl"
                         sampleURL="jdbc:solr://{host}:{port}/[?collection={database}]"
                         defaultPort="9983"
-                        description="Query Apache Solr collections through the SolrJ JDBC driver, using SQL access for search and analytics data."
+                        description="SolrJ JDBC driver for SQL access to Apache Solr search collections and analytics data."
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://lucene.apache.org/solr/"
                         categories="fulltext">
@@ -1265,7 +1265,7 @@
                         sampleURL="jdbc:datadirect:openedge://{host}:{port};databaseName={database}"
                         supportsDistributedMode="false"
                         defaultPort="6718"
-                        description="Connect to Progress OpenEdge with its JDBC driver for relational SQL queries and administration."
+                        description="DataDirect JDBC driver for Progress OpenEdge relational databases."
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#"
                         categories="sql">
@@ -1283,7 +1283,7 @@
                         class="org.monetdb.jdbc.MonetDriver"
                         sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
                         defaultPort="50000"
-                        description="Connect to MonetDB with its JDBC driver for column-oriented SQL analytics and reporting."
+                        description="MonetDB JDBC driver for column-oriented analytical databases."
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://www.monetdb.org/Documentation/Manuals/SQLreference/Programming/JDBC"
                         categories="sql,columns">
@@ -1299,7 +1299,7 @@
                         class="com.dremio.jdbc.Driver"
                         sampleURL="jdbc:dremio:direct={host}[:{port}][;schema={database}]"
                         defaultPort="31010"
-                        description="Connect to Dremio through its JDBC driver for unified SQL analytics across lakehouse and Hadoop data sources."
+                        description="Dremio JDBC driver for SQL analytics across lakehouse and Hadoop data sources."
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://docs.dremio.com/current/client-applications/drivers/jdbc/"
                         categories="analytic,hadoop,sql">
@@ -1336,7 +1336,7 @@
                         class="com.omnisci.jdbc.OmniSciDriver"
                         sampleURL="jdbc:omnisci:{host}:{port}:{database}"
                         defaultPort="6274"
-                        description="Connect to legacy OmniSci or MapD deployments, now known as HeavyDB, through the OmniSci JDBC driver for analytical SQL queries."
+                        description="Legacy OmniSci JDBC driver for OmniSci and MapD analytical databases."
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://docs.omnisci.com/v5.1.1/6_jdbc.html"
                         categories="analytics,sql">
@@ -1353,7 +1353,7 @@
                     class="io.crate.client.jdbc.CrateDriver"
                     sampleURL="crate://{host}[:{port}]/"
                     defaultPort="5432"
-                    description="Connect to CrateDB with the legacy CrateDB JDBC driver as an alternative to the CrateDB connector using the PostgreSQL JDBC driver."
+                    description="Legacy CrateDB JDBC driver for distributed SQL databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://crate.io/docs/clients/jdbc/en/latest/"
                     categories="sql">
@@ -1388,7 +1388,7 @@
                     class="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"
                     sampleURL="jdbc:gizmosql://{host}:{port}[?catalog={database}]"
                     defaultPort="31337"
-                    description="Connect to GizmoSQL through the Apache Arrow Flight SQL JDBC driver for columnar analytical queries."
+                    description="GizmoSQL JDBC driver with the Apache Arrow Flight SQL protocol for columnar SQL analytics."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/gizmodata/gizmosql-jdbc-driver"
                     allowsEmptyPassword="false"
@@ -1424,7 +1424,7 @@
                     sampleURL="jdbc:pervasive://{host}:{port}/{database}?transport=tcp"
                     defaultPort="1583"
                     supportsDistributedMode="false"
-                    description="Connect to Pervasive SQL with its JDBC driver for relational SQL queries."
+                    description="Pervasive JDBC driver for Pervasive SQL relational databases over TCP."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.actian.com/psql/PSQLv11/jdbc/wwhelp/wwhimpl/common/html/wwhelp.htm#href=jdbc_gd.1.3.html&amp;single=true"
                     categories="sql">
@@ -1439,7 +1439,7 @@
                         class="com.sqream.jdbc.SQDriver"
                         sampleURL="jdbc:Sqream://{host}:{port}/{database};cluster=true"
                         defaultPort="3108"
-                        description="Connect to SQream DB through its JDBC driver for column-oriented SQL analytics and data warehouse workloads."
+                        description="SQream JDBC driver for column-oriented analytical databases and data warehouses."
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://docs.sqream.com/en/latest/guides/client_drivers/jdbc/index.html"
                         categories="sql,analytic,columns">
@@ -1485,7 +1485,7 @@
                     class="org.apache.calcite.avatica.remote.Driver"
                     sampleURL="jdbc:avatica:remote:url=http://{host}:{port}/"
                     defaultPort="8765"
-                    description="Connect to Apache Calcite Avatica endpoints, including Apache Druid, and query heterogeneous data sources through JDBC."
+                    description="Apache Calcite Avatica remote JDBC driver for SQL access over HTTP."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://calcite.apache.org/avatica/docs/client_reference.html"
                     categories="sql,federated">
@@ -1510,7 +1510,7 @@
                     class="org.apache.kylin.jdbc.Driver"
                     sampleURL="jdbc:kylin://{host}:{port}/{database}"
                     defaultPort="443"
-                    description="Connect to Apache Kylin through its JDBC driver for SQL analysis of large datasets in a distributed OLAP environment."
+                    description="Apache Kylin JDBC driver for distributed OLAP and SQL analytics."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://kylin.apache.org/docs/integration/jdbc/"
                     categories="sql">
@@ -1539,7 +1539,7 @@
                         defaultPort="50000"
                         webURL="https://www.ibm.com/software/data/db2/express/download.html"
                         databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
-                        description="Connect to Db2 LUW 8.x databases with the older IBM JDBC driver, intended only for legacy compatibility scenarios.">
+                        description="Legacy Db2 for LUW connector with the IBM JDBC driver.">
                     <replace provider="generic" driver="db2"/>
 
                     <property name="loginTimeout" value="20"/>
@@ -1567,7 +1567,7 @@
                         webURL="https://www.mysql.com/products/connector/"
                         databaseDocumentationSuffixURL="Database-driver-MySQL"
                         supportedConfigurationTypes="MANUAL,URL"
-                        description="Connect to MySQL 4.x and earlier with the old JDBC driver, intended only for legacy database compatibility.">
+                        description="Legacy MySQL Connector/J JDBC driver for older MySQL relational databases.">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]"/>
                     <property name="rewriteBatchedStatements" value="true"/>
                 </driver>
@@ -1583,7 +1583,7 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         supportsDistributedMode="false"
                         webURL="https://jdbc.postgresql.org/"
-                        description="Connect to PostgreSQL versions before 8.x, or compatible older PostgreSQL-based databases, through the legacy PostgreSQL JDBC driver.">
+                        description="Legacy PostgreSQL JDBC connector for PostgreSQL-compatible relational databases.">
 
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.14]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
@@ -1607,7 +1607,7 @@
                         class="jennifer.jdbc.driver.JenniferDriver"
                         sampleURL="jdbc:jennifer://{host}:{port}/"
                         defaultPort="8001"
-                        description="Connect to a JENNIFER API server through its JDBC driver and query JENNIFER data using SQL."
+                        description="JENNIFER JDBC driver for SQL access to application monitoring data through the JENNIFER API server."
                         webURL="https://www.jennifersoft.com"
                         categories="sql">
                     <file type="jar" path="https://github.com/jennifersoft/jennifer5-jdbc-driver/archive/refs/tags/v5.5.3.2.zip"/>
@@ -1625,7 +1625,7 @@
                         class="com.salesforce.cdp.queryservice.QueryServiceDriver"
                         sampleURL="jdbc:queryService-jdbc:{database}"
                         defaultDatabase="https://login.salesforce.com"
-                        description="Connect to Salesforce Data 360 through the legacy Query Service JDBC driver when compatibility with the older integration is required."
+                        description="Legacy Salesforce Query Service JDBC driver for Salesforce Data 360 customer data."
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
@@ -1643,7 +1643,7 @@
                         class="com.salesforce.datacloud.jdbc.DataCloudJDBCDriver"
                         sampleURL="jdbc:salesforce-datacloud://{database}"
                         defaultDatabase="login.salesforce.com"
-                        description="Connect to Salesforce Data 360 through its JDBC driver and query unified customer data with SQL for analysis and reporting."
+                        description="Salesforce Data Cloud JDBC driver for SQL access to Salesforce Data 360 customer data."
                         webURL="https://github.com/forcedotcom/datacloud-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
@@ -1665,7 +1665,7 @@
                         sampleURL="jdbc:teiid:{database}@mms://{host}:{port}"
                         defaultPort="31000"
                         webURL="https://github.com/teiid/teiid"
-                        description="Connect to Teiid through its JDBC driver and query virtualized data from multiple underlying sources.">
+                        description="Teiid JDBC driver for SQL access to virtual databases across heterogeneous data sources.">
 
                     <file type="jar" path="maven:/org.teiid:teiid:jdbc:LATEST" bundle="!drivers.teiid" custom="true"/>
                     <file type="jar" path="drivers/teiid" bundle="drivers.teiid"/>
@@ -1752,7 +1752,7 @@
                         class="sun.jdbc.odbc.JdbcOdbcDriver"
                         sampleURL="jdbc:odbc:{database}"
                         webURL="https://sun.com"
-                        description="This deprecated Java 7 JDBC-ODBC bridge was removed from Community Edition 23.1 and cannot be used. Use the DBeaver JDBC-ODBC bridge in DBeaver PRO."
+                        description="Deprecated Java 7 JDBC-ODBC bridge. Unavailable in Community Edition since version 23.1."
                         supportedConfigurationTypes="MANUAL,URL"
                         supportsDistributedMode="false"
                         categories="sql">
@@ -1763,7 +1763,7 @@
                         id="mongo-ce"
                         dataSourceType="mongodb"
                         label="MongoDB"
-                        description="MongoDB connectivity is unavailable through this Community Edition placeholder. Use DBeaver PRO or configure a third-party MongoDB driver."
+                        description="MongoDB document database connector. DBeaver PRO only, unavailable in Community Edition."
                         iconBig="icons/mongodb_icon_big.png"
                         supportsDistributedMode="false"
                         categories="nosql,bigdata,document">
@@ -1773,7 +1773,7 @@
                         id="cql-ce"
                         dataSourceType="cassandra"
                         label="Cassandra"
-                        description="Cassandra connectivity is unavailable through this Community Edition placeholder. Use DBeaver PRO or configure a third-party Cassandra driver."
+                        description="Apache Cassandra wide-column database connector. DBeaver PRO only, unavailable in Community Edition."
                         iconBig="icons/cassandra_icon_big.png"
                         supportsDistributedMode="false"
                         categories="nosql,bigdata,keyvalue">
@@ -1783,7 +1783,7 @@
                         id="salesforce-ce"
                         dataSourceType="salesforce"
                         label="Salesforce"
-                        description="Salesforce connectivity is unavailable through this Community Edition placeholder. Use DBeaver PRO or configure a third-party Salesforce driver."
+                        description="Salesforce CRM data connector. DBeaver PRO only, unavailable in Community Edition."
                         iconBig="icons/salesforce_pro_icon.png"
                         supportsDistributedMode="false"
                         categories="sql">
@@ -1793,7 +1793,7 @@
                         id="couchbase-ce"
                         dataSourceType="couchbase"
                         label="Couchbase"
-                        description="Couchbase connectivity is unavailable through this Community Edition placeholder. Use DBeaver PRO or configure a third-party Couchbase driver."
+                        description="Couchbase document database connector. DBeaver PRO only, unavailable in Community Edition."
                         iconBig="icons/couchbase_pro_icon.png"
                         supportsDistributedMode="false"
                         categories="nosql">
@@ -1803,7 +1803,7 @@
                         id="redis-ce"
                         dataSourceType="redis"
                         label="Redis"
-                        description="Redis connectivity is unavailable through this Community Edition placeholder. Use DBeaver PRO or configure a third-party Redis driver."
+                        description="Redis key-value database connector. DBeaver PRO only, unavailable in Community Edition."
                         iconBig="icons/redis_pro_icon.png"
                         supportsDistributedMode="false"
                         categories="nosql,keyvalue">
@@ -1813,7 +1813,7 @@
                         id="timestream-ce"
                         dataSourceType="timestream"
                         label="Timestream"
-                        description="Amazon Timestream connectivity is unavailable through this Community Edition placeholder. Use DBeaver PRO or configure a third-party driver."
+                        description="Amazon Timestream time-series database connector. DBeaver PRO only, unavailable in Community Edition."
                         iconBig="icons/timestream_pro_icon.png"
                         supportsDistributedMode="false"
                         categories="nosql,timeseries,aws">
@@ -1823,7 +1823,7 @@
                         id="neo4j_jdbc"
                         dataSourceType="neo4j"
                         label="Neo4j"
-                        description="Neo4j connectivity is unavailable through this Community Edition placeholder. Use DBeaver PRO or configure a third-party Neo4j driver."
+                        description="Neo4j graph database connector. DBeaver PRO only, unavailable in Community Edition."
                         iconBig="icons/neo4j_icon_big.png"
                         supportsDistributedMode="false"
                         categories="graph">
@@ -1851,7 +1851,7 @@
                         class="org.elasticsearch.xpack.sql.jdbc.EsDriver"
                         sampleURL="jdbc:es://{host}:{port}/"
                         defaultPort="9200"
-                        description="Query Elasticsearch search and analytics data through its SQL JDBC driver for SQL-based exploration and reporting."
+                        description="Elasticsearch SQL JDBC driver for SQL access to search and analytics data."
                         webURL="https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-jdbc.html"
                         categories="fulltext">
                     <replace provider="generic" driver="es_generic"/>
@@ -1885,7 +1885,7 @@
                         class="com.amazon.opendistroforelasticsearch.jdbc.Driver"
                         sampleURL="jdbc:elasticsearch://https://{host}:{port}/"
                         defaultPort="443"
-                        description="Connect to legacy Open Distro for Elasticsearch deployments through its JDBC driver for SQL access to search and analytics data. Use the OpenSearch connector for OpenSearch clusters."
+                        description="Legacy Open Distro for Elasticsearch JDBC driver for SQL access to search and analytics data."
                         webURL="https://opendistro.github.io/for-elasticsearch-docs/docs/sql/jdbc/"
                         categories="fulltext">
                     <replace provider="generic" driver="opendistro_generic"/>

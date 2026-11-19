@@ -57,7 +57,7 @@
                         databaseDocumentationSuffixURL="Database-driver-SQLite"
                         embedded="true"
                         anonymous="true"
-                        description="Open SQLite databases directly with the SQLite JDBC driver for embedded SQL work without a separate server."
+                        description="Xerial JDBC driver for SQLite, an embedded relational database."
                         promoted="1"
                         categories="sql,embedded">
                     <replace provider="generic" driver="sqlite_zentus"/>
@@ -84,7 +84,7 @@
                         class="com.dbeaver.jdbc.driver.libsql.LibSqlDriver"
                         sampleURL="jdbc:dbeaver:libsql:{server}"
                         defaultDatabase="http://localhost"
-                        description="Connect to a standalone LibSQL server or the Turso service through the DBeaver JDBC driver for relational SQL access."
+                        description="DBeaver JDBC driver for standalone LibSQL relational database servers and the Turso service."
                         webURL="https://github.com/tursodatabase/libsql"
                         databaseDocumentationSuffixURL="Database-driver-LibSQL"
                         singleConnection="true"

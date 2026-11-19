@@ -35,7 +35,7 @@
                     class="com.databend.jdbc.DatabendDriver"
                     sampleURL="jdbc:databend://{host}:{port}[/{database}]"
                     defaultPort="8000"
-                    description="Connect to Databend servers version 1.0.0 or later through the vendor JDBC driver for column-oriented SQL analytics."
+                    description="Databend JDBC driver for column-oriented analytical databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/datafuselabs/databend-jdbc"
                     categories="sql,analytic,columns">

@@ -32,7 +32,7 @@
                         defaultUser="root"
                         webURL="https://doris.apache.org/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
-                        description="Connect to Apache Doris for SQL analytics using MySQL Connector/J and its MySQL-compatible interface."
+                        description="MySQL Connector/J JDBC driver for Apache Doris, a MySQL-compatible analytical database."
                         categories="sql,federated">
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>

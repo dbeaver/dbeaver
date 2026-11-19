@@ -304,7 +304,7 @@
                     useURL="false"
                     defaultPort="1433"
                     webURL="http://jtds.sourceforge.net/"
-                    description="Deprecated generic-provider definition for connecting to SQL Server through the jTDS JDBC driver. Hidden and replaced by the legacy jTDS connector. It is not the SQL Server connector using Microsoft's JDBC driver.">
+                    description="Deprecated jTDS JDBC connector for SQL Server relational databases over the TDS protocol.">
                     <replace provider="generic" driver="mssql"/>
                 </driver>
 
@@ -319,7 +319,7 @@
                     useURL="false"
                     defaultPort="1433"
                     webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
-                    description="Deprecated generic-provider definition for connecting to Microsoft SQL Server with Microsoft&apos;s JDBC driver. Retained for migration and replaced through the newer SQL Server driver definitions.">
+                    description="Deprecated Microsoft JDBC connector for SQL Server relational databases.">
                     <replace provider="generic" driver="mssql_ms"/>
                 </driver>
 
@@ -335,7 +335,7 @@
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         supportedConfigurationTypes="MANUAL,URL"
-                        description="Intermediate deprecated SQL Server definition using Microsoft&apos;s JDBC driver and SQL Server connection URLs. It replaces an earlier generic-provider definition and is itself hidden in favor of the SQL Server connector using Microsoft&apos;s JDBC driver.">
+                        description="Deprecated Microsoft JDBC connector for SQL Server relational databases.">
                     <replace provider="generic" driver="mssql_ms"/>
                     <replace provider="mssql" driver="mssql_jdbc_ms"/>
                 </driver>
@@ -354,7 +354,7 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
-                        description="Deprecated JDBC definition for Azure-hosted SQL Server databases using Microsoft&apos;s SQL Server driver. Hidden in favor of the Azure SQL Server connector using the Microsoft JDBC Driver for SQL Server.">
+                        description="Deprecated Microsoft SQL Server JDBC connector for Azure SQL cloud relational databases.">
                 </driver>
 
                 <driver
@@ -385,7 +385,7 @@
                         defaultPort="1433"
                         defaultDatabase="master"
                         webURL="http://jtds.sourceforge.net/"
-                        description="Connect to Microsoft SQL Server with the older jTDS JDBC driver, intended only for legacy or driver-compatibility scenarios."
+                        description="Legacy jTDS JDBC driver for Microsoft SQL Server relational databases over the TDS protocol."
                         supportedConfigurationTypes="MANUAL,URL"
                         supportsDistributedMode="false"
                         categories="sql">
@@ -427,7 +427,7 @@
                         defaultPort="5000"
                         defaultUser="sa"
                         webURL="http://jtds.sourceforge.net/"
-                        description="Connect to SAP ASE with the legacy jTDS JDBC driver as an alternative to the jConnect driver."
+                        description="Legacy jTDS JDBC driver for SAP ASE relational databases over the TDS protocol."
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
@@ -461,7 +461,7 @@
                         defaultPort="5000"
                         defaultUser="sa"
                         webURL="http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc01776.1604/doc/html/san1357754912881.html"
-                        description="Connect to SAP ASE with the Sybase-branded jConnect JDBC driver for SQL queries and administration."
+                        description="Sybase jConnect JDBC driver for SAP ASE relational databases over the TDS protocol."
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
@@ -492,7 +492,7 @@
                         defaultPort="5000"
                         defaultUser="sa"
                         webURL="https://help.sap.com/viewer/bb5dd5b844d046ea97fa6b328e0fda1d/8.0/en-US/b9acdb91f1e94cc2bdf12e9986567643.html"
-                        description="Connect to SAP ASE through the SAP jConnect JDBC driver for relational SQL queries and database administration."
+                        description="SAP jConnect JDBC driver for SAP ASE relational databases over the TDS protocol."
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 

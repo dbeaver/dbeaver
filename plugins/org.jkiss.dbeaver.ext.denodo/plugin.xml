@@ -36,7 +36,7 @@
                         defaultDatabase="admin"
                         defaultUser="admin"
                         defaultPassword="admin"
-                        description="Connect to Denodo Virtual DataPort through the vendor JDBC driver and query virtualized data from heterogeneous sources."
+                        description="Denodo Virtual DataPort JDBC driver for SQL access to heterogeneous data sources."
                         webURL="https://community.denodo.com/docs/html/browse/latest/vdp/developer/access_through_jdbc/access_through_jdbc"
                         categories="sql,analytic">
                     <file type="jar" path="https://community.denodo.com/drivers/jdbc/9/denodo-vdp-jdbcdriver"/>

@@ -30,7 +30,7 @@
                     label="Cloudflare D1"
                     class="com.dbeaver.jdbc.driver.d1.D1Driver"
                     sampleURL="jdbc:dbeaver:d1://{database}"
-                    description="Connect to Cloudflare D1, Cloudflare&apos;s serverless SQL database, through the DBeaver D1 JDBC driver. Authenticate with your Cloudflare account ID and API token to work with a remote D1 database."
+                    description="DBeaver JDBC driver for Cloudflare D1, a serverless SQL database."
                     icon="icons/cloudflare-d1.svg"
                     iconBig="icons/cloudflare-d1-big.svg"
                     webURL="https://developers.cloudflare.com/d1/"

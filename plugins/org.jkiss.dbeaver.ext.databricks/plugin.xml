@@ -38,7 +38,7 @@
                     sampleURL="jdbc:databricks://{host}[:{port}][/{database}]"
                     webURL="https://docs.databricks.com/aws/en/integrations/jdbc-oss.html"
                     databaseDocumentationSuffixURL="Database-driver-Databricks"
-                    description="Connect to the Databricks cloud lakehouse through its open-source JDBC driver for SQL analytics and engineering workloads."
+                    description="Open-source Databricks JDBC driver for cloud lakehouse SQL analytics."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic,cloud"
                     singleConnection="true">
