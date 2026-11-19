@@ -28,6 +28,9 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * AI engine settings profile
  * Keeps global parameters and configuration of an AI engine
@@ -35,15 +38,19 @@ import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 @JsonAdapter(AISettingsManager.ConfigProfileAdapter.class)
 public class AIConfigurationProfile {
     protected static final Log log = Log.getLog(AIConfigurationProfile.class);
+    public static final String LEGACY_CREDENTIAL_REVISION = "legacy";
 
     private boolean migrated;
     private String profileId;
     private String profileName;
+    private String credentialRevision = UUID.randomUUID().toString();
     private String engineId;
     private boolean global = true;
     private AIEngineProperties configuration;
 
     private transient AIEngineDescriptor engineDescriptor;
+    private transient Map<String, String> resolvedUserCredentials;
+    private transient volatile UserCredentialScope userCredentialScope = new UserCredentialScope();
     private transient JsonObject unavailableProfile;
 
     public AIConfigurationProfile() {
@@ -65,6 +72,15 @@ public class AIConfigurationProfile {
 
     public void setProfileName(@NotNull String profileName) {
         this.profileName = profileName;
+    }
+
+    @NotNull
+    public String getCredentialRevision() {
+        return credentialRevision;
+    }
+
+    public void setCredentialRevision(@NotNull String credentialRevision) {
+        this.credentialRevision = credentialRevision;
     }
 
     @NotNull
@@ -143,18 +159,79 @@ public class AIConfigurationProfile {
     }
 
     public void setConfiguration(@NotNull AIEngineProperties configuration) {
+        AISettings settings = userCredentialScope.settings;
+        invalidateUserCredentials();
         this.configuration = configuration;
+        this.resolvedUserCredentials = null;
         this.global = configuration.isGlobal();
+        this.userCredentialScope = new UserCredentialScope();
+        this.userCredentialScope.settings = settings;
+    }
+
+    public void useUserCredentialScope(@NotNull AIConfigurationProfile source) {
+        credentialRevision = source.credentialRevision;
+        if (userCredentialScope != source.userCredentialScope) {
+            invalidateUserCredentials();
+            userCredentialScope = source.userCredentialScope;
+        }
+    }
+
+    public void invalidateUserCredentials() {
+        UserCredentialScope scope = userCredentialScope;
+        synchronized (scope) {
+            scope.valid = false;
+        }
+    }
+
+    public void restoreUserCredentials() {
+        UserCredentialScope scope = userCredentialScope;
+        synchronized (scope) {
+            scope.valid = true;
+        }
+    }
+
+    @NotNull
+    UserCredentialScope getUserCredentialScope() {
+        return userCredentialScope;
+    }
+
+    void setUserCredentialSettings(@NotNull AISettings settings) {
+        userCredentialScope.settings = settings;
+    }
+
+    static final class UserCredentialScope {
+        boolean valid = true;
+        @Nullable
+        AISettings settings;
+
+        boolean isValid() {
+            return valid && (settings == null || !settings.isStale());
+        }
+    }
+
+    @Nullable
+    public Map<String, String> getResolvedUserCredentials() {
+        return resolvedUserCredentials;
+    }
+
+    void setResolvedUserCredentials(@NotNull Map<String, String> credentials) {
+        resolvedUserCredentials = Map.copyOf(credentials);
     }
 
     public void saveSecrets() throws DBException {
-        if (configuration != null) {
+        if (AIUserProfileCredentials.isUserProfile(this)) {
+            AIUserProfileCredentials.saveChanges(this);
+        } else if (configuration != null) {
             configuration.saveSecrets(this);
         }
     }
 
     public void resolveSecrets() throws DBException {
-        getConfiguration().resolveSecrets(this);
+        if (AIUserProfileCredentials.isUserProfile(this)) {
+            AIUserProfileCredentials.resolve(this);
+        } else {
+            getConfiguration().resolveSecrets(this);
+        }
     }
 
     @Override

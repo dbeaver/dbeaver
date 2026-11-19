@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AILegacyEngineConfiguration;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.AIUserProfileCredentials;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
@@ -47,7 +48,7 @@ import java.util.function.Consumer;
 public class AISettingsManager {
     private static final Log log = Log.getLog(AISettingsManager.class);
 
-    public static final String AI_CONFIGURATION_FILE_NAME = "ai-configuration.json";
+    public static final String AI_CONFIGURATION_FILE_NAME = RMConstants.AI_CONFIGURATION_FILE_NAME;
 
     private static AISettingsManager instance = null;
 
@@ -177,39 +178,93 @@ public class AISettingsManager {
      * Saves the given settings and makes them current
      */
     public void saveSettings(@NotNull AISettings settings) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            log.warn("The user has no permission to save AI configuration");
+            return;
+        }
+        try {
+            saveSettingsOrThrow(settings);
+        } catch (DBException e) {
+            log.error("Error saving AI configuration", e);
+            DBWorkbench.getPlatformUI().showError(AIMessages.ai_settings_save_error_title, null, e);
+        }
+    }
+
+    public void saveSettingsOrThrow(@NotNull AISettings settings) throws DBException {
+        saveSettingsOrThrow(settings, null);
+    }
+
+    public void removeConfiguration(@NotNull AISettings settings, @NotNull AIConfigurationProfile profile) throws DBException {
+        saveSettingsOrThrow(settings, profile);
+    }
+
+    private void saveSettingsOrThrow(@NotNull AISettings settings, @Nullable AIConfigurationProfile removedProfile) throws DBException {
         try {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
-                log.warn("The user has no permission to save AI configuration");
-                return;
+                throw new DBException("The user has no permission to save AI configuration");
             }
-
-            if (!saveSecretsAsPlainText()) {
-                AIConfigurationProfile defaultProfile = settings.getDefaultConfigurationOrNull();
-                for (AIConfigurationProfile profile : settings.getConfigurations()) {
-                    if (!profile.isAvailable()) {
-                        continue;
-                    }
-                    if (profile == defaultProfile) {
-                        profile.saveSecrets();
-                    } else if (profile.getConfiguration() instanceof OpenAIProperties properties) {
-                        properties.saveCustomHeaderSecrets(profile);
-                    }
+            settings.validateCurrentSettings();
+            if (removedProfile != null) {
+                if (AIUserProfileCredentials.isAvailable()) {
+                    removeTeamProfile(settings, removedProfile);
+                } else {
+                    settings.removeConfiguration(removedProfile);
                 }
             }
-
-            settings.prepareSettingsSaving();
-            String content = SAVE_PROPS_GSON.toJson(settings);
-
-            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
-
+            writeSettings(settings);
             applyUserDefaultConfiguration(settings);
             this.getSettingsHolder().setSettings(settings);
         } catch (Exception e) {
-            log.error("Error saving AI configuration", e);
-            // the settings were entered by the user, so a failed save must not stay in the log only
-            DBWorkbench.getPlatformUI().showError(AIMessages.ai_settings_save_error_title, null, e);
+            if (e instanceof DBException dbException) {
+                throw dbException;
+            }
+            throw new DBException("Error saving AI configuration", e);
+        } finally {
+            raiseChangedEvent(this);
         }
-        raiseChangedEvent(this);
+    }
+
+    private void removeTeamProfile(@NotNull AISettings settings, @NotNull AIConfigurationProfile profile) throws DBException {
+        String profileId = profile.getProfileId();
+        if (settings.getConfigurationOrNull(profileId) != profile) {
+            throw new DBException("AI configuration is no longer current");
+        }
+        profile.invalidateUserCredentials();
+        try {
+            settings.validateCurrentSettings();
+            AIUserProfileCredentials.delete(profile);
+        } catch (DBException | RuntimeException e) {
+            profile.restoreUserCredentials();
+            throw e;
+        }
+        settings.removeProfile(profile);
+    }
+
+    private void writeSettings(@NotNull AISettings settings) throws DBException {
+        if (AIUserProfileCredentials.isAvailable()) {
+            for (AIConfigurationProfile profile : settings.getConfigurations()) {
+                if (profile.isAvailable() && !profile.isGlobal()) {
+                    AIUserProfileCredentials.saveChanges(profile);
+                }
+            }
+        } else if (!saveSecretsAsPlainText()) {
+            AIConfigurationProfile defaultProfile = settings.getDefaultConfigurationOrNull();
+            for (AIConfigurationProfile profile : settings.getConfigurations()) {
+                if (!profile.isAvailable()) {
+                    continue;
+                }
+                if (profile == defaultProfile) {
+                    profile.saveSecrets();
+                } else if (profile.getConfiguration() instanceof OpenAIProperties properties) {
+                    properties.saveCustomHeaderSecrets(profile);
+                }
+            }
+        }
+
+        settings.prepareSettingsSaving();
+        String content = SAVE_PROPS_GSON.toJson(settings);
+        settings.validateCurrentSettings();
+        DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
     }
 
 
@@ -249,10 +304,18 @@ public class AISettingsManager {
         }
     }
 
+    @NotNull
+    private static AIEngineProperties getConfigurationForSave(@NotNull AIEngineProperties properties) throws DBException {
+        // personal tokens must never be written back to the shared configuration
+        return AIUserProfileCredentials.isAvailable() && !properties.isGlobal()
+            ? AIUserProfileCredentials.copyWithoutCredentials(properties)
+            : properties;
+    }
+
     private interface AISettingsHolder {
         AISettings getSettings();
 
-        void setSettings(AISettings mruSettings);
+        void setSettings(AISettings mruSettings) throws DBException;
 
         void reset();
     }
@@ -281,12 +344,19 @@ public class AISettingsManager {
         }
 
         @Override
-        public synchronized void setSettings(AISettings mruSettings) {
+        public synchronized void setSettings(@NotNull AISettings mruSettings) throws DBException {
+            mruSettings.validateCurrentSettings();
+            if (this.settings != null && this.settings != mruSettings) {
+                this.settings.markStale();
+            }
             this.settings = mruSettings;
         }
 
         @Override
         public synchronized void reset() {
+            if (this.settings != null) {
+                this.settings.markStale();
+            }
             this.settings = null;
         }
     }
@@ -347,7 +417,12 @@ public class AISettingsManager {
                 if (properties != null) {
                     out.beginObject();
                     out.name("properties");
-                    SAVE_PROPS_GSON.toJson(properties, properties.getClass(), out);
+                    try {
+                        AIEngineProperties sanitized = getConfigurationForSave(properties);
+                        SAVE_PROPS_GSON.toJson(sanitized, sanitized.getClass(), out);
+                    } catch (DBException e) {
+                        throw new IOException("Error preparing AI configuration", e);
+                    }
                     out.endObject();
                 } else {
                     writePreservedJson(out, Objects.requireNonNull(configuration.getUnavailableConfiguration()));
@@ -381,6 +456,7 @@ public class AISettingsManager {
             AIConfigurationProfile profile = new AIConfigurationProfile();
             profile.setProfileId(engineId);
             profile.setProfileName(engineId);
+            profile.setCredentialRevision(AIConfigurationProfile.LEGACY_CREDENTIAL_REVISION);
             profile.setEngineId(engineId);
             profile.setMigrated(true);
             AIEngineProperties properties = configuration.getProperties();
@@ -409,12 +485,15 @@ public class AISettingsManager {
             out.beginObject();
             out.name("name").value(value.getProfileName());
             out.name("engine").value(value.getEngineId());
+            if (!AIConfigurationProfile.LEGACY_CREDENTIAL_REVISION.equals(value.getCredentialRevision())) {
+                out.name("credentialRevision").value(value.getCredentialRevision());
+            }
             if (value.isMigrated()) {
                 out.name("migrated").value(true);
             }
             out.name("configuration");
             try {
-                AIEngineProperties configuration = value.getConfiguration();
+                AIEngineProperties configuration = getConfigurationForSave(value.getConfiguration());
                 SAVE_PROPS_GSON.toJson(configuration, configuration.getClass(), out);
             } catch (DBException e) {
                 throw new IOException("Error saving AI profile '" + value.getProfileId() + "'", e);
@@ -428,6 +507,9 @@ public class AISettingsManager {
             JsonObject json = JsonParser.parseReader(in).getAsJsonObject();
             AIConfigurationProfile result = new AIConfigurationProfile();
             result.setEngineId(json.get("engine").getAsString());
+            JsonElement credentialRevision = json.get("credentialRevision");
+            result.setCredentialRevision(credentialRevision == null || credentialRevision.isJsonNull()
+                ? AIConfigurationProfile.LEGACY_CREDENTIAL_REVISION : credentialRevision.getAsString());
             result.setProfileName(json.has("name") && !json.get("name").isJsonNull()
                 ? json.get("name").getAsString() : result.getEngineId());
             if (json.has("migrated")) {

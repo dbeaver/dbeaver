@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AIUserProfileCredentials;
 import org.jkiss.dbeaver.model.ai.engine.AIAccountProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
@@ -83,6 +84,9 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @SerializedName("openai.authentication")
     private String authentication = AUTHENTICATION_API_TOKEN;
+    // personal edits must not replace the shared authentication method
+    @Nullable
+    protected transient Boolean userAccountAuthentication;
     @SecureProperty
     @SerializedName(ACCESS_TOKEN)
     private String accessToken;
@@ -229,6 +233,9 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @NotNull
     @Property(order = 1)
     public String getAuthentication() {
+        if (userAccountAuthentication != null) {
+            return userAccountAuthentication ? AUTHENTICATION_CHATGPT_ACCOUNT : AUTHENTICATION_API_TOKEN;
+        }
         return AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
             ? AUTHENTICATION_CHATGPT_ACCOUNT
             : AUTHENTICATION_API_TOKEN;
@@ -249,11 +256,20 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     }
 
     @Override
+    public void setUserAccountAuthentication(@Nullable Boolean accountAuthentication) {
+        userAccountAuthentication = accountAuthentication;
+    }
+
+    @Override
     public boolean supportsDeviceAuthorization() {
         return true;
     }
 
     public void setAuthentication(@Nullable String authentication) {
+        if (userAccountAuthentication != null) {
+            userAccountAuthentication = AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication);
+            return;
+        }
         this.authentication = AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
             ? AUTHENTICATION_CHATGPT_ACCOUNT
             : AUTHENTICATION_API_TOKEN;
@@ -483,8 +499,8 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         synchronized (credentials) {
             long expiresInSeconds = Math.max(0, (credentials.expiresAt - System.currentTimeMillis()) / 1000);
             credentials.saveAccountTokensInternal(credentials.refreshToken, new AIAccountAuthenticator.Tokens(
-                credentials.accessToken,
-                credentials.refreshToken,
+                CommonUtils.notEmpty(credentials.accessToken),
+                CommonUtils.notEmpty(credentials.refreshToken),
                 expiresInSeconds,
                 credentials.accountId,
                 credentials.accountEmail
@@ -616,7 +632,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         @Nullable String previousRefreshToken,
         @NotNull AIAccountAuthenticator.Tokens tokens
     ) throws DBException {
-        if (profile != null) {
+        if (profile != null && !AIUserProfileCredentials.isUserProfile(profile)) {
             saveSecrets(profile);
         }
         if (accountTokenPersistence != null && tokens.accessToken() != null && tokens.refreshToken() != null) {
