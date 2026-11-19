@@ -126,7 +126,6 @@ public class CloudflareD1RegistrationTest {
             Assertions.assertEquals("com.dbeaver.jdbc.driver.d1.D1Driver", driver.getAttribute("class"));
             var files = driver.getElementsByTagName("file");
             int mavenLibraries = 0;
-            int packagedLibraries = 0;
             var bundledLibraries = new HashSet<String>();
             for (int index = 0; index < files.getLength(); index++) {
                 var file = (Element) files.item(index);
@@ -136,24 +135,15 @@ public class CloudflareD1RegistrationTest {
                         mavenLibraries++;
                         Assertions.assertEquals("maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.d1:RELEASE", path);
                         Assertions.assertEquals("!drivers.cloudflare.d1", file.getAttribute("bundle"));
-                    } else if ("drivers/cloudflare/d1".equals(path)) {
-                        packagedLibraries++;
-                        Assertions.assertEquals("drivers.cloudflare.d1.files", file.getAttribute("bundle"));
                     } else {
-                        Assertions.assertEquals("drivers.cloudflare.d1.osgi", file.getAttribute("bundle"));
+                        Assertions.assertEquals("drivers.cloudflare.d1", file.getAttribute("bundle"));
                         Assertions.assertTrue(bundledLibraries.add(path));
                     }
                     Assertions.assertNotEquals("true", file.getAttribute("ignore-dependencies"));
                 }
             }
             Assertions.assertEquals(1, mavenLibraries);
-            Assertions.assertEquals(1, packagedLibraries);
-            Assertions.assertEquals(Set.of(
-                "bundle:/com.dbeaver.jdbc.driver.d1",
-                "bundle:/com.dbeaver.jdbc.api",
-                "bundle:/org.jkiss.utils",
-                "bundle:/com.google.gson"
-            ), bundledLibraries);
+            Assertions.assertEquals(Set.of("drivers/cloudflare/d1"), bundledLibraries);
             var auth = (Element) plugin.getElementsByTagName("authModel").item(0);
             Assertions.assertEquals("cloudflare_d1_native", auth.getAttribute("id"));
         }
