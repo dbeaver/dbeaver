@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
@@ -89,6 +90,11 @@ public class OracleDependency extends OracleObject<DBSObject> implements DBPUniq
         return objectName;
     }
 
+    /**
+     * Null when the dictionary reports a type that {@link OracleObjectType} does not know
+     * (or no type at all), as Oracle-compatible servers such as OceanBase can.
+     */
+    @Nullable
     @Property(viewable = true, order = 2)
     public OracleObjectType getObjectType() {
         return objectType;
@@ -99,8 +105,12 @@ public class OracleDependency extends OracleObject<DBSObject> implements DBPUniq
         return getDataSource().getSchema(monitor, objectOwnerName);
     }
 
+    @Nullable
     @Property(viewable = true, order = 4)
     public DBSObject getObject(DBRProgressMonitor monitor) throws DBException {
+        if (objectType == null) {
+            return null;
+        }
         return objectType.findObject(monitor, getObjectOwner(monitor), objectName);
     }
 
@@ -109,9 +119,10 @@ public class OracleDependency extends OracleObject<DBSObject> implements DBPUniq
         return dependencyType;
     }
 
+    @Nullable
     @Override
     public DBPImage getObjectImage() {
-        return objectType.getImage();
+        return objectType == null ? null : objectType.getImage();
     }
 
     @NotNull
