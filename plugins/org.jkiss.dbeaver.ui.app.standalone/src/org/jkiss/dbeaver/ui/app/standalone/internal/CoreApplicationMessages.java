@@ -65,6 +65,8 @@ public class CoreApplicationMessages extends NLS {
     public static String notification_perspective_reset_message;
 
     public static String version_update_prepare;
+    public static String version_update_download;
+    public static String version_update_obtain_installer;
     public static String version_update_error_prepare;
 
     public static String actions_menu_about;
@@ -95,6 +97,7 @@ public class CoreApplicationMessages extends NLS {
     public static String dialog_version_update_no_notes;
     public static String dialog_version_update_press_more_info;
     public static String dialog_version_update_title;
+    public static String dialog_version_update_major_version;
     public static String dialog_version_update_error_cannot_check_version;
     public static String dialog_version_update_downloader_title;
     public static String dialog_version_update_downloader_confirm_install;

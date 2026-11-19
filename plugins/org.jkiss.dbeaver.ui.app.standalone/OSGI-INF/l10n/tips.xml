@@ -138,8 +138,8 @@
     <tip product="ce">DBeaver PRO supports <a href="https://dbeaver.com/databases/?utm_source=ce&amp;tm_medium=cpc&amp;utm_campaign=tips">all
          popular NoSQL databases</a>: MongoDB, CouchDB, InfluxDB, and more. In addition, if you're unfamiliar with NoSQL,
          you can use a plain SQL editor to perform different queries in DBeaver PRO.</tip>
-    <tip product="ce">Get a powerful AI Assistant in DBeaver PRO to automatically create complex queries with joins.
-         Watch how it works <a href="https://youtu.be/MOaEpDa5GP0">in our tutorial video.</a>. </tip>
+    <tip>Use the AI Assistant in DBeaver to automatically create complex queries with joins.
+         Watch how it works <a href="https://youtu.be/MOaEpDa5GP0">in our tutorial video</a>.</tip>
     <tip product="ce">In DBeaver PRO, you can quickly and easily visualize your data with
          <a href="https://dbeaver.com/2022/06/09/visualize-data-with-dbeaver/?utm_source=c&amp;utm_medium=cpc&amp;utm_campaign=tips">Charts</a>
          in the data grid, Panels, or result set in SQL editor.</tip>
@@ -168,8 +168,8 @@
     <tip product="ce,le,ee,ue">DBeaver PRO offers a convenient way to configure Kubernetes settings for connecting to databases in a Kubernetes cluster.<br/>
         Learn more about Kubernetes configuration <a href="https://dbeaver.com/docs/dbeaver/Kubernetes-configuration/">here</a>.</tip>
     <tip product="ce">You can connect to almost any database by using native ODBC drivers in <a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">DBeaver PRO</a>.</tip>
-    <tip product="ce,le,ee,ue"><a href="https://dbeaver.com/docs/dbeaver/AI-Smart-Assistance/">AI Chat</a> in DBeaver PRO is a new way to build SQL queries automatically.
-        To try it out, open the **AI Chat** tab on the right side of the SQL editor.</tip>
+    <tip><a href="https://dbeaver.com/docs/dbeaver/AI-Smart-Assistance/">AI Chat</a> in DBeaver lets you build SQL queries automatically.
+        To try it out, open the <b>AI Chat</b> tab on the right side of the SQL editor.</tip>
     <tip product="ce,le,ee,ue">You can configure DBeaver's integration with Tableau to create database connections and edit custom SQL queries conveniently.<br/>
         Learn more about Tableau integration in DBeaver PRO <a href="https://dbeaver.com/docs/dbeaver/Tableau-integration-in-DBeaver/">here</a>.</tip>
     <tip product="ce">You can connect to a Salesforce database in DBeaver PRO using the
@@ -181,8 +181,6 @@
          <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=le&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a>.
          Easily share datasets and scripts across teams in real time.</tip>
     <tip product="le,ee,ue">If you're unfamiliar with NoSQL, you can use a plain SQL editor to perform different queries.</tip>
-    <tip product="le">Get a powerful AI Assistant in DBeaver Enterprise to automatically create complex queries with joins. Watch how it works
-         <a href="https://youtu.be/MOaEpDa5GP0">in our tutorial video</a>.</tip>
     <tip product="le">In DBeaver Enterprise, you can get advanced options to compare data from two similar tables to navigate the differences.
          Learn more about Data comparison in DBeaver Enterprise <a href="https://dbeaver.com/docs/dbeaver/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
     <tip product="le">With DBeaver Enterprise, you can <a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">schedule
@@ -203,7 +201,6 @@
          Easily share connections, scripts, and datasets across teams in real time. Get the full functionality of DBeaver Ultimate and CloudBeaver Enterprise.</tip>
     <tip product="ee,ue">Use the <a href="https://dbeaver.com/2022/02/10/how-does-visual-query-builder-help-optimize-your-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Visual
          Query Builder tool</a> to simplify the SQL scripting process.</tip>
-    <tip product="ee,ue">Use a powerful AI Assistant to automatically create complex queries with joins. Watch how it works <a href="https://youtu.be/MOaEpDa5GP0">in our tutorial video</a>.</tip>
     <tip product="ee,ue">You can quickly and easily visualize your data with
          <a href="https://dbeaver.com/2022/06/09/visualize-data-with-dbeaver/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Charts</a>
          in the data grid, Panels, or result set in SQL editor.</tip>
@@ -250,4 +247,7 @@
     <tip product="te">Advanced load scalability available in Team Edition.</tip>
     <tip product="te">If you want to expand the number of user roles and change the user role, please <a href="mailto:sales@dbeaver.com">get in touch</a> with our customer success team.</tip>
     <tip product="te">Use Query Manager in the web version of Team Edition to explore all users' queries.</tip>
+    <tip>In <a href="https://dbeaver.com/docs/dbeaver/AI-chat/">AI Chat</a>, describe the result you need and mention the relevant tables and columns to get more precise SQL suggestions.</tip>
+    <tip>You can refine an answer in <a href="https://dbeaver.com/docs/dbeaver/AI-chat/">AI Chat</a> with follow-up messages. Ask to add a filter, change the sorting, or explain the suggested SQL.</tip>
+    <tip>To open AI Chat, use the command <commandRef commandId="org.jkiss.dbeaver.ui.ai.showCompletion"/>.</tip>
 </tips>

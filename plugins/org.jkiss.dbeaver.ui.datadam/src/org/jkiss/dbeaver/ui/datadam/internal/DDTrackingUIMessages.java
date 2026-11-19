@@ -34,6 +34,8 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_account_not_signed_in;
     public static String sync_preference_page_desktop_sign_in;
     public static String sync_preference_page_desktop_sign_out;
+    public static String sync_preference_page_logout_confirm_title;
+    public static String sync_preference_page_logout_confirm_message;
     public static String sync_preference_page_open_account;
     public static String sync_preference_page_dam_name_label;
     public static String sync_preference_page_dam_name_edit;
@@ -67,6 +69,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_share_failed;
     public static String project_sync_update_job;
     public static String project_sync_update_success;
+    public static String project_sync_update_count;
     public static String project_sync_update_failed;
     public static String project_sync_resolve_job;
     public static String project_sync_resolve_failed;
@@ -89,14 +92,26 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_unbind_job;
     public static String project_sync_unbind_success;
     public static String project_sync_unbind_failed;
+    public static String project_sync_deleted_title;
+    public static String project_sync_deleted_message;
+    public static String project_sync_deleted_delete_local;
+    public static String project_sync_deleted_keep_local;
+    public static String project_sync_deleted_active_message;
+    public static String project_sync_deleted_failed;
     public static String project_sync_import_list_job;
     public static String project_sync_import_list_failed;
     public static String project_sync_import_job;
+    public static String project_sync_import_success;
     public static String project_sync_import_failed;
     public static String project_edit_job;
     public static String project_edit_failed;
 
     public static String projects_show_remote;
+    public static String projects_stream_sync_checkbox;
+    public static String projects_stream_sync_description;
+    public static String projects_stream_sync_active;
+    public static String projects_stream_sync_update_failed;
+    public static String projects_push_changes;
     public static String projects_refresh;
     public static String projects_page_description;
     public static String projects_page_about_link;
@@ -138,6 +153,31 @@ public class DDTrackingUIMessages extends NLS {
     public static String import_key_dialog_prompt_label;
     public static String import_key_dialog_paste_button;
     public static String import_key_dialog_reset_button;
+
+    public static String tracking_title;
+    public static String event_time;
+    public static String event_type;
+    public static String event_details;
+    public static String event_database;
+    public static String show_in_navigator;
+    public static String clear_events;
+    public static String configuration;
+    public static String integration_enabled;
+    public static String status_connected;
+    public static String status_disconnected;
+    public static String status_connecting;
+    public static String status_disabled;
+    public static String status_unknown;
+    public static String status_not_logged_in;
+    public static String signed_in;
+    public static String signed_out;
+    public static String invalid_token;
+    public static String error;
+    public static String mcp_request;
+    public static String connected_at;
+    public static String connection_duration;
+    public static String bytes_sent;
+    public static String bytes_received;
 
     static {
         // initialize resource bundle

@@ -213,6 +213,17 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
     }
 
     @Test
+    void explainedDdlIsNotAnObjectOperation() {
+        for (String sql : List.of(
+            "EXPLAIN QUERY PLAN DROP TABLE Album",
+            "EXPLAIN PLAN FOR CREATE TABLE Album (id integer)",
+            "EXPLAIN PLAN FOR ALTER INDEX album_idx REBUILD"
+        )) {
+            Assertions.assertEquals(List.of(), recognizeAll(BasicSQLDialect.INSTANCE, sql), sql);
+        }
+    }
+
+    @Test
     void ignoresMalformedQueries() {
         Assertions.assertNull(parse("CREATE DATABASE"));
         Assertions.assertNull(parse("CREATE DATABASE \"unterminated"));

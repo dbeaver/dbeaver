@@ -42,8 +42,6 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 
-import java.util.List;
-
 /**
  * SelectDataSourceDialog
  *
@@ -57,11 +55,9 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     @Nullable
     private final DBPProject project;
     private final boolean allowAllProjects;
-    @Nullable
-    private final List<? extends DBPProject> availableProjects;
     private DBPDataSourceContainer dataSource;
 
-    private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog"; //$NON-NLS-1$
+    private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
     private boolean showConnected;
     private boolean showAllProjects;
     private DBNProjectDatabases projectNode;
@@ -81,38 +77,10 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         @Nullable DBPDataSourceContainer selection,
         boolean allowAllProjects
     ) {
-        this(parentShell, project, selection, allowAllProjects, null);
-    }
-
-    public SelectDataSourceDialog(
-        @NotNull Shell parentShell,
-        @Nullable DBPProject project,
-        @Nullable DBPDataSourceContainer selection,
-        @NotNull List<? extends DBPProject> availableProjects
-    ) {
-        this(parentShell, project, selection, true, availableProjects);
-    }
-
-    private SelectDataSourceDialog(
-        @NotNull Shell parentShell,
-        @Nullable DBPProject project,
-        @Nullable DBPDataSourceContainer selection,
-        boolean allowAllProjects,
-        @Nullable List<? extends DBPProject> availableProjects
-    ) {
         super(parentShell, UINavigatorMessages.dialog_select_datasource_title);
         this.project = project;
         this.dataSource = selection;
         this.allowAllProjects = allowAllProjects;
-        this.availableProjects = availableProjects;
-    }
-
-    @Override
-    protected void configureShell(@NotNull Shell shell) {
-        super.configureShell(shell);
-        if (isModeless()) {
-            closeOnFocusLost(shell);
-        }
     }
 
     @Override
@@ -158,9 +126,8 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
 
             @Override
-            public boolean select(@NotNull Object element) {
-                return element instanceof DBNProject projectNode &&
-                    (availableProjects == null || availableProjects.contains(projectNode.getProject())) ||
+            public boolean select(Object element) {
+                return element instanceof DBNProject ||
                     element instanceof DBNProjectDatabases ||
                     element instanceof DBNLocalFolder ||
                     element instanceof DBNDataSource;
@@ -253,10 +220,8 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
 
         treeViewer.addFilter(new ViewerFilter() {
             @Override
-            public boolean select(@NotNull Viewer viewer, @Nullable Object parentElement, @NotNull Object element) {
-                if (element instanceof DBNProject && !dsFilter.select(element)) {
-                    return false;
-                }
+            public boolean select(Viewer viewer, Object parentElement, Object element)
+            {
                 if (showConnected) {
                     if (element instanceof DBNDataSource) {
                         return ((DBNDataSource) element).getDataSource() != null;
@@ -308,12 +273,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
         });
 
-        closeOnFocusLost(
-            treeViewer.getControl(),
-            filterControl,
-            descriptionText,
-            showConnectedCheck,
-            showAllProjectsCheck);
+        closeOnFocusLost();
 
         return group;
     }

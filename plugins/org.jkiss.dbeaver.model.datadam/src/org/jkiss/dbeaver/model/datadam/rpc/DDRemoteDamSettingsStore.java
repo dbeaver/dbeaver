@@ -48,7 +48,7 @@ public class DDRemoteDamSettingsStore {
     }
 
     /** Notifies immediately and on changes; later notifications run on the update thread. */
-    public void addListener(@NotNull Listener listener) {
+    public synchronized void addListener(@NotNull Listener listener) {
         listeners.add(listener);
         notifyListener(listener, settings.get());
     }
@@ -57,7 +57,7 @@ public class DDRemoteDamSettingsStore {
         listeners.remove(listener);
     }
 
-    public void updateSettings(@Nullable DDRemoteDamSettings updated) {
+    public synchronized void updateSettings(@Nullable DDRemoteDamSettings updated) {
         if (!Objects.equals(settings.getAndSet(updated), updated)) {
             for (Listener listener : listeners) {
                 notifyListener(listener, updated);

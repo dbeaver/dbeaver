@@ -1176,6 +1176,9 @@ public class SQLEditor extends SQLEditorBase implements
 
         Composite editorContainer;
         sqlEditorPanel = UIUtils.createPlaceholder(resultsSash, 3, 0);
+        if (!isHideQueryText()) {
+            resultsSash.setMaximizedControl(sqlEditorPanel);
+        }
         CSSUtils.markConnectionTypeColor(sqlEditorPanel);
 
         // Create left vertical toolbar
@@ -2379,6 +2382,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    /**
+     * @param switchFocus whether to focus the results when showing the panel
+     * @param createQueryProcessor retained for compatibility; query processors are only created when executing queries
+     */
     public void toggleResultPanel(boolean switchFocus, boolean createQueryProcessor) {
         if (isHideQueryText()) {
             return;
@@ -2389,11 +2396,6 @@ public class SQLEditor extends SQLEditorBase implements
                 switchFocus(false);
             } else {
                 // Show both editor and results
-                // Check for existing query processors (maybe all result tabs were closed)
-                if (resultTabs.getItemCount() == 0 && createQueryProcessor) {
-                    createQueryProcessor(true, true, true);
-                }
-
                 resultsSash.setMaximizedControl(null);
 
                 if (switchFocus) {

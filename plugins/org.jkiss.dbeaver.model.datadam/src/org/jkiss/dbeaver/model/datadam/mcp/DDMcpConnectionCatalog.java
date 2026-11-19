@@ -31,11 +31,11 @@ import java.util.List;
 
 public class DDMcpConnectionCatalog {
     private static final Log log = Log.getLog(DDMcpConnectionCatalog.class);
-    private static final String ENABLED_EXTENSION = "datadam.mcp.enabled";
 
     @Nullable
     private static DDMcpConnectionCatalog instance;
 
+    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private final DDWorkspace workspace = DDWorkspace.getInstance();
 
     private DDMcpConnectionCatalog() {
@@ -51,41 +51,16 @@ public class DDMcpConnectionCatalog {
 
     @NotNull
     public List<AvailableConnection> getAllowedConnections() throws DDMcpFunctionException {
-        if (DDDesktopAccessService.getInstance().getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+        if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
             return List.of();
         }
-        return getConfiguredConnections();
-    }
-
-    @NotNull
-    public List<AvailableConnection> getConfiguredConnections() {
         return workspace.getProjects().stream()
-            .flatMap(project -> getMCPConnections(project).stream())
+            .filter(this::canReadProjectConnections)
+            .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
+                .filter(DDMcpConnectionSettings::isEnabled)
+                .map(connection -> new AvailableConnection(project, connection,
+                    requiresManualConnection(connection))))
             .toList();
-    }
-
-    @NotNull
-    public List<AvailableConnection> getMCPConnections(@NotNull DBPProject project) {
-        if (!canReadProjectConnections(project)) {
-            return List.of();
-        }
-        return project.getDataSourceRegistry().getDataSources().stream()
-            .filter(this::isEnabled)
-            .map(this::getAvailableConnection)
-            .toList();
-    }
-
-    public boolean isEnabled(@NotNull DBPDataSourceContainer connection) {
-        return Boolean.TRUE.equals(connection.getExtension(ENABLED_EXTENSION));
-    }
-
-    public void setEnabled(@NotNull DBPDataSourceContainer connection, boolean enabled) {
-        connection.setExtension(ENABLED_EXTENSION, enabled ? Boolean.TRUE : null);
-    }
-
-    @NotNull
-    public AvailableConnection getAvailableConnection(@NotNull DBPDataSourceContainer connection) {
-        return new AvailableConnection(connection.getProject(), connection, requiresManualConnection(connection));
     }
 
     private boolean canReadProjectConnections(@NotNull DBPProject project) {
