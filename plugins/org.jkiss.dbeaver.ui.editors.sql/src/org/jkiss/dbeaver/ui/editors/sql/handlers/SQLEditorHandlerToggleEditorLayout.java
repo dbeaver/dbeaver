@@ -20,13 +20,13 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 
@@ -34,18 +34,18 @@ public class SQLEditorHandlerToggleEditorLayout extends AbstractHandler {
     static protected final Log log = Log.getLog(SQLEditorHandlerToggleEditorLayout.class);
 
     @Override
+    @Nullable
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
             String curPresentationName = DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
-            SQLEditor.ResultSetOrientation curOrientation = CommonUtils.valueOf(SQLEditor.ResultSetOrientation.class, curPresentationName, SQLEditor.ResultSetOrientation.HORIZONTAL);
+            SQLEditor.ResultSetOrientation curOrientation;
             if (SQLEditorCommands.CMD_RESULTS_BELOW.equals(event.getCommand().getId())) {
                 curOrientation = SQLEditor.ResultSetOrientation.HORIZONTAL;
-            } else if (SQLEditorCommands.CMD_RESULTS_RIGHT.equals(event.getCommand().getId())
-                || curOrientation == SQLEditor.ResultSetOrientation.HORIZONTAL) {
+            } else if (SQLEditorCommands.CMD_RESULTS_RIGHT.equals(event.getCommand().getId())) {
                 curOrientation = SQLEditor.ResultSetOrientation.VERTICAL;
             } else {
-                curOrientation = SQLEditor.ResultSetOrientation.HORIZONTAL;
+                return null;
             }
             if (curOrientation.name().equals(curPresentationName)) {
                 return null;
