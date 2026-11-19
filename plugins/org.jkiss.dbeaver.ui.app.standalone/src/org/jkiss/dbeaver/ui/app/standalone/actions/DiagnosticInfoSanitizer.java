@@ -38,6 +38,9 @@ final class DiagnosticInfoSanitizer {
         "(?i)((['\"]?)(?:password|passwd|pwd|secret|token|api[_-]?key|user(?:name)?|authorization)\\2\\s*[=:]\\s*)"
             + "(\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|[^\\s,;&}]+)"
     );
+    private static final Pattern SQL_PASSWORD = Pattern.compile(
+        "(?i)(\\bidentified\\s+by\\s+)(\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|[^\\s,;]+)"
+    );
     private static final Pattern ADDRESS = Pattern.compile(
         "(?i)(?<![\\w.])(?:\\d{1,3}(?:\\.\\d{1,3}){3}|(?=(?:[0-9a-f]{0,4}:){3}|[0-9a-f:]*::)"
             + "(?:[0-9a-f]{0,4}:){2,}[0-9a-f:.]+)(?![\\w.])"
@@ -70,6 +73,9 @@ final class DiagnosticInfoSanitizer {
     private static final Pattern VERSION = Pattern.compile(
         "(?i)\\b\\w*version(?:\\s*[:=]\\s*|\\s+)['\"]?\\d+(?:\\.\\d+){3,}"
     );
+    private static final Pattern SQL_SERVER_VERSION = Pattern.compile(
+        "(?i)\\bMicrosoft SQL Server[^\\r\\n]*?\\b\\d+(?:\\.\\d+){3,}"
+    );
     private static final Pattern ECLIPSE_LOG_BUNDLE = Pattern.compile("!(?:ENTRY|SUBENTRY\\s+\\d+)\\s+");
     private static final Pattern TECHNICAL_IDENTIFIER = Pattern.compile("(?:org\\.(?:eclipse|jkiss)|com\\.dbeaver)\\..+");
     private static final Pattern PROPERTY_NAME = Pattern.compile("(?m)^[\\t ]*[\\w.-]+[\\t ]*(?=[=:])");
@@ -79,6 +85,7 @@ final class DiagnosticInfoSanitizer {
     private static final Pattern LAUNCHER_ARGUMENT = Pattern.compile("--[a-zA-Z][\\w.-]*");
     private static final Pattern BUNDLE_IDENTIFIER = Pattern.compile(
         "\\bbundle:/[\\w.-]+|(?m)^[\\t ]*[\\w.-]+(?= \\(\\d+(?:\\.[\\w-]+)+\\) \")"
+            + "|(?m)^[\\t ]*Id:[\\t ]*[\\w.-]+(?=,[\\t ]*Version:)"
     );
     private static final Pattern SYSTEM_METADATA = Pattern.compile(
         "^[\\t ]*org\\.osgi\\.framework\\.system\\.(?:packages(?:\\.extra)?|capabilities(?:\\.extra)?)\\s*="
@@ -131,6 +138,11 @@ final class DiagnosticInfoSanitizer {
         String result = CONNECTION.matcher(text).replaceAll(m -> Matcher.quoteReplacement(redactLocation(m.group())));
         result = URI_WITH_USERINFO.matcher(result).replaceAll(m -> Matcher.quoteReplacement(redactLocation(m.group())));
         result = AUTHORIZATION_HEADER.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
+        result = SQL_PASSWORD.matcher(result).replaceAll(m -> {
+            String value = m.group(2);
+            String quote = value.startsWith("\"") || value.startsWith("'") ? value.substring(0, 1) : "";
+            return Matcher.quoteReplacement(m.group(1) + quote + REDACTED + quote);
+        });
         result = CREDENTIAL.matcher(result).replaceAll(m -> {
             String value = m.group(3);
             String quote = value.startsWith("\"") || value.startsWith("'") ? value.substring(0, 1) : "";
@@ -150,7 +162,9 @@ final class DiagnosticInfoSanitizer {
             boolean productVersion = line.contains("DBeaver") && line.contains(" is starting");
             int offset = m.start() - beforeAddresses.lastIndexOf('\n', m.start() - 1) - 1;
             boolean version = VERSION.matcher(line).results().anyMatch(v -> v.start() <= offset && v.end() >= offset + m.group().length());
-            return productVersion || version ? Matcher.quoteReplacement(m.group()) : REDACTED;
+            boolean sqlServerVersion = SQL_SERVER_VERSION.matcher(line).results()
+                .anyMatch(v -> v.start() <= offset && v.end() >= offset + m.group().length());
+            return productVersion || version || sqlServerVersion ? Matcher.quoteReplacement(m.group()) : REDACTED;
         });
         String beforeDomains = result;
         result = DOMAIN.matcher(result).replaceAll(m -> {
@@ -261,13 +275,16 @@ final class DiagnosticInfoSanitizer {
             }
         }
         int end = value.length();
+        int punctuationEnd = end;
+        while (punctuationEnd > 0 && value.charAt(punctuationEnd - 1) == ',') {
+            punctuationEnd--;
+        }
+        if (punctuationEnd < end && (punctuationEnd == 0 || delimiter(value.charAt(punctuationEnd - 1)) < 0)) {
+            punctuationEnd = end;
+        }
+        end = punctuationEnd;
         while (end > 0) {
-            int delimiter = switch (value.charAt(end - 1)) {
-                case ')' -> 0;
-                case ']' -> 1;
-                case '}' -> 2;
-                default -> -1;
-            };
+            int delimiter = delimiter(value.charAt(end - 1));
             if (delimiter < 0 || unmatchedClosings[delimiter] <= 0) {
                 break;
             }
@@ -275,6 +292,15 @@ final class DiagnosticInfoSanitizer {
             end--;
         }
         return REDACTED + value.substring(end);
+    }
+
+    private static int delimiter(char value) {
+        return switch (value) {
+            case ')' -> 0;
+            case ']' -> 1;
+            case '}' -> 2;
+            default -> -1;
+        };
     }
 
     @NotNull

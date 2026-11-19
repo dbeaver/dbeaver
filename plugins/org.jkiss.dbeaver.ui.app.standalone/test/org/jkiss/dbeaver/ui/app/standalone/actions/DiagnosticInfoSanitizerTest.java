@@ -70,14 +70,21 @@ public class DiagnosticInfoSanitizerTest {
                 + "host=[REDACTED]");
         check(sanitizer, "  com.google.gson (2.14.0) \"Gson\" [Resolved]",
             "  com.google.gson (2.14.0) \"Gson\" [Resolved]");
+        check(sanitizer, "Id: com.google.gson, Version: 2.14.0, Location: reference:file:plugins/com.google.gson_2.14.0.jar",
+            "Id: com.google.gson, Version: 2.14.0, Location: reference:file:plugins/com.google.gson_2.14.0.jar");
         check(sanitizer, "Loading bundle:/com.google.gson", "Loading bundle:/com.google.gson");
         check(sanitizer, "Connect to com.google.gson", "Connect to [REDACTED]");
         check(sanitizer, "License: DB-EXAMPLE-123 (Enterprise)", "License: [REDACTED] (Enterprise)");
         check(sanitizer, "PostgreSQL 11.22 (Debian 11.22-1.pgdg110+1)",
             "PostgreSQL 11.22 (Debian 11.22-1.pgdg110+1)");
         check(sanitizer, "Open [https://db.example.test/path]", "Open [[REDACTED]]");
+        check(sanitizer,
+            "serviceEndpoint [https://cosmos-dbeaver-nosql.documents.azure.com:443], connectionPolicy",
+            "serviceEndpoint [[REDACTED]], connectionPolicy");
         check(sanitizer, "Open (https://db.example.test/path(a))", "Open ([REDACTED])");
         check(sanitizer, "Open [https://[2001:db8::1]/path]", "Open [[REDACTED]]");
+        check(sanitizer, "Microsoft SQL Server 2022 (RC1) - 16.0.950.9 (X64)",
+            "Microsoft SQL Server 2022 (RC1) - 16.0.950.9 (X64)");
         String closingDelimiters = ")]}".repeat(70_000);
         check(sanitizer, "https://db.example.test/path" + closingDelimiters, "[REDACTED]" + closingDelimiters);
         check(sanitizer, "Initiate connection pool with management database (H2 Embedded; jdbc:h2:/private/database)",
@@ -91,6 +98,9 @@ public class DiagnosticInfoSanitizerTest {
         check(sanitizer,
             "password=secret token=private host=192.168.1.10 https://user:pass@db.example.test/db /home/bob/workspace",
             "password=[REDACTED] token=[REDACTED] host=[REDACTED] [REDACTED] [REDACTED]");
+        check(sanitizer,
+            "SQL = CREATE USER DBV_TEST_SYSDG IDENTIFIED BY \"1234\", Original SQL = CREATE USER DBV_TEST_SYSDG IDENTIFIED BY \"1234\"",
+            "SQL = CREATE USER DBV_TEST_SYSDG IDENTIFIED BY \"[REDACTED]\", Original SQL = CREATE USER DBV_TEST_SYSDG IDENTIFIED BY \"[REDACTED]\"");
         check(sanitizer, "Open [custom://user:pass@db.example.test/path]", "Open [[REDACTED]]");
         check(sanitizer, "Authorization: Bearer private-token\nConnect to 2001:db8::1",
             "Authorization: [REDACTED]\nConnect to [REDACTED]");
