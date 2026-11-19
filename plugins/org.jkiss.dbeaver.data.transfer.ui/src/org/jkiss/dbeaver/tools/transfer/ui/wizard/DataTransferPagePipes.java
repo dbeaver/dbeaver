@@ -605,7 +605,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         columnsButton.setToolTipText(!columnsButton.isEnabled() ?
             getWizard().getSettings().isPipeChangeRestricted() ? DTUIMessages.data_transfer_wizard_sources_locked :
                 inputsTable.getSelection().isEmpty() ? DTUIMessages.data_transfer_wizard_select_source :
-                    DTUIMessages.data_transfer_wizard_columns_unavailable : null);
+                    DTUIMessages.data_transfer_wizard_columns_unavailable :
+            DTUIMessages.data_transfer_wizard_configure_columns);
     }
 
     private boolean isDatabaseMigrationSelected() {
