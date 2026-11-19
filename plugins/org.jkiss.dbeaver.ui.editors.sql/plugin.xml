@@ -123,7 +123,7 @@
     <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
                 annotationType="org.jkisss.dbeaver.ui.occurrences.underCursor"
-                label="SQL - word (under cursor) occurrences"
+                label="%annotation.sql.occurrences.underCursor.label"
                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
                 textPreferenceKey="occurrenceIndication"
                 textPreferenceValue="false"
@@ -148,7 +148,7 @@
         </specification>
         <specification
                 annotationType="org.jkisss.dbeaver.ui.occurrences.forSelection"
-                label="SQL - selected word occurrences"
+                label="%annotation.sql.occurrences.forSelection.label"
                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
                 textPreferenceKey="writeOccurrenceIndication"
                 textPreferenceValue="false"
@@ -290,7 +290,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.switch.presentation" name="%command.org.jkiss.dbeaver.ui.editors.sql.switch.presentation.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.switch.presentation.description" categoryId="org.jkiss.dbeaver.core.sql">
             <commandParameter
                     id="presentationId"
-                    name="Presentation"
+                    name="%command.org.jkiss.dbeaver.ui.editors.sql.switch.presentation.presentationId.name"
                     optional="false"
                     values="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation$ParameterValues"/>
         </command>
