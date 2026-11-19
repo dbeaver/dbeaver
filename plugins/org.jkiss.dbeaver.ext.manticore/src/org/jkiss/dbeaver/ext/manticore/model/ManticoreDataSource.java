@@ -17,10 +17,13 @@
 package org.jkiss.dbeaver.ext.manticore.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class ManticoreDataSource extends GenericDataSource {
@@ -31,5 +34,14 @@ public class ManticoreDataSource extends GenericDataSource {
         @NotNull GenericMetaModel metaModel
     ) throws DBException {
         super(monitor, container, metaModel, new ManticoreSQLDialect());
+    }
+
+    @Nullable
+    @Override
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
+        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
+            return new ManticoreQueryTransformerLimit();
+        }
+        return super.createQueryTransformer(type);
     }
 }

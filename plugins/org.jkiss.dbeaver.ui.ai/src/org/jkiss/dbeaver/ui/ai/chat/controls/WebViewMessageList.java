@@ -535,7 +535,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         createFunction("traverseOut", arguments -> {
             boolean forward = arguments.length < 1 || CommonUtils.toBoolean(arguments[0]);
             UIUtils.asyncExec(() -> {
-                if (browser.isDisposed()) {
+                if (browser.isDisposed() || browser.getShell() != browser.getDisplay().getActiveShell()) {
                     return;
                 }
                 if (forward) {

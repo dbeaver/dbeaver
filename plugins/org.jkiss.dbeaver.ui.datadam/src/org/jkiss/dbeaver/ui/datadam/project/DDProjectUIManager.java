@@ -32,7 +32,8 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.sync.project.ConflictResolution;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
+import org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectEventsServiceDesktop;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
@@ -41,10 +42,10 @@ import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.event.DDProjectEventListener;
 import org.jkiss.dbeaver.ui.datadam.project.job.*;
 import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
@@ -53,7 +54,6 @@ import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class DDProjectUIManager {
@@ -66,6 +66,8 @@ public class DDProjectUIManager {
     private final DDProjectManager projectManager = DDProjectManager.getInstance();
 
     private DDProjectUIManager() {
+        DDSharedProjectEventsServiceDesktop.getInstance().subscribe(new DDProjectEventListener(this));
+        DDRemoteDamSettingsStore.getInstance().addListener(settings -> DDProjectSyncPropertyTester.firePropertyChange());
         accessService.addKeyBundleListener(this::refreshProjectVisibility);
         accessService.addAccessListener(new DDDesktopAccessListener() {
             @Override
@@ -101,7 +103,8 @@ public class DDProjectUIManager {
 
     public void refreshProjectVisibility() {
         DDProjectSyncPropertyTester.firePropertyChange();
-        UIUtils.asyncExec(() -> {
+        // Wait for navigator initialization, which may be running a master-password dialog's event loop.
+        UIExecutionQueue.queueExec(() -> {
             for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
                 for (IWorkbenchPage page : window.getPages()) {
                     refreshNavigator(page, ProjectNavigatorView.VIEW_ID);
@@ -279,57 +282,55 @@ public class DDProjectUIManager {
     }
 
     @NotNull
-    public ProjectJobBatchResult<SyncResult> synchronizeProjects(@NotNull List<DBPProject> projects) {
+    public ProjectJobBatchResult<SyncResult> synchronizeProjects(
+        @NotNull List<DBPProject> projects, @NotNull DBRProgressMonitor monitor
+    ) {
         List<DDProjectSynchronizationJob> jobs = projects.stream().map(DDProjectSynchronizationJob::new).toList();
         return runJobs(
             DDTrackingUIMessages.project_sync_update_job, jobs,
-            projects.stream().map(DBPProject::getName).toList(), 0
+            projects.stream().map(DBPProject::getName).toList(), 0, monitor
         );
     }
 
     @NotNull
-    public ProjectJobBatchResult<SyncResult> resolveConflict(
-        @NotNull DBPProject project, @NotNull ConflictResolution resolution
+    public ProjectJobBatchResult<DBPProject> importProjects(
+        @NotNull List<DDSharedProject> projects, @NotNull DBRProgressMonitor monitor
     ) {
-        DDProjectConflictResolutionJob job = new DDProjectConflictResolutionJob(project, resolution);
-        return runJobs(DDTrackingUIMessages.project_sync_resolve_job, List.of(job), List.of(project.getName()), 0);
-    }
-
-    @NotNull
-    public ProjectJobBatchResult<DBPProject> importProjects(@NotNull List<DDSharedProject> projects) {
         List<DDProjectImportJob> jobs = projects.stream().map(DDProjectImportJob::new).toList();
         return runJobs(
             DDTrackingUIMessages.project_sync_import_job, jobs,
-            projects.stream().map(DDSharedProject::name).toList(), 1
+            projects.stream().map(DDSharedProject::name).toList(), 1, monitor
         );
     }
 
     @NotNull
-    public ProjectJobBatchResult<DBPProject> unbindProjects(@NotNull List<DBPProject> projects) {
+    public ProjectJobBatchResult<DBPProject> unbindProjects(
+        @NotNull List<DBPProject> projects, @NotNull DBRProgressMonitor monitor
+    ) {
         List<DDProjectUnbindJob> jobs = projects.stream().map(DDProjectUnbindJob::new).toList();
         return runJobs(
             DDTrackingUIMessages.project_sync_unbind_job, jobs,
-            projects.stream().map(DBPProject::getName).toList(), 0
+            projects.stream().map(DBPProject::getName).toList(), 0, monitor
         );
     }
 
     @NotNull
     public ProjectJobBatchResult<DDSharedProject> shareProject(
-        @NotNull DBPProject project, @NotNull String name, @Nullable String description
+        @NotNull DBPProject project, @NotNull String name, @Nullable String description, @NotNull DBRProgressMonitor monitor
     ) {
         DDProjectSharingJob job = new DDProjectSharingJob(project, name, description);
         return runJobs(
             DDTrackingUIMessages.project_sync_share_job, List.of(job),
-            List.of(project.getName()), 0
+            List.of(project.getName()), 0, monitor
         );
     }
 
     @NotNull
     public ProjectJobBatchResult<DDSharedProject> updateProject(
-        @NotNull DDSharedProject project, @NotNull String name, @Nullable String description
+        @NotNull DDSharedProject project, @NotNull String name, @Nullable String description, @NotNull DBRProgressMonitor monitor
     ) {
         DDProjectUpdateJob job = new DDProjectUpdateJob(project, name, description);
-        return runJobs(DDTrackingUIMessages.project_edit_job, List.of(job), List.of(project.name()), 0);
+        return runJobs(DDTrackingUIMessages.project_edit_job, List.of(job), List.of(project.name()), 0, monitor);
     }
 
     @NotNull
@@ -337,7 +338,8 @@ public class DDProjectUIManager {
         @NotNull String title,
         @NotNull List<J> jobs,
         @NotNull List<String> projectNames,
-        int maxThreads
+        int maxThreads,
+        @NotNull DBRProgressMonitor monitor
     ) {
         if (!DDProductConfig.isIntegrationEnabled()) {
             return new ProjectJobBatchResult<>(List.of(), List.of(), true);
@@ -346,42 +348,25 @@ public class DDProjectUIManager {
             return new ProjectJobBatchResult<>(List.of(), List.of(), false);
         }
         JobGroup group = createJobGroup(title, maxThreads, jobs.size());
-        DBRRunnableWithResult<Boolean> runner = new DBRRunnableWithResult<>() {
-            @Override
-            public void run(@NotNull DBRProgressMonitor monitor) throws InterruptedException {
-                result = false;
-                monitor.beginTask(title, jobs.size());
-                try {
-                    for (Job job : jobs) {
-                        job.setJobGroup(group);
-                        job.setSystem(true);
-                        job.schedule();
-                    }
-                    result = joinJobs(group, monitor);
-                } finally {
-                    monitor.done();
-                }
-            }
-        };
-        IStatus executionError = null;
+        boolean canceled;
+        monitor.beginTask(title, jobs.size());
         try {
-            UIUtils.runInProgressDialog(runner);
-        } catch (InvocationTargetException e) {
-            group.cancel();
-            executionError = Status.error(title, e.getTargetException());
+            for (Job job : jobs) {
+                job.setJobGroup(group);
+                job.setSystem(true);
+                job.schedule();
+            }
+            canceled = joinJobs(group, monitor);
+        } finally {
+            monitor.done();
         }
         List<T> results = new ArrayList<>();
         List<ProjectJobFailure> failures = new ArrayList<>();
-        boolean canceled = Boolean.TRUE.equals(runner.getResult());
         for (int i = 0; i < jobs.size(); i++) {
             J job = jobs.get(i);
             IStatus status = job.getResult();
             if (status == null) {
-                if (executionError != null) {
-                    failures.add(new ProjectJobFailure(projectNames.get(i), executionError));
-                } else {
-                    canceled = true;
-                }
+                canceled = true;
             } else if (status.getSeverity() == IStatus.ERROR) {
                 failures.add(new ProjectJobFailure(projectNames.get(i), status));
             } else if (status.matches(IStatus.CANCEL)) {
@@ -393,7 +378,6 @@ public class DDProjectUIManager {
                 }
             }
         }
-        refreshProjectVisibility();
         return new ProjectJobBatchResult<>(results, failures, canceled);
     }
 
