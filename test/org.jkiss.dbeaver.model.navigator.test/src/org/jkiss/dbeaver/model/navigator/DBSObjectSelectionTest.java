@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class DBSObjectSelectionTest {
     @Test
@@ -92,6 +93,50 @@ class DBSObjectSelectionTest {
         selection.setChecked(table, false);
         Assertions.assertTrue(selection.isGrayed(schema));
         Assertions.assertFalse(selection.isChecked(table));
+    }
+
+    @Test
+    void splittingSelectedCatalogRespectsSystemObjectVisibility() {
+        TestObject catalog = new TestObject("catalog", null);
+        TestObject schema = new TestObject("schema", catalog);
+        TestObject otherSchema = new TestObject("otherSchema", catalog);
+        TestObject systemSchema = new TestObject("systemSchema", catalog);
+        TestObject table = new TestObject("table", schema);
+        TestObject view = new TestObject("view", schema);
+        TestObject systemTable = new TestObject("systemTable", schema);
+        Map<DBSObject, List<DBSObject>> cached = Map.of(
+            catalog, List.of(schema, otherSchema, systemSchema), schema, List.of(table, view, systemTable));
+        Set<DBSObject> systemObjects = Set.of(systemSchema, systemTable);
+        // The tree supplies cached siblings filtered by the current Show system objects setting.
+        AtomicBoolean showSystemObjects = new AtomicBoolean(true);
+        DBSObjectSelection selection = new DBSObjectSelection(DBSObject::getParentObject,
+            object -> cached.getOrDefault(object, List.of()).stream()
+                .filter(child -> showSystemObjects.get() || !systemObjects.contains(child)).toList());
+
+        selection.setChecked(catalog, true);
+        showSystemObjects.set(false);
+        selection.setChecked(table, false);
+
+        Assertions.assertEquals(Set.of(otherSchema, view), Set.copyOf(selection.getSelectedObjects()));
+        Assertions.assertFalse(selection.isChecked(systemSchema));
+        Assertions.assertFalse(selection.isChecked(systemTable));
+
+        selection.setChecked(catalog, true);
+        selection.setChecked(schema, false);
+
+        Assertions.assertEquals(List.of(otherSchema), selection.getSelectedObjects());
+
+        showSystemObjects.set(true);
+        selection.setChecked(catalog, true);
+        selection.setChecked(table, false);
+
+        Assertions.assertEquals(Set.of(otherSchema, systemSchema, view, systemTable),
+            Set.copyOf(selection.getSelectedObjects()));
+
+        selection.setChecked(catalog, true);
+        selection.setChecked(schema, false);
+
+        Assertions.assertEquals(Set.of(otherSchema, systemSchema), Set.copyOf(selection.getSelectedObjects()));
     }
 
     @Test

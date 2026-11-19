@@ -141,7 +141,9 @@ public class DatabaseObjectSelectionTree extends FilteredTree {
             }
         });
         viewer.setContentProvider(contentProvider);
-        selection = new DBSObjectSelection(contentProvider::getParent, contentProvider::getCachedChildren);
+        selection = new DBSObjectSelection(contentProvider::getParent, object -> contentProvider.getCachedChildren(object).stream()
+            .filter(child -> isShowSystemObjects() || !DatabaseObjectSelectionTreeContentProvider.isSystemObject(child))
+            .toList());
         viewer.setCheckStateProvider(new ICheckStateProvider() {
             @Override
             public boolean isChecked(@NotNull Object element) {
