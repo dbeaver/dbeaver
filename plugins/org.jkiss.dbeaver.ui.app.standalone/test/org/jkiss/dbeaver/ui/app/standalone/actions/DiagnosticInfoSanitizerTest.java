@@ -54,6 +54,11 @@ public class DiagnosticInfoSanitizerTest {
         check(sanitizer,
             "Command-line arguments: --launcher.library C:\\Users\\bob\\dbeaver\\launcher.dll --launcher.appendVmargs",
             "Command-line arguments: --launcher.library [REDACTED] --launcher.appendVmargs");
+        check(sanitizer, "Framework arguments: -eclipse.keyring C:\\Users\\Maria\\secure_storage",
+            "Framework arguments: -eclipse.keyring [REDACTED]");
+        check(sanitizer,
+            "C:\\Users\\Maria\\Downloads\\dbeaver-ue-26.3.0-windows-x86_64 (8)\\dbeaver\\dbeaver.exe",
+            "[REDACTED]");
         check(sanitizer, "--launcher.library \"C:\\Program Files\\DBeaver\\launcher.dll\"",
             "--launcher.library \"[REDACTED]\"");
         check(sanitizer,
@@ -73,11 +78,23 @@ public class DiagnosticInfoSanitizerTest {
         check(sanitizer, "Id: com.google.gson, Version: 2.14.0, Location: reference:file:plugins/com.google.gson_2.14.0.jar",
             "Id: com.google.gson, Version: 2.14.0, Location: reference:file:plugins/com.google.gson_2.14.0.jar");
         check(sanitizer, "Loading bundle:/com.google.gson", "Loading bundle:/com.google.gson");
-        check(sanitizer, "Connect to com.google.gson", "Connect to [REDACTED]");
+        check(sanitizer, "Connect to com.google.gson", "Connect to com.google.gson");
+        check(sanitizer,
+            "org.mongodb.driver.client org.mongodb.driver.cluster org.mongodb.driver.connection",
+            "org.mongodb.driver.client org.mongodb.driver.cluster org.mongodb.driver.connection");
+        check(sanitizer,
+            "meta.com.dbeaver.db.cosmos.nosql.DCosmosContainerProperties.partitionKeyVersion.name",
+            "meta.com.dbeaver.db.cosmos.nosql.DCosmosContainerProperties.partitionKeyVersion.name");
+        check(sanitizer, "datasourceId=bigquery.ee driverId=cds.calcite",
+            "datasourceId=bigquery.ee driverId=cds.calcite");
         check(sanitizer, "License: DB-EXAMPLE-123 (Enterprise)", "License: [REDACTED] (Enterprise)");
         check(sanitizer, "PostgreSQL 11.22 (Debian 11.22-1.pgdg110+1)",
             "PostgreSQL 11.22 (Debian 11.22-1.pgdg110+1)");
         check(sanitizer, "Open [https://db.example.test/path]", "Open [[REDACTED]]");
+        check(sanitizer, "server=Microsoft-HTTPAPI/2.0, transfer-encoding=chunked",
+            "server=Microsoft-HTTPAPI/2.0, transfer-encoding=chunked");
+        check(sanitizer, "content-location=https://example.com/, content-type=application/json",
+            "content-location=[REDACTED], content-type=application/json");
         check(sanitizer,
             "serviceEndpoint [https://cosmos-dbeaver-nosql.documents.azure.com:443], connectionPolicy",
             "serviceEndpoint [[REDACTED]], connectionPolicy");

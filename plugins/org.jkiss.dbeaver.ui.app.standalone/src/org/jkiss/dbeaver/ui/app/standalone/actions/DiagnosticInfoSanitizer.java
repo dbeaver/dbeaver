@@ -27,9 +27,9 @@ import java.util.regex.Pattern;
 /** Sanitizes text only when it is copied into a diagnostic archive. */
 final class DiagnosticInfoSanitizer {
     private static final String REDACTED = "[REDACTED]";
-    private static final Pattern CONNECTION = Pattern.compile("(?i)\\b(?:jdbc:[^\\s\\\"'<>]+|(?:https?|ssh)://[^\\s\\\"'<>]+)");
+    private static final Pattern CONNECTION = Pattern.compile("(?i)\\b(?:jdbc:[^\\s,\\\"'<>]+|(?:https?|ssh)://[^\\s,\\\"'<>]+)");
     private static final Pattern URI_WITH_USERINFO = Pattern.compile(
-        "(?i)\\b[a-z][a-z0-9+.-]*://[^\\s\\\"'<>/@]+@[^\\s\\\"'<>]+"
+        "(?i)\\b[a-z][a-z0-9+.-]*://[^\\s,\\\"'<>/@]+@[^\\s,\\\"'<>]+"
     );
     private static final Pattern AUTHORIZATION_HEADER = Pattern.compile(
         "(?i)(\\b(?:proxy-)?authorization\\s*:\\s*)[^\\r\\n]+"
@@ -46,7 +46,7 @@ final class DiagnosticInfoSanitizer {
             + "(?:[0-9a-f]{0,4}:){2,}[0-9a-f:.]+)(?![\\w.])"
     );
     private static final Pattern HOST = Pattern.compile(
-        "(?i)(\\b(?:host(?:name)?|server)\\s*[=:]\\s*)([\\w.-]+)"
+        "(?i)(\\bhost(?:name)?\\s*[=:]\\s*)([\\w.-]+)"
     );
     private static final Pattern LICENSE = Pattern.compile("(?i)(\\bLicense\\s*:\\s*)DB-[\\w-]+");
     private static final Pattern BUNDLE_START_LINE = Pattern.compile(
@@ -61,6 +61,9 @@ final class DiagnosticInfoSanitizer {
     );
     private static final Pattern PATH = Pattern.compile(
         "(?<![\\w:/])(?:[a-zA-Z]:\\\\|/)(?:[^\\s\\\"'<>;,]+[/\\\\])*[^\\s\\\"'<>;,]+"
+    );
+    private static final Pattern WINDOWS_PATH = Pattern.compile(
+        "(?<![\\w:/])(?:[a-zA-Z]:\\\\(?:[^\\\\\\\"'<>;,\\r\\n]*\\\\)+[^\\\\\\\"'<>;,\\r\\n]+?)(?=\\s+--|\\s*$|[,;])"
     );
 
     private static final Pattern STACK_FRAME = Pattern.compile(
@@ -77,12 +80,19 @@ final class DiagnosticInfoSanitizer {
         "(?i)\\bMicrosoft SQL Server[^\\r\\n]*?\\b\\d+(?:\\.\\d+){3,}"
     );
     private static final Pattern ECLIPSE_LOG_BUNDLE = Pattern.compile("!(?:ENTRY|SUBENTRY\\s+\\d+)\\s+");
-    private static final Pattern TECHNICAL_IDENTIFIER = Pattern.compile("(?:org\\.(?:eclipse|jkiss)|com\\.dbeaver)\\..+");
+    private static final Pattern TECHNICAL_IDENTIFIER = Pattern.compile(
+        "(?i)(?:[a-z][a-z0-9_-]*\\.)+[a-z][a-z0-9_-]*(?:\\.[a-z][a-z0-9_-]*)*"
+    );
     private static final Pattern PROPERTY_NAME = Pattern.compile("(?m)^[\\t ]*[\\w.-]+[\\t ]*(?=[=:])");
     private static final Pattern MODULE_ARGUMENT = Pattern.compile(
         "--(?:add-opens|add-exports|add-reads|add-modules|limit-modules)(?:=|[\\t ]+)[\\w.,/=-]+"
     );
     private static final Pattern LAUNCHER_ARGUMENT = Pattern.compile("--[a-zA-Z][\\w.-]*");
+    private static final Pattern FRAMEWORK_ARGUMENT = Pattern.compile("-[a-zA-Z][\\w.-]*");
+    private static final Pattern TECHNICAL_CONTEXT = Pattern.compile(
+        "(?i)\\b(?:logger(?:name)?|datasource(?:id)?|driver(?:id)?|resource|key|id|name)\\s*[=:]\\s*$"
+    );
+    private static final Pattern JAVA_PACKAGE = Pattern.compile("(?i)(?:org|com|net|io|java|javax|meta)\\..*");
     private static final Pattern BUNDLE_IDENTIFIER = Pattern.compile(
         "\\bbundle:/[\\w.-]+|(?m)^[\\t ]*[\\w.-]+(?= \\(\\d+(?:\\.[\\w-]+)+\\) \")"
             + "|(?m)^[\\t ]*Id:[\\t ]*[\\w.-]+(?=,[\\t ]*Version:)"
@@ -151,6 +161,7 @@ final class DiagnosticInfoSanitizer {
         result = HOST.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
         result = LICENSE.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
         result = QUOTED_PATH.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED + m.group(1)));
+        result = WINDOWS_PATH.matcher(result).replaceAll(REDACTED);
         String beforePaths = result;
         result = PATH.matcher(result).replaceAll(m ->
             Matcher.quoteReplacement(isStackFrame(beforePaths, m.start()) || isWithin(MODULE_ARGUMENT, beforePaths, m.start(), m.end())
@@ -172,11 +183,11 @@ final class DiagnosticInfoSanitizer {
             boolean bundle = ECLIPSE_LOG_BUNDLE.matcher(prefix).matches();
             Matcher property = PROPERTY_NAME.matcher(lineAt(beforeDomains, m.start()));
             boolean propertyName = property.lookingAt() && prefix.length() < property.end();
-            // Known Java namespaces also occur in Eclipse messages outside stack frames and bundle headers.
-            boolean identifier = !prefix.endsWith("@") && TECHNICAL_IDENTIFIER.matcher(m.group()).matches();
+            boolean identifier = isTechnicalIdentifier(beforeDomains, m.start(), m.end());
             // Other dotted identifiers are only safe in a recognized diagnostic context, not as arbitrary hostnames.
             boolean metadata = isWithin(MODULE_ARGUMENT, beforeDomains, m.start(), m.end())
                 || isWithin(LAUNCHER_ARGUMENT, beforeDomains, m.start(), m.end())
+                || isWithin(FRAMEWORK_ARGUMENT, beforeDomains, m.start(), m.end())
                 || isWithin(BUNDLE_IDENTIFIER, beforeDomains, m.start(), m.end())
                 || isSystemMetadataIdentifier(beforeDomains, m.start(), m.end())
                 || isWithin(DEBIAN_VERSION, beforeDomains, m.start(), m.end());
@@ -203,6 +214,18 @@ final class DiagnosticInfoSanitizer {
             result = pattern.matcher(result).replaceAll(REDACTED);
         }
         return result;
+    }
+
+    private static boolean isTechnicalIdentifier(@NotNull String text, int start, int end) {
+        String line = lineAt(text, start);
+        String prefix = line.substring(0, start - (text.lastIndexOf('\n', start - 1) + 1));
+        if (prefix.endsWith("@")) {
+            return false;
+        }
+        String identifier = line.substring(start - (text.lastIndexOf('\n', start - 1) + 1),
+            end - (text.lastIndexOf('\n', start - 1) + 1));
+        return TECHNICAL_IDENTIFIER.matcher(identifier).matches()
+            && (JAVA_PACKAGE.matcher(identifier).matches() || TECHNICAL_CONTEXT.matcher(prefix).find());
     }
 
     private static boolean isStackFrame(@NotNull String text, int position) {
