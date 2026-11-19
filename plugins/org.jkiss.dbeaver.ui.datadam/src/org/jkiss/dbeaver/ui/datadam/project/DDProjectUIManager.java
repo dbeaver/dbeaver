@@ -22,9 +22,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobGroup;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -46,7 +43,6 @@ import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.tools.project.ProjectCreateWizard;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
@@ -54,7 +50,7 @@ import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.event.DDProjectEventListener;
 import org.jkiss.dbeaver.ui.datadam.project.job.*;
 import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectCreate;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -129,14 +125,10 @@ public class DDProjectUIManager {
             && DBPPlatformDesktop.getInstance().getWorkspace().canManageProjects()) {
             IWorkbenchWindow window = UIUtils.findActiveWorkbenchWindow();
             if (window != null) {
-                Shell shell = UIUtils.getActiveShell();
-                if (shell == null) {
-                    shell = window.getShell();
-                }
                 emptyProjectsPromptShown = true;
-                if (MessageDialog.openQuestion(shell, DDTrackingUIMessages.project_no_projects_title,
+                if (UIUtils.confirmAction(DDTrackingUIMessages.project_no_projects_title,
                     DDTrackingUIMessages.project_no_projects_message)
-                    && new ActiveWizardDialog(window, new ProjectCreateWizard(), null, shell).open() == IDialogConstants.OK_ID) {
+                    && NavigatorHandlerProjectCreate.createNewProject(window)) {
                     visibleProjects = DDWorkspace.getInstance().getProjects();
                 }
             }
