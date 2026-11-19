@@ -54,6 +54,7 @@ import java.util.*;
 public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private static final Log log = Log.getLog(DatabaseMappingContainer.class);
+    private static final String SETTING_TARGET_NAME_IS_RAW = "targetNameIsRaw";
 
     private final DatabaseConsumerSettings consumerSettings;
     private final DBSDataContainer source;
@@ -324,10 +325,13 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
 
     public void saveSettings(@NotNull Map<String, Object> settings) {
-        if (!CommonUtils.isEmpty(targetName)) {
-            settings.put("targetName", targetName);
-        } else if (target != null) {
+        if (target != null) {
+            // The target object holds the real database name; targetName may be a stale encoded value.
             settings.put("targetName", target.getName());
+            settings.put(SETTING_TARGET_NAME_IS_RAW, true);
+        } else if (!CommonUtils.isEmpty(targetName)) {
+            settings.put("targetName", targetName);
+            settings.put(SETTING_TARGET_NAME_IS_RAW, false);
         }
         if (mappingType != null) {
             settings.put("mappingType", mappingType.name());
@@ -366,13 +370,18 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSObjectContainer objectContainer = consumerSettings.getContainer();
                     if (objectContainer != null) {
-                        // Persisted names may be quoted to preserve their case, but a raw name may also
-                        // literally start and end with the quote delimiter. Resolve the raw name first.
+                        // Tasks saved by older versions have no provenance marker. Decode first: it never
+                        // binds a literal-quoted table for an encoded target name.
+                        boolean storedNameIsRaw = JSONUtils.getBoolean(
+                            settings,
+                            SETTING_TARGET_NAME_IS_RAW,
+                            false);
                         VoidProgressMonitor monitor = new VoidProgressMonitor();
                         DBSObject child = DatabaseTransferUtils.findChildByStoredName(
                             objectContainer,
                             monitor,
-                            targetName);
+                            targetName,
+                            storedNameIsRaw);
                         if (child instanceof DBSDataManipulator) {
                             target = (DBSDataManipulator) child;
                         }
@@ -432,10 +441,11 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     public String getTargetFullName() {
         DBSObjectContainer container = consumerSettings.getContainer();
+        String name = getTargetName();
 
         if (container instanceof DBSSchema || container instanceof DBSCatalog) {
-            return DBUtils.getObjectFullName(container, DBPEvaluationContext.DML) + "." + targetName;
+            return DBUtils.getObjectFullName(container, DBPEvaluationContext.DML) + "." + name;
         }
-        return getTargetName();
+        return name;
     }
 }

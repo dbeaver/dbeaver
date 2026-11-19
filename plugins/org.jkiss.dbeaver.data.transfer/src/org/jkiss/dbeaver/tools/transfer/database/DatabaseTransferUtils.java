@@ -115,7 +115,16 @@ public class DatabaseTransferUtils {
             if (updateMappingTarget || force) {
                 monitor.subTask("Refresh database mappings");
 
-                DBSObject newTarget = findChildByStoredName(container, monitor, containerMapping.getTargetName());
+                // A resolved target always holds a raw database name; otherwise the stored name is encoded.
+                DatabaseMappingType mappingType = containerMapping.getMappingType();
+                boolean storedNameIsRaw = (mappingType == DatabaseMappingType.existing
+                    || mappingType == DatabaseMappingType.recreate)
+                    && containerMapping.getTarget() != null;
+                DBSObject newTarget = findChildByStoredName(
+                    container,
+                    monitor,
+                    containerMapping.getTargetName(),
+                    storedNameIsRaw);
                 if (newTarget == null) {
                     throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
                 } else if (!(newTarget instanceof DBSDataManipulator)) {
@@ -148,28 +157,32 @@ public class DatabaseTransferUtils {
     }
 
     /**
-     * Finds a container child by a name stored in task settings.
-     * Stored names may be quoted to preserve their case, but a raw name may also literally start
-     * and end with the dialect quote delimiter. Resolve the raw name first. If it is not a usable
-     * data manipulator, prefer the unquoted form. When both names point to data manipulators, the
-     * literal raw name wins because the stored value is expected to be the actual target name.
+     * Finds a container child by a name stored in task settings or derived from a source name.
+     * Raw database names may literally start and end with the dialect quote delimiter, so they are
+     * resolved first and the unquoted form is used only as a fallback for non-manipulator matches.
+     * SQL-encoded names (auto-generated target names) are decoded before lookup and never fall back
+     * to the encoded form, which may denote an unrelated literal-quoted table.
+     *
+     * @param storedNameIsRaw true for a raw database name, false for a SQL-encoded name
      */
     @Nullable
     static DBSObject findChildByStoredName(
         @NotNull DBSObjectContainer container,
         @NotNull DBRProgressMonitor monitor,
-        @NotNull String storedName
+        @NotNull String storedName,
+        boolean storedNameIsRaw
     ) throws DBException {
-        DBSObject child = container.getChild(monitor, storedName);
-        if (child instanceof DBSDataManipulator) {
-            return child;
-        }
         DBPDataSource dataSource = container.getDataSource();
-        if (dataSource == null) {
-            return child;
+        String unquotedName = dataSource == null
+            ? storedName
+            : dataSource.getSQLDialect().getUnquotedIdentifier(storedName, true);
+        if (!storedNameIsRaw) {
+            return unquotedName.equals(storedName)
+                ? container.getChild(monitor, storedName)
+                : container.getChild(monitor, unquotedName);
         }
-        String unquotedName = DBUtils.getUnQuotedIdentifier(dataSource, storedName);
-        if (unquotedName.equals(storedName)) {
+        DBSObject child = container.getChild(monitor, storedName);
+        if (child instanceof DBSDataManipulator || dataSource == null || unquotedName.equals(storedName)) {
             return child;
         }
         DBSObject unquotedChild = container.getChild(monitor, unquotedName);

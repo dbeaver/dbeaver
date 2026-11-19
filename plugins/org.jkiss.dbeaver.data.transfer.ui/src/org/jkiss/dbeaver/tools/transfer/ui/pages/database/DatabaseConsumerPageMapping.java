@@ -1305,7 +1305,14 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     ) throws DBException {
         // container's tables
         DBSObjectContainer container = settings.getContainer();
-        String unquotedName = DBUtils.getUnQuotedIdentifier(container.getDataSource(), name);
+        String unquotedName = container.getDataSource().getSQLDialect().getUnquotedIdentifier(name, true);
+        DatabaseMappingType mappingType = containerMapping.getMappingType();
+        // Auto-generated/encoded target names must be decoded. Raw names are used unchanged only
+        // when they come from a resolved target and have not been edited.
+        boolean storedNameIsRaw = (mappingType == DatabaseMappingType.existing
+            || mappingType == DatabaseMappingType.recreate)
+            && containerMapping.getTarget() != null
+            && name.equals(containerMapping.getTargetName());
 
         DBSDataManipulator targetDataContainer = null;
 
@@ -1315,15 +1322,22 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         if (namespaceContainer != null) {
             ns = namespaceContainer.getNamespaceForObjectType(RelationalObjectType.TYPE_TABLE);
             if (ns != null) {
-                // Raw names may literally start and end with the quote delimiter, so resolve them first.
-                String lookupName = name;
-                DBSObject existingObject = ns.getObjectByName(monitor, lookupName);
-                if (!(existingObject instanceof DBSDataManipulator) && !unquotedName.equals(name)) {
-                    DBSObject unquotedObject = ns.getObjectByName(monitor, unquotedName);
-                    if (unquotedObject instanceof DBSDataManipulator || existingObject == null) {
-                        lookupName = unquotedName;
-                        existingObject = unquotedObject;
+                String lookupName;
+                DBSObject existingObject;
+                if (storedNameIsRaw) {
+                    // A raw name may literally start and end with the quote delimiter, so resolve it first.
+                    lookupName = name;
+                    existingObject = ns.getObjectByName(monitor, lookupName);
+                    if (!(existingObject instanceof DBSDataManipulator) && !unquotedName.equals(name)) {
+                        DBSObject unquotedObject = ns.getObjectByName(monitor, unquotedName);
+                        if (unquotedObject instanceof DBSDataManipulator || existingObject == null) {
+                            lookupName = unquotedName;
+                            existingObject = unquotedObject;
+                        }
                     }
+                } else {
+                    lookupName = unquotedName;
+                    existingObject = ns.getObjectByName(monitor, lookupName);
                 }
                 if (existingObject != null) {
                     if (existingObject instanceof DBSDataManipulator) {
@@ -1348,17 +1362,21 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         if (targetDataContainer == null && ns == null) {
             // Without a namespace, search for an existing data manipulator (writable table).
             // A namespace lookup already covers a missing name without loading every child in the container.
+            String primaryName = storedNameIsRaw ? name : unquotedName;
+            String secondaryName = storedNameIsRaw && !unquotedName.equals(name) ? unquotedName : null;
             for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
                 if (!(child instanceof DBSDataManipulator)) {
                     continue;
                 }
                 String childName = child.getName();
-                if (name.equals(childName)) {
-                    // Prefer the raw name over a case-insensitive unquoted match
+                if (primaryName.equals(childName)) {
                     targetDataContainer = (DBSDataManipulator) child;
                     break;
                 }
-                if (targetDataContainer == null && unquotedName.equalsIgnoreCase(childName)) {
+                if (targetDataContainer == null && primaryName.equalsIgnoreCase(childName)) {
+                    targetDataContainer = (DBSDataManipulator) child;
+                }
+                if (secondaryName != null && targetDataContainer == null && secondaryName.equalsIgnoreCase(childName)) {
                     targetDataContainer = (DBSDataManipulator) child;
                 }
             }
