@@ -9,7 +9,7 @@
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts.  
 
 * Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including schema editor, SQL editor, data editor, AI chat, ER diagrams, data export/import/migration, SQL execution plans, database administration tools, database dashboards, Spatial data viewer, proxy and SSH tunnelling, custom database drivers editor, etc.
-* Out of the box supports more than <a href="#supported-databases">100 database drivers</a>.
+* Out of the box supports <a href="#supported-databases">350+ database drivers</a>.
 * Supports any database which has JDBC or ODBC driver (basically - almost all existing databases).
 * Integrates AI tools for work with data, SQL and database structure
 
@@ -54,7 +54,12 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 ### Community version
 
 Out of the box DBeaver supports following database drivers:
-- Altibase, Apache Calcite Avatica, Apache Doris, Apache Druid, Apache Hive, Apache Hive/Impala/Spark, Apache Ignite, Apache IoTDB, Apache Kylin, Apache Kyuubi, Apache Solr, Athena, Azure SQL, Babelfish, ClickHouse, Cloudberry, CockroachDB, CrateDB, CSV, CUBRID, Dameng, Data Virtuality, Databend, Databricks, DB2, DBF, Denodo, Derby, DolphinDB, Dremio, Drill, DuckDB, Elasticsearch, EnterpriseDB, Exasol, Firebird, Firebird, GaussDB, GBase 8s, GemFire XD, GizmoSQL, Google BigQuery, Google Cloud SQL for PostgreSQL, Google Spanner, Greengage, Greenplum, GreptimeDB, H2, H2GIS, HSQLDB, Informix, Ingres, InterSystems Caché, IRIS, JDBCX, Jennifer, Kingbase, LibSQL, Machbase, Manticore Search, MapD, MariaDB, Materialize, MaxDB, Mimer SQL, MonetDB, MS Access, MySQL, NDB Cluster, Netezza, NuoDB, OceanBase, Ocient, OmniSci, Open Distro Elasticsearch, OpenEdge, OpenSearch, Oracle, OrientDB, Pervasive SQL, Phoenix, PostgreSQL, Presto, Redshift, RisingWave, Salesforce, Salesforce Data 360, SAP HANA, SnappyData, Snowflake, SQL Server, SQLite, SQream DB, StarRocks, Sybase, TDEngine, Teiid, Teradata, TiDB, TiDBLake, TimechoDB, Timeplus, Timeplus Proton, TimescaleDB, Trino, Vertica, Virtuoso, WMI, Yellowbrick, Yugabyte.
+- Altibase, Apache Arrow Flight SQL, Apache Calcite Avatica, Apache Doris, Apache Druid, Apache Hive, Apache Hive/Impala/Spark, Apache Ignite, Apache IoTDB, Apache Kylin, Apache Kyuubi, Apache Solr, Athena, Azure SQL, Babelfish, ClickHouse, Cloudberry, Cloudflare D1, CockroachDB, CrateDB, CSV, CUBRID, Dameng, Data Virtuality, Databend, Databricks, DB2, DBF, Denodo, Derby, DolphinDB, Dremio, Drill, DuckDB, Elasticsearch, EnterpriseDB, Exasol, Firebird, Firebird, GaussDB, GBase 8s, GemFire XD, GizmoSQL, Google BigQuery, Google Cloud SQL for PostgreSQL, Google Spanner, Greengage, Greenplum, GreptimeDB, H2, H2GIS, HSQLDB, Informix, Ingres, InterSystems Caché, IRIS, JDBCX, Jennifer, Kingbase, LibSQL, Machbase, Manticore Search, MapD, MariaDB, Materialize, MaxDB, Mimer SQL, MonetDB, MotherDuck, MS Access, MySQL, NDB Cluster, Netezza, NuoDB, OceanBase, Ocient, OmniSci, Open Distro Elasticsearch, OpenEdge, OpenSearch, Oracle, OrientDB, Pervasive SQL, Phoenix, PolarDB-X, PostgreSQL, Presto, Redshift, RisingWave, Salesforce, Salesforce Data 360, SAP HANA, SnappyData, Snowflake, SQL Server, SQLite, SQream DB, StarRocks, Sybase, TDEngine, TDengine Cloud, Teiid, Teradata, TiDB, TiDBLake, TimechoDB, Timeplus, Timeplus Proton, TimescaleDB, Trino, Vertica, Virtuoso, WMI, YashanDB, Yellowbrick, Yugabyte.
+
+### CData commercial drivers
+
+DBeaver Community also supports separately licensed CData JDBC drivers for many data sources:
+- GitHub, Google Analytics, HubSpot, Jira, QuickBooks Online, ServiceNow, Shopify, Slack, Stripe, Workday, and many more.
 
 ### PRO versions
 
