@@ -156,7 +156,7 @@ public class GenericMetaModel {
 
         try {
             final GenericMetaObject schemaObject = getMetaObject(GenericConstants.OBJECT_SCHEMA);
-            final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
+            final DBSObjectFilter schemaFilters = dataSource.getContainer().getEffectiveObjectFilter(GenericSchema.class, catalog, false);
 
             final List<GenericSchema> tmpSchemas = new ArrayList<>();
             JDBCResultSet dbResult = null;
@@ -574,7 +574,7 @@ public class GenericMetaModel {
     {
         String tableNamePattern;
         if (object == null && objectName == null) {
-            final DBSObjectFilter tableFilters = session.getDataSource().getContainer().getObjectFilter(GenericTable.class, owner, false);
+            final DBSObjectFilter tableFilters = session.getDataSource().getContainer().getEffectiveObjectFilter(GenericTable.class, owner, false);
 
             if (tableFilters != null && tableFilters.hasSingleMask()) {
                 tableNamePattern = tableFilters.getSingleMask();

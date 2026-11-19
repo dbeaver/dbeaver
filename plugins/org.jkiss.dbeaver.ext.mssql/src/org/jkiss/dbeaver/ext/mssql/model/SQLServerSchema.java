@@ -408,7 +408,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             if (object != null || objectName != null) {
                 sql.append(" AND o.name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
             } else {
-                DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(SQLServerTableBase.class, owner, false);
+                DBSObjectFilter tableFilters = dataSource.getContainer().getEffectiveObjectFilter(SQLServerTableBase.class, owner, false);
                 if (tableFilters != null && !tableFilters.isEmpty()) {
                     sql.append(" AND (");
                     boolean hasCond = false;

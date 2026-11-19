@@ -490,7 +490,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
         String tableNamePattern;
         if (object == null && objectName == null) {
             final DBSObjectFilter tableFilters = session.getDataSource().getContainer()
-                    .getObjectFilter(GenericTable.class, owner, false);
+                    .getEffectiveObjectFilter(GenericTable.class, owner, false);
 
             if (tableFilters != null && tableFilters.hasSingleMask()) {
                 tableNamePattern = tableFilters.getSingleMask();

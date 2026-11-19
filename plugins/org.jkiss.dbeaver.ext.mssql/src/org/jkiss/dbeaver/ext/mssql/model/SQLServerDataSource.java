@@ -730,7 +730,7 @@ public class SQLServerDataSource
             }
             JDBCPreparedStatement dbStat;
             if (!showSpecifiedDatabase) {
-                DBSObjectFilter databaseFilters = container.getObjectFilter(
+                DBSObjectFilter databaseFilters = container.getEffectiveObjectFilter(
                     SQLServerDatabase.class,
                     null,
                     false);

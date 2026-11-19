@@ -56,6 +56,12 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         Mockito.when(dataSource.getSQLDialect()).thenReturn(new OracleSQLDialect());
         Mockito.when(dataSource.isViewAvailable(Mockito.any(), Mockito.nullable(String.class), Mockito.anyString())).thenReturn(true);
         schema = new OracleSchema(dataSource, 1, "TEST_SCHEMA");
+        Mockito.when(container.getEffectiveObjectFilter(OracleTable.class, schema, false))
+            .thenAnswer(invocation -> container.getObjectFilter(OracleTable.class, schema, false));
+        Mockito.when(container.getEffectiveObjectFilter(OracleView.class, schema, false))
+            .thenAnswer(invocation -> container.getObjectFilter(OracleView.class, schema, false));
+        Mockito.when(container.getEffectiveObjectFilter(OracleMaterializedView.class, schema, false))
+            .thenAnswer(invocation -> container.getObjectFilter(OracleMaterializedView.class, schema, false));
         session = Mockito.mock(JDBCSession.class);
         statement = Mockito.mock(JDBCPreparedStatement.class);
         Mockito.when(session.getProgressMonitor()).thenReturn(monitor);
