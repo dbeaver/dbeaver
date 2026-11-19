@@ -38,4 +38,13 @@ public interface SQLScriptExecutor<CONTAINER extends DBSObject> {
      */
     void execute(@NotNull CONTAINER container, @Nullable Path file) throws DBException;
 
+    default void execute(
+        @NotNull CONTAINER container,
+        @Nullable Path file,
+        @NotNull String resourceProjectId,
+        @NotNull String resourcePath
+    ) throws DBException {
+        execute(container, file);
+    }
+
 }

@@ -100,14 +100,18 @@ public class NavigatorHandlerExec extends AbstractHandler {
                     SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance()
                         .getExecutorDescriptor(container);
                     if (executorDescriptor != null && executorDescriptor.getNativeExecutor() != null) {
-                        Path file = DBFUtils.resolvePathFromURI(monitor, project, script.getLocationURI());
-
                         SQLScriptExecutor<DBSObject> nativeExecutor =
                             (SQLScriptExecutor<DBSObject>) executorDescriptor.getNativeExecutor();
                         DBSObject finalLaunchObject = launchObject;
+                        boolean remoteResource = script.getLocation() == null;
+                        Path file = remoteResource ? null : DBFUtils.resolvePathFromURI(monitor, project, script.getLocationURI());
                         UIUtils.syncExec(() -> {
                             try {
-                                nativeExecutor.execute(finalLaunchObject, file);
+                                if (remoteResource) {
+                                    nativeExecutor.execute(finalLaunchObject, null, project.getId(), resourcePath);
+                                } else {
+                                    nativeExecutor.execute(finalLaunchObject, file);
+                                }
                             } catch (DBException e) {
                                 log.error(e);
                             }

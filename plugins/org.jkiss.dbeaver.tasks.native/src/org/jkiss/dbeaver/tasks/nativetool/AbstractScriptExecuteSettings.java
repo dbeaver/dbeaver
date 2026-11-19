@@ -17,15 +17,28 @@
 package org.jkiss.dbeaver.tasks.nativetool;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.rm.RMControllerProvider;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
 
 public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extends AbstractNativeToolSettings<BASE_OBJECT> {
     private String inputFile;
+    private String inputResourceProjectId;
+    private String inputResourcePath;
+    private Path executionInputFile;
 
     public AbstractScriptExecuteSettings() {
     }
@@ -35,17 +48,63 @@ public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extend
     }
 
     public String getInputFile() {
-        return inputFile;
+        return executionInputFile == null ? inputFile : executionInputFile.toString();
     }
 
     public void setInputFile(String inputFile) {
+        if (!Objects.equals(this.inputFile, inputFile)) {
+            inputResourceProjectId = null;
+            inputResourcePath = null;
+        }
         this.inputFile = inputFile;
+    }
+
+    public void setInputResource(@NotNull String projectId, @NotNull String resourcePath) {
+        inputResourceProjectId = projectId;
+        inputResourcePath = resourcePath;
+        inputFile = resourcePath;
+    }
+
+    public void prepareInputFile(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (CommonUtils.isEmpty(inputResourceProjectId) || CommonUtils.isEmpty(inputResourcePath)) {
+            return;
+        }
+        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProjectById(inputResourceProjectId);
+        RMControllerProvider provider = project == null ? null : DBUtils.getAdapter(RMControllerProvider.class, project);
+        if (provider == null) {
+            throw new DBException("Project '" + inputResourceProjectId + "' does not provide remote resources");
+        }
+        byte[] contents = provider.getResourceController().getResourceContents(project.getId(), inputResourcePath);
+        Path file = null;
+        try {
+            file = Files.createTempFile(DBWorkbench.getPlatform().getTempFolder(monitor, "native-scripts"), "script-", ".sql");
+            Files.write(file, contents);
+            executionInputFile = file;
+        } catch (IOException e) {
+            if (file != null) {
+                try {
+                    Files.deleteIfExists(file);
+                } catch (IOException cleanupError) {
+                    e.addSuppressed(cleanupError);
+                }
+            }
+            throw new DBException("Error preparing native script '" + inputResourcePath + "'", e);
+        }
+    }
+
+    @Nullable
+    public Path clearExecutionInputFile() {
+        Path file = executionInputFile;
+        executionInputFile = null;
+        return file;
     }
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
         if (CommonUtils.isEmpty(inputFile)) {
             inputFile = preferenceStore.getString("inputFile");
+            inputResourceProjectId = preferenceStore.getString("inputResourceProjectId");
+            inputResourcePath = preferenceStore.getString("inputResourcePath");
         }
         super.loadSettings(runnableContext, preferenceStore);
     }
@@ -55,5 +114,7 @@ public class AbstractScriptExecuteSettings<BASE_OBJECT extends DBSObject> extend
         super.saveSettings(runnableContext, preferenceStore);
 
         preferenceStore.setValue("inputFile", inputFile);
+        preferenceStore.setValue("inputResourceProjectId", CommonUtils.toString(inputResourceProjectId));
+        preferenceStore.setValue("inputResourcePath", CommonUtils.toString(inputResourcePath));
     }
 }
