@@ -111,7 +111,7 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         Version current = currentVersion;
         VersionDescriptor available = newVersion;
-        if (current == null || available == null) {
+        if (current == null || available == null || updateStarted) {
             return null;
         }
         String commandId = event.getCommand().getId();
@@ -122,7 +122,7 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
                 currentVersion = null;
                 ActionUtils.evaluatePropertyState(PROPERTY_AVAILABLE);
             }
-        } else if (!updateStarted) {
+        } else {
             updateStarted = true;
             downloading = true;
             setBaseEnabled(false);
