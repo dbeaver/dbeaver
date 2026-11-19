@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.handler;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSaveReport;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.DetailsViewDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
@@ -53,7 +55,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
     private final ResultSetSaveReport saveReport;
 
     public SavePreviewDialog(@NotNull ResultSetViewer viewer, boolean showCascadeSettings, @NotNull ResultSetSaveReport saveReport) {
-        super(viewer.getControl().getShell(), "Preview changes", DBIcon.STATUS_WARNING);
+        super(viewer.getControl().getShell(), ResultSetMessages.dialog_save_preview_title, DBIcon.STATUS_WARNING);
 
         this.viewer = viewer;
         this.showCascadeSettings = showCascadeSettings;
@@ -82,20 +84,21 @@ public class SavePreviewDialog extends DetailsViewDialog {
         String changesReport = "";
 
         if (saveReport.getInserts() > 0)
-            changesReport = appendReportLine(changesReport, saveReport.getInserts(), "rows(s) added");
+            changesReport = appendReportLine(changesReport, saveReport.getInserts(), ResultSetMessages.dialog_save_preview_rows_added);
         if (saveReport.getUpdates() > 0)
-            changesReport = appendReportLine(changesReport, saveReport.getUpdates(), "rows(s) changed");
+            changesReport = appendReportLine(changesReport, saveReport.getUpdates(), ResultSetMessages.dialog_save_preview_rows_changed);
         if (saveReport.getDeletes() > 0)
-            changesReport = appendReportLine(changesReport, saveReport.getDeletes(), "rows(s) deleted");
+            changesReport = appendReportLine(changesReport, saveReport.getDeletes(), ResultSetMessages.dialog_save_preview_rows_deleted);
 
         {
             Composite msgComposite = UIUtils.createComposite(messageGroup, 2);
             Label imgLabel = new Label(msgComposite, SWT.NONE);
             imgLabel.setImage(DBeaverIcons.getImage(DBIcon.STATUS_WARNING));
             Label msgText = new Label(msgComposite, SWT.NONE);
-            msgText.setText("You are about to save your changes into the database (" +
-                viewer.getDataSource().getContainer().getName() + ").\n" +
-                (CommonUtils.isEmpty(changesReport) ? "" : "\t" + changesReport + ".") + "\nAre you sure you want to proceed?");
+            msgText.setText(NLS.bind(
+                ResultSetMessages.dialog_save_preview_message,
+                viewer.getDataSource().getContainer().getName(),
+                CommonUtils.isEmpty(changesReport) ? "" : "\t" + changesReport + ".")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
 
         //UIUtils.createHorizontalLine(messageGroup);
@@ -112,15 +115,15 @@ public class SavePreviewDialog extends DetailsViewDialog {
             gd.grabExcessHorizontalSpace = true;
             settingsComposite.setLayoutData(gd);
 
-            Button deleteCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Delete cascade",
-                "Delete rows from all tables referencing this table by foreign keys", false, 1);
+            Button deleteCascadeCheck = UIUtils.createCheckbox(settingsComposite, ResultSetMessages.dialog_save_preview_delete_cascade,
+                ResultSetMessages.dialog_save_preview_delete_cascade_tip, false, 1);
             if (showCascadeSettings) UIUtils.createEmptyLabel(settingsComposite, 1, 1);
-            Button deleteDeepCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Deep cascade",
-                "Delete cascade recursively (deep references)", false, 1);
+            Button deleteDeepCascadeCheck = UIUtils.createCheckbox(settingsComposite, ResultSetMessages.dialog_save_preview_deep_cascade,
+                ResultSetMessages.dialog_save_preview_deep_cascade_tip, false, 1);
 
             if (showCascadeSettings) {
-                Button hideDialogButton = UIUtils.createCheckbox(settingsComposite, "Do not show again",
-                    "Do not show this dialog next time (you can re-enable this option in preferences/confirmations)", false, 1);
+                Button hideDialogButton = UIUtils.createCheckbox(settingsComposite, ResultSetMessages.dialog_save_preview_do_not_show_again,
+                    ResultSetMessages.dialog_save_preview_do_not_show_again_tip, false, 1);
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
                 gd.grabExcessHorizontalSpace = true;
                 hideDialogButton.setLayoutData(gd);
@@ -171,7 +174,10 @@ public class SavePreviewDialog extends DetailsViewDialog {
                     false,
                     "");
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Can't create SQL panel", "Error creating SQL panel", e);
+                DBWorkbench.getPlatformUI().showError(
+                    ResultSetMessages.dialog_save_sql_panel_error_title,
+                    ResultSetMessages.dialog_save_sql_panel_error_message,
+                    e);
             }
         }
         populateSQL();
@@ -206,7 +212,10 @@ public class SavePreviewDialog extends DetailsViewDialog {
                 }
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Can't generate SQL script", "Error generating SQL script from changes", e);
+            DBWorkbench.getPlatformUI().showError(
+                ResultSetMessages.dialog_save_script_error_title,
+                ResultSetMessages.dialog_save_preview_script_error_message,
+                e);
         }
     }
 

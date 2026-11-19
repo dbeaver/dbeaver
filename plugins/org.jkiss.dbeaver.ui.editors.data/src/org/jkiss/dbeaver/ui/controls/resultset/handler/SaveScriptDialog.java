@@ -96,7 +96,10 @@ class SaveScriptDialog extends BaseDialog {
                     false,
                     "");
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Can't create SQL panel", "Error creating SQL panel", e);
+                DBWorkbench.getPlatformUI().showError(
+                    ResultSetMessages.dialog_save_sql_panel_error_title,
+                    ResultSetMessages.dialog_save_sql_panel_error_message,
+                    e);
             }
         }
         populateSQL();
@@ -203,8 +206,8 @@ class SaveScriptDialog extends BaseDialog {
             }
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
-                "Can't generate SQL script",
-                "Error generating SQL script from data changes",
+                ResultSetMessages.dialog_save_script_error_title,
+                ResultSetMessages.dialog_save_script_error_message,
                 e
             );
         }
