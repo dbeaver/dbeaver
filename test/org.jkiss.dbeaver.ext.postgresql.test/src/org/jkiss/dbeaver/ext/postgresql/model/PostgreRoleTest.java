@@ -68,7 +68,7 @@ public class PostgreRoleTest extends DBeaverUnitTest {
 
     @NotNull
     private String generateRoleDDL(int connectionLimit) throws Exception {
-        PostgreRole role = new PostgreRole(testDatabase, "test_role", null, true);
+        PostgreRole role = new PostgreRole(testDatabase.getDataSource(), "test_role", null, true);
         role.setConnLimit(connectionLimit);
         return role.getObjectDefinitionText(monitor, Collections.emptyMap());
     }

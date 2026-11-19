@@ -104,7 +104,7 @@ public class KingbaseCreateDatabaseDialog extends BaseDialog {
                 monitor.beginTask("Create database", 1);
                 try {
                     PostgreDatabase database = dataSource.getDefaultInstance();
-                    allUsers = supportsRoles ? new ArrayList<>(database.getUsers(monitor)) : null;
+                    allUsers = supportsRoles ? new ArrayList<>(dataSource.getRoles(monitor)) : null;
                     allEncodings = supportsEncodings ? new ArrayList<>(database.getEncodings(monitor)) : null;
                     allTablespaces = supportsTablespaces ? new ArrayList<>(database.getTablespaces(monitor)) : null;
 

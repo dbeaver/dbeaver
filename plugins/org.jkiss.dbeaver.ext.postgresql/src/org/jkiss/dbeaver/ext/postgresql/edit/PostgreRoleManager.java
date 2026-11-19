@@ -59,7 +59,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     @Override
     public DBSObjectCache<? extends DBSObject, PostgreRole> getObjectsCache(PostgreRole object)
     {
-        return null;
+        return object.getDataSource().getRoleCache();
     }
 
     @Override
@@ -85,7 +85,16 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        return new PostgreRole((PostgreDatabase) container, "NewRole", "", true);
+        PostgreDataSource dataSource;
+        if (container instanceof PostgreDataSource postgreDataSource) {
+            dataSource = postgreDataSource;
+        } else if (container instanceof PostgreDatabase postgreDatabase) {
+            // Roles belong to the cluster, so keep data source as the owner even if creation was invoked from a database
+            dataSource = postgreDatabase.getDataSource();
+        } else {
+            throw new DBException("Can't create role in container '" + container + "'");
+        }
+        return new PostgreRole(dataSource, "NewRole", "", true);
     }
 
     @Override
