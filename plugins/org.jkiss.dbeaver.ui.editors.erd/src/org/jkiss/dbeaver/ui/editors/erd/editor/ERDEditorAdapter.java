@@ -19,31 +19,29 @@ package org.jkiss.dbeaver.ui.editors.erd.editor;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
-
-import java.util.IdentityHashMap;
-import java.util.Map;
 
 /**
  * ERDEditorAdapter
  */
 public class ERDEditorAdapter implements IAdapterFactory {
 
-    private static final Map<Control, ERDEditorPart> editorsMap = new IdentityHashMap<>();
-
-    static synchronized void mapControl(Control control, ERDEditorPart editor)
+    static synchronized void mapControl(@NotNull Control control, @NotNull ERDEditorPart editor)
     {
-        editorsMap.put(control, editor);
+        DiagramEditorAdapter.mapControl(control, editor);
     }
 
-    static synchronized void unmapControl(Control control)
+    static synchronized void unmapControl(@NotNull Control control)
     {
-        editorsMap.remove(control);
+        DiagramEditorAdapter.unmapControl(control);
     }
 
-    public static synchronized ERDEditorPart getEditor(Control control)
+    @Nullable
+    public static synchronized ERDEditorPart getEditor(@NotNull Control control)
     {
-        return editorsMap.get(control);
+        return (ERDEditorPart) DiagramEditorAdapter.getEditor(control);
     }
 
     @Override

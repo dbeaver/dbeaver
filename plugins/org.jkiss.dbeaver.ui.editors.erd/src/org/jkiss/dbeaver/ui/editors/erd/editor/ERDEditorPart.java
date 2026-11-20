@@ -134,7 +134,8 @@ import java.util.regex.PatternSyntaxException;
  * an editor </i> in chapter <i>Introduction to .gef </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
-    implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView {
+    implements IDiagramEditorPart, DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart,
+    INavigatorModelView {
     private static final Log searcherLog = Log.getLog(Searcher.class);
     private static final Log log = Log.getLog(ERDEditorPart.class);
 
