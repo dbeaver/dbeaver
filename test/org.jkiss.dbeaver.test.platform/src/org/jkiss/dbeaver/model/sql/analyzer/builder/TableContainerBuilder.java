@@ -71,6 +71,14 @@ public class TableContainerBuilder extends Builder<DBSObjectContainer, DBSEntity
     }
 
     @NotNull
+    public TableContainerBuilder partitionTable(@NotNull String name, @NotNull Consumer<TableAttributeContainerBuilder> applier) throws DBException {
+        final TableAttributeContainerBuilder builder = new TableAttributeContainerBuilder(dataSource, container, name, true);
+        applier.apply(builder);
+        children.add(builder.build());
+        return this;
+    }
+
+    @NotNull
     @Override
     public DBSObjectContainer build() {
         return container;
