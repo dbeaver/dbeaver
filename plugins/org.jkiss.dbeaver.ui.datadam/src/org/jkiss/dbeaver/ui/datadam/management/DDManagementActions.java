@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 
 import java.lang.reflect.InvocationTargetException;
@@ -94,6 +95,9 @@ public final class DDManagementActions {
             });
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.sync_preference_page_title, failure, e.getTargetException());
+        }
+        if (signedIn && DDDesktopAccessService.getInstance().getStatus() == DDDesktopAccessService.Status.SIGNED_OUT) {
+            DDProjectUIManager.getInstance().refreshProjectVisibility();
         }
     }
 

@@ -306,6 +306,45 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
     }
 
     @Test
+    void acceptsArraySubqueriesAsValueExpressions() {
+        for (String sql : List.of(
+            "SELECT ARRAY(SELECT id FROM items) AS ids",
+            "SELECT ARRAY((SELECT id FROM items)) AS ids",
+            "WITH selected AS (SELECT id FROM items) SELECT ARRAY(SELECT id FROM selected) ids",
+            "SELECT wrap_array(ARRAY(SELECT id FROM items), ARRAY(SELECT 0)) AS ids"
+        )) {
+            SQLStandardParser parser = makeParser(sql);
+            var tree = parser.sqlQuery();
+            Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
+            Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1), tree.toStringTree(parser));
+            Assertions.assertEquals(sql.contains("wrap_array") ? 2 : sql.contains("ARRAY((") ? 0 : 1,
+                Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_functionCallOperand).stream()
+                    .filter(n -> n.getChild(0) instanceof SQLStandardParser.DirectSubqueryExpressionContext).count(),
+                tree.toStringTree(parser));
+            if (sql.contains("ARRAY((")) {
+                Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_subquery).size(),
+                    tree.toStringTree(parser));
+            }
+        }
+    }
+
+    @Test
+    void acceptsWithInsideArraySubquery() {
+        assertAccepted("SELECT ARRAY(WITH selected AS (SELECT id FROM items) SELECT id FROM selected) AS ids");
+    }
+
+    @Test
+    void acceptsWithInsideParenthesizedSubqueries() {
+        for (String sql : List.of(
+            "SELECT (WITH selected AS (SELECT 1 AS id) SELECT id FROM selected) AS id",
+            "SELECT * FROM (WITH selected AS (SELECT 1 AS id) SELECT id FROM selected) AS t",
+            "WITH outer_cte AS (WITH inner_cte AS (SELECT 1 AS id) SELECT id FROM inner_cte) SELECT id FROM outer_cte"
+        )) {
+            assertAccepted(sql);
+        }
+    }
+
+    @Test
     void recognizesNestedSqlAndClosingDollarTag() {
         String sql = "DO $outer$ BEGIN SELECT 1; SELECT '$outer$'; END; $outer$;";
         SQLStandardParser parser = makeParser(sql);

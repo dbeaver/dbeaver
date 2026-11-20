@@ -355,7 +355,8 @@ queryName: identifier;
 
 // select, subquery
 scalarSubquery: subquery;
-subquery: LeftParen queryExpression RightParen;
+subquery: LeftParen directSubqueryExpression RightParen;
+directSubqueryExpression: withClause? queryExpression;
 unionTerm: UNION (ALL)? (correspondingSpec)? queryTerm;
 exceptTerm: EXCEPT (ALL)? (correspondingSpec)? queryTerm;
 nonJoinQueryExpression: nonJoinQueryTerm|queryExpression;
@@ -628,7 +629,7 @@ anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
 functionCallExpression: functionCallTargetName LeftParen (functionCallOperand ((Comma|anyWord) functionCallOperand)*)? RightParen overClause?;
 functionCallTargetName: qualifiedName|IF;
-functionCallOperand: anyValue;
+functionCallOperand: anyValue|directSubqueryExpression;
 
 aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? separatorClause? RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
 aggregateExprParam: DISTINCT|ALL|LIMIT|SEPARATOR|OFFSET|Comma|rowValueConstructor;
