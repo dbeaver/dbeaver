@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
@@ -162,8 +165,89 @@ public class CompareObjectsExecutor {
         reportLines.clear();
         lastLine = null;
 
+        if (settings.isRefreshMetadata()) {
+            nodes = new ArrayList<>(nodes);
+            Set<DBNNode> refreshedAncestors = Collections.newSetFromMap(new IdentityHashMap<>());
+            for (int i = 0; i < nodes.size(); i++) {
+                DBNDatabaseNode node = nodes.get(i);
+                if (node instanceof DBNDatabaseFolder folder) {
+                    DBNNode parentNode = folder.getParentNode();
+                    DBNNode refreshBoundary = parentNode != null ? parentNode : folder;
+                    if (refreshedAncestors.add(refreshBoundary)) {
+                        DBNNode refreshed = refreshBoundary.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                        if (refreshed == null || folder.isDisposed()) {
+                            throw new DBException("Root folder '" + folder.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                        }
+                    }
+                    if (folder.getObject() instanceof DBSObjectContainer container) {
+                        container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
+                    }
+                    folder.getChildren(monitor);
+                    if (!isNodeAttached(folder, monitor)) {
+                        throw new DBException("Root folder '" + folder.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                    }
+                } else {
+                    DBNNode refreshBoundary = node;
+                    for (DBNNode p = node.getParentNode(); p != null; p = p.getParentNode()) {
+                        if (p instanceof DBNDataSource || p instanceof DBNDatabaseFolder) {
+                            refreshBoundary = p;
+                            break;
+                        }
+                    }
+                    if (refreshedAncestors.add(refreshBoundary)) {
+                        DBNNode refreshed = refreshBoundary.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                        if (refreshed == null || refreshBoundary.isDisposed()) {
+                            throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                        }
+                    }
+
+                    if (!isNodeAttached(node, monitor)) {
+                        throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                    }
+
+                    DBSObject dbObject = node.getObject();
+                    if (dbObject != null) {
+                        DBNDatabaseNode resolvedNode = DBNUtils.getNodeByObject(monitor, dbObject, false);
+                        if (resolvedNode == null || resolvedNode.isDisposed() || resolvedNode.getObject() == null || !isNodeAttached(resolvedNode, monitor)) {
+                            throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                        }
+                        nodes.set(i, resolvedNode);
+                    }
+                }
+            }
+        }
+
         compareNodes(monitor, nodes);
         return new CompareReport(rootNodes, reportLines);
+    }
+
+    private boolean isNodeAttached(@NotNull DBNNode node, @NotNull DBRProgressMonitor monitor) {
+        if (node.isDisposed()) {
+            return false;
+        }
+        DBNNode parent = node.getParentNode();
+        if (parent == null) {
+            return true;
+        }
+        if (parent.isDisposed()) {
+            return false;
+        }
+        if (!isNodeAttached(parent, monitor)) {
+            return false;
+        }
+        try {
+            DBNNode[] children = parent.getChildren(monitor);
+            if (children != null) {
+                for (DBNNode child : children) {
+                    if (child == node || (child instanceof DBNDatabaseNode dn && node instanceof DBNDatabaseNode n && dn.getObject() != null && dn.getObject().equals(n.getObject()))) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Error checking node attachment", e);
+        }
+        return false;
     }
 
     private void compareNodes(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes)

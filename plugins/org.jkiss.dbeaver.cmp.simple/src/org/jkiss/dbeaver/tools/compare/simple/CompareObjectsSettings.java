@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public class CompareObjectsSettings {
     private boolean compareOnlyStructure = false;
     private boolean compareScripts = false;
     private boolean showOnlyDifferences = false;
+    private boolean refreshMetadata = false;
     private OutputType outputType = OutputType.BROWSER;
     private String outputFolder;
 
@@ -98,6 +99,14 @@ public class CompareObjectsSettings {
         this.showOnlyDifferences = showOnlyDifferences;
     }
 
+    public boolean isRefreshMetadata() {
+        return refreshMetadata;
+    }
+
+    public void setRefreshMetadata(boolean refreshMetadata) {
+        this.refreshMetadata = refreshMetadata;
+    }
+
     public OutputType getOutputType() {
         return outputType;
     }
@@ -130,6 +139,9 @@ public class CompareObjectsSettings {
         if (dialogSettings.get("compareScripts") != null) {
             compareScripts = dialogSettings.getBoolean("compareScripts");
         }
+        if (dialogSettings.get("refreshMetadata") != null) {
+            refreshMetadata = dialogSettings.getBoolean("refreshMetadata");
+        }
         if (dialogSettings.get("outputType") != null) {
             outputType = OutputType.valueOf(dialogSettings.get("outputType"));
         }
@@ -144,6 +156,7 @@ public class CompareObjectsSettings {
         dialogSettings.put("compareStructure", compareOnlyStructure);
         dialogSettings.put("compareScripts", compareScripts);
         dialogSettings.put("showDifference", showOnlyDifferences);
+        dialogSettings.put("refreshMetadata", refreshMetadata);
         dialogSettings.put("outputType", outputType.name());
         dialogSettings.put("outputFolder", outputFolder);
     }
