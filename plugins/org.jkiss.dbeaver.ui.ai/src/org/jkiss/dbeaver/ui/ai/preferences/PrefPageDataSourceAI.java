@@ -275,6 +275,11 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
     }
 
     @Nullable
+    public AIContextSettingsDataSource getAISettings() {
+        return settings;
+    }
+
+    @Nullable
     public DBPDataSourceContainer getConnection() {
         return element == null ? null : element.getAdapter(DBPDataSourceContainer.class);
     }

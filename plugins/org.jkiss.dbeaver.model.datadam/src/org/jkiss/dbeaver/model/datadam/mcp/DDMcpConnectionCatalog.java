@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
@@ -58,7 +59,7 @@ public class DDMcpConnectionCatalog {
         return workspace.getVisibleProjects().stream()
             .filter(this::canReadProjectConnections)
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
-                .filter(DDMcpConnectionSettings::isEnabled)
+                .filter(connection -> new AIContextSettingsDataSource(connection).isDatadamMcpEnabled())
                 .map(connection -> new AvailableConnection(project, connection,
                     requiresManualConnection(connection))))
             .toList();
