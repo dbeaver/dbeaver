@@ -160,7 +160,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         text.setForeground(UIStyles.getDefaultTextForeground());
         curLineColor = UIStyles.getInvertedColor(text.getBackground());
         curLineForeground = UIStyles.getInvertedColor(text.getForeground());
-        hoverColor = UIStyles.mix(curLineColor, text.getBackground(), 0.15f);
+        hoverColor = UIUtils.getSharedColor(UIUtils.blend(curLineColor.getRGB(), text.getBackground().getRGB(), 15));
         if (curLineRange != null) {
             curLineRange.foreground = curLineForeground;
             curLineRange.background = curLineColor;
