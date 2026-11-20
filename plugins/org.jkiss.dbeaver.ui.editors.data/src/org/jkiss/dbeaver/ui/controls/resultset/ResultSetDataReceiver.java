@@ -160,6 +160,9 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
                     DBSDataContainer dataContainer = getDataContainer();
                     // Read locators' metadata
                     DBSEntity entity = dataContainer instanceof DBSEntity e ? e : null;
+                    if (entity == null && resultSet.getFeature(DBCResultSet.FEATURE_NAME_SOURCE_ENTITY) instanceof DBSEntity e) {
+                        entity = e;
+                    }
                     DBExecUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
                 } catch (Throwable e) {
                     errorList.add(e);
