@@ -67,6 +67,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
     private final List<McpConnectionsPageRegistry.McpConnectionsPageContribution> contributions =
         McpConnectionsPageRegistry.createContributions();
+    private final List<ContributionColumn> contributionColumns = new ArrayList<>();
     private final Map<DBPDataSourceContainer, AIContextSettingsDataSource> pendingSettings = new LinkedHashMap<>();
     private final Map<DBPProject, List<DBPDataSourceContainer>> groupedConnections = new LinkedHashMap<>();
 
@@ -127,6 +128,17 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         createConnectionTree(listRow);
         createConnectionColumns();
         createConnectionActions(listRow);
+        Tree tree = viewer.getTree();
+        for (McpConnectionsPageRegistry.McpConnectionsPageContribution contribution : contributions) {
+            Runnable onChange = () -> UIUtils.asyncExec(() -> {
+                if (!tree.isDisposed()) {
+                    updateContributionVisibility();
+                }
+            });
+            contribution.addVisibilityListener(onChange);
+            tree.addDisposeListener(event -> contribution.removeVisibilityListener(onChange));
+        }
+        updateContributionVisibility();
     }
 
     private void createConnectionTree(@NotNull Composite parent) {
@@ -209,7 +221,27 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
             element -> element instanceof DBPDataSourceContainer connection ? connection.getDriver().getName() : "");
         createScopeColumn();
         for (McpConnectionsPageRegistry.McpConnectionsPageContribution contribution : contributions) {
-            contribution.createColumns(viewer);
+            int previousColumnCount = viewer.getTree().getColumnCount();
+            contribution.createColumns(viewer, pendingSettings);
+            TreeColumn[] columns = viewer.getTree().getColumns();
+            for (int index = previousColumnCount; index < columns.length; index++) {
+                contributionColumns.add(new ContributionColumn(contribution, columns[index], columns[index].getWidth()));
+            }
+        }
+    }
+
+    private void updateContributionVisibility() {
+        for (ContributionColumn contributionColumn : contributionColumns) {
+            TreeColumn column = contributionColumn.column;
+            boolean visible = contributionColumn.contribution.isVisible();
+            if (visible && column.getWidth() == 0) {
+                column.setWidth(contributionColumn.width);
+            } else if (!visible && column.getWidth() > 0) {
+                contributionColumn.width = column.getWidth();
+                viewer.cancelEditing();
+                column.setWidth(0);
+            }
+            column.setResizable(visible);
         }
     }
 
@@ -450,8 +482,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     private void removeSelectedConnections() {
         for (Object element : viewer.getStructuredSelection()) {
             if (element instanceof DBPDataSourceContainer connection) {
-                pendingSettings.computeIfAbsent(connection, AIContextSettingsDataSource::new)
-                    .setMetaTransferConfirmed(false);
+                pendingSettings.computeIfAbsent(connection, AIContextSettingsDataSource::new).setMetaTransferConfirmed(false);
             }
         }
         refreshConnections();
@@ -464,10 +495,17 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         if (dialog.open() != Window.OK) {
             return;
         }
-        for (DBPDataSourceContainer connection : dialog.getSelectedDataSources()) {
+        List<DBPDataSourceContainer> added = dialog.getSelectedDataSources();
+        for (DBPDataSourceContainer connection : added) {
             pendingSettings.computeIfAbsent(connection, AIContextSettingsDataSource::new).setMetaTransferConfirmed(true);
         }
         refreshConnections();
+        if (!ungroupedCheck.getSelection()) {
+            for (DBPDataSourceContainer connection : added) {
+                viewer.setExpandedState(connection.getProject(), true);
+            }
+        }
+        viewer.setSelection(new StructuredSelection(added), true);
     }
 
     private void onCustomScopeSelected(@NotNull DBPDataSourceContainer connection) {
@@ -491,6 +529,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         if (visible && viewer != null && !viewer.getControl().isDisposed()) {
+            updateContributionVisibility();
             refreshConnections();
         }
     }
@@ -507,14 +546,6 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
                 AIProjectConnectionCount.refresh(connection.getRegistry());
                 pendingSettings.remove(connection);
             } catch (RuntimeException e) {
-                showSaveError(e);
-                return false;
-            }
-        }
-        for (McpConnectionsPageRegistry.McpConnectionsPageContribution contribution : contributions) {
-            try {
-                contribution.save();
-            } catch (DBException e) {
                 showSaveError(e);
                 return false;
             }
@@ -555,13 +586,28 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     @Override
     public boolean performCancel() {
         pendingSettings.clear();
-        for (McpConnectionsPageRegistry.McpConnectionsPageContribution contribution : contributions) {
-            contribution.discard();
-        }
         return super.performCancel();
     }
 
     private record ProjectPlaceholder(@NotNull DBPProject project) {
+    }
+
+    private static final class ContributionColumn {
+        @NotNull
+        private final McpConnectionsPageRegistry.McpConnectionsPageContribution contribution;
+        @NotNull
+        private final TreeColumn column;
+        private int width;
+
+        private ContributionColumn(
+            @NotNull McpConnectionsPageRegistry.McpConnectionsPageContribution contribution,
+            @NotNull TreeColumn column,
+            int width
+        ) {
+            this.contribution = contribution;
+            this.column = column;
+            this.width = width;
+        }
     }
 
     public static final class McpConnectionsPageRegistry {
@@ -573,14 +619,19 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
         /** Adds product-specific access columns to the common connections page. */
         public interface McpConnectionsPageContribution {
+            /** Whether this provider's columns should appear in the current global configuration. */
+            boolean isVisible();
+
+            /** Notify the page when the provider's global visibility changes. */
+            void addVisibilityListener(@NotNull Runnable listener);
+
+            void removeVisibilityListener(@NotNull Runnable listener);
+
             /** Project group rows are present unless the user selects the ungrouped view. */
-            void createColumns(@NotNull TreeViewer viewer);
-
-            /** Persist prepared changes on Apply or OK; keep unsaved changes after a failure. */
-            void save() throws DBException;
-
-            /** Discard changes prepared by this contribution when the dialog is cancelled. */
-            void discard();
+            void createColumns(
+                @NotNull TreeViewer viewer,
+                @NotNull Map<DBPDataSourceContainer, AIContextSettingsDataSource> pendingSettings
+            );
         }
 
         @NotNull
