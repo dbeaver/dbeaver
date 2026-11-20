@@ -115,6 +115,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
     private static final String DEFAULT_PROJECT_NAME = "General";
+    private static final String DEFAULT_APP_USER_MODEL_ID = "DBeaverCorp.DBeaverCE";
+    private static final String PROP_APP_USER_MODEL_ID = "dbeaver.appUserModelId";
+    private static final String APP_USER_MODEL_ID_NONE = "none";
 
     /**
      * Specified in {@code dbeaver.ini} as a JVM parameter during packaging. Possible values are:
@@ -186,6 +189,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         instance = this;
         // hide standard Eclipse exit message if exit code is not OK (otherwise it may be confusing)
         System.setProperty(ECLIPSE_EXIT_DATA, "");
+
+        // Must run before any SWT Display / dialog is created (workspace lock UI, splash, etc.)
+        if (RuntimeUtils.isWindows()) {
+            setWindowsAppUserModelID();
+        }
 
         var args = preprocessCommandLine();
         Location instanceLoc = Platform.getInstanceLocation();
@@ -512,12 +520,65 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
     }
 
+    /**
+     * Sets an explicit AppUserModelID so Windows groups the app under one taskbar button.
+     * Must be called before the first SWT Display is created.
+     * <p>
+     * Delegates to the Windows SWT fragment via reflection so this class stays
+     * platform-agnostic at compile time. The fragment loads through SWT's classloader.
+     */
+    private void setWindowsAppUserModelID() {
+        String appId = buildAppUserModelId();
+        if (appId == null) {
+            log.debug("Windows AppUserModelID is disabled, the system-assigned one is kept");
+            return;
+        }
+        try {
+            ClassLoader swtClassLoader = Display.class.getClassLoader();
+            Class<?> aumidClass = Class.forName(
+                "org.jkiss.dbeaver.ui.swt.windows.WindowsAppUserModelId",
+                true,
+                swtClassLoader
+            );
+            Object result = aumidClass.getMethod("setCurrentProcessId", String.class).invoke(null, appId);
+            if (!Boolean.TRUE.equals(result)) {
+                log.debug("SetCurrentProcessExplicitAppUserModelID failed for '" + appId + "'");
+            }
+        } catch (Exception e) {
+            log.debug("Failed to set Windows AppUserModelID", e);
+        }
+    }
+
+    /**
+     * Returns the Windows AppUserModelID, or {@code null} if it must not be set.
+     * <p>
+     * By default it is a fixed constant (not the localizable product name) and has no version part,
+     * so pinned taskbar icons stay valid across upgrades. The {@value #PROP_APP_USER_MODEL_ID}
+     * system property overrides it for distributions whose shortcuts carry a different
+     * System.AppUserModel.ID. The value {@value #APP_USER_MODEL_ID_NONE} keeps the identity assigned
+     * by the system, which is required for packaged (MS Store / MSIX) launches.
+     */
+    @Nullable
+    private static String buildAppUserModelId() {
+        String override = System.getProperty(PROP_APP_USER_MODEL_ID);
+        if (APP_USER_MODEL_ID_NONE.equalsIgnoreCase(override)) {
+            return null;
+        }
+        return CommonUtils.isEmpty(override) ? DEFAULT_APP_USER_MODEL_ID : override;
+    }
+
     private Display getDisplay() {
         if (display == null) {
             log.debug("\tCreate display");
             // Set display name at the very beginning (#609)
             // This doesn't initialize display - just sets default title
-            Display.setAppName(GeneralUtils.getProductName());
+            // On Windows, SWT derives an explicit AppUserModelID from the app name when none is set yet,
+            // so with the "none" opt-out the app name is cleared to keep the system-assigned identity.
+            if (RuntimeUtils.isWindows() && buildAppUserModelId() == null) {
+                Display.setAppName(null);
+            } else {
+                Display.setAppName(GeneralUtils.getProductName());
+            }
 
             display = Display.getCurrent();
             if (display == null) {

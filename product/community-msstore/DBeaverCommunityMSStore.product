@@ -11,6 +11,7 @@
     <launcherArgs>
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
+            -Ddbeaver.appUserModelId=none
             -Dosgi.requiredJavaVersion=21
             -Dfile.encoding=UTF-8
             --sun-misc-unsafe-memory-access=allow
