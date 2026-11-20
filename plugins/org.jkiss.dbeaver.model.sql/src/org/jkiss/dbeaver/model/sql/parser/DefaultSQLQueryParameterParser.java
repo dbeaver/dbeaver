@@ -38,6 +38,7 @@ import java.util.regex.Matcher;
 /** Shared SQL parameter and variable parser for a single query. */
 public class DefaultSQLQueryParameterParser {
     private static final Log log = Log.getLog(DefaultSQLQueryParameterParser.class);
+    private static final String[] SERVER_READ_COMMENT_PREFIXES = {"/*+", "/*!", "/*M!", "--+"};
     @NotNull
     protected final SQLParserContext context;
     protected final int queryOffset;
@@ -66,11 +67,14 @@ public class DefaultSQLQueryParameterParser {
         boolean scanRawMarkers = isAnonymousParametersEnabled()
             && (!syntaxManager.isAnonymousParametersEnabled() || anonymousMark != syntaxManager.getAnonymousParameterMark());
         List<SQLQueryParameter> parameters = null;
+        List<int[]> commentRanges = new ArrayList<>();
         TPRuleBasedScanner ruleScanner = context.getScanner();
         ruleScanner.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
-        if (syntaxManager.isParametersEnabled()) {
+        boolean parametersEnabled = syntaxManager.isParametersEnabled();
+        // Variables need the comment ranges even when parameters are disabled
+        if (parametersEnabled || syntaxManager.isVariablesEnabled()) {
             for (; ; ) {
                 TPToken token = ruleScanner.nextToken();
                 final int tokenOffset = ruleScanner.getTokenOffset();
@@ -82,7 +86,13 @@ public class DefaultSQLQueryParameterParser {
                 SQLTokenType tokenType = token instanceof TPTokenDefault
                                          ? (SQLTokenType) ((TPTokenDefault) token).getData()
                                          : null;
-                if (token.isWhitespace() || tokenType == SQLTokenType.T_COMMENT) {
+                if (tokenType == SQLTokenType.T_COMMENT) {
+                    if (!isServerReadComment(document, tokenOffset, tokenLength)) {
+                        commentRanges.add(new int[]{tokenOffset - queryOffset, tokenOffset - queryOffset + tokenLength});
+                    }
+                    continue;
+                }
+                if (token.isWhitespace() || !parametersEnabled) {
                     continue;
                 }
                 if (firstKeyword) {
@@ -135,11 +145,14 @@ public class DefaultSQLQueryParameterParser {
             }
         }
 
-        return parseVariables(parameters);
+        return parseVariables(parameters, commentRanges);
     }
 
     @Nullable
-    private List<SQLQueryParameter> parseVariables(@Nullable List<SQLQueryParameter> parameters) {
+    private List<SQLQueryParameter> parseVariables(
+        @Nullable List<SQLQueryParameter> parameters,
+        @NotNull List<int[]> commentRanges
+    ) {
         SQLParserContext context = this.context;
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
         if (syntaxManager.isVariablesEnabled()) {
@@ -176,6 +189,7 @@ public class DefaultSQLQueryParameterParser {
                                 start,
                                 matcher.end() - matcher.start()
                             );
+                            param.setInComment(isInRange(commentRanges, start));
                             if (parameters == null) {
                                 parameters = new ArrayList<>();
                             }
@@ -191,6 +205,33 @@ public class DefaultSQLQueryParameterParser {
         }
 
         return parameters;
+    }
+
+    /**
+     * Optimizer hints and MySQL/MariaDB executable comments are read by the server,
+     * so their variables are treated as code.
+     */
+    private static boolean isServerReadComment(@NotNull IDocument document, int offset, int length) {
+        try {
+            String start = document.get(offset, Math.min(4, length));
+            for (String prefix : SERVER_READ_COMMENT_PREFIXES) {
+                if (start.startsWith(prefix)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (BadLocationException e) {
+            return false;
+        }
+    }
+
+    private static boolean isInRange(@NotNull List<int[]> ranges, int offset) {
+        for (int[] range : ranges) {
+            if (offset >= range[0] && offset < range[1]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nullable
