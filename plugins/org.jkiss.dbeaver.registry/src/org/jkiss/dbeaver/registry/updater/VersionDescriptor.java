@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.updater;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -38,6 +39,8 @@ import java.util.*;
  */
 public class VersionDescriptor {
 
+    private static final Log log = Log.getLog(VersionDescriptor.class);
+
     public enum PatchSeverity {
         NONE, MEDIUM, HIGH, CRITICAL;
 
@@ -55,9 +58,31 @@ public class VersionDescriptor {
     public record VersionPatch(
         int number,
         @NotNull String date,
-        @NotNull PatchSeverity severity,
         @NotNull String releaseNotes
     ) {
+    }
+
+    /**
+     * Optional update advisory. The fixed-in version contains three numeric components and an optional numeric patch qualifier.
+     */
+    public record CriticalUpdate(
+        @NotNull Date updateDate,
+        @NotNull Version fixedIn,
+        @NotNull PatchSeverity severity,
+        @NotNull String description
+    ) {
+        public CriticalUpdate {
+            updateDate = new Date(updateDate.getTime());
+            Objects.requireNonNull(fixedIn);
+            Objects.requireNonNull(severity);
+            Objects.requireNonNull(description);
+        }
+
+        @NotNull
+        @Override
+        public Date updateDate() {
+            return new Date(updateDate.getTime());
+        }
     }
 
     private String programName;
@@ -67,6 +92,7 @@ public class VersionDescriptor {
     private String downloadURL;
     private String releaseNotes;
     private List<VersionPatch> patches = List.of();
+    private List<CriticalUpdate> criticalUpdates = List.of();
 
     public VersionDescriptor(@NotNull DBPPlatform platform, @NotNull String fileAddr) throws IOException {
         try (InputStream inputStream = WebUtils.openConnection(fileAddr, platform.getWorkspace().getWorkspaceId()).getInputStream()) {
@@ -132,10 +158,36 @@ public class VersionDescriptor {
         return programVersion.compareTo(installedVersion) > 0 ? patches : List.of();
     }
 
+    /**
+     * All valid advisories in descriptor order, regardless of severity or applicability.
+     */
     @NotNull
-    public PatchSeverity getMaxSeverity(@NotNull Version installedVersion, int installedPatch) {
-        return getApplicablePatches(installedVersion, installedPatch).stream()
-            .map(VersionPatch::severity)
+    public List<CriticalUpdate> getCriticalUpdates() {
+        return criticalUpdates;
+    }
+
+    @NotNull
+    public List<CriticalUpdate> getApplicableCriticalUpdates(@NotNull Version installedVersion, int installedPatch) {
+        // OSGi qualifiers identify builds, while fixed-in's optional fourth numeric component identifies a patch.
+        Version installedBase = new Version(installedVersion.getMajor(), installedVersion.getMinor(), installedVersion.getMicro());
+        return criticalUpdates.stream().filter(update -> {
+            Version fixedIn = update.fixedIn();
+            Version fixedBase = new Version(fixedIn.getMajor(), fixedIn.getMinor(), fixedIn.getMicro());
+            int comparison = installedBase.compareTo(fixedBase);
+            int fixedPatch = fixedIn.getQualifier().isEmpty() ? 0 : Integer.parseInt(fixedIn.getQualifier());
+            return comparison < 0 || comparison == 0 && installedPatch < fixedPatch;
+        }).toList();
+    }
+
+    public boolean hasCriticalUpdates(@NotNull Version installedVersion, int installedPatch) {
+        return getApplicableCriticalUpdates(installedVersion, installedPatch).stream()
+            .anyMatch(update -> update.severity() == PatchSeverity.CRITICAL);
+    }
+
+    @NotNull
+    public PatchSeverity getUpdateSeverity(@NotNull Version installedVersion, int installedPatch) {
+        return getApplicableCriticalUpdates(installedVersion, installedPatch).stream()
+            .map(CriticalUpdate::severity)
             .max(PatchSeverity::compareTo)
             .orElse(PatchSeverity.NONE);
     }
@@ -200,11 +252,15 @@ public class VersionDescriptor {
     private void parseVersionInfo(@NotNull InputStream inputStream) throws IOException {
         SAXReader parser = new SAXReader(inputStream);
         Map<Integer, VersionPatch> parsedPatches = new TreeMap<>();
+        List<CriticalUpdate> parsedCriticalUpdates = new ArrayList<>();
         SAXListener listener = new SAXListener() {
             private final StringBuilder textBuffer = new StringBuilder();
+            private final StringBuilder criticalUpdateText = new StringBuilder();
             private int depth;
             private boolean inPatches;
             private Map<String, String> patch;
+            private boolean inCriticalUpdates;
+            private Map<String, String> criticalUpdate;
 
             @Override
             public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) {
@@ -214,12 +270,23 @@ public class VersionDescriptor {
                     inPatches = true;
                 } else if (depth == 3 && inPatches && "patch".equals(localName)) {
                     patch = new HashMap<>();
+                } else if (depth == 2 && "critical-update".equals(localName)) {
+                    inCriticalUpdates = true;
+                } else if (depth == 3 && inCriticalUpdates && "update".equals(localName)) {
+                    criticalUpdate = new HashMap<>();
+                    for (String name : List.of("update-date", "fixed-in", "severity")) {
+                        criticalUpdate.put(name, attributes.getValue(name));
+                    }
+                    criticalUpdateText.setLength(0);
                 }
             }
 
             @Override
             public void saxText(@NotNull SAXReader reader, @NotNull String data) {
                 textBuffer.append(data);
+                if (criticalUpdate != null) {
+                    criticalUpdateText.append(data);
+                }
             }
 
             @Override
@@ -235,6 +302,13 @@ public class VersionDescriptor {
                         throw new XMLException("Duplicate patch number: " + descriptor.number());
                     }
                     patch = null;
+                } else if (criticalUpdate != null && depth == 3) {
+                    try {
+                        parsedCriticalUpdates.add(parseCriticalUpdate(criticalUpdate, criticalUpdateText.toString()));
+                    } catch (IllegalArgumentException | ParseException e) {
+                        log.warn("Ignoring invalid critical update", e);
+                    }
+                    criticalUpdate = null;
                 } else if (depth == 2) {
                     switch (localName) {
                         case "name" -> programName = text;
@@ -244,6 +318,7 @@ public class VersionDescriptor {
                         case "download-url" -> downloadURL = text;
                         case "release-notes" -> releaseNotes = text;
                         case "patches" -> inPatches = false;
+                        case "critical-update" -> inCriticalUpdates = false;
                     }
                 }
                 depth--;
@@ -256,9 +331,44 @@ public class VersionDescriptor {
                 throw new XMLException("Missing version number");
             }
             patches = List.copyOf(parsedPatches.values());
+            criticalUpdates = List.copyOf(parsedCriticalUpdates);
         } catch (XMLException | IllegalArgumentException e) {
             throw new IOException("XML parse error", e);
         }
+    }
+
+    @NotNull
+    private static CriticalUpdate parseCriticalUpdate(
+        @NotNull Map<String, String> attributes,
+        @NotNull String description
+    ) throws ParseException {
+        String date = attributes.get("update-date");
+        String fixedIn = attributes.get("fixed-in");
+        String severity = attributes.get("severity");
+        if (date == null || !date.matches("[0-9]{2}\\.[0-9]{2}\\.[0-9]{4}")
+            || fixedIn == null || !fixedIn.matches("[0-9]+\\.[0-9]+\\.[0-9]+(?:\\.[0-9]+)?")
+            || severity == null
+        ) {
+            throw new IllegalArgumentException("Missing or invalid critical update attributes");
+        }
+        if (description.isBlank()) {
+            throw new IllegalArgumentException("Missing critical update description");
+        }
+        String[] components = fixedIn.split("\\.");
+        Version fixedVersion = new Version(
+            Integer.parseInt(components[0]),
+            Integer.parseInt(components[1]),
+            Integer.parseInt(components[2]),
+            components.length == 4 ? Integer.toString(Integer.parseInt(components[3])) : ""
+        );
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.ROOT);
+        dateFormat.setLenient(false);
+        return new CriticalUpdate(
+            dateFormat.parse(date),
+            fixedVersion,
+            PatchSeverity.parse(severity),
+            description
+        );
     }
 
     @NotNull
@@ -271,7 +381,6 @@ public class VersionDescriptor {
         return new VersionPatch(
             number,
             fields.getOrDefault("patch-date", ""),
-            PatchSeverity.parse(fields.getOrDefault("severity", "")),
             fields.getOrDefault("patch-release-notes", "")
         );
     }

@@ -56,6 +56,8 @@ public class DBeaverVersionChecker extends AbstractJob {
 
     private static final boolean SKIP_VERSION_CHECK;
     private static final Version OVERRIDE_PRODUCT_VERSION;
+    // Accessed on the UI thread, shared by checks from all workbench windows.
+    private static boolean automaticCriticalDialogShown;
 
     static {
         String versionProperty = System.getProperty(PROP_OVERRIDE_PRODUCT_VERSION);
@@ -131,30 +133,38 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
 
         boolean newVersionAvailable = newVersion.isNewerThan(currentVersion, getProductPatchNumber());
+        boolean critical = newVersionAvailable && newVersion.getUpdateSeverity(currentVersion, getProductPatchNumber())
+            == VersionDescriptor.PatchSeverity.CRITICAL;
         boolean suppressed = isSuppressed(newVersion);
         UIServiceApplicationVersionUpdater updater = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
-        boolean showToolbarNotification = updater == null && newVersionAvailable && !showAlways;
-        if (showAlways || (!suppressed && (SKIP_VERSION_CHECK || newVersionAvailable))) {
+        if (showAlways || critical || (!suppressed && (SKIP_VERSION_CHECK || newVersionAvailable))) {
             if (updater != null) {
                 UIUtils.asyncExec(updater::handleVersionUpdate);
-            } else if (showToolbarNotification) {
-                UIUtils.asyncExec(() -> VersionUpdateHandler.showNotification(currentVersion, newVersion));
             } else {
-                showUpdaterDialog(currentVersion, newVersion);
+                UIUtils.asyncExec(() -> {
+                    if (critical || newVersionAvailable && !showAlways) {
+                        VersionUpdateHandler.showNotification(currentVersion, newVersion);
+                    }
+                    if (showAlways || SKIP_VERSION_CHECK && !newVersionAvailable || critical && !automaticCriticalDialogShown) {
+                        // Set before opening the modal dialog: its event loop can process another window's check.
+                        if (critical) {
+                            automaticCriticalDialogShown = true;
+                        }
+                        DBeaverApplication.getInstance().notifyVersionUpgrade(currentVersion, newVersion, !showAlways);
+                    }
+                });
             }
         }
 
         return Status.OK_STATUS;
     }
 
-    private void showUpdaterDialog(@NotNull Version currentVersion, @NotNull VersionDescriptor newVersion)
-    {
-        UIUtils.asyncExec(() -> {
-            DBeaverApplication.getInstance().notifyVersionUpgrade(currentVersion, newVersion, !showAlways);
-        });
-    }
-
     static boolean isSuppressed(@NotNull VersionDescriptor version) {
+        if (version.isNewerThan(getProductVersion(), getProductPatchNumber())
+            && version.getUpdateSeverity(getProductVersion(), getProductPatchNumber()) == VersionDescriptor.PatchSeverity.CRITICAL
+        ) {
+            return false;
+        }
         return CoreApplicationActivator.getDefault().getPreferenceStore().getBoolean(getSuppressionKey(version));
     }
 

@@ -95,9 +95,13 @@ public class VersionUpdateContribution extends ExtensionContributionFactory {
         BaseThemeSettings.instance.addPropertyListener(
             BaseEditorColors.COLOR_BACKGROUND_GREEN, themeListener, null
         );
+        BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_ERROR, themeListener, null);
+        BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_ERROR_FOREGROUND, themeListener, null);
         item.addDisposeListener(event -> {
             BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_BACKGROUND_BLUE, themeListener);
             BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_BACKGROUND_GREEN, themeListener);
+            BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_ERROR, themeListener);
+            BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_ERROR_FOREGROUND, themeListener);
         });
         // Apply after the workbench has styled the native toolbar during creation.
         UIUtils.asyncExec(() -> updateColors(toolbar));
@@ -142,8 +146,10 @@ public class VersionUpdateContribution extends ExtensionContributionFactory {
         if (toolbar.isDisposed()) {
             return;
         }
-        var background = VersionUpdatePresentation.getUpdateBackground(VersionUpdateHandler.isMajorUpdate());
-        var foreground = toolbar.getParent().getForeground();
+        boolean critical = VersionUpdateHandler.isCriticalUpdate();
+        var background = critical ? BaseThemeSettings.instance.colorError
+            : VersionUpdatePresentation.getUpdateBackground(VersionUpdateHandler.isMajorUpdate());
+        var foreground = critical ? BaseThemeSettings.instance.colorErrorForeground : toolbar.getParent().getForeground();
         toolbar.setBackground(background);
         toolbar.setForeground(foreground);
         for (var item : toolbar.getItems()) {
