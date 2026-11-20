@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
+import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
 import org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.utils.DurationFormat;
@@ -62,6 +63,7 @@ final class WebViewMessageRenderer {
     private final Supplier<DBPDataSource> dataSourceSupplier;
     private final WebCSSInitializer cssInitializer;
     private final Map<Integer, AbstractJob> thumbnailJobs = new HashMap<>();
+    private final Map<Integer, LocalResourceHttpServer.Handle> gifResources = new HashMap<>();
     private SQLSyntaxManager syntaxManager;
     private SQLRuleScanner ruleScanner;
 
@@ -75,7 +77,7 @@ final class WebViewMessageRenderer {
         this.thumbnailBrowser = thumbnailBrowser;
         this.dataSourceSupplier = dataSourceSupplier;
         this.cssInitializer = cssInitializer;
-        browser.addDisposeListener(event -> cancelImageJobs());
+        browser.addDisposeListener(event -> clearImageResources());
     }
 
     @Nullable
@@ -154,8 +156,7 @@ final class WebViewMessageRenderer {
             default -> addUsualMessage(args, message);
         }
 
-        args.put("images", message.message().getImages().stream()
-            .map(image -> Map.of("name", image.name())).toList());
+        args.put("images", prepareImagePreviews(message));
         args.put("id", message.id());
         args.put("role", message.message().getRole().name().toLowerCase(Locale.ROOT));
         args.put("icon", iconPath);
@@ -166,9 +167,33 @@ final class WebViewMessageRenderer {
         return true;
     }
 
+    @NotNull
+    private List<Map<String, String>> prepareImagePreviews(@NotNull AIChatMessage message) {
+        LocalResourceHttpServer.Handle resources = gifResources.get(message.id());
+        List<Map<String, String>> previews = new ArrayList<>();
+        for (AIImageAttachment image : message.message().getImages()) {
+            Map<String, String> preview = new HashMap<>();
+            preview.put("name", image.name());
+            if (AIImageAttachmentViewer.GIF_MEDIA_TYPE.equals(image.mediaType())) {
+                try {
+                    if (resources == null) {
+                        resources = LocalResourceHttpServer.acquire();
+                        gifResources.put(message.id(), resources);
+                    }
+                    preview.put("src", AIImageAttachmentViewer.registerGif(resources, previews.size() + ".gif", image));
+                } catch (IOException exception) {
+                    log.debug("Cannot register animated image preview", exception);
+                }
+            }
+            previews.add(preview);
+        }
+        return previews;
+    }
+
     private void loadMessageImages(@NotNull AIChatMessage message) {
         List<AIImageAttachment> images = message.message().getImages();
-        if (images.isEmpty() || browser.isDisposed()) {
+        if (browser.isDisposed()
+            || images.stream().allMatch(image -> AIImageAttachmentViewer.GIF_MEDIA_TYPE.equals(image.mediaType()))) {
             return;
         }
         AbstractJob previous = thumbnailJobs.remove(message.id());
@@ -194,6 +219,10 @@ final class WebViewMessageRenderer {
                     int imageIndex = index;
                     try {
                         AIImageAttachment image = images.get(index);
+                        if (AIImageAttachmentViewer.GIF_MEDIA_TYPE.equals(image.mediaType())) {
+                            UIUtils.asyncExec(this::imageLoaded);
+                            continue;
+                        }
                         int size = MESSAGE_IMAGE_SIZE * 2;
                         boolean webp = "image/webp".equals(image.mediaType());
                         String source = webp ? null : AIImageThumbnail.toDataUrl(image.getBytes(), size);
@@ -240,9 +269,11 @@ final class WebViewMessageRenderer {
         job.schedule();
     }
 
-    private void cancelImageJobs() {
+    private void clearImageResources() {
         thumbnailJobs.values().forEach(AbstractJob::cancel);
         thumbnailJobs.clear();
+        gifResources.values().forEach(LocalResourceHttpServer.Handle::close);
+        gifResources.clear();
     }
 
     @Nullable
@@ -471,6 +502,10 @@ final class WebViewMessageRenderer {
     }
 
     void removeMessage(@NotNull AIChatMessage message) {
+        LocalResourceHttpServer.Handle resources = gifResources.remove(message.id());
+        if (resources != null) {
+            resources.close();
+        }
         AbstractJob job = thumbnailJobs.remove(message.id());
         if (job != null) {
             job.cancel();
@@ -479,7 +514,7 @@ final class WebViewMessageRenderer {
     }
 
     void clearChat() {
-        cancelImageJobs();
+        clearImageResources();
         execute("clearChat", Map.of());
     }
 

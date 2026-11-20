@@ -95,6 +95,15 @@ final class AIImageThumbnail {
         throw new IOException("Unsupported image format.");
     }
 
+    static void checkGifCanvas(@NotNull byte[] bytes) throws IOException {
+        if (bytes.length < 10) {
+            throw new IOException("Incomplete GIF header.");
+        }
+        int width = Byte.toUnsignedInt(bytes[6]) | Byte.toUnsignedInt(bytes[7]) << 8;
+        int height = Byte.toUnsignedInt(bytes[8]) | Byte.toUnsignedInt(bytes[9]) << 8;
+        checkPixels((long) width * height);
+    }
+
     static boolean isWebp(@NotNull byte[] bytes) {
         return bytes.length >= 12 && bytes[0] == 'R' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == 'F'
             && bytes[8] == 'W' && bytes[9] == 'E' && bytes[10] == 'B' && bytes[11] == 'P';

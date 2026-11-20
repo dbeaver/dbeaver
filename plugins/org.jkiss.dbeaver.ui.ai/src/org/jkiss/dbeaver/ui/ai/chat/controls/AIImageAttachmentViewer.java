@@ -42,13 +42,16 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
+import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 final class AIImageAttachmentViewer {
+    static final String GIF_MEDIA_TYPE = "image/gif";
     static final String ERROR_FUNCTION = "imagePreviewError";
     static final int MAX_DISPLAY_SIZE = 2048;
 
@@ -108,6 +111,19 @@ final class AIImageAttachmentViewer {
                         return null;
                     }
                 };
+                if (GIF_MEDIA_TYPE.equals(image.mediaType())) {
+                    try {
+                        LocalResourceHttpServer.Handle resources = LocalResourceHttpServer.acquire();
+                        browser.addDisposeListener(event -> resources.close());
+                        String imageHtml = createImageHtml(registerGif(resources, "image.gif", image), true);
+                        resources.addTextResource("preview.html", () -> imageHtml);
+                        browser.setUrl(resources.getUrl("preview.html"));
+                    } catch (IOException exception) {
+                        showImageError(browser, exception);
+                    }
+                    return area;
+                }
+
                 browser.setText(createStatusHtml(AIChatMessagesUI.ai_chat_image_loading));
                 imageJob = new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
                     @NotNull
@@ -122,7 +138,7 @@ final class AIImageAttachmentViewer {
                                 ? AIImageThumbnail.toWebpSource(bytes) : AIImageThumbnail.toDataUrl(bytes, MAX_DISPLAY_SIZE);
                             UIUtils.asyncExec(() -> {
                                 if (!browser.isDisposed() && !monitor.isCanceled()) {
-                                    browser.setText(createImageHtml(source));
+                                    browser.setText(createImageHtml(source, false));
                                 }
                             });
                         } catch (IOException | SWTException | IllegalArgumentException exception) {
@@ -199,7 +215,21 @@ final class AIImageAttachmentViewer {
     }
 
     @NotNull
-    static String createImageHtml(@NotNull String source) {
+    static String registerGif(
+        @NotNull LocalResourceHttpServer.Handle resources,
+        @NotNull String path,
+        @NotNull AIImageAttachment image
+    ) {
+        resources.addResource(path, () -> {
+            byte[] bytes = image.getBytes();
+            AIImageThumbnail.checkGifCanvas(bytes);
+            return new ByteArrayInputStream(bytes);
+        });
+        return resources.getUrl(path);
+    }
+
+    @NotNull
+    private static String createImageHtml(@NotNull String source, boolean animated) {
         return """
             <html><head><script>
             let zoom = 1;
@@ -214,9 +244,9 @@ final class AIImageAttachmentViewer {
             function resizeImage(image) {
                 const size = %d;
                 const scale = Math.min(1, size / Math.max(image.naturalWidth, image.naturalHeight));
-                if (scale === 1) {
-                    imageWidth = image.naturalWidth;
-                    imageHeight = image.naturalHeight;
+                if (%s || scale === 1) {
+                    imageWidth = Math.max(1, Math.round(image.naturalWidth * scale));
+                    imageHeight = Math.max(1, Math.round(image.naturalHeight * scale));
                     setZoom(Math.min(1, innerWidth / imageWidth, innerHeight / imageHeight));
                     document.body.focus();
                     return;
@@ -255,7 +285,7 @@ final class AIImageAttachmentViewer {
             </script></head><body tabindex='-1' style='margin:0;background:%s;display:flex;align-items:center;justify-content:center;min-width:100vw;min-height:100vh;width:max-content;outline:none'>
             <img id='preview' style='display:block;flex-shrink:0' onload='resizeImage(this)' onerror='%s()' src='%s'>
             </body></html>
-            """.formatted(MAX_DISPLAY_SIZE, ERROR_FUNCTION,
+            """.formatted(MAX_DISPLAY_SIZE, animated, ERROR_FUNCTION,
             WebCSSInitializer.colorToHex(UIStyles.getDefaultTextBackground()), ERROR_FUNCTION, source);
     }
 }
