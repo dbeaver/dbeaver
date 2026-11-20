@@ -84,7 +84,7 @@ class LocalNetworkProfileUsageProviderTest {
 
     private static LocalNetworkProfileUsageProvider provider(DBPProject... projects) {
         DBPWorkspace workspace = Mockito.mock(DBPWorkspace.class);
-        Mockito.when(workspace.getProjects()).thenReturn(List.of(projects));
+        Mockito.when(workspace.getProjects()).thenAnswer(invocation -> List.of(projects));
         return new LocalNetworkProfileUsageProvider(workspace);
     }
 }
