@@ -911,7 +911,9 @@ public class DBExecUtils {
                             // Some implementations of DBSEntity use struct caches that provide granular
                             // caching for children (attributes), which is good in some cases, but awful
                             // here, since we might end up querying one attribute at a time
-                            attrEntity.getAttributes(monitor);
+                            if (container.getPreferenceStore().getBoolean(ModelPreferences.META_PRELOAD_TABLE_ATTRIBUTES)) {
+                                attrEntity.getAttributes(monitor);
+                            }
 
                             tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
                         }
