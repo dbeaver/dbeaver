@@ -312,7 +312,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
     private void openAllProjects() {
         boolean failed = false;
-        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
+        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getVisibleProjects()) {
             try {
                 project.ensureOpen();
                 project.getDataSourceRegistry();
@@ -340,7 +340,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
     private void refreshConnections() {
         groupedConnections.clear();
-        List<? extends DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects().stream()
+        List<? extends DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getVisibleProjects().stream()
             .sorted(Comparator.comparing(DBPProject::getName, String.CASE_INSENSITIVE_ORDER)).toList();
         for (DBPProject project : projects) {
             groupedConnections.put(project, new ArrayList<>());

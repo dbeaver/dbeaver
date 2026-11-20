@@ -63,8 +63,8 @@ import org.jkiss.utils.CommonUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class ContextComposite extends Composite {
@@ -327,9 +327,14 @@ public class ContextComposite extends Composite {
     }
 
     private void fillContextDropDown(@NotNull IMenuManager manager) throws DBException {
-        var projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
+        var projects = DBWorkbench.getPlatform().getWorkspace().getVisibleProjects();
         // Add all datasources with chats (even disconnected)
-        Set<DBPDataSourceContainer> containers = new LinkedHashSet<>(chat.getChatSession().getAllDataSources());
+        Set<DBPDataSourceContainer> containers = new LinkedHashSet<>();
+        for (DBPDataSourceContainer connection : chat.getChatSession().getAllDataSources()) {
+            if (projects.contains(connection.getProject())) {
+                containers.add(connection);
+            }
+        }
         // Get all connected datasources
         containers.addAll(projects.stream()
             .filter(DBPProject::isRegistryLoaded)

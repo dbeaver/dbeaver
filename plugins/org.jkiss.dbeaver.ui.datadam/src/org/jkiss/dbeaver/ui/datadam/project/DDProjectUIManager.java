@@ -29,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
@@ -42,6 +43,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
@@ -105,6 +107,9 @@ public class DDProjectUIManager {
         DDProjectSyncPropertyTester.firePropertyChange();
         // Wait for navigator initialization, which may be running a master-password dialog's event loop.
         UIExecutionQueue.queueExec(() -> {
+            if (DBWorkbench.getPlatform().getWorkspace() instanceof DBPProjectManager manager) {
+                manager.notifyProjectVisibilityChanged();
+            }
             for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
                 for (IWorkbenchPage page : window.getPages()) {
                     refreshNavigator(page, ProjectNavigatorView.VIEW_ID);

@@ -24,8 +24,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.DDWorkspace;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class DDMcpConnectionCatalog {
     private static DDMcpConnectionCatalog instance;
 
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-    private final DDWorkspace workspace = DDWorkspace.getInstance();
+    private final DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
 
     private DDMcpConnectionCatalog() {
     }
@@ -54,7 +55,7 @@ public class DDMcpConnectionCatalog {
         if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
             return List.of();
         }
-        return workspace.getProjects().stream()
+        return workspace.getVisibleProjects().stream()
             .filter(this::canReadProjectConnections)
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
                 .filter(DDMcpConnectionSettings::isEnabled)
