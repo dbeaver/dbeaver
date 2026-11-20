@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.api.ObjectWithContextParameters;
 import org.jkiss.api.verification.FileSystemAccessVerifyer;
 import org.jkiss.api.verification.ObjectWithVerification;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractDataSource;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
@@ -54,6 +56,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 
 import java.io.IOException;
@@ -354,10 +357,33 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected void validateConnectionProperties(@Nullable String url, @NotNull Properties connectProps) throws DBCException {
         if (DBWorkbench.getPlatform().getApplication().isMultiuser()
             || DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES)) {
-            JDBCConnectionValidator validator = GeneralUtils.adapt(this, JDBCConnectionValidator.class);
+            JDBCConnectionValidator validator = getConnectionValidator();
             if (validator != null) {
                 validator.validateConnectionProperties(url, connectProps);
             }
+        }
+    }
+
+    @Nullable
+    private JDBCConnectionValidator getConnectionValidator() throws DBCException {
+        DBPDriver driver = container.getDriver();
+        Object validatorClass = driver.getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR);
+        if (validatorClass == null) {
+            return GeneralUtils.adapt(this, JDBCConnectionValidator.class);
+        }
+
+        String className = CommonUtils.toString(validatorClass);
+        try {
+            String pluginId = driver.getProviderDescriptor().getPluginId();
+            Bundle bundle = Platform.getBundle(pluginId);
+            if (bundle == null) {
+                throw new DBCException("Connection validator bundle '" + pluginId + "' not found");
+            }
+            return AbstractDescriptor.getImplClass(bundle, className, JDBCConnectionValidator.class)
+                .getConstructor().newInstance();
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            // A declared validator must never be silently skipped if its configuration is broken.
+            throw new DBCException("Cannot create connection validator '" + className + "'", e);
         }
     }
 

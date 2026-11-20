@@ -75,6 +75,7 @@
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <file type="jar" path="maven:/com.oceanbase:oceanbase-client:RELEASE[2.4.18]"/>
+                    <parameter name="connection-validator" value="org.jkiss.dbeaver.ext.mysql.model.MySQLConnectionValidator"/>
                 </driver>
             </drivers>
         </datasource>
