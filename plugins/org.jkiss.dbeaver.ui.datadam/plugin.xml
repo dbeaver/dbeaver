@@ -70,6 +70,10 @@
             uiClass="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionConfigurator"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.ui.ai.mcpConnectionsPage">
+        <contribution id="datadam" class="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionsContribution"/>
+    </extension>
+
     <extension point="org.eclipse.core.expressions.definitions">
         <definition id="org.jkiss.dbeaver.ui.datadam.integrationEnabled">
             <and>
