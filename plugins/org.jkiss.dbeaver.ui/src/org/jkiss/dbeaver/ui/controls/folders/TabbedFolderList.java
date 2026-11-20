@@ -805,14 +805,16 @@ public class TabbedFolderList extends ConComposite {
             elementBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 10));
         } else if (widgetNormalShadow.hashCode() < widgetBackground.hashCode()) {
             // Foreground darker than background - make element background darker
-            elementBackground = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 15));
+            elementBackground = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 10));
         } else {
             // Make element background lighter
             elementBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 15));
         }
 
         hoverBackground = sharedColors.getColor(UIUtils.blend(
-            widgetForeground.getRGB(), widgetBackground.getRGB(), UIStyles.isDarkTheme() ? 10 : 25));
+            UIStyles.isDarkTheme() ? widgetForeground.getRGB() : widgetBackground.getRGB(),
+            UIStyles.isDarkTheme() ? widgetBackground.getRGB() : elementBackground.getRGB(),
+            UIStyles.isDarkTheme() ? 10 : 25));
 
         indentedDefaultBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 10));
         indentedHoverBackground = UIStyles.isDarkTheme()
