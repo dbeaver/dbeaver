@@ -28,6 +28,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.printing.PrintDialog;
@@ -73,10 +74,12 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     public boolean activated;
     private Color curLineColor;
     private Color curLineForeground;
+    private Color hoverColor;
 
     private int[] colWidths;
     private int startOffset;
     private StyleRange curLineRange;
+    private StyleRange hoverRange;
     private int totalRows = 0;
     private String curSelection;
 
@@ -97,6 +100,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         text.setFont(UIUtils.getMonospaceFont());
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
         text.addCaretListener(event -> onCursorChange(event.caretOffset));
+        text.addMouseMoveListener(event -> updateHover(event.x, event.y));
+        text.addListener(SWT.MouseExit, event -> setHoverRange(null));
+        text.addListener(SWT.MouseWheel, event -> setHoverRange(null));
+        text.getHorizontalBar().addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> setHoverRange(null)));
         text.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 curSelection = text.getSelectionText();
                 fireSelectionChanged(new PlainTextSelectionImpl());
@@ -106,6 +113,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
 
         final ScrollBar verticalBar = text.getVerticalBar();
         verticalBar.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                setHoverRange(null);
                 if (verticalBar.getSelection() + verticalBar.getPageIncrement() >= verticalBar.getMaximum()) {
                     if (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
                         !controller.isRecordMode() &&
@@ -152,6 +160,66 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         text.setForeground(UIStyles.getDefaultTextForeground());
         curLineColor = UIStyles.getInvertedColor(text.getBackground());
         curLineForeground = UIStyles.getInvertedColor(text.getForeground());
+        hoverColor = UIStyles.mix(curLineColor, text.getBackground(), 0.15f);
+        if (curLineRange != null) {
+            curLineRange.foreground = curLineForeground;
+            curLineRange.background = curLineColor;
+        }
+        if (hoverRange != null) {
+            hoverRange.foreground = text.getForeground();
+            hoverRange.background = hoverColor;
+        }
+        updateHighlightStyles();
+    }
+
+    private void updateHover(int x, int y) {
+        int offset = text.getOffsetAtPoint(new Point(x, y));
+        if (offset < 0 || colWidths == null) {
+            setHoverRange(null);
+            return;
+        }
+        int line = text.getLineAtOffset(offset);
+        int firstRow = FIRST_ROW_LINE + (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP) ? 1 : 0);
+        int rowCount = controller.isRecordMode() ? controller.getModel().getVisibleAttributeCount() : totalRows;
+        if (line < firstRow || line >= firstRow + rowCount) {
+            setHoverRange(null);
+            return;
+        }
+        int lineOffset = text.getOffsetAtLine(line);
+        int columnStart = startOffset;
+        if (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING)) {
+            columnStart++;
+        }
+        for (int width : colWidths) {
+            if (offset >= lineOffset + columnStart && offset < lineOffset + columnStart + width) {
+                setHoverRange(new StyleRange(lineOffset + columnStart, width, text.getForeground(), hoverColor));
+                return;
+            }
+            columnStart += width + 1;
+        }
+        setHoverRange(null);
+    }
+
+    private void setHoverRange(@Nullable StyleRange range) {
+        if (Objects.equals(hoverRange, range)) {
+            return;
+        }
+        hoverRange = range;
+        updateHighlightStyles();
+    }
+
+    private void updateHighlightStyles() {
+        List<StyleRange> ranges = new ArrayList<>(2);
+        if (hoverRange != null && (curLineRange == null
+            || hoverRange.start + hoverRange.length <= curLineRange.start
+            || curLineRange.start + curLineRange.length <= hoverRange.start)) {
+            ranges.add(hoverRange);
+        }
+        if (curLineRange != null) {
+            ranges.add(curLineRange);
+        }
+        ranges.sort(Comparator.comparingInt(range -> range.start));
+        text.setStyleRanges(ranges.toArray(new StyleRange[0]));
     }
 
     private void onCursorChange(int offset) {
@@ -217,7 +285,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
                         horOffsetEnd - horOffsetBegin - 1,
                         curLineForeground,
                         curLineColor);
-                    text.setStyleRanges(new StyleRange[]{curLineRange});
+                    updateHighlightStyles();
                     text.redraw();
                 }
             }
@@ -259,6 +327,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         final int horizontalIndex = text.getHorizontalIndex();
         final int caretOffset = text.getCaretOffset();
 
+        curLineRange = null;
+        hoverRange = null;
         text.setText(grid.toString());
 
         if (append) {
@@ -277,6 +347,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         colWidths = formatter.getColWidths();
         startOffset = formatter.getStartOffset();
 
+        curLineRange = null;
+        hoverRange = null;
         text.setText(grid.toString());
     }
 
@@ -341,6 +413,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     public void clearMetaData() {
         colWidths = null;
         curLineRange = null;
+        hoverRange = null;
         totalRows = 0;
     }
 
