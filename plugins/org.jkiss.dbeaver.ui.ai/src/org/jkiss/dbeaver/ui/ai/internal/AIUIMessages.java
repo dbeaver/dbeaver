@@ -28,6 +28,7 @@ public class AIUIMessages extends NLS {
     public static String ai_mcp_connections_scope;
     public static String ai_mcp_connections_add;
     public static String ai_mcp_connections_remove;
+    public static String ai_mcp_connections_count;
     public static String ai_connection_settings_group;
     public static String ai_connection_settings_mcp_group;
     public static String ai_connection_settings_enable_label;

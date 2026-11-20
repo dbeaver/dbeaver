@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
+import org.jkiss.dbeaver.model.ai.AIProjectConnectionCount;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -172,20 +174,10 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     }
 
     private void createConnectionColumns() {
-        createColumn(AIUIMessages.ai_mcp_connections_connection, 260, element -> {
-            if (element instanceof DBPProject project) {
-                return project.getName();
-            }
-            if (element instanceof ProjectPlaceholder) {
-                return "";
-            }
-            DBPDataSourceContainer connection = (DBPDataSourceContainer) element;
-            return ungroupedCheck.getSelection()
-                ? connection.getProject().getName() + " / " + connection.getName() : connection.getName();
-        }, element -> element instanceof DBPProject
-            ? DBeaverIcons.getImage(DBIcon.PROJECT)
-            : element instanceof DBPDataSourceContainer connection
-                ? DBeaverIcons.getImage(connection.getDriver().getIcon()) : null);
+        TreeViewerColumn connectionColumn = new TreeViewerColumn(viewer, SWT.LEFT);
+        connectionColumn.getColumn().setText(AIUIMessages.ai_mcp_connections_connection);
+        connectionColumn.getColumn().setWidth(350);
+        connectionColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new ConnectionLabelProvider()));
         createColumn(AIUIMessages.ai_mcp_connections_driver, 110,
             element -> element instanceof DBPDataSourceContainer connection ? connection.getDriver().getName() : "");
         createScopeColumn();
@@ -206,15 +198,6 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     }
 
     private void createColumn(@NotNull String title, int width, @NotNull Function<Object, String> text) {
-        createColumn(title, width, text, null);
-    }
-
-    private void createColumn(
-        @NotNull String title,
-        int width,
-        @NotNull Function<Object, String> text,
-        @Nullable Function<Object, Image> image
-    ) {
         TreeViewerColumn column = new TreeViewerColumn(viewer, SWT.LEFT);
         column.getColumn().setText(title);
         column.getColumn().setWidth(width);
@@ -223,12 +206,51 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
             public @NotNull String getText(Object element) {
                 return text.apply(element);
             }
-
-            @Override
-            public Image getImage(Object element) {
-                return image == null ? null : image.apply(element);
-            }
         });
+    }
+
+    @Nullable
+    private Integer getProjectCount(@NotNull DBPProject project) {
+        if (project.isOpen() && project.isRegistryLoaded()) {
+            return groupedConnections.get(project).size();
+        }
+        return AIProjectConnectionCount.getCount(project);
+    }
+
+    private final class ConnectionLabelProvider extends ColumnLabelProvider
+        implements DelegatingStyledCellLabelProvider.IStyledLabelProvider {
+
+        @NotNull
+        @Override
+        public StyledString getStyledText(Object element) {
+            if (element instanceof DBPProject project) {
+                Integer count = getProjectCount(project);
+                return new StyledString(project.getName()).append("    " + NLS.bind(AIUIMessages.ai_mcp_connections_count,
+                    count == null ? "—" : count.toString()), StyledString.QUALIFIER_STYLER);
+            }
+            if (element instanceof DBPDataSourceContainer connection) {
+                String name = ungroupedCheck.getSelection()
+                    ? connection.getProject().getName() + " / " + connection.getName() : connection.getName();
+                return new StyledString(name);
+            }
+            return new StyledString();
+        }
+
+        @NotNull
+        @Override
+        public String getText(Object element) {
+            return getStyledText(element).getString();
+        }
+
+        @Nullable
+        @Override
+        public Image getImage(Object element) {
+            if (element instanceof DBPProject) {
+                return DBeaverIcons.getImage(DBIcon.PROJECT);
+            }
+            return element instanceof DBPDataSourceContainer connection
+                ? DBeaverIcons.getImage(connection.getDriver().getIcon()) : null;
+        }
     }
 
     private void createScopeColumn() {
@@ -338,6 +360,10 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         for (List<DBPDataSourceContainer> projectConnections : groupedConnections.values()) {
             projectConnections.sort(Comparator.comparing(DBPDataSourceContainer::getName, String.CASE_INSENSITIVE_ORDER));
         }
+        groupedConnections.entrySet().removeIf(entry -> {
+            Integer count = getProjectCount(entry.getKey());
+            return count != null && count == 0;
+        });
         Object[] expanded = viewer.getExpandedElements();
         viewer.setInput(groupedConnections.keySet().toArray());
         if (!ungroupedCheck.getSelection()) {
