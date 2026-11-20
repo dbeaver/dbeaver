@@ -23,6 +23,7 @@ import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionErrorCode;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionResult;
 import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
 import com.google.gson.JsonPrimitive;
+import org.eclipse.equinox.security.storage.StorageException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretPromptContext;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -89,7 +91,7 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
         String projectId = requiredString(functionArguments, DDMcpAiFunctionCatalog.PROJECT_ID_PARAMETER);
         String datasourceId = requiredString(functionArguments, DDMcpAiFunctionCatalog.DATASOURCE_ID_PARAMETER);
         var monitor = new VoidProgressMonitor();
-        try {
+        try (DBSSecretPromptContext.Scope ignored = DBSSecretPromptContext.disablePrompts()) {
             AIDatabaseContext databaseContext = createDatabaseContext(projectId, datasourceId, monitor);
             if (databaseContext == null) {
                 log.debug("No database context available for DataDam MCP function " + function.getFullId());
@@ -98,6 +100,9 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
             AIFunctionResult result = function.getInstance().callFunction(context, functionArguments);
             return new DDMcpFunctionResult(new JsonPrimitive(result.getValue().toString()), false);
         } catch (DBException e) {
+            if (isMasterPasswordRequired(e)) {
+                throw masterPasswordRequired();
+            }
             log.debug("Cannot call DBeaver function through DataDam MCP", e);
             throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR, "Cannot call DBeaver function", null);
         }
@@ -126,9 +131,27 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
                 .setScope(AIDatabaseScope.CURRENT_DATASOURCE)
                 .build();
         } catch (DBException e) {
+            if (isMasterPasswordRequired(e)) {
+                throw masterPasswordRequired();
+            }
             log.debug("Cannot create DataDam MCP database context", e);
             return null;
         }
+    }
+
+    private boolean isMasterPasswordRequired(@NotNull DBException error) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof StorageException storageError && storageError.getErrorCode() == StorageException.NO_PASSWORD) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @NotNull
+    private DDMcpFunctionException masterPasswordRequired() {
+        return new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
+            "Unlock the master password in DBeaver and retry the MCP request", null);
     }
 
     private boolean connectOrWait(@NotNull DBPDataSourceContainer connection, @NotNull DBRProgressMonitor monitor)

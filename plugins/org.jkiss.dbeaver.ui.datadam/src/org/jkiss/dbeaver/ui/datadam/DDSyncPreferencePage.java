@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CEditableLabel;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.management.DDManagementActions;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.forms.UIAlignX;
 import org.jkiss.dbeaver.ui.forms.UIGrowX;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
@@ -276,6 +277,9 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             return;
         }
         runOperation(DDTrackingUIMessages.sync_preference_page_logout_failed, monitor -> accessService.signOut());
+        if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_OUT) {
+            DDProjectUIManager.getInstance().refreshProjectVisibility();
+        }
     }
 
     private void refresh() {
