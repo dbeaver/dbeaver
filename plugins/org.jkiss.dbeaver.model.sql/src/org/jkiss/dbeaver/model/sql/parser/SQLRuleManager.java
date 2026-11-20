@@ -101,6 +101,62 @@ public class SQLRuleManager {
         }
     }
 
+    @NotNull
+    public static List<SQLBatchDelimiterRule> createBatchDelimiterRules(
+        @NotNull SQLSyntaxManager syntaxManager,
+        @Nullable DBPDataSourceContainer dataSourceContainer
+    ) {
+        SQLDialect dialect = syntaxManager.getDialect();
+        List<SQLBatchDelimiterRule> providedRules = new ArrayList<>();
+        TPRuleProvider ruleProvider = GeneralUtils.adapt(dialect, TPRuleProvider.class);
+        if (ruleProvider != null) {
+            for (TPRule rule : ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.INITIAL)) {
+                if (rule instanceof SQLBatchDelimiterRule batchDelimiterRule) {
+                    providedRules.add(batchDelimiterRule);
+                }
+            }
+        }
+        List<TPRule> lineCommentRules = createLineCommentRules(dialect, new SQLCommentToken());
+        return selectBatchDelimiterRules(syntaxManager.getBatchDelimiters(), providedRules, lineCommentRules);
+    }
+
+    @NotNull
+    private static List<SQLBatchDelimiterRule> selectBatchDelimiterRules(
+        @NotNull String[] batchDelimiters,
+        @NotNull List<SQLBatchDelimiterRule> providedRules,
+        @NotNull List<TPRule> lineCommentRules
+    ) {
+        if (batchDelimiters.length == 0) {
+            return List.of();
+        }
+        List<SQLBatchDelimiterRule> activeBatchDelimiterRules = new ArrayList<>(providedRules.stream()
+            .filter(rule -> rule.matchesAny(batchDelimiters))
+            .toList());
+        String[] fallbackBatchDelimiters = Arrays.stream(batchDelimiters)
+            .filter(delimiter -> activeBatchDelimiterRules.stream().noneMatch(rule -> rule.matches(delimiter)))
+            .toArray(String[]::new);
+        if (fallbackBatchDelimiters.length > 0) {
+            activeBatchDelimiterRules.add(new SQLBatchDelimiterRule(fallbackBatchDelimiters));
+        }
+        for (SQLBatchDelimiterRule batchDelimiterRule : activeBatchDelimiterRules) {
+            batchDelimiterRule.setLineCommentRules(lineCommentRules);
+        }
+        return activeBatchDelimiterRules;
+    }
+
+    @NotNull
+    private static List<TPRule> createLineCommentRules(@NotNull SQLDialect dialect, @NotNull TPToken commentToken) {
+        List<TPRule> lineCommentRules = new ArrayList<>();
+        for (String lineComment : dialect.getSingleLineComments()) {
+            if (lineComment.startsWith("^")) {
+                lineCommentRules.add(new LineCommentRule(lineComment, commentToken, (char) 0, false, true));
+            } else {
+                lineCommentRules.add(new EndOfLineRule(lineComment, commentToken, (char) 0, false, true));
+            }
+        }
+        return lineCommentRules;
+    }
+
     public void loadRules(@Nullable DBPDataSourceContainer dataSourceContainer, boolean minimalRules) {
         SQLDialect dialect = syntaxManager.getDialect();
 
@@ -207,14 +263,7 @@ public class SQLRuleManager {
         }
 
         // Add rules for single-line comments.
-        List<TPRule> lineCommentRules = new ArrayList<>();
-        for (String lineComment : dialect.getSingleLineComments()) {
-            if (lineComment.startsWith("^")) {
-                lineCommentRules.add(new LineCommentRule(lineComment, commentToken, (char) 0, false, true));
-            } else {
-                lineCommentRules.add(new EndOfLineRule(lineComment, commentToken, (char) 0, false, true));
-            }
-        }
+        List<TPRule> lineCommentRules = createLineCommentRules(dialect, commentToken);
         rules.addAll(lineCommentRules);
 
         // Add rules for multi-line comments
@@ -235,21 +284,7 @@ public class SQLRuleManager {
         }
 
         String[] batchDelimiters = syntaxManager.getBatchDelimiters();
-        if (batchDelimiters.length > 0) {
-            List<SQLBatchDelimiterRule> activeBatchDelimiterRules = new ArrayList<>(providedBatchDelimiterRules.stream()
-                .filter(rule -> rule.matchesAny(batchDelimiters))
-                .toList());
-            String[] fallbackBatchDelimiters = Arrays.stream(batchDelimiters)
-                .filter(delimiter -> activeBatchDelimiterRules.stream().noneMatch(rule -> rule.matches(delimiter)))
-                .toArray(String[]::new);
-            if (fallbackBatchDelimiters.length > 0) {
-                activeBatchDelimiterRules.add(new SQLBatchDelimiterRule(fallbackBatchDelimiters));
-            }
-            for (SQLBatchDelimiterRule batchDelimiterRule : activeBatchDelimiterRules) {
-                batchDelimiterRule.setLineCommentRules(lineCommentRules);
-                rules.add(batchDelimiterRule);
-            }
-        }
+        rules.addAll(selectBatchDelimiterRules(batchDelimiters, providedBatchDelimiterRules, lineCommentRules));
 
         String[] statementDelimiters = Arrays.stream(syntaxManager.getStatementDelimiters())
             .filter(delimiter -> !containsIgnoreCase(batchDelimiters, delimiter))
