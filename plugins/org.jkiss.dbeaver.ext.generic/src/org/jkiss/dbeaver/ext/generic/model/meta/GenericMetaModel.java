@@ -156,7 +156,7 @@ public class GenericMetaModel {
 
         try {
             final GenericMetaObject schemaObject = getMetaObject(GenericConstants.OBJECT_SCHEMA);
-            final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
+            final DBSObjectFilter schemaFilters = dataSource.getContainer().getEffectiveObjectFilter(GenericSchema.class, catalog, false);
 
             final List<GenericSchema> tmpSchemas = new ArrayList<>();
             JDBCResultSet dbResult = null;

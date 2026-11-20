@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -171,6 +172,12 @@ public interface DBPDataSourceContainer extends
      */
     @Nullable
     DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch);
+
+    @Nullable
+    default DBSObjectFilter getEffectiveObjectFilter(Class<? extends DBSObject> type, @Nullable DBSObject parentObject, boolean firstMatch) {
+        Class<?> effectiveType = DBXTreeDescriptor.getDataSourceObjectType(this, type, true);
+        return this.getObjectFilter(effectiveType, parentObject, firstMatch);
+    }
 
     void setObjectFilter(@NotNull Class<?> type, @Nullable DBSObject parentObject, @Nullable DBSObjectFilter filter);
 

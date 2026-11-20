@@ -863,7 +863,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException {
             StringBuilder catalogQuery = new StringBuilder("show databases");
-            DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
+            DBSObjectFilter catalogFilters = owner.getContainer().getEffectiveObjectFilter(MySQLCatalog.class, null, false);
             DBPConnectionConfiguration configuration = owner.getContainer().getConnectionConfiguration();
             boolean showAllDatabases = CommonUtils.getBoolean(
                 configuration.getProviderProperty(MySQLConstants.PROP_SHOW_ALL_DBS),
