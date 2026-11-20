@@ -253,13 +253,6 @@ public class SQLQueryJob extends DataSourceJob {
 
                     fetchResultSetNumber = resultSetNumber;
                     boolean runNext = executeSingleQuery(session, query, true);
-
-                    if (txnManager != null && txnManager.isSupportsTransactions()
-                        && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT
-                        && query instanceof SQLQuery sqlQuery
-                    ) {
-                        handleTransactionStatements(txnManager, session, sqlQuery);
-                    }
                     if (!runNext) {
                         if (lastError == null) {
                             // Execution cancel
