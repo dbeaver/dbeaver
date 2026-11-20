@@ -367,7 +367,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         if (UIUtils.confirmAction(
             getShell(),
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_title,
-            UIConnectionMessages.dialog_driver_manager_message_delete_driver_text + selectedDriver.getName() + "'?")) {
+            NLS.bind(UIConnectionMessages.dialog_driver_manager_delete_confirm_message, selectedDriver.getName()))) {
             selectedDriver.getProviderDescriptor().removeDriver(selectedDriver.getId());
 
             try {

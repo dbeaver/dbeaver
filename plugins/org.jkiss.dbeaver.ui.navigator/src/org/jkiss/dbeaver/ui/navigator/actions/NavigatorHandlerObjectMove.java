@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -115,7 +116,12 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
 
                     if (object.isPersisted() && commandTarget.getEditor() == null) {
                         Map<String, Object> options = DBPScriptObject.EMPTY_OPTIONS;
-                        if (!showScript(HandlerUtil.getActiveWorkbenchWindow(event), commandTarget.getContext(), options, "Reorder script")) {
+                        if (!showScript(
+                            HandlerUtil.getActiveWorkbenchWindow(event),
+                            commandTarget.getContext(),
+                            options,
+                            UINavigatorMessages.reorder_script_confirm_title
+                        )) {
                             commandTarget.getContext().resetChanges(true);
                             return false;
                         } else {

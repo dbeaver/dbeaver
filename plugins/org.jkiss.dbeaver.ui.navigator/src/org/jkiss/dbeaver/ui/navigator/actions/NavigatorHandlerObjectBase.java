@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
 import org.jkiss.dbeaver.ui.editors.SimpleCommandContext;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -237,7 +238,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                     commandContext.getExecutionContext(), dialogTitle, UIIcon.SQL_PREVIEW, script.toString(), true, false) == IDialogConstants.PROCEED_ID;
             }
         } else {
-            return UIUtils.confirmAction(workbenchWindow.getShell(), dialogTitle, "No SQL script available.\nAre you sure you want to proceed?");
+            return UIUtils.confirmAction(workbenchWindow.getShell(), dialogTitle, UINavigatorMessages.question_no_sql_available);
         }
 
         return false;
