@@ -273,7 +273,7 @@ public class DDDesktopAccessService {
         try {
             getAccessTokenForResource(storageUrl);
         } catch (DBException e) {
-            log.debug("DataDam authorization requires sign-in");
+            log.debug("DataDam authorization requires sign-in", e);
         }
         operationLock.writeLock().lock();
         try {

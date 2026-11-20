@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
@@ -153,7 +154,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
             }
             getCommandStack().markSaveLocation();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Save diagram", null, e);
+            DBWorkbench.getPlatformUI().showError(ERDUIMessages.erd_save_diagram_title, null, e);
         }
     }
 

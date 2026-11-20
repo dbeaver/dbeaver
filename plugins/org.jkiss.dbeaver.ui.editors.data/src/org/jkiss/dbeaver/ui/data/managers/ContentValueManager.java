@@ -21,6 +21,7 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -103,7 +104,7 @@ public class ContentValueManager extends BaseValueManager {
                     try {
                         final Object value = controller.getValue();
                         if (value == null) {
-                            DBWorkbench.getPlatformUI().showError("Data is empty", "Can not save null data value");
+                            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_empty_data_title, ResultSetMessages.error_save_null_value);
                         }
                         if (value instanceof DBDContent) {
                             boolean isExternalFileOpened = false;
@@ -129,10 +130,10 @@ public class ContentValueManager extends BaseValueManager {
                             openOctetStream(bytes);
                         }
                     } catch (IOException e) {
-                        DBWorkbench.getPlatformUI().showError("Open content", "Error while trying to open the value", e);
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_open_content_title, ResultSetMessages.error_open_value_message, e);
                     } catch (Exception e) {
-                        DBWorkbench.getPlatformUI().showError("Error", 
-                                "Unexpected error while trying to open the selected value", e);
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_open_content_title,
+                                ResultSetMessages.error_open_value_unexpected, e);
                     }
                 }
 
@@ -149,7 +150,8 @@ public class ContentValueManager extends BaseValueManager {
                             try {
                                 activeEditor.primeEditorValue(controller.getValue());
                             } catch (DBException e) {
-                                DBWorkbench.getPlatformUI().showError("Load from file", "Error loading contents from file", e);
+                                DBWorkbench.getPlatformUI().showError(
+                                    ResultSetMessages.error_load_content_title, ResultSetMessages.error_load_content_file_message, e);
                             }
                         }
                     }
@@ -180,7 +182,7 @@ public class ContentValueManager extends BaseValueManager {
                         try (InputStream inputStream = storage.getContentStream()) {
                             ContentUtils.copyStreams(inputStream, -1, buffer, monitor);
                         } catch (IOException e) {
-                            DBWorkbench.getPlatformUI().showError("IOException", "File exception", e);
+                            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_file_title, ResultSetMessages.error_file_message, e);
                         }
                         charset = storage.getCharset();
                     } else {
@@ -189,13 +191,13 @@ public class ContentValueManager extends BaseValueManager {
                     byte[] byteData = buffer.toByteArray();
                     openOctetStream(byteData);
                 } catch (DBCException e1) {
-                    DBWorkbench.getPlatformUI().showError("DBCException", "Error reading contents", e1);
+                    DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_read_content_title, ResultSetMessages.error_read_content_message, e1);
                 } catch (IOException e) {
-                    DBWorkbench.getPlatformUI().showError("IOException", "File exception while opening", e);
+                    DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_file_title, ResultSetMessages.error_open_file_message, e);
                 }
             });
         } catch (InvocationTargetException | InterruptedException e) {
-            DBWorkbench.getPlatformUI().showError("Reading from content", "Error loading contents from file", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_read_content_title, ResultSetMessages.error_load_content_file_message, e);
         }
     }
 
@@ -203,7 +205,7 @@ public class ContentValueManager extends BaseValueManager {
         Path tmpFile = Files.createTempFile("dbtmp", ".octet-stream");
         OutputStream fos = Files.newOutputStream(tmpFile);
         if (data == null) {
-            DBWorkbench.getPlatformUI().showError("Open Content", "Raw value was null");
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_open_content_title, ResultSetMessages.error_null_raw_value);
             fos.close();
             return;
         }
@@ -325,7 +327,7 @@ public class ContentValueManager extends BaseValueManager {
         catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
                     ResultSetMessages.model_jdbc_could_not_save_content,
-                    ResultSetMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.toAbsolutePath() + "'", //$NON-NLS-2$
+                    NLS.bind(ResultSetMessages.error_save_content_file, saveFile.toAbsolutePath()),
                     e.getTargetException());
         }
         catch (InterruptedException e) {

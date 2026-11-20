@@ -46,6 +46,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.widgets.CompositeFactory;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.graphics.Color;
@@ -875,7 +876,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         File outFile = new File(filePath);
         if (outFile.exists()) {
-            if (!UIUtils.confirmAction(shell, "Overwrite file", "File '" + filePath + "' already exists.\nOverwrite?")) {
+            if (!UIUtils.confirmAction(shell, ERDUIMessages.file_overwrite_confirm_title,
+                NLS.bind(ERDUIMessages.file_overwrite_confirm_message, filePath))) {
                 return;
             }
         }
@@ -884,7 +886,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         int divPos = filePath.lastIndexOf('.');
         if (divPos == -1) {
-            DBWorkbench.getPlatformUI().showError("ERD export", "No file extension was specified");
+            DBWorkbench.getPlatformUI().showError(ERDUIMessages.erd_export_title, ERDUIMessages.erd_export_no_extension);
             return;
         }
         String ext = filePath.substring(divPos + 1);
@@ -896,7 +898,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
         }
         if (targetFormat == null) {
-            DBWorkbench.getPlatformUI().showError("ERD export", "No export format correspond to file extension '" + ext + "'");
+            DBWorkbench.getPlatformUI().showError(ERDUIMessages.erd_export_title,
+                NLS.bind(ERDUIMessages.erd_export_unknown_extension, ext));
             return;
         }
 
@@ -917,7 +920,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 ShellUtils.launchProgram(outFile.getAbsolutePath());
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("ERD export failed", null, e);
+            DBWorkbench.getPlatformUI().showError(ERDUIMessages.erd_export_error_title, null, e);
         }
     }
 
@@ -1474,8 +1477,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         );
 
                         DBWorkbench.getPlatformUI().showError(
-                            "Diagram loading errors",
-                            "Error(s) occurred during diagram loading. If these errors are recoverable then fix errors and then refresh/reopen diagram",
+                            ERDUIMessages.erd_diagram_load_error_title,
+                            ERDUIMessages.erd_diagram_load_error_message,
                             status
                         );
                     }
@@ -1742,9 +1745,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     }
                     MultiStatus status = new MultiStatus(ERDUIActivator.PLUGIN_ID, 0, messageStatuses.toArray(new IStatus[0]), null, null);
                     DBWorkbench.getPlatformUI().showError(
-                        "VQB Diagram loading errors",
-                        "Error(s) occurred during diagram loading."
-                            + " If these errors are recoverable then fix errors and then refresh/reopen diagram",
+                        ERDUIMessages.erd_vqb_diagram_load_error_title,
+                        ERDUIMessages.erd_diagram_load_error_message,
                         status
                     );
                 }

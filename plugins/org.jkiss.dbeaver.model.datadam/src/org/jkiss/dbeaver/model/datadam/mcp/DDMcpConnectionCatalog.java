@@ -20,8 +20,6 @@ import com.dbeaver.datadam.mcp.api.exception.DDMcpFunctionException;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionErrorCode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -31,8 +29,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import java.util.List;
 
 public class DDMcpConnectionCatalog {
-    private static final Log log = Log.getLog(DDMcpConnectionCatalog.class);
-
     @Nullable
     private static DDMcpConnectionCatalog instance;
 
@@ -60,24 +56,12 @@ public class DDMcpConnectionCatalog {
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
                 .filter(DDMcpConnectionSettings::isEnabled)
                 .map(connection -> new AvailableConnection(project, connection,
-                    requiresManualConnection(connection))))
+                    !connection.isConnected())))
             .toList();
     }
 
     private boolean canReadProjectConnections(@NotNull DBPProject project) {
         return project.isOpen() && (project.isRegistryLoaded() || !project.isPasswordProtected());
-    }
-
-    private boolean requiresManualConnection(@NotNull DBPDataSourceContainer connection) {
-        if (connection.isConnected() || connection.getDriver().isAnonymousAccess()) {
-            return false;
-        }
-        try {
-            return !connection.isCredentialsSaved();
-        } catch (DBException e) {
-            log.error("Cannot check saved DataDam connection credentials", e);
-            return true;
-        }
     }
 
     @NotNull

@@ -141,7 +141,8 @@ class DDDesktopTokenManager {
     private DDDesktopUserToken refresh(@NotNull DDDesktopUserToken current) throws DBException {
         String refreshToken = current.refreshToken();
         if (refreshToken == null) {
-            throw new DBException("DataDam authorization cannot be refreshed. Sign in again");
+            log.debug("Cannot refresh DataDam desktop access: no refresh token is stored; no SSO request was sent");
+            throw new DBException("DataDam authorization cannot be refreshed: no refresh token is stored. Sign in again");
         }
         log.debug("Refreshing DataDam desktop token");
         try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(DDEndpoints.getSsoBaseUrl()))) {
@@ -157,15 +158,16 @@ class DDDesktopTokenManager {
             saveToken(rotated);
             return rotated;
         } catch (Exception e) {
+            log.debug("DataDam desktop token refresh failed; discarding the refresh token", e);
             DDDesktopUserToken spent = new DDDesktopUserToken(
                 current.accessToken(), current.issuer(), current.endpoints(), current.scopes());
             try {
                 saveToken(spent);
             } catch (DBException saveError) {
                 token = null;
-                log.warn("Could not save DataDam refresh failure");
+                log.warn("Could not save DataDam refresh failure", saveError);
             }
-            throw new DBException("DataDam token refresh failed. Sign in again");
+            throw new DBException("DataDam token refresh failed. Sign in again", e);
         }
     }
 
@@ -191,6 +193,9 @@ class DDDesktopTokenManager {
         }
         if (validator.isExpired(saved)) {
             throw new DBException("DataDam desktop token has expired");
+        }
+        if (saved.refreshToken() == null) {
+            log.debug("DataDam desktop sign-in returned no refresh token; access cannot be refreshed after expiry");
         }
         saveToken(saved);
     }

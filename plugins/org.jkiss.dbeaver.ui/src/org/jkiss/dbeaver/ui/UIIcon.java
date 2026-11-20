@@ -76,7 +76,6 @@ public class UIIcon {
     public static final DBIcon ZOOM = new DBIcon("zoom", "misc/zoom.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM_IN = new DBIcon("zoom_in", "misc/zoom_in.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM_OUT = new DBIcon("zoom_out", "misc/zoom_out.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon ROTATE = new DBIcon("rotate", "misc/rotate.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ROTATE_LEFT = new DBIcon("rotate_left", "misc/rotate_left.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ROTATE_RIGHT = new DBIcon("rotate_right", "misc/rotate_right.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FIT_WINDOW = new DBIcon("fit_window", "misc/fit_window.svg"); //$NON-NLS-1$ //$NON-NLS-2$
