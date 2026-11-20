@@ -27,7 +27,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * DBVModelSerializerLegacy
@@ -142,14 +144,26 @@ class DBVModelSerializerModern implements DBVModelSerializer {
                 List<DBVEntityForeignKeyColumn> refAttrs = fk.getAttributeReferences(null);
                 if (!CommonUtils.isEmpty(refAttrs)) {
                     json.name("attributes");
-                    json.beginArray();
+                    json.beginObject();
+                    Set<String> sourceAttributes = new HashSet<>();
                     for (DBVEntityForeignKeyColumn cc : refAttrs) {
-                        json.beginObject();
-                        JSONUtils.field(json, "attribute", cc.getAttributeName());
-                        JSONUtils.field(json, "ref-attribute", cc.getRefAttributeName());
-                        json.endObject();
+                        if (sourceAttributes.add(cc.getAttributeName())) {
+                            JSONUtils.field(json, cc.getAttributeName(), cc.getRefAttributeName());
+                        }
                     }
-                    json.endArray();
+                    json.endObject();
+                    if (sourceAttributes.size() < refAttrs.size()) {
+                        // Keep the original object readable by older versions; the array preserves repeated mappings.
+                        json.name("attribute-mappings");
+                        json.beginArray();
+                        for (DBVEntityForeignKeyColumn cc : refAttrs) {
+                            json.beginObject();
+                            JSONUtils.field(json, "attribute", cc.getAttributeName());
+                            JSONUtils.field(json, "ref-attribute", cc.getRefAttributeName());
+                            json.endObject();
+                        }
+                        json.endArray();
+                    }
                 }
                 json.endObject();
             }

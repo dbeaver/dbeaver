@@ -46,14 +46,11 @@ public class DBVForeignKeySerializationTest extends DBeaverUnitTest {
         try {
             Assertions.assertEquals(mappings, getMappings(model));
 
-            StringWriter output = new StringWriter();
-            try (JsonWriter json = new JsonWriter(output)) {
-                json.beginObject();
-                model.serialize(new VoidProgressMonitor(), json);
-                json.endObject();
-            }
+            Map<String, Object> saved = serialize(model);
+            Map<String, Object> savedForeignKey = getSavedForeignKey(saved);
+            Assertions.assertEquals(Map.of("c", "c1"), JSONUtils.getObject(savedForeignKey, "attributes"));
+            Assertions.assertEquals(3, JSONUtils.getObjectList(savedForeignKey, "attribute-mappings").size());
 
-            Map<String, Object> saved = JSONUtils.parseMap(new Gson(), new StringReader(output.toString()));
             DBVModel restored = new DBVModel("test", JSONUtils.getObject(saved, "test"));
             try {
                 Assertions.assertEquals(mappings, getMappings(restored));
@@ -66,15 +63,36 @@ public class DBVForeignKeySerializationTest extends DBeaverUnitTest {
     }
 
     @Test
-    void loadsExistingObjectBasedMappings() {
+    void loadsExistingObjectBasedMappings() throws Exception {
         DBVModel model = createModel(Map.of("source", "target", "other", "another"));
         try {
             Assertions.assertEquals(2, getMappings(model).size());
             Assertions.assertTrue(getMappings(model).contains(List.of("source", "target")));
             Assertions.assertTrue(getMappings(model).contains(List.of("other", "another")));
+
+            Map<String, Object> savedForeignKey = getSavedForeignKey(serialize(model));
+            Assertions.assertEquals(
+                Map.of("source", "target", "other", "another"),
+                JSONUtils.getObject(savedForeignKey, "attributes"));
+            Assertions.assertFalse(savedForeignKey.containsKey("attribute-mappings"));
         } finally {
             model.dispose();
         }
+    }
+
+    private static Map<String, Object> serialize(DBVModel model) throws Exception {
+        StringWriter output = new StringWriter();
+        try (JsonWriter json = new JsonWriter(output)) {
+            json.beginObject();
+            model.serialize(new VoidProgressMonitor(), json);
+            json.endObject();
+        }
+        return JSONUtils.parseMap(new Gson(), new StringReader(output.toString()));
+    }
+
+    private static Map<String, Object> getSavedForeignKey(Map<String, Object> saved) {
+        Map<String, Object> schema = JSONUtils.getObject(JSONUtils.getObject(saved, "test"), "schema");
+        return JSONUtils.getObjectList(JSONUtils.getObject(schema, ":source"), "foreign-keys").getFirst();
     }
 
     private static DBVModel createModel(Object attributes) {
