@@ -73,10 +73,12 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
         log.debug("Calling DataDam MCP function " + call.functionId());
         DDMcpFunctionExtensionDescriptor descriptor = registry.getDescriptor(call.functionId());
         if (descriptor != null) {
+            AIBaseFeatures.MCP_SERVER.use(Map.of("accessPath", "datadam"));
             return descriptor.getInstance().call(call.arguments());
         }
         AIFunctionDescriptor aiFunction = catalog.getFunction(call.functionId());
         if (aiFunction != null) {
+            AIBaseFeatures.MCP_SERVER.use(Map.of("accessPath", "datadam"));
             return callAiFunction(aiFunction, call.arguments());
         }
         throw new DDMcpFunctionException(DDMcpFunctionErrorCode.FUNCTION_NOT_FOUND, "Function not found", null);
