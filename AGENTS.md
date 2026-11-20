@@ -137,11 +137,11 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 
 ### Security
 
-- Review changed code and its direct callers and callees. For each security finding, identify who can trigger it and what they can access or change.
-- Trace untrusted input into SQL, process execution, file paths, URLs, XML parsing, and deserialization. Check validation, escaping, and resource limits at the point of use.
+- Review changed code and its direct call paths. Report a security finding only when the PR introduces a realistic attack path. Cite the file and line, identify who can trigger it and the impact, and suggest a focused fix.
+- Trace input from users, database contents, configuration, and remote services into SQL, shell commands, file paths, URLs, XML parsing, and deserialization. Check validation, encoding, escaping, canonicalization, and resource limits at the point of use.
 - Check authentication, authorization, and default access. For operations accessible from Team Edition, verify that the server enforces the appropriate REALM permission. Verify that requests without the required permissions are rejected.
-- Flag exposed credentials, connection secrets, or personal data in source, tests, configuration, logs, errors, and documentation. Do not quote sensitive values in the review.
-- Check temporary-file permissions, archive extraction paths, redirect destinations, and TLS certificate verification when those operations change.
+- Flag unsafe handling of credentials and database connection settings. Check code, tests, configuration, logs, exceptions, and documentation for exposed secrets, tokens, passwords, private keys, connection strings, or personal data. Do not quote sensitive values in the review.
+- Check temporary-file permissions, archive extraction paths, redirects, TLS configuration (including certificate verification), and external-process execution when those operations change.
 
 ### OSGi and product features
 
@@ -151,6 +151,35 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 ### Desktop UI
 
 - Flag blocking work on the SWT display thread and widget access from background threads.
-- For changed command labels, use `…` only when input, a choice, or confirmation is required before the action takes effect. Opening a page is not enough.
-- In UI text, omit periods from labels and fragments; end complete explanatory sentences with a period. Use a colon for a field or option-group label unless it forms one phrase with the field value.
-- In UI text, avoid contractions and exclamation marks. Use a question mark only for a direct confirmation question. Suggest the corrected wording.
+
+### Interface text
+
+Review changed user-visible interface text for punctuation and tone. Apply these rules to titles, headings, labels, controls, commands, messages, descriptions, and helper text. Do not apply them to technical documentation or release notes unless the text is presented in the interface.
+
+#### Ellipses
+
+Use the single ellipsis character `…`, not three periods, at the end of a command label only when the user must enter information, make a choice, or confirm an action before it takes effect. Do not use an ellipsis when opening a window or page completes the command, even if the user can make optional changes there.
+
+For example, use `Export Data…` and `New Database Connection…`. A command can have different labels depending on its flow: use `Delete…` when the user must confirm the deletion, and use `Delete` when the deletion takes effect immediately. Do not use an ellipsis for `Preferences`, `Properties`, or `View Details` because opening those pages completes the command.
+
+#### Periods
+
+Do not use periods in titles, headings, labels, controls, commands, or other text that names an interface element or action. In messages, descriptions, and other explanatory prose, use normal sentence punctuation: end complete sentences with a period, including standalone messages, and do not add a period to a fragment.
+
+#### Colons
+
+Use a colon after a label that introduces an input field or a group of radio buttons or checkboxes. Do not use a colon when the label and the text inside the field form a single phrase.
+
+#### Contractions
+
+Do not use contractions in interface text. Write words in full, such as `The connection cannot be established` rather than `The connection can't be established`. Contractions are acceptable in longer reading-oriented content, such as release notes.
+
+#### Question Marks
+
+Use a question mark only in a confirmation alert that asks a direct question. Do not use questions in commands, links, labels, helper text, or informational messages; rewrite them as commands or statements.
+
+#### Exclamation Points
+
+Do not use exclamation points in interface text.
+
+Report only clear violations introduced by the pull request and suggest the correct user-visible wording.
