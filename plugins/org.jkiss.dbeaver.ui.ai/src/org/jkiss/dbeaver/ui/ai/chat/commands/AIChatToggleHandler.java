@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 
 import java.util.Map;
@@ -53,7 +54,8 @@ public class AIChatToggleHandler extends AbstractHandler implements IElementUpda
 
             ActionUtils.fireCommandRefresh(SQLEditorCommands.CMD_AI_CHAT_TOGGLE);
         } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Toggle AI chat", "Cannot open AI chat", e);
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_toggle_title, AIChatMessagesUI.ai_chat_open_error, e);
         }
 
         return null;

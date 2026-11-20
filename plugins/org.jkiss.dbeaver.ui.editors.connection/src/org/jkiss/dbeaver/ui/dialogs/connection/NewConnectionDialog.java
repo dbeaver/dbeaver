@@ -107,13 +107,15 @@ public class NewConnectionDialog extends ActiveWizardDialog {
     @Override
     public int open() {
         if (DBWorkbench.getPlatform().getWorkspace().getActiveProject() == null) {
-            DBWorkbench.getPlatformUI().showError("No active project", "No active project, can't create new connection.\nActivate or create new project.");
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_no_project_title,
+                UIConnectionMessages.dialog_connection_no_project_message);
             return IDialogConstants.CANCEL_ID;
         }
         try {
             return super.open();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Internal error", "Internal error when opening new connection wizard", e);
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_internal_error_title,
+                UIConnectionMessages.dialog_connection_wizard_open_error, e);
             return IDialogConstants.CANCEL_ID;
         }
     }

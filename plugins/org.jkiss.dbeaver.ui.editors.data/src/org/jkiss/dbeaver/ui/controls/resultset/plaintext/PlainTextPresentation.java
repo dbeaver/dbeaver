@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 import java.util.*;
@@ -426,7 +427,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         options.printTextForeground = true;
 
         if (Printer.getPrinterList().length == 0) {
-            UIUtils.showMessageBox(shell, "No printers", "Printers not found", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(shell, ResultSetMessages.error_no_printers_title, ResultSetMessages.error_no_printers_message, SWT.ICON_ERROR);
             return;
         }
 

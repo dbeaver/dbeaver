@@ -30,16 +30,20 @@ Service consumers obtain the channel from `DDRemoteDamDesktopSessionService` and
 The shared WebSocket client's 90-second idle timeout detects missing server traffic; Remote DAM must send its
 heartbeat more frequently than this timeout (the server default is 30 seconds). Desktop does not add another heartbeat protocol.
 
-## DAM identity
+## Dam identity
 
-The `hello` message includes `clientDamId`: unpadded URL-safe Base64 of the UTF-8 string `workspaceId + ':' + localHostId`.
-The workspace ID comes from the active workspace. The local host ID comes from `BaseWorkspaceImpl.getLocalHostId()`,
-reusing the existing MAC-derived host identity and its fallback values rather than selecting a network interface separately.
-The raw MAC address is not sent.
+The `hello` message includes `clientDamId`: unpadded URL-safe Base64 of the UTF-8 string `workspaceId + ':' + macHash`.
+The workspace ID comes from the active workspace. `RuntimeUtils.selectMacAddress()` prefers regular adapters over known
+virtual adapters, bridges, and tunnels, with peer interfaces such as `awdl` and `llw` as a last resort. It breaks ties by
+interface name, without relying on the active route or the operating system's enumeration order.
 
-`clientDamId` stays the same across reconnects and Desktop restarts while the workspace ID and local host ID remain unchanged.
+`RuntimeUtils.hashMacAddress()` preserves the previous hash for the same MAC. When no usable MAC is found, Desktop uses
+`NOMACADDR`; if interface enumeration or hashing fails, it uses `XXXXXXXXXX`. The raw MAC address is not sent.
+
+Desktop reuses `clientDamId` across reconnects. Across restarts it stays the same as long as the workspace ID and MAC-derived
+value stay the same. If the new selector picks a different MAC after an upgrade, the server may register a new Dam.
 `appInstanceId` identifies the current Desktop process, and the server assigns a new `damSessionId` to each WebSocket connection.
-Neither replaces the stable DAM identity.
+Neither replaces the Dam identity.
 
 ## Channel state
 

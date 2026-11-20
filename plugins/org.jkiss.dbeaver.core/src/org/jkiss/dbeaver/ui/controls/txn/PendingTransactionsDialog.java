@@ -22,6 +22,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
@@ -172,8 +173,8 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
         IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
         if (activePart == null) {
             DBWorkbench.getPlatformUI().showError(
-                    "No active part",
-                "No active part.");
+                CoreMessages.pending_transactions_no_active_part_title,
+                CoreMessages.pending_transactions_no_active_part_message);
         } else {
             final PendingTransactionsDialog dialog = new PendingTransactionsDialog(shell, activePart);
             dialog.setModeless(true);

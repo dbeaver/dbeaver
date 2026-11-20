@@ -261,7 +261,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                         }
                     });
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Table list", "Can't read table list", e);
+                    DBWorkbench.getPlatformUI().showError(MySQLUIMessages.table_list_title, MySQLUIMessages.table_list_error, e);
                 }
                 return Status.OK_STATUS;
             }
