@@ -504,7 +504,8 @@ public class SQLEditor extends SQLEditorBase implements
         checkConnected(connect, status -> UIUtils.asyncExec(() -> {
             if (!status.isOK()) {
                 DBWorkbench.getPlatformUI().showError(
-                    "Can't connect to database", "Connection to '" + container.getName() + "' cannot be established.", status);
+                    SQLEditorMessages.sql_editor_connect_error_title,
+                    NLS.bind(SQLEditorMessages.sql_editor_connect_error_message, container.getName()), status);
             }
             //            setFocus();
         }));
@@ -936,7 +937,9 @@ public class SQLEditor extends SQLEditorBase implements
                         );
                     } catch (DBException e) {
                         DBWorkbench.getPlatformUI()
-                            .showError("New connection default", "Error setting default catalog/schema for new connection", e);
+                            .showError(
+                                SQLEditorMessages.sql_editor_connection_default_title,
+                                SQLEditorMessages.sql_editor_connection_default_error, e);
                     }
                 }
                 try {
@@ -968,7 +971,8 @@ public class SQLEditor extends SQLEditorBase implements
         private void updateContext() {
             if (error != null) {
                 releaseExecutionContext();
-                DBWorkbench.getPlatformUI().showError("Open context", "Can't open editor connection", error);
+                DBWorkbench.getPlatformUI().showError(
+                    SQLEditorMessages.sql_editor_context_open_title, SQLEditorMessages.sql_editor_context_open_error, error);
             } else {
                 if (onSuccess != null) {
                     onSuccess.run();
@@ -2497,7 +2501,9 @@ public class SQLEditor extends SQLEditorBase implements
                     panelInstance = panel.createPanel();
                     panelControl = panelInstance.createPanel(resultTabs, SQLEditor.this, extraPresentationManager.activePresentation);
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Panel opening error", "Can't create panel " + panel.getLabel(), e);
+                    DBWorkbench.getPlatformUI().showError(
+                        SQLEditorMessages.sql_editor_panel_open_error_title,
+                        NLS.bind(SQLEditorMessages.sql_editor_panel_open_error_message, panel.getLabel()), e);
                     return;
                 }
                 extraPresentationManager.panels.put(panel, panelInstance);
@@ -2911,7 +2917,8 @@ public class SQLEditor extends SQLEditorBase implements
         // 1. Determine whether planner supports plan extraction
 
         if (planner == null) {
-            DBWorkbench.getPlatformUI().showError("Execution plan", "Execution plan explain isn't supported by current datasource");
+            DBWorkbench.getPlatformUI().showError(
+                SQLEditorMessages.editors_sql_error_execution_plan_title, SQLEditorMessages.sql_editor_execution_plan_unsupported);
             return null;
         }
         // Transform query parameters
@@ -2977,7 +2984,8 @@ public class SQLEditor extends SQLEditorBase implements
                 DBCPlan plan = planner.planQueryExecution(session, sqlQuery.getText(), configuration);
                 planQueryString[0] = plan.getPlanQueryString();
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Explain error", "Failed to explain execution plan", e);
+                DBWorkbench.getPlatformUI().showError(
+                    SQLEditorMessages.sql_editor_explain_error_title, SQLEditorMessages.editors_sql_error_execution_plan_message, e);
             }
         };
         if (RuntimeUtils.runTask(queryObtainTask, "Retrieve plan query", 5000) && !CommonUtils.isEmpty(planQueryString[0])) {
@@ -3068,7 +3076,8 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Bad query", "Can't execute query", e);
+            DBWorkbench.getPlatformUI().showError(
+                SQLEditorMessages.sql_editor_bad_query_title, SQLEditorMessages.editors_sql_error_cant_execute_query_title, e);
             return false;
         }
         if (!CommonUtils.isEmpty(elements)) {
@@ -3085,8 +3094,8 @@ public class SQLEditor extends SQLEditorBase implements
             processQueries(elements, false, false, true, true, null, sqlScriptContext);
         } else {
             DBWorkbench.getPlatformUI().showError(
-                "Extract data",
-                "Choose one or more queries to export from"
+                SQLEditorMessages.sql_editor_extract_data_title,
+                SQLEditorMessages.sql_editor_extract_data_message
             );
         }
     }
@@ -4091,7 +4100,8 @@ public class SQLEditor extends SQLEditorBase implements
             EditorUtils.setInputDataSource(input, new SQLNavigatorContext(getDataSourceContainer(), getExecutionContext()));
             setInput(input);
         } catch (CoreException e) {
-            DBWorkbench.getPlatformUI().showError("File save", "Can't open SQL editor from external file", e);
+            DBWorkbench.getPlatformUI().showError(
+                SQLEditorMessages.sql_editor_file_save_title, SQLEditorMessages.sql_editor_external_file_open_error, e);
         }
     }
 
@@ -4121,7 +4131,7 @@ public class SQLEditor extends SQLEditorBase implements
             EditorUtils.setInputDataSource(input, context);
             setInput(input);
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("File save", "Can't save as new script file", e);
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_editor_file_save_title, SQLEditorMessages.sql_editor_file_save_error, e);
         }
     }
 

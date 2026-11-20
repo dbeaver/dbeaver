@@ -255,7 +255,9 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
                         }
                     });
                 } catch (InvocationTargetException e) {
-                    DBWorkbench.getPlatformUI().showError("Bad container path", "Can't find database node by path " + historyItem.containerPath, e.getTargetException());
+                    DBWorkbench.getPlatformUI().showError(
+                        UIMessages.container_path_error_title,
+                        NLS.bind(UIMessages.container_path_error_message, historyItem.containerPath), e.getTargetException());
                 }
             }
             if (historyItem.containerNode != null) {

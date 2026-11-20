@@ -21,6 +21,24 @@ import org.eclipse.osgi.util.NLS;
 public class TaskUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages"; //$NON-NLS-1$
 
+    public static String task_processor_ui_error_title;
+    public static String task_processor_ui_error_message;
+    public static String task_processor_ui_objects_processed;
+    public static String task_configurator_error_title;
+    public static String task_configurator_error_message;
+    public static String task_create_transfer_error_message;
+    public static String task_type_error_title;
+    public static String task_type_not_found_message;
+    public static String task_create_error_title;
+    public static String task_create_error_message;
+    public static String task_run_error_title;
+    public static String task_type_missing_title;
+    public static String task_type_missing_message;
+    public static String task_save_error_title;
+    public static String task_save_error_message;
+    public static String task_open_view_error_title;
+    public static String task_open_view_error_message;
+
     public static String edit_task_config_dialog_title_edit_task;
     public static String edit_task_config_dialog_title_create_task;
     public static String edit_task_config_dialog_label_type;

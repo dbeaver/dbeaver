@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -270,11 +272,10 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         // Confirm\
         {
             boolean doCopy = !isTheSameFileSystem(nodes.iterator().next());
-            String action = (doCopy ? "Copy" : "Move") + " resource(s)";
-            String message =
-                action + "\n" +
-                nodes.stream().map(DBNNode::getNodeDisplayName).collect(Collectors.joining(",")) +
-                "\ninto folder " + folder + "?";
+            String action = doCopy ? ModelMessages.fs_copy_resources_title : ModelMessages.fs_move_resources_title;
+            String message = NLS.bind(
+                doCopy ? ModelMessages.fs_copy_resources_message : ModelMessages.fs_move_resources_message,
+                nodes.stream().map(DBNNode::getNodeDisplayName).collect(Collectors.joining(",")), folder);
             if (!DBWorkbench.getPlatformUI().confirmAction(action, message)) {
                 return;
             }

@@ -121,7 +121,7 @@ public class DashboardItemViewSettingsDialog extends BaseDialog {
             try {
                 itemViewSettingsEditor = renderer.createItemViewSettingsEditor();
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Error creating configuration editor", null, e);
+                DBWorkbench.getPlatformUI().showError(UIDashboardMessages.dashboard_configuration_editor_error, null, e);
             }
         }
         if (itemViewSettingsEditor != null) {

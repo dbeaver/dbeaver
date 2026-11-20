@@ -469,7 +469,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                     StreamConsumerSettings streamSettings = getStreamConsumerSettings();
                     StreamMappingContainer mapping = streamSettings == null || !(element instanceof DBSDataContainer source)
                         ? null : streamSettings.getDataMapping(source);
-                    if (!isDatabaseMigrationSelected() && mapping != null) {
+                    if (!isDatabaseMigrationSelected() && mapping != null && DBUtils.getAdapter(SQLQueryContainer.class, element) == null) {
                         List<StreamMappingAttribute> attributes = mapping.getAttributes(new org.jkiss.dbeaver.model.runtime.VoidProgressMonitor());
                         long selected = attributes.stream()
                             .filter(attribute -> attribute.getMappingType() == StreamMappingType.export).count();
@@ -538,7 +538,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                 if (streamConsumerSettings == null) {
                     DBWorkbench.getPlatformUI().showError(
                         DTMessages.stream_transfer_consumer_title_configuration_load_failed,
-                        "Current configuration do not support stream settings"
+                        DTUIMessages.data_transfer_stream_settings_unsupported_message
                     );
                     return;
                 }
@@ -601,7 +601,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             inputsTable.getSelection().isEmpty() ? DTUIMessages.data_transfer_wizard_select_source :
                 DTUIMessages.data_transfer_task_configurator_dialog_button_label_remove);
         inputsTable.getTable().redraw();
-        setConfigureColumnsButtonVisible(!isDatabaseMigrationSelected());
+        setConfigureColumnsButtonVisible(!isDatabaseMigrationSelected() &&
+            ((IStructuredSelection) inputsTable.getSelection()).toList().stream().noneMatch(source -> DBUtils.getAdapter(SQLQueryContainer.class, source) != null));
         columnsButton.setToolTipText(!columnsButton.isEnabled() ?
             getWizard().getSettings().isPipeChangeRestricted() ? DTUIMessages.data_transfer_wizard_sources_locked :
                 inputsTable.getSelection().isEmpty() ? DTUIMessages.data_transfer_wizard_select_source :

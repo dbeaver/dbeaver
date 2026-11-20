@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.generator;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorFeatures;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -175,7 +177,9 @@ public class SQLGeneratorContributor extends CompoundContributionItem {
                         try {
                             generator = sqlGenerator.createGenerator(objects);
                         } catch (DBException e) {
-                            DBWorkbench.getPlatformUI().showError("Generator create", "Can't create SQL generator '" + sqlGenerator.getId() + "'", e);
+                            DBWorkbench.getPlatformUI().showError(
+                                SQLEditorMessages.sql_generator_create_error_title,
+                                NLS.bind(SQLEditorMessages.sql_generator_create_error_message, sqlGenerator.getId()), e);
                             return;
                         }
 

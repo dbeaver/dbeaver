@@ -178,7 +178,8 @@ public class NavigatorDropTargetListener implements DropTargetListener {
                         }
                     });
                 } catch (Exception e) {
-                    DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop node", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        UINavigatorMessages.error_drop_title, UINavigatorMessages.error_drop_node_message, e);
                     return;
                 }
             } else if (curObject == null) {
@@ -231,8 +232,8 @@ public class NavigatorDropTargetListener implements DropTargetListener {
                         }.schedule();
                     } else {
                         DBWorkbench.getPlatformUI().showError(
-                            "Drop error",
-                            "Can't drop file into '" + curResource.getName() + "'. Files can be dropped only into folders."
+                            UINavigatorMessages.error_drop_title,
+                            NLS.bind(UINavigatorMessages.error_drop_file_message, curResource.getName())
                         );
                     }
                 }

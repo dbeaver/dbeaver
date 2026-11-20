@@ -19,9 +19,20 @@ package org.jkiss.dbeaver.ui.dashboard.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class UIDashboardMessages extends NLS {
+    public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages"; //$NON-NLS-1$
+
+    public static String dashboard_save_title;
+    public static String dashboard_save_error;
+    public static String dashboard_permission_denied_title;
+    public static String dashboard_permission_denied_message;
+    public static String dashboard_create_error;
+    public static String dashboard_configuration_editor_error;
+    public static String dashboard_view_save_error;
+    public static String dashboard_folders_load_error;
+    public static String dashboard_info_read_error;
+
     public static String dashboard_delete_confirm_title;
     public static String dashboard_delete_confirm_message;
-    public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages"; //$NON-NLS-1$
 
     public static String pref_page_dashboards_group_common;
     public static String pref_page_dashboards_open_separate_connection_label;

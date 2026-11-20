@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -82,7 +83,8 @@ public class ChangePasswordDialogHandler extends AbstractHandler {
         } catch (InvocationTargetException e) {
             log.error(e.getTargetException());
         } catch (InterruptedException e) {
-            DBWorkbench.getPlatformUI().showError("Change user password", "User password change error", e);
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_password_change_title,
+                UIConnectionMessages.dialog_password_change_error, e);
         }
         return null;
     }

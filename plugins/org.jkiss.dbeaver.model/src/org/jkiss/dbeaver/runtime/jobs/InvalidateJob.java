@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
@@ -252,12 +254,11 @@ public class InvalidateJob extends DataSourceJob {
                     String errors = results.stream()
                         .filter(ContextInvalidateResult::isError)
                         .map(result ->
-                            result.getException() == null ? "Unknow error" : result.getException().getMessage())
+                            result.getException() == null ? ModelMessages.forced_disconnect_unknown_error : result.getException().getMessage())
                         .collect(Collectors.joining("\n"));
                     DBWorkbench.getPlatformUI().showError(
-                        "Forced disconnect",
-                        "Datasource '" + container.getName() +
-                            "' was disconnected: destination database unreachable.\n" + errors
+                        ModelMessages.forced_disconnect_title,
+                        NLS.bind(ModelMessages.forced_disconnect_message, container.getName(), errors)
                     );
                 }
 

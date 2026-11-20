@@ -229,7 +229,8 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Script generation error", "Error generating alter script", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.error_sql_generation_title, UINavigatorMessages.error_sql_generation_message, e.getTargetException());
         } catch (InterruptedException e) {
             return false;
         }

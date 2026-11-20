@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 
 public class NavigatorHandlerCreateFile extends NavigatorHandlerObjectBase {
 
@@ -50,8 +52,8 @@ public class NavigatorHandlerCreateFile extends NavigatorHandlerObjectBase {
                     handler.createResource((IFolder) resource);
                 } catch (Exception e) {
                     DBWorkbench.getPlatformUI().showError(
-                        "Can't create file",
-                        "Error during " + handler.getTypeName(resource) + " creation",
+                        UINavigatorMessages.error_create_file_title,
+                        NLS.bind(UINavigatorMessages.error_create_file_message, handler.getTypeName(resource)),
                         e);
                 }
             }

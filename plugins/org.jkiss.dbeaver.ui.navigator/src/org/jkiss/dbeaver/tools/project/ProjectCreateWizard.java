@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
         if (!DBWorkbench.getPlatform().getWorkspace().canManageProjects()) {
             DBWorkbench.getPlatformUI().showError(
                 UINavigatorMessages.dialog_project_create_wizard_error_cannot_create,
-                "You can't manage projects"
+                UINavigatorMessages.dialog_project_create_wizard_error_cannot_manage
             );
             return false;
         }
