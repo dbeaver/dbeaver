@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.dashboard.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class UIDashboardMessages extends NLS {
+    public static String dashboard_delete_confirm_title;
+    public static String dashboard_delete_confirm_message;
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages"; //$NON-NLS-1$
 
     public static String pref_page_dashboards_group_common;

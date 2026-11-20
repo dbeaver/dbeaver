@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorRegistry;
@@ -32,6 +33,7 @@ import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.file.FileOpenHandler;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.model.file.FileTypeHandlerDescriptor;
@@ -108,8 +110,9 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
         if (resource instanceof DBFFileStoreProvider) {
             IFileStore fileStore = ((DBFFileStoreProvider) resource).getFileStore();
             long length = fileStore.fetchInfo().getLength();
-            if (!UIUtils.confirmAction(resource.getFullPath().toString(), "Open remote resource '" + resource.getFullPath() +
-                "'?\nSize = " + ByteNumberFormat.getInstance().format(length) + " bytes")) {
+            if (!UIUtils.confirmAction(resource.getFullPath().toString(), NLS.bind(
+                CoreMessages.resource_open_remote_confirm_message,
+                resource.getFullPath(), ByteNumberFormat.getInstance().format(length)))) {
                 return;
             }
 

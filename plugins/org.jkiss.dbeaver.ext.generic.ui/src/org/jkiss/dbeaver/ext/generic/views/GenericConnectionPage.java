@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionListener;
@@ -613,7 +614,8 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         String databaseName = cfg.getDatabaseName();
         testDataSource.setName(databaseName);
 
-        if (!UIUtils.confirmAction(getShell(), "Create Database", "Are you sure you want to create database '" + databaseName + "'?")) {
+        if (!UIUtils.confirmAction(getShell(), GenericMessages.create_database_confirm_title,
+            NLS.bind(GenericMessages.create_database_confirm_message, databaseName))) {
             testDataSource.dispose();
             return;
         }

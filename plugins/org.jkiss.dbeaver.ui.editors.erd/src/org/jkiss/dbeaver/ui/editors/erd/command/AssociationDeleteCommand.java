@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.erd.command;
 
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.model.erd.ERDAssociation;
 import org.jkiss.dbeaver.model.erd.ERDElement;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ui.editors.erd.part.AttributePart;
 import org.jkiss.dbeaver.ui.editors.erd.part.EntityPart;
@@ -66,8 +68,8 @@ public class AssociationDeleteCommand extends Command {
         DBSEntityAssociation entityAssociation = association.getObject();
         if (entityAssociation instanceof DBVEntityForeignKey) {
             if (!UIUtils.confirmAction(
-                "Delete logical key",
-                "Are you sure you want to delete logical key '" + part.getAssociation().getName() + "'?"
+                ERDUIMessages.logical_key_delete_confirm_title,
+                NLS.bind(ERDUIMessages.logical_key_delete_confirm_message, part.getAssociation().getName())
             )) {
                 return;
             }

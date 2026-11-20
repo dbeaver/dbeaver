@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.osgi.util.NLS;
 
 public class CoreMessages extends NLS {
+    public static String pref_page_ui_language_restart_title;
+    public static String pref_page_ui_language_restart_message;
+    public static String resource_open_remote_confirm_message;
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
 
     public static String connection_init_confirmation_title;
