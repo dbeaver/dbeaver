@@ -11,6 +11,9 @@
 
     <includes id="org.eclipse.rcp" version="0.0.0"/>
 
+    <includes id="org.jkiss.dbeaver.osgi.feature" version="0.0.0"/>
+    <plugin id="org.eclipse.osgi" version="3.24.301.qualifier"/>
+
     <plugin id="org.eclipse.ui.themes" version="0.0.0"/>
     <!-- Network -->
     <plugin id="org.eclipse.ui.net" version="0.0.0"/>

@@ -23,6 +23,7 @@
             <activation><property><name>!headless-platform</name></property></activation>
             <!-- Desktop (swt/jface) components -->
             <modules>
+                <module>../../dbeaver-osgi/features/org.jkiss.dbeaver.osgi.feature</module>
                 <module>org.jkiss.dbeaver.rcp.feature</module>
                 <module>org.jkiss.dbeaver.ui.feature</module>
                 <module>org.jkiss.dbeaver.ui.extra.feature</module>
