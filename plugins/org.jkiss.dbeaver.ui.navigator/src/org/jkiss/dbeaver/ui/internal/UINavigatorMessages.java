@@ -19,6 +19,10 @@ package org.jkiss.dbeaver.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class UINavigatorMessages extends NLS {
+    public static String reorder_script_confirm_title;
+    public static String file_exists_confirm_title;
+    public static String file_exists_confirm_message;
+    public static String file_overwrite_confirm_message;
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UINavigatorMessages"; //$NON-NLS-1$
 
     public static String pref_page_navigator_localize_folder_names;

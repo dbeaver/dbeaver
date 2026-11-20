@@ -19,6 +19,10 @@ package org.jkiss.dbeaver.ext.postgresql;
 import org.eclipse.osgi.util.NLS;
 
 public class PostgreMessages extends NLS {
+    public static String session_editor_action_cancel_query;
+    public static String session_editor_action_terminate;
+    public static String session_editor_cancel_query_confirm_message;
+    public static String session_editor_terminate_confirm_message;
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.PostgresResources"; //$NON-NLS-1$
 
     public static String dialog_create_publication_tables;

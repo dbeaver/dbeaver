@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ui.controls.resultset.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class ResultSetMessages extends NLS {
+    public static String controls_resultset_reset_colors_confirm_message;
+    public static String virtual_column_delete_confirm_title;
+    public static String virtual_column_delete_confirm_message;
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages"; //$NON-NLS-1$
 
     public static String confirm_modifying_query_message;

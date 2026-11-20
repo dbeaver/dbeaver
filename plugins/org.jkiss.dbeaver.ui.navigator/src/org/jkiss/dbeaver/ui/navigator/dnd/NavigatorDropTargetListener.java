@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Widget;
@@ -42,6 +43,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeContainer;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -228,7 +230,10 @@ public class NavigatorDropTargetListener implements DropTargetListener {
                             }
                         }.schedule();
                     } else {
-                        DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop file into '" + curResource.getName() + "'. Files can be dropped only into folders.");
+                        DBWorkbench.getPlatformUI().showError(
+                            "Drop error",
+                            "Can't drop file into '" + curResource.getName() + "'. Files can be dropped only into folders."
+                        );
                     }
                 }
             }
@@ -283,7 +288,9 @@ public class NavigatorDropTargetListener implements DropTargetListener {
                     }
                     IFile targetFile = toFolder.getFile(ePath);
                     if (targetFile.exists()) {
-                        if (!UIUtils.confirmAction("File exists", "File '" + targetFile.getName() + "' exists. Do you want to overwrite it?")) {
+                        if (!UIUtils.confirmAction(
+                            UINavigatorMessages.file_exists_confirm_title,
+                            NLS.bind(UINavigatorMessages.file_exists_confirm_message, targetFile.getName()))) {
                             return;
                         }
                     }

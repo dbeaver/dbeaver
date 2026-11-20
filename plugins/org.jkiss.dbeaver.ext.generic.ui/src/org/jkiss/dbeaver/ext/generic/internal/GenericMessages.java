@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ext.generic.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class GenericMessages extends NLS {
+    public static String create_database_confirm_title;
+    public static String create_database_confirm_message;
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.generic.internal.GenericResources"; //$NON-NLS-1$
 
     public static String dialog_connection_advanced_tab;

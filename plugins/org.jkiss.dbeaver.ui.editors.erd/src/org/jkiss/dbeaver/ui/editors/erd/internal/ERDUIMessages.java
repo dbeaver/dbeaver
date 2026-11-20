@@ -20,6 +20,10 @@ package org.jkiss.dbeaver.ui.editors.erd.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class ERDUIMessages extends NLS {
+    public static String logical_key_delete_confirm_title;
+    public static String logical_key_delete_confirm_message;
+    public static String file_overwrite_confirm_title;
+    public static String file_overwrite_confirm_message;
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages"; //$NON-NLS-1$
 
     static {
