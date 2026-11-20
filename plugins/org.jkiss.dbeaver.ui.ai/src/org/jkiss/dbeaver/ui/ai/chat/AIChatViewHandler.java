@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.ai.chat.controls.AIChatControl;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -136,8 +137,8 @@ final class AIChatViewHandler {
                 chat.setDataSource(finalContainer);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
-                    "AI Chat Error",
-                    "Cannot set data source for AI chat",
+                    AIChatMessagesUI.ai_chat_initialization_error,
+                    AIChatMessagesUI.ai_chat_set_data_source_error,
                     e
                 );
             }

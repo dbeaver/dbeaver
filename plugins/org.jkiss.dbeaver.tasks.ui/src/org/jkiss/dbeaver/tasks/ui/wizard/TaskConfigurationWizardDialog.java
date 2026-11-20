@@ -364,7 +364,8 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     ) {
         TaskTypeDescriptor taskType = TaskRegistry.getInstance().getTaskType(taskTypeId);
         if (taskType == null) {
-            DBWorkbench.getPlatformUI().showError("Bad task type", "Task type '" + taskTypeId + "' not found");
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIMessages.task_type_error_title, NLS.bind(TaskUIMessages.task_type_not_found_message, taskTypeId));
             return IDialogConstants.CANCEL_ID;
         }
         try {
@@ -382,7 +383,8 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
                 return IDialogConstants.ABORT_ID;
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Task create error", "Error creating task '" + taskTypeId + "'", e);
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIMessages.task_create_error_title, NLS.bind(TaskUIMessages.task_create_error_message, taskTypeId), e);
             return IDialogConstants.CANCEL_ID;
         }
     }

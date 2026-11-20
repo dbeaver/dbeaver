@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSequence;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -120,7 +122,7 @@ public class CompileHandler extends OracleTaskHandler
                     return null;
                 }
                 if (error != null) {
-                    DBWorkbench.getPlatformUI().showError("Unexpected compilation error", null, error);
+                    DBWorkbench.getPlatformUI().showError(OracleUIMessages.compile_unexpected_error, null, error);
                 } else if (!CommonUtils.isEmpty(compileLog.getErrorStack())) {
                     // Show compile errors
                     int line = -1, position = -1;
@@ -139,18 +141,18 @@ public class CompileHandler extends OracleTaskHandler
                         activePart.getSite().getPage().activate(activePart);
                     }
 
-                    String errorTitle = unit.getName() + " compilation failed";
+                    String errorTitle = NLS.bind(OracleUIMessages.compile_failed, unit.getName());
                     if (sourceHost != null) {
                         sourceHost.setCompileInfo(errorTitle, true);
                         sourceHost.showCompileLog();
                     }
                     DBWorkbench.getPlatformUI().showError(errorTitle, fullMessage.toString());
                 } else {
-                    String message = unit.getName() + " compiled successfully";
+                    String message = NLS.bind(OracleUIMessages.compile_success, unit.getName());
                     if (sourceHost != null) {
                         sourceHost.setCompileInfo(message, true);
                     }
-                    UIUtils.showMessageBox(activeShell, "Done", message, SWT.ICON_INFORMATION);
+                    UIUtils.showMessageBox(activeShell, OracleUIMessages.action_done, message, SWT.ICON_INFORMATION);
                 }
             } else {
                 OracleCompilerDialog dialog = new OracleCompilerDialog(activeShell, objects);

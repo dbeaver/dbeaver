@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
@@ -932,7 +933,8 @@ public class DatabaseTasksTree {
                                     try {
                                         task.getProject().getTaskManager().updateTaskConfiguration(task);
                                     } catch (DBException e) {
-                                        DBWorkbench.getPlatformUI().showError("Task save error", "Error saving task configuration", e);
+                                        DBWorkbench.getPlatformUI().showError(
+                                            TaskUIMessages.task_save_error_title, TaskUIMessages.task_save_error_message, e);
                                     }
                                 }
                             }

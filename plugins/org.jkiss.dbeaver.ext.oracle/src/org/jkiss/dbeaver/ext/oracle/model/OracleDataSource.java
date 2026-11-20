@@ -307,7 +307,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             if (!interactive) {
                 throw new DBCException("Error changing expired password", e);
             }
-            DBWorkbench.getPlatformUI().showError("Error changing password", "Error changing expired password", e);
+            DBWorkbench.getPlatformUI().showError(OracleMessages.password_change_error_title, OracleMessages.password_change_error_message, e);
             return false;
         }
     }
@@ -795,9 +795,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 final String newPlanTableName = candidateNames[0];
                 // Plan table not found - try to create new one
                 if (!DBWorkbench.getPlatformUI().confirmAction(
-                    "Oracle PLAN_TABLE missing",
-                    "PLAN_TABLE not found in current user's session. " +
-                        "Do you want DBeaver to create new PLAN_TABLE (" + newPlanTableName + ")?")) {
+                    OracleMessages.plan_table_missing_title,
+                    NLS.bind(OracleMessages.plan_table_missing_message, newPlanTableName))) {
                     return null;
                 }
                 planTableName = createPlanTable(session, newPlanTableName);

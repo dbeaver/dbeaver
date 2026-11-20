@@ -104,7 +104,7 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Error", "Can't read system info", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(DB2Messages.dialog_tools_mes_error_code_title, DB2Messages.dialog_read_system_info_error, e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }

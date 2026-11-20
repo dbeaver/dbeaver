@@ -36,6 +36,12 @@ import org.eclipse.osgi.util.NLS;
 public final class MimerUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages"; //$NON-NLS-1$
 
+    public static String action_set_online_state_mixed_databanks;
+    public static String action_set_online_state_mixed_shadows;
+    public static String action_set_databank_online_state;
+    public static String action_set_shadow_online_state;
+    public static String action_add_privileges_title;
+
     // Shared grid button labels (Parameters/Attributes grids - method specs, procedures, structured types)
     public static String button_add;
     public static String button_remove;

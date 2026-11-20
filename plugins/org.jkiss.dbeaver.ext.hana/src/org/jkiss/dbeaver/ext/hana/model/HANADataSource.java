@@ -196,7 +196,7 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
             for (SQLWarning warning = connection.getWarnings(); warning != null; warning = warning.getNextWarning()) {
                 if (warning.getErrorCode() == HANAConstants.WRN_SQL_NEARLY_EXPIRED_PASSWORD && !isPasswordExpireWarningShown) {
                     isPasswordExpireWarningShown = true;
-                    DBWorkbench.getPlatformUI().showWarningMessageBox("Warning", warning.getMessage());
+                    DBWorkbench.getPlatformUI().showWarningMessageBox(HANAMessages.warning_title, warning.getMessage());
                 }
             }
         } catch (SQLException e) {
