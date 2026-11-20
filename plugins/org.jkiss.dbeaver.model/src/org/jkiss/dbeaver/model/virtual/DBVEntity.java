@@ -182,10 +182,20 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             DBVEntityForeignKey fk = new DBVEntityForeignKey(this);
             fk.setReferencedConstraint(entityId, refConsId);
 
-            Map<String, Object> attrMap = JSONUtils.getObject(fkObject, "attributes");
             List<DBVEntityForeignKeyColumn> attrs = new ArrayList<>();
-            for (Map.Entry<String, Object> attr : attrMap.entrySet()) {
-                attrs.add(new DBVEntityForeignKeyColumn(fk, attr.getKey(), (String) attr.getValue()));
+            String mappingKey = fkObject.get("attribute-mappings") instanceof List<?> ? "attribute-mappings" : "attributes";
+            if (fkObject.get(mappingKey) instanceof List<?>) {
+                for (Map<String, Object> attr : JSONUtils.getObjectList(fkObject, mappingKey)) {
+                    attrs.add(new DBVEntityForeignKeyColumn(
+                        fk,
+                        JSONUtils.getString(attr, "attribute"),
+                        JSONUtils.getString(attr, "ref-attribute")));
+                }
+            } else {
+                // Older configurations store mappings in an object keyed by the source column.
+                for (Map.Entry<String, Object> attr : JSONUtils.getObject(fkObject, "attributes").entrySet()) {
+                    attrs.add(new DBVEntityForeignKeyColumn(fk, attr.getKey(), (String) attr.getValue()));
+                }
             }
             fk.setAttributes(attrs);
 
