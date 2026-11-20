@@ -130,7 +130,7 @@ public class PostgreCreateTablespaceDialog extends BaseDialog
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
-                    allUsers = new ArrayList<>(newTablespace.getDatabase().getUsers(monitor));
+                    allUsers = new ArrayList<>(newTablespace.getDataSource().getRoles(monitor));
                     final PostgreRole dba = newTablespace.getDatabase().getDBA(monitor);
                     final String defUserName = dba == null ? "" : dba.getName(); //$NON-NLS-1$
 

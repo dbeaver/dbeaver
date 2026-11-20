@@ -85,7 +85,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog {
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     final List<String> userNames = new ArrayList<>();
-                    allUsers = new ArrayList<>(schema.getDatabase().getUsers(monitor));
+                    allUsers = new ArrayList<>(schema.getDataSource().getRoles(monitor));
 
                     // get the current connection username instead of DBA
                     String currentUserName = schema.getDatabase().getDataSource()
