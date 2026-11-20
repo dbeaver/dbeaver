@@ -100,6 +100,9 @@ public class DiagnosticInfoSanitizerTest {
             "serviceEndpoint [[REDACTED]], connectionPolicy");
         check(sanitizer, "Open (https://db.example.test/path(a))", "Open ([REDACTED])");
         check(sanitizer, "Open [https://[2001:db8::1]/path]", "Open [[REDACTED]]");
+        check(sanitizer,
+            "Channel([id: 0xfd1c029b, L:/10.100.102.9:63506 - R:cdb-ms-prod-westus2-be27.documents.azure.com/20.9.156.131:11008]) health check request failed due to:",
+            "Channel([id: 0xfd1c029b, [REDACTED] - R:[REDACTED]/[REDACTED]:11008]) health check request failed due to:");
         check(sanitizer, "Microsoft SQL Server 2022 (RC1) - 16.0.950.9 (X64)",
             "Microsoft SQL Server 2022 (RC1) - 16.0.950.9 (X64)");
         String closingDelimiters = ")]}".repeat(70_000);

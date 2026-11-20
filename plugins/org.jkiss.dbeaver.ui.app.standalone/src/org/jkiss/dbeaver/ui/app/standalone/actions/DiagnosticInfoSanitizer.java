@@ -64,7 +64,7 @@ final class DiagnosticInfoSanitizer {
     );
     private static final Pattern WINDOWS_PATH = Pattern.compile(
         "(?m)(?<![\\w:/])(?:[a-zA-Z]:[/\\\\]|[a-zA-Z]\\\\:\\\\\\\\)[^\\\"'<>;,\\r\\n]+?"
-            + "(?=[\\t ]+-{1,2}[a-zA-Z]|[\\t ]*\\r?$|[\\\"'<>;,])"
+            + "(?=[\\t ]+-{1,2}[\\t ]*[a-zA-Z]|[\\t ]*\\r?$|[\\\"'<>;,])"
     );
     private static final Pattern FILE_URI = Pattern.compile(
         "(?im)\\bfile:(?:/+[a-z]:/|[a-z]:/|/)[^\\\"'<>;,\\r\\n]+?"
