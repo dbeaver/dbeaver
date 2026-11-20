@@ -2393,9 +2393,15 @@ public class SQLEditor extends SQLEditorBase implements
         for (VerticalButton button : presentationSwitchFolder.getItems()) {
             if (SQLEditorCommands.CMD_RESULTS_BELOW.equals(button.getCommandId())
                 || SQLEditorCommands.CMD_RESULTS_RIGHT.equals(button.getCommandId())) {
-                button.setChecked(resultSetOrientation == ResultSetOrientation.HORIZONTAL
-                    ? SQLEditorCommands.CMD_RESULTS_BELOW.equals(button.getCommandId())
-                    : SQLEditorCommands.CMD_RESULTS_RIGHT.equals(button.getCommandId()));
+                button.setChecked(
+                    (
+                        resultSetOrientation == ResultSetOrientation.HORIZONTAL
+                            && SQLEditorCommands.CMD_RESULTS_BELOW.equals(button.getCommandId())
+                    ) || (
+                        resultSetOrientation == ResultSetOrientation.VERTICAL
+                            && SQLEditorCommands.CMD_RESULTS_RIGHT.equals(button.getCommandId())
+                    )
+                );
                 button.redraw();
             }
         }
