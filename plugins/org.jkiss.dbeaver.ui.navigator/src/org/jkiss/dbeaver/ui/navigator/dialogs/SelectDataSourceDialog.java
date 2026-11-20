@@ -39,8 +39,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContentProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeChildrenLoading;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * SelectDataSourceDialog
@@ -126,8 +132,10 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
 
             @Override
-            public boolean select(Object element) {
-                return element instanceof DBNProject ||
+            public boolean select(@NotNull Object element) {
+                // Keep the loading placeholder visible so lazy projects stay expanded until their children arrive.
+                return element instanceof TreeNodeChildrenLoading ||
+                    element instanceof DBNProject ||
                     element instanceof DBNProjectDatabases ||
                     element instanceof DBNLocalFolder ||
                     element instanceof DBNDataSource;
@@ -141,6 +149,39 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             dsFilter,
             UINavigatorMessages.filter_connection_name_placeholder)
         {
+            @NotNull
+            @Override
+            protected DatabaseNavigatorContentProvider createContentProvider(boolean showRoot) {
+                // Flatten the Connections container in this selector and map its children back to the project
+                // so selection and reveal use the same hierarchy as the displayed tree.
+                return new DatabaseNavigatorContentProvider(this, showRoot) {
+                    @NotNull
+                    @Override
+                    public Object[] getChildren(@NotNull Object parent) {
+                        Object[] children = super.getChildren(parent);
+                        if (!(parent instanceof DBNProject)) {
+                            return children;
+                        }
+                        List<Object> result = new ArrayList<>();
+                        for (Object child : children) {
+                            if (child instanceof DBNProjectDatabases) {
+                                Collections.addAll(result, super.getChildren(child));
+                            } else {
+                                result.add(child);
+                            }
+                        }
+                        return result.toArray();
+                    }
+
+                    @Nullable
+                    @Override
+                    public Object getParent(@NotNull Object child) {
+                        Object parent = super.getParent(child);
+                        return parent instanceof DBNProjectDatabases databases ? databases.getParentNode() : parent;
+                    }
+                };
+            }
+
             @Override
             protected void onTreeRefresh() {
                 DBNNode treeRootNode = getTreeRootNode();
@@ -230,7 +271,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                         return ((DBNLocalFolder) element).hasConnected();
                     }
                 }
-                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource;
+                return element instanceof TreeNodeChildrenLoading || element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource;
             }
         });
         treeViewer.addSelectionChangedListener(
@@ -278,13 +319,15 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         return group;
     }
 
-    private void expandFolders(DatabaseNavigatorTree dataSourceTree, DBNNode node) {
+    private void expandFolders(@NotNull DatabaseNavigatorTree dataSourceTree, @NotNull DBNNode node) {
         if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNProject || node instanceof DBNRoot) {
-            if (node instanceof DBNProject p && !p.getProject().isOpen()) {
-                // Don't try to expand unloaded projects - let the user do it
+            if (node instanceof DBNProject p && (!p.getProject().isOpen() || p.getProject() != project)) {
+                // Expand only the current project automatically; let the user expand other projects.
                 return;
             }
-            dataSourceTree.getViewer().expandToLevel(node, 1);
+            if (!(node instanceof DBNProjectDatabases)) {
+                dataSourceTree.getViewer().expandToLevel(node, 1);
+            }
             DBNNode[] childNodes;
             try {
                 childNodes = node.getChildren(new VoidProgressMonitor());
