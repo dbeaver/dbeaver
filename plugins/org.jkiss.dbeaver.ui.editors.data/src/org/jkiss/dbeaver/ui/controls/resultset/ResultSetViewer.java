@@ -4342,6 +4342,11 @@ public class ResultSetViewer extends Viewer
 
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null) {
+            if (curState == null && hasData()) {
+                // A result loaded outside this viewer's data pump (e.g. by a whole SQL script execution) has no history state yet.
+                // Save its current filter before the first filtered read so Back can restore the original result.
+                setNewState(dataContainer, model.getDataFilter());
+            }
             dataReceiver.setNextSegmentRead(false);
             runDataPump(
                 dataContainer,
