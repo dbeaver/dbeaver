@@ -101,6 +101,15 @@ IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes {
 
 .EditorStack, .MPartStack {
     swt-tab-renderer: url('bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverCTabFolderRenderer');
+    /* Use the widget background for header space and its toolbars, including min/max buttons. */
+    background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+    swt-draw-custom-tab-content-background: false;
+}
+
+.MPartStack > CTabItem,
+.MPartStack.active > CTabItem {
+    /* Eclipse applies a tab item's background to its folder as well. */
+    background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
 }
 
 #org-eclipse-ui-editorss CTabFolder.coloredByConnectionType {
@@ -109,16 +118,17 @@ IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes {
     /* Workaround for org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering.TAB_OUTLINE_WIDTH */
     padding: 0px -1px -1px -1px;
 
-    swt-inner-keyline-color: COLOR-WIDGET-BACKGROUND;
-    swt-outer-keyline-color: COLOR-WIDGET-BORDER;
-    swt-tab-outline: COLOR-WIDGET-NORMAL-SHADOW;
-
-    swt-selected-tabs-background: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100%;
-    swt-unselected-tabs-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100%;
-    swt-unselected-hot-tab-color-background: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START'; /* Can't use gradient on Windows; it resolves to pure white color */
+    swt-unselected-tabs-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
 }
 
-CTabFolder {
+#org-eclipse-ui-editorss CTabFolder {
+    swt-draw-custom-tab-content-background: false;
+}
+
+/* Override Eclipse's editor-area rules so editor tabs use the regular tab appearance. */
+CTabFolder,
+#org-eclipse-ui-editorss CTabFolder,
+#org-eclipse-ui-editorss CTabFolder.active {
     swt-outer-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR';
     swt-inner-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR';
     swt-tab-outline: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR';

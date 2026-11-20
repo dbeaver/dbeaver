@@ -802,7 +802,7 @@ public class TabbedFolderList extends ConComposite {
             widgetForeground.getRGB(), widgetBackground.getRGB(), UIStyles.isDarkTheme() ? 40 : 20));
 
         if (UIStyles.isDarkTheme()) {
-            elementBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 20));
+            elementBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 10));
         } else if (widgetNormalShadow.hashCode() < widgetBackground.hashCode()) {
             // Foreground darker than background - make element background darker
             elementBackground = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 15));
