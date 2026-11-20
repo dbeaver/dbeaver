@@ -633,11 +633,9 @@ public class DriverEditDialog extends BaseDialog {
                 for (DBPDriverLibrary lib : libraries) {
                     if (!driver.getDefaultDriverLoader().isLibraryResolved(lib)) {
                         if (!UIUtils.confirmAction(
-                            getShell(), "Not all files present",
-                            "Driver files weren't downloaded. " +
-                                "You need to click '" + UIConnectionMessages.dialog_edit_driver_button_update_version
-                                + "' before exporting.\n" +
-                                "Are you sure you want to continue with incomplete files?"
+                            getShell(), UIConnectionMessages.dialog_edit_driver_incomplete_files_title,
+                            NLS.bind(UIConnectionMessages.dialog_edit_driver_incomplete_files_message,
+                                UIConnectionMessages.dialog_edit_driver_button_update_version)
                         )
                         ) {
                             return;
@@ -960,8 +958,8 @@ public class DriverEditDialog extends BaseDialog {
         if (DBWorkbench.isDistributed()) {
             if (!UIUtils.confirmAction(
                 getShell(),
-                "Driver libraries upload",
-                "DBeaver will upload driver files back to the server. Do you confirm?")) {
+                UIConnectionMessages.dialog_edit_driver_upload_title,
+                UIConnectionMessages.dialog_edit_driver_upload_message)) {
                 return;
             }
             try {

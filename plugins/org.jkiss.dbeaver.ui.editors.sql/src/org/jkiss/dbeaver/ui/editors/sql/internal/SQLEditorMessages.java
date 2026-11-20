@@ -369,6 +369,7 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_dialog_button_format_sql;
     public static String sql_generator_dialog_button_format_sql_tip;
     public static String action_result_tabs_delete_variables_question;
+    public static String action_result_tabs_delete_variables_confirm_message;
     public static String script_selector_create_script;
     public static String script_selector_project_scripts;
     public static String script_selector_project_table_name_label;
