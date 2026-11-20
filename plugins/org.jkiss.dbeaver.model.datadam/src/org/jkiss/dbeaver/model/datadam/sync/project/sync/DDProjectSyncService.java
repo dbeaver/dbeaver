@@ -156,7 +156,7 @@ public class DDProjectSyncService {
 
     @NotNull
     public ShareResult createRemoteProject(
-        @NotNull DBPProject project, @NotNull String name, @Nullable String description
+        @NotNull DBPProject project, @NotNull UUID remoteProjectId, @NotNull String name, @Nullable String description
     ) throws DBException {
         log.debug("Sharing project '" + project.getName() + "' with DataDam");
         DDProjectSyncContentAdapter content = DDProjectSyncContentAdapter.forEnabledUnits();
@@ -164,7 +164,6 @@ public class DDProjectSyncService {
             throw new DBException("No project synchronization units are available");
         }
 
-        UUID remoteProjectId = UUID.randomUUID();
         try {
             DDSharedProject remote = client.createProject(remoteProjectId, name, description);
 

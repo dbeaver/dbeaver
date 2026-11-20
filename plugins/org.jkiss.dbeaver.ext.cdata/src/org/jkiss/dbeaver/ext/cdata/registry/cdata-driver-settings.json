@@ -1,4 +1,5 @@
 {
+  "_meta": {"version": 1, "datatype_id": "cdata_settings"},
   "access": {"datatype_id": "ms_access", "icon_driver": "generic:msaccess_ucanaccess", "categories": ["sql"]},
   "actcrm": {"datatype_id": "actcrm", "categories": ["crm"]},
   "activecampaign": {"datatype_id": "activecampaign", "categories": []},

@@ -147,6 +147,7 @@ public class ModelMessages extends NLS {
     public static String dialog_user_password_change_question_label;
     public static String dialog_user_password_change_question_message;
     public static String dialog_user_password_change_error_message;
+    public static String dialog_user_password_change_save_error_message;
 
     public static String dbutils_type_name_unknown;
 

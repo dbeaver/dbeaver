@@ -32,14 +32,16 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.internal.DDConnectionMessages;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
-import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.net.SocketException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -124,7 +126,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
         if (instance == null) {
             DDDesktopAccessService access = DDDesktopAccessService.getInstance();
             String workspaceId = DBWorkbench.getPlatform().getWorkspace().getWorkspaceId();
-            String clientDamId = formatClientDamId(workspaceId, BaseWorkspaceImpl.getLocalHostId());
+            String clientDamId = formatClientDamId(workspaceId, readMacHash());
             DDRemoteDamHandshakeRequest hello = new DDRemoteDamHandshakeRequest(
                 DBWorkbench.getPlatform().getDeploymentId(), APP_INSTANCE_ID,
                 workspaceId, clientDamId,
@@ -143,9 +145,20 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     }
 
     @NotNull
-    static String formatClientDamId(@NotNull String workspaceId, @NotNull String localHostId) {
+    private static String readMacHash() {
+        try {
+            byte[] address = RuntimeUtils.selectMacAddress();
+            return address == null ? RuntimeUtils.NO_MAC_HASH : RuntimeUtils.hashMacAddress(address);
+        } catch (SocketException | NoSuchAlgorithmException e) {
+            log.debug(e);
+            return RuntimeUtils.MAC_HASH_ERROR;
+        }
+    }
+
+    @NotNull
+    static String formatClientDamId(@NotNull String workspaceId, @NotNull String macHash) {
         return Base64.getUrlEncoder().withoutPadding()
-            .encodeToString((workspaceId + ':' + localHostId).getBytes(StandardCharsets.UTF_8));
+            .encodeToString((workspaceId + ':' + macHash).getBytes(StandardCharsets.UTF_8));
     }
 
     public void start() {
@@ -161,8 +174,10 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
         if (!closed.get()) {
             DDRemoteDamSubscription observation = channel.observeState(status -> {
                 if (status.isReady() && !closed.get()) {
+                    DDRemoteDamSettingsStore.getInstance().updateSettings(status.session().settings());
                     initializeRpc();
                 } else {
+                    DDRemoteDamSettingsStore.getInstance().updateSettings(null);
                     rpcInitializationRetry.cancel();
                 }
             });
@@ -235,6 +250,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     @Override
     public void close() {
         if (closed.compareAndSet(false, true)) {
+            DDRemoteDamSettingsStore.getInstance().updateSettings(null);
             if (preferenceStore != null) {
                 preferenceStore.removePropertyChangeListener(preferenceListener);
             }

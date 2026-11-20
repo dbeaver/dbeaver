@@ -49,6 +49,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -295,9 +296,10 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                     }
                     if (!CommonUtils.isEmpty(info.getRole())) {
                         connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, info.getRole());
-                        // dbeaver only supports SYSDBA, SYSOPER, and default auth logon roles
-                        if (info.getRole().equals(OracleConnectionRole.SYSDBA.getTitle())
-                                || info.getRole().equals(OracleConnectionRole.SYSOPER.getTitle())) {
+                        // Any privileged role other than the default one is passed as logon role
+                        OracleConnectionRole logonRole = CommonUtils.valueOf(
+                            OracleConnectionRole.class, info.getRole().toUpperCase(Locale.ENGLISH), OracleConnectionRole.NORMAL);
+                        if (logonRole != OracleConnectionRole.NORMAL) {
                             connectionInfo.setProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS, info.getRole());
                         }
                     }
