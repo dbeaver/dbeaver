@@ -38,7 +38,7 @@
                         defaultPort="9030"
                         defaultUser="root"
                         webURL="https://docs.starrocks.io/"
-                        description="StarRocks JDBC driver"
+                        description="StarRocks JDBC driver for analytical SQL databases."
                         categories="sql">
                     <replace provider="mysql" driver="starRocks"/>
                     <file type="jar" path="maven:/com.starrocks:starrocks-connector-j:RELEASE[1.1.2]"/>
