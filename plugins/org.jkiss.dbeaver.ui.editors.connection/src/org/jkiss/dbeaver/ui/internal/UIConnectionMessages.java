@@ -19,6 +19,12 @@ package org.jkiss.dbeaver.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class UIConnectionMessages extends NLS {
+    public static String dialog_connection_project_password_title;
+    public static String dialog_driver_manager_delete_confirm_message;
+    public static String dialog_edit_driver_incomplete_files_title;
+    public static String dialog_edit_driver_incomplete_files_message;
+    public static String dialog_edit_driver_upload_title;
+    public static String dialog_edit_driver_upload_message;
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIConnectionMessages"; //$NON-NLS-1$
 
     public static String dialog_connection_virtual_model_group;

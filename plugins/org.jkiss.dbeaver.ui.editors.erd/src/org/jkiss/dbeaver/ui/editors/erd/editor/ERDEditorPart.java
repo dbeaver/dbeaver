@@ -46,6 +46,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.widgets.CompositeFactory;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.graphics.Color;
@@ -875,7 +876,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         File outFile = new File(filePath);
         if (outFile.exists()) {
-            if (!UIUtils.confirmAction(shell, "Overwrite file", "File '" + filePath + "' already exists.\nOverwrite?")) {
+            if (!UIUtils.confirmAction(shell, ERDUIMessages.file_overwrite_confirm_title,
+                NLS.bind(ERDUIMessages.file_overwrite_confirm_message, filePath))) {
                 return;
             }
         }
