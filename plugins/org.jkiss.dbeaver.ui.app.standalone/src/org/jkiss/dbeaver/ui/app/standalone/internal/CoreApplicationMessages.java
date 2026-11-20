@@ -21,6 +21,13 @@ import org.eclipse.osgi.util.NLS;
 public class CoreApplicationMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages"; //$NON-NLS-1$
 
+    public static String application_initialize_error_title;
+    public static String platform_initialize_error_title;
+    public static String workspace_lock_error_title;
+    public static String workspace_lock_error_message;
+    public static String configuration_import_completed_title;
+    public static String configuration_import_completed_message;
+
     public static String actions_menu_exit_emergency;
     public static String actions_menu_exit_emergency_message;
     public static String actions_menu_recent_editors;

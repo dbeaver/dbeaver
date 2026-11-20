@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools.fdw;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignTableManager;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -242,7 +243,7 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Error generating FDW", "Error during FDW script execution", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(PostgreMessages.fdw_error_title, PostgreMessages.fdw_script_error, e.getTargetException());
                 return false;
         } catch (InterruptedException e) {
             return false;

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
@@ -90,7 +91,9 @@ public class DataImportHandler extends DataTransferHandler {
                 if (isObjectContainerSupportsImport(objectContainer)) {
                     return new DatabaseTransferConsumer(objectContainer);
                 } else {
-                    DBWorkbench.getPlatformUI().showError("Wrong container", objectContainer.getName() + " doesn't support direct data import");
+                    DBWorkbench.getPlatformUI().showError(
+                        DTUIMessages.data_import_container_error_title,
+                        NLS.bind(DTUIMessages.data_import_container_error_message, objectContainer.getName()));
                 }
             }
             return null;

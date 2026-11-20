@@ -23,6 +23,7 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -102,7 +103,7 @@ public final class ShellUtils {
             }
         } catch (IOException | InterruptedException e) {
             DBWorkbench.getPlatformUI()
-                .showError("Unable to open external program", "Unable to open external program in a platform-specific way", e);
+                .showError(UIMessages.external_program_open_error_title, UIMessages.external_program_open_error_message, e);
             log.debug("Unable to open external program in a platform-specific way: " + e.getMessage());
         }
 

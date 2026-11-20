@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
 import org.jkiss.dbeaver.model.runtime.BaseProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.IOUtils;
@@ -230,7 +232,9 @@ class DBeaverSettingsImporter {
                 display.syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        showMessageBox("Import completed", "Configuration was imported to '" + newDir.getAbsolutePath() + "'", SWT.ICON_INFORMATION | SWT.OK);
+                    showMessageBox(CoreApplicationMessages.configuration_import_completed_title,
+                        NLS.bind(CoreApplicationMessages.configuration_import_completed_message, newDir.getAbsolutePath()),
+                        SWT.ICON_INFORMATION | SWT.OK);
                         shellResult = SWT.OK;
                         windowShell.dispose();
                     }
