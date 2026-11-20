@@ -127,6 +127,12 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return contextInformer;
     }
 
+    public void cancelCompletionJobs() {
+        if (completionProcessor instanceof SQLCompletionProcessor processor) {
+            processor.cancelRunningJobs();
+        }
+    }
+
     public SQLHyperlinkDetector getHyperlinkDetector() {
         return hyperlinkDetector;
     }

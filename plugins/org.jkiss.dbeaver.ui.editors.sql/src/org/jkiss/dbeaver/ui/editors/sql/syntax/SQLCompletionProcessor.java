@@ -18,12 +18,14 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.text.templates.GlobalTemplateVariables;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -44,6 +46,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionProposal;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
@@ -84,6 +87,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
     }
 
     private final SQLEditorBase editor;
+    private final Set<AbstractJob> runningJobs = Collections.synchronizedSet(new HashSet<>());
     private SQLContentAssistant contentAssistant;
 
     public SQLCompletionProcessor(SQLEditorBase editor)
@@ -94,6 +98,16 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
     public void initAssistant(SQLContentAssistant contentAssistant) {
         contentAssistant.addCompletionListener(new CompletionListener());
         this.contentAssistant = contentAssistant;
+    }
+
+    public void cancelRunningJobs() {
+        AbstractJob[] jobs;
+        synchronized (runningJobs) {
+            jobs = runningJobs.toArray(new AbstractJob[0]);
+        }
+        for (AbstractJob job : jobs) {
+            job.cancel();
+        }
     }
 
     @Override
@@ -272,42 +286,67 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
     ) {
         List<ProposalsComputationJobHolder> completionJobs = completionJobSuppliers.stream()
             .map(Supplier::get).collect(Collectors.toList()); // modifiable list!
-        boolean hasRunningJobs = true;
-        while (hasRunningJobs) {
-            // wait for jobs to run asynchronously
-            completionJobs.forEach(j -> this.waitForJob(j.job));
-            hasRunningJobs = false;
-            // if any job was cancelled while running in background, break the whole proposals computation logic
-            if (completionJobs.stream().anyMatch(j -> j.job.isCanceled())) {
-                return Collections.emptyList();
-            } else {
-                // all the jobs succeed, validate if the result is applicable
-                int currentOffset = completionRequestPosition.getOffset();
-                for (int i = 0; i < completionJobs.size(); i++) {
-                    Integer origin = completionJobs.get(i).getProposalsOriginOffset();
-                    if (origin != null) {
-                        ProposalsJobResultStatus jobResultStatus = evaluateJobResult(request, origin, currentOffset);
-                        switch (jobResultStatus) {
-                            case VALID: // do nothing, all proposals are ok
-                            case PARTIALLY_VALID: // do nothing, proposals will be filtered with validation when supported
-                                break;
-                            case INVALID: // job restart required
-                                completionJobs.set(i, completionJobSuppliers.get(i).get());
-                                hasRunningJobs = true;
-                                break;
-                            case ABORT:
-                            default:
-                                return Collections.emptyList();
+        completionJobs.forEach(j -> runningJobs.add(j.job));
+        try {
+            boolean hasRunningJobs = true;
+            while (hasRunningJobs) {
+                // wait for jobs to run asynchronously
+                completionJobs.forEach(j -> this.waitForJob(j.job));
+                hasRunningJobs = false;
+                // if any job was cancelled while running in background, break the whole proposals computation logic
+                if (completionJobs.stream().anyMatch(j -> isJobAborted(j.job))) {
+                    return Collections.emptyList();
+                } else {
+                    // all the jobs succeed, validate if the result is applicable
+                    int currentOffset = completionRequestPosition.getOffset();
+                    for (int i = 0; i < completionJobs.size(); i++) {
+                        Integer origin = completionJobs.get(i).getProposalsOriginOffset();
+                        if (origin != null) {
+                            ProposalsJobResultStatus jobResultStatus = evaluateJobResult(request, origin, currentOffset);
+                            switch (jobResultStatus) {
+                                case VALID: // do nothing, all proposals are ok
+                                case PARTIALLY_VALID: // do nothing, proposals will be filtered with validation when supported
+                                    break;
+                                case INVALID: // job restart required
+                                    AbstractJob oldJob = completionJobs.get(i).job;
+                                    ProposalsComputationJobHolder newJob = completionJobSuppliers.get(i).get();
+                                    runningJobs.remove(oldJob);
+                                    runningJobs.add(newJob.job);
+                                    completionJobs.set(i, newJob);
+                                    hasRunningJobs = true;
+                                    break;
+                                case ABORT:
+                                default:
+                                    return Collections.emptyList();
+                            }
                         }
                     }
                 }
             }
+            return completionJobs.stream().flatMap(j -> j.getProposals().stream()).toList();
+        } finally {
+            completionJobs.forEach(j -> runningJobs.remove(j.job));
         }
-        return completionJobs.stream().flatMap(j -> j.getProposals().stream()).toList();
     }
 
     protected void waitForJob(@NotNull AbstractJob job) {
-        UIUtils.waitJobCompletion(job);
+        Display display = Display.getCurrent();
+        if (display == null) {
+            UIUtils.waitJobCompletion(job);
+            return;
+        }
+        // Do not keep the UI blocked after query execution cancels metadata loading.
+        while (!job.isFinished() && !isJobAborted(job) && !DBWorkbench.getPlatform().isShuttingDown()) {
+            if (!display.readAndDispatch()) {
+                display.sleep();
+            }
+        }
+        display.update();
+    }
+
+    private static boolean isJobAborted(@NotNull AbstractJob job) {
+        // A job canceled while still queued never runs, so AbstractJob.isCanceled() stays false.
+        return job.isCanceled() || (!job.isFinished() && job.getState() == Job.NONE);
     }
 
     private enum ProposalsJobResultStatus {
