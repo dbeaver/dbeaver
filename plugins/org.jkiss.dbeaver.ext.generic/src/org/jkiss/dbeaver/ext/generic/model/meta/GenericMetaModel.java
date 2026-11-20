@@ -574,7 +574,7 @@ public class GenericMetaModel {
     {
         String tableNamePattern;
         if (object == null && objectName == null) {
-            final DBSObjectFilter tableFilters = session.getDataSource().getContainer().getEffectiveObjectFilter(GenericTable.class, owner, false);
+            final DBSObjectFilter tableFilters = session.getDataSource().getContainer().getObjectFilter(GenericTable.class, owner, false);
 
             if (tableFilters != null && tableFilters.hasSingleMask()) {
                 tableNamePattern = tableFilters.getSingleMask();

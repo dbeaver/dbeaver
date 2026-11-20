@@ -487,22 +487,28 @@ public class GBase8sMetaModel extends GenericMetaModel {
     JDBCStatement prepareTSObjectLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner,
             @Nullable GenericTableBase object, @Nullable String objectName, @Nullable String[] types)
             throws SQLException {
-        String tableNamePattern;
-        if (object == null && objectName == null) {
-            final DBSObjectFilter tableFilters = session.getDataSource().getContainer()
-                    .getEffectiveObjectFilter(GenericTable.class, owner, false);
-
-            if (tableFilters != null && tableFilters.hasSingleMask()) {
-                tableNamePattern = tableFilters.getSingleMask();
-                if (!CommonUtils.isEmpty(tableNamePattern)) {
-                    tableNamePattern = SQLUtils.makeSQLLike(tableNamePattern);
-                }
-            } else {
-                tableNamePattern = owner.getDataSource().getAllObjectsPattern();
+        String defaultPattern = object == null && objectName == null
+            ? owner.getDataSource().getAllObjectsPattern()
+            : null;
+        String tablePattern = null;
+        String viewPattern = null;
+        if (object == null && objectName == null && Arrays.equals(types, VALID_TABLE_TYPES)) {
+            DBSObjectFilter tableFilter = session.getDataSource().getContainer()
+                .getEffectiveObjectFilter(GenericTable.class, owner, false);
+            DBSObjectFilter viewFilter = session.getDataSource().getContainer()
+                .getEffectiveObjectFilter(GenericView.class, owner, false);
+            if (tableFilter != null && !tableFilter.isNotApplicable() && tableFilter.hasSingleMask()) {
+                tablePattern = SQLUtils.makeSQLLike(tableFilter.getSingleMask());
             }
-        } else {
-            tableNamePattern = JDBCUtils.escapeWildCards(session, (object != null ? object.getName() : objectName));
+            if (viewFilter != null && !viewFilter.isNotApplicable() && viewFilter.hasSingleMask()) {
+                viewPattern = SQLUtils.makeSQLLike(viewFilter.getSingleMask());
+            }
         }
+        // Tables and views share this cache query, but each navigator folder has its own filter.
+        boolean filterByType = tablePattern != null || viewPattern != null;
+        String nameCondition = filterByType
+            ? "WHERE ((t.tabtype = 'T' AND t.tabname LIKE ?) OR (t.tabtype = 'V' AND t.tabname LIKE ?))"
+            : "WHERE t.tabname LIKE ?";
 
         String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
         String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
@@ -522,17 +528,26 @@ public class GBase8sMetaModel extends GenericMetaModel {
                     c.comments AS REMARKS
                 FROM %ssystables t
                 LEFT JOIN %ssyscomms c ON t.tabid = c.tabid
-                WHERE t.tabname LIKE ?
+                %s
                 %s
                 """
                 .formatted(isOracleMode ? "TABLE_SCHEM" : "TABLE_CATALOG", ownerPattern, ownerPattern,
+                        nameCondition,
                         (types != null
                                 ? " AND t.tabtype IN (" + String.join(", ", Collections.nCopies(types.length, "?"))
                                         + ")"
                                 : ""));
         JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         int paramIndex = 1;
-        dbStat.setString(paramIndex++, tableNamePattern);
+        if (filterByType) {
+            String unfilteredPattern = defaultPattern == null ? "%" : defaultPattern;
+            dbStat.setString(paramIndex++, tablePattern == null ? unfilteredPattern : tablePattern);
+            dbStat.setString(paramIndex++, viewPattern == null ? unfilteredPattern : viewPattern);
+        } else {
+            dbStat.setString(paramIndex++, object == null && objectName == null
+                ? defaultPattern
+                : JDBCUtils.escapeWildCards(session, object != null ? object.getName() : objectName));
+        }
         if (types != null) {
             for (String type : types) {
                 dbStat.setString(paramIndex++, type);
