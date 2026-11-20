@@ -230,7 +230,10 @@ public class NavigatorDropTargetListener implements DropTargetListener {
                             }
                         }.schedule();
                     } else {
-                        DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop file into '" + curResource.getName() + "'. Files can be dropped only into folders.");
+                        DBWorkbench.getPlatformUI().showError(
+                            "Drop error",
+                            "Can't drop file into '" + curResource.getName() + "'. Files can be dropped only into folders."
+                        );
                     }
                 }
             }

@@ -28,7 +28,10 @@ import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -54,20 +57,17 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
     private static final Log log = Log.getLog(NavigatorHandlerObjectBase.class);
 
     static final boolean updateUI = true;
-    static final boolean UPDATE_GLOBAL_ACTION_LABELS = false;
 
     protected static class CommandTarget {
         private DBECommandContext context;
         private IDatabaseEditor editor;
-        private CommandTarget()
-        {
+        private CommandTarget() {
         }
         private CommandTarget(DBECommandContext context)
         {
             this.context = context;
         }
-        public CommandTarget(IDatabaseEditor editor)
-        {
+        public CommandTarget(IDatabaseEditor editor) {
             this.editor = editor;
             this.context = ((IDatabaseEditorInput)editor.getEditorInput()).getCommandContext();
         }
@@ -94,7 +94,10 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
         DBSObject objectToSeek = null;
         if (parentObject instanceof DBSObject) {
-            final DBEStructEditor parentStructEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(parentObject.getClass(), DBEStructEditor.class);
+            final DBEStructEditor<?> parentStructEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
+                parentObject.getClass(),
+                DBEStructEditor.class
+            );
             if (parentStructEditor != null && RuntimeUtils.isTypeSupported(childType, parentStructEditor.getChildTypes())) {
                 objectToSeek = (DBSObject) parentObject;
             } else if (editorNode != null) {
@@ -146,10 +149,9 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         return new CommandTarget();
     }
 
-    private static void switchEditorFolder(DBNNode container, IEditorPart editor)
-    {
-        if (container instanceof DBNContainer && editor instanceof ITabbedFolderContainer && container instanceof DBNDatabaseFolder) {
-            ((ITabbedFolderContainer) editor).switchFolder(((DBNDatabaseFolder) container).getChildrenType());
+    private static void switchEditorFolder(DBNNode container, IEditorPart editor) {
+        if (editor instanceof ITabbedFolderContainer tbc && container instanceof DBNDatabaseFolder df) {
+            tbc.switchFolder(df.getChildrenType());
         }
     }
 
@@ -167,7 +169,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                 // do nothing
             }
             if (!nodeLoader.nodes.isEmpty()) {
-                node = nodeLoader.nodes.get(0);
+                node = nodeLoader.nodes.getFirst();
             }
         }
         return node;
@@ -204,18 +206,18 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     protected static boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, Map<String, Object> options, String dialogTitle)
     {
-        Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
+        Collection<? extends DBECommand<?>> commands = commandContext.getFinalCommands();
         StringBuilder script = new StringBuilder();
         try {
             UIUtils.runInProgressService(monitor -> {
                 try {
-                    for (DBECommand command : commands) {
+                    for (DBECommand<?> command : commands) {
                         DBEPersistAction[] persistActions = command.getPersistActions(monitor, commandContext.getExecutionContext(), options);
                         script.append(
                             SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
                                 persistActions,
                                 false));
-                        if (script.length() == 0) {
+                        if (script.isEmpty()) {
                             script.append(
                                 SQLUtils.generateComments(commandContext.getExecutionContext().getDataSource(),
                                     persistActions,
@@ -231,11 +233,17 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         } catch (InterruptedException e) {
             return false;
         }
-        if (script.length() > 0) {
+        if (!script.isEmpty()) {
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
                 return serviceSQL.openSQLViewer(
-                    commandContext.getExecutionContext(), dialogTitle, UIIcon.SQL_PREVIEW, script.toString(), true, false) == IDialogConstants.PROCEED_ID;
+                    commandContext.getExecutionContext(),
+                    dialogTitle,
+                    UIIcon.SQL_PREVIEW,
+                    script.toString(),
+                    true,
+                    false
+                ) == IDialogConstants.PROCEED_ID;
             }
         } else {
             return UIUtils.confirmAction(workbenchWindow.getShell(), dialogTitle, UINavigatorMessages.question_no_sql_available);
@@ -246,10 +254,10 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     private static class NodeLoader implements DBRRunnableWithProgress {
         private final DBNModel model;
-        private final Collection<? extends Object> objects;
-        private List<DBNDatabaseNode> nodes;
+        private final Collection<?> objects;
+        private final List<DBNDatabaseNode> nodes;
 
-        public NodeLoader(DBNModel model, Collection<? extends Object> objects)
+        public NodeLoader(DBNModel model, Collection<?> objects)
         {
             this.model = model;
             this.objects = objects;
@@ -257,8 +265,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         }
 
         @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-        {
+        public void run(DBRProgressMonitor monitor) {
             for (Object object : objects) {
                 DBSObject structObject;
                 if (object instanceof DBSObject) {
@@ -284,7 +291,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     protected static class ObjectSaver implements DBRRunnableWithProgress {
         private final DBECommandContext commander;
-        private Map<String, Object> options;
+        private final Map<String, Object> options;
 
         public ObjectSaver(DBECommandContext commander, Map<String, Object> options) {
             this.commander = commander;
