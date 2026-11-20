@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /** DataDam MCP permission column for the shared AI connections page. */
 public class DDMcpConnectionsContribution implements McpConnectionsPageContribution {
@@ -91,7 +92,7 @@ public class DDMcpConnectionsContribution implements McpConnectionsPageContribut
     @Override
     public void createColumns(
         @NotNull TreeViewer viewer,
-        @NotNull Map<DBPDataSourceContainer, AIContextSettingsDataSource> pendingSettings
+        @NotNull Function<DBPDataSourceContainer, AIContextSettingsDataSource> settings
     ) {
         TreeViewerColumn column = new TreeViewerColumn(viewer, SWT.CENTER);
         column.getColumn().setText(DDMcpMessages.mcp_connection_settings_group);
@@ -105,25 +106,16 @@ public class DDMcpConnectionsContribution implements McpConnectionsPageContribut
                 checkbox.setToolTipText(DDMcpMessages.mcp_connection_settings_enabled_tip);
                 checkbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
                     if (!isVisible() || column.getColumn().isDisposed() || column.getColumn().getWidth() == 0) {
-                        checkbox.setSelection(isEnabled(connection, pendingSettings));
+                        checkbox.setSelection(settings.apply(connection).isDatadamMcpEnabled());
                         return;
                     }
-                    pendingSettings.computeIfAbsent(connection, AIContextSettingsDataSource::new)
-                        .setDatadamMcpEnabled(checkbox.getSelection());
+                    settings.apply(connection).setDatadamMcpEnabled(checkbox.getSelection());
                 }));
                 return checkbox;
             },
-            (checkbox, connection) -> checkbox.setSelection(isEnabled(connection, pendingSettings)),
+            (checkbox, connection) -> checkbox.setSelection(settings.apply(connection).isDatadamMcpEnabled()),
             this::isVisible
         );
-    }
-
-    private boolean isEnabled(
-        @NotNull DBPDataSourceContainer connection,
-        @NotNull Map<DBPDataSourceContainer, AIContextSettingsDataSource> pendingSettings
-    ) {
-        AIContextSettingsDataSource settings = pendingSettings.get(connection);
-        return (settings == null ? new AIContextSettingsDataSource(connection) : settings).isDatadamMcpEnabled();
     }
 
     private record VisibilityListeners(

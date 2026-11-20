@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AIProjectConnectionCount;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNRoot;
@@ -68,13 +69,12 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     private final List<McpConnectionsPageRegistry.McpConnectionsPageContribution> contributions =
         McpConnectionsPageRegistry.createContributions();
     private final List<ContributionColumn> contributionColumns = new ArrayList<>();
-    private final Map<DBPDataSourceContainer, AIContextSettingsDataSource> pendingSettings = new LinkedHashMap<>();
-    private final Map<DBPProject, List<DBPDataSourceContainer>> groupedConnections = new LinkedHashMap<>();
+    private final ConnectionsSnapshot snapshot = new ConnectionsSnapshot();
 
     private TreeViewer viewer;
-    private Button ungroupedCheck;
+    private boolean restoringProjects;
+    private Button groupByProjectCheck;
     private Button removeButton;
-    private Label loadWarning;
     @Nullable
     private ILabelDecorator projectDecorator;
 
@@ -93,10 +93,9 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         content.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         createGroupingControls(content);
+        snapshot.reload();
         createConnectionsList(content);
-        loadWarning = UIUtils.createLabel(content, "");
-        loadWarning.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (ungroupedCheck.getSelection()) {
+        if (!groupByProjectCheck.getSelection()) {
             openAllProjects();
         }
         refreshConnections();
@@ -104,19 +103,21 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     }
 
     private void createGroupingControls(@NotNull Composite parent) {
-        ungroupedCheck = UIUtils.createCheckbox(parent, AIUIMessages.ai_mcp_connections_ungrouped,
-            AIUIMessages.ai_mcp_connections_load_all,
-            DBWorkbench.getPlatform().getPreferenceStore().getBoolean(UNGROUPED_PREFERENCE), 1);
+        groupByProjectCheck = UIUtils.createCheckbox(parent, AIUIMessages.ai_mcp_connections_ungrouped,
+            !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(UNGROUPED_PREFERENCE));
         Label loadAllHint = UIUtils.createLabel(parent, AIUIMessages.ai_mcp_connections_load_all);
         loadAllHint.setForeground(loadAllHint.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
         GridData hintLayout = new GridData(GridData.FILL_HORIZONTAL);
-        hintLayout.horizontalIndent = UIUtils.getFontHeight(ungroupedCheck) * 2;
+        hintLayout.horizontalIndent = UIUtils.getFontHeight(groupByProjectCheck) * 2;
         loadAllHint.setLayoutData(hintLayout);
-        ungroupedCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
-            if (ungroupedCheck.getSelection()) {
+        UIUtils.setControlVisible(loadAllHint, !groupByProjectCheck.getSelection());
+        groupByProjectCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+            UIUtils.setControlVisible(loadAllHint, !groupByProjectCheck.getSelection());
+            if (!groupByProjectCheck.getSelection()) {
                 openAllProjects();
             }
             refreshConnections();
+            loadAllHint.getParent().layout(true, true);
         }));
     }
 
@@ -153,6 +154,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         projectDecorator = decorator;
         ILabelProviderListener listener = event -> UIUtils.asyncExec(() -> {
             if (!tree.isDisposed()) {
+                snapshot.projects.values().forEach(project -> project.icon = null);
                 viewer.refresh();
             }
         });
@@ -165,39 +167,44 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         viewer.setContentProvider(new ITreeContentProvider() {
             @Override
             public Object[] getElements(Object inputElement) {
-                return ungroupedCheck.getSelection()
-                    ? groupedConnections.values().stream().flatMap(List::stream).toArray()
-                    : groupedConnections.keySet().toArray();
+                ProjectEntry[] projects = (ProjectEntry[]) inputElement;
+                return groupByProjectCheck.getSelection()
+                    ? Arrays.stream(projects).map(ProjectEntry::project).toArray()
+                    : Arrays.stream(projects).flatMap(project -> project.visibleConnections().stream()).toArray();
             }
 
             @Override
             public Object[] getChildren(Object parentElement) {
                 if (parentElement instanceof DBPProject project) {
-                    if (!project.isOpen() || !project.isRegistryLoaded()) {
-                        return new Object[]{new ProjectPlaceholder(project)};
+                    ProjectEntry state = snapshot.get(project);
+                    if (!state.loaded()) {
+                        return new Object[]{state};
                     }
-                    return groupedConnections.getOrDefault(project, List.of()).toArray();
+                    return state.visibleConnections().toArray();
                 }
                 return new Object[0];
             }
 
             @Override
             public Object getParent(Object element) {
-                return element instanceof DBPDataSourceContainer connection && !ungroupedCheck.getSelection()
+                return element instanceof DBPDataSourceContainer connection && groupByProjectCheck.getSelection()
                     ? connection.getProject()
-                    : element instanceof ProjectPlaceholder placeholder ? placeholder.project() : null;
+                    : element instanceof ProjectEntry project ? project.project() : null;
             }
 
             @Override
             public boolean hasChildren(Object element) {
-                return element instanceof DBPProject project &&
-                    (!project.isOpen() || !project.isRegistryLoaded() || !groupedConnections.getOrDefault(project, List.of()).isEmpty());
+                if (element instanceof DBPProject project) {
+                    ProjectEntry state = snapshot.get(project);
+                    return !state.loaded() || !state.visibleConnections().isEmpty();
+                }
+                return false;
             }
         });
         viewer.addTreeListener(new ITreeViewerListener() {
             @Override
             public void treeExpanded(TreeExpansionEvent event) {
-                if (event.getElement() instanceof DBPProject project && (!project.isOpen() || !project.isRegistryLoaded())) {
+                if (!restoringProjects && event.getElement() instanceof DBPProject project && !snapshot.get(project).loaded()) {
                     UIUtils.asyncExec(() -> {
                         if (!viewer.getControl().isDisposed() && viewer.getExpandedState(project)) {
                             loadProject(project);
@@ -222,7 +229,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         createScopeColumn();
         for (McpConnectionsPageRegistry.McpConnectionsPageContribution contribution : contributions) {
             int previousColumnCount = viewer.getTree().getColumnCount();
-            contribution.createColumns(viewer, pendingSettings);
+            contribution.createColumns(viewer, this::getSettings);
             TreeColumn[] columns = viewer.getTree().getColumns();
             for (int index = previousColumnCount; index < columns.length; index++) {
                 contributionColumns.add(new ContributionColumn(contribution, columns[index], columns[index].getWidth()));
@@ -268,14 +275,6 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         });
     }
 
-    @Nullable
-    private Integer getProjectCount(@NotNull DBPProject project) {
-        if (project.isOpen() && project.isRegistryLoaded()) {
-            return groupedConnections.get(project).size();
-        }
-        return AIProjectConnectionCount.getCount(project);
-    }
-
     private final class ConnectionLabelProvider extends ColumnLabelProvider
         implements DelegatingStyledCellLabelProvider.IStyledLabelProvider {
 
@@ -283,7 +282,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         @Override
         public StyledString getStyledText(Object element) {
             if (element instanceof DBPProject project) {
-                Integer count = getProjectCount(project);
+                Integer count = snapshot.get(project).count();
                 return new StyledString(project.getName()).append("    " + NLS.bind(AIUIMessages.ai_mcp_connections_count,
                     count == null ? "—" : count.toString()), StyledString.QUALIFIER_STYLER);
             }
@@ -303,11 +302,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         @Override
         public Image getImage(Object element) {
             if (element instanceof DBPProject project) {
-                DBNRoot root = DBWorkbench.getPlatform().getNavigatorModel().getRoot();
-                DBNProject node = root == null ? null : root.getProjectNode(project);
-                Image base = DBeaverIcons.getImage(node == null ? DBIcon.PROJECT : node.getNodeIconDefault());
-                Image decorated = node == null || projectDecorator == null ? null : projectDecorator.decorateImage(base, node);
-                return decorated == null ? base : decorated;
+                return snapshot.get(project).getIcon(projectDecorator);
             }
             return element instanceof DBPDataSourceContainer connection
                 ? DBeaverIcons.getImage(connection.getDriver().getIcon()) : null;
@@ -396,7 +391,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
                     viewer.update(element, null);
                     return;
                 }
-                pendingSettings.computeIfAbsent(connection, AIContextSettingsDataSource::new).setScope(scope);
+                getSettings(connection).setScope(scope);
                 viewer.update(element, null);
             }
         });
@@ -408,68 +403,47 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
     @NotNull
     private AIContextSettingsDataSource getSettings(@NotNull DBPDataSourceContainer connection) {
-        AIContextSettingsDataSource settings = pendingSettings.get(connection);
-        return settings == null ? new AIContextSettingsDataSource(connection) : settings;
+        return snapshot.get(connection.getProject()).getSettings(connection);
     }
 
     private void openAllProjects() {
-        boolean failed = false;
-        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getVisibleProjects()) {
+        for (ProjectEntry project : snapshot.projects.values()) {
+            if (project.count() != null && project.count() == 0) {
+                continue;
+            }
             try {
-                project.ensureOpen();
-                project.getDataSourceRegistry();
-            } catch (RuntimeException e) {
-                log.debug("Cannot open project for AI connections", e);
-                failed = true;
+                project.load();
+            } catch (Exception e) {
+                showProjectError(e);
             }
         }
-        loadWarning.setText(failed ? AIUIMessages.ai_mcp_connections_open_failed : "");
-        loadWarning.getParent().layout(true, true);
     }
 
     private void loadProject(@NotNull DBPProject project) {
         try {
-            project.ensureOpen();
-            project.getDataSourceRegistry();
+            snapshot.get(project).load();
             refreshConnections();
             viewer.setExpandedState(project, true);
-        } catch (RuntimeException e) {
-            log.debug("Cannot open project for AI connections", e);
-            loadWarning.setText(AIUIMessages.ai_mcp_connections_open_failed);
-            loadWarning.getParent().layout(true, true);
+        } catch (Exception e) {
+            viewer.setExpandedState(project, false);
+            showProjectError(e);
         }
     }
 
+    private void showProjectError(@NotNull Exception error) {
+        DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_mcp_connections_open_failed, null, error);
+    }
+
     private void refreshConnections() {
-        groupedConnections.clear();
-        List<? extends DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getVisibleProjects().stream()
-            .sorted(Comparator.comparing(DBPProject::getName, String.CASE_INSENSITIVE_ORDER)).toList();
-        for (DBPProject project : projects) {
-            groupedConnections.put(project, new ArrayList<>());
-            if (!project.isOpen() || !project.isRegistryLoaded()) {
-                continue;
-            }
-            try {
-                for (DBPDataSourceContainer connection : project.getDataSourceRegistry().getDataSources()) {
-                    if (getSettings(connection).isMetaTransferConfirmed()) {
-                        groupedConnections.get(project).add(connection);
-                    }
-                }
-            } catch (RuntimeException e) {
-                log.debug("Cannot read AI connections from project", e);
-            }
-        }
-        for (List<DBPDataSourceContainer> projectConnections : groupedConnections.values()) {
-            projectConnections.sort(Comparator.comparing(DBPDataSourceContainer::getName, String.CASE_INSENSITIVE_ORDER));
-        }
-        groupedConnections.entrySet().removeIf(entry -> {
-            Integer count = getProjectCount(entry.getKey());
-            return count != null && count == 0;
-        });
         Object[] expanded = viewer.getExpandedElements();
-        viewer.setInput(groupedConnections.keySet().toArray());
-        if (!ungroupedCheck.getSelection()) {
-            viewer.setExpandedElements(expanded);
+        restoringProjects = true;
+        try {
+            viewer.setInput(snapshot.visibleProjects());
+            if (groupByProjectCheck.getSelection()) {
+                viewer.setExpandedElements(expanded);
+            }
+        } finally {
+            restoringProjects = false;
         }
         updateRemoveButton();
     }
@@ -482,7 +456,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     private void removeSelectedConnections() {
         for (Object element : viewer.getStructuredSelection()) {
             if (element instanceof DBPDataSourceContainer connection) {
-                pendingSettings.computeIfAbsent(connection, AIContextSettingsDataSource::new).setMetaTransferConfirmed(false);
+                getSettings(connection).setMetaTransferConfirmed(false);
             }
         }
         refreshConnections();
@@ -495,12 +469,17 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         if (dialog.open() != Window.OK) {
             return;
         }
-        List<DBPDataSourceContainer> added = dialog.getSelectedDataSources();
-        for (DBPDataSourceContainer connection : added) {
-            pendingSettings.computeIfAbsent(connection, AIContextSettingsDataSource::new).setMetaTransferConfirmed(true);
+        List<DBPDataSourceContainer> added = new ArrayList<>();
+        for (DBPDataSourceContainer connection : dialog.getSelectedDataSources()) {
+            try {
+                snapshot.get(connection.getProject()).add(connection);
+                added.add(connection);
+            } catch (Exception e) {
+                showProjectError(e);
+            }
         }
         refreshConnections();
-        if (!ungroupedCheck.getSelection()) {
+        if (groupByProjectCheck.getSelection()) {
             for (DBPDataSourceContainer connection : added) {
                 viewer.setExpandedState(connection.getProject(), true);
             }
@@ -516,7 +495,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         AIChatUtils.selectCustomScope(
             getShell(), getSettings(connection), stored, dataSource -> DBUtils.getDefaultContext(dataSource, false), null,
             ids -> {
-                AIContextSettingsDataSource draft = pendingSettings.computeIfAbsent(connection, AIContextSettingsDataSource::new);
+                AIContextSettingsDataSource draft = getSettings(connection);
                 draft.setScope(AIDatabaseScope.CUSTOM);
                 draft.setCustomObjectIds(ids.toArray(String[]::new));
                 if (!viewer.getControl().isDisposed()) {
@@ -535,25 +514,32 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     }
 
     private boolean saveChanges() {
-        for (var entry : new ArrayList<>(pendingSettings.entrySet())) {
-            try {
-                DBPDataSourceContainer connection = entry.getKey();
-                connection.setExtension(AIContextSettingsDataSource.AI_DS_EXTENSION, entry.getValue().saveSettingsToMap());
-                if (!connection.persistConfiguration()) {
-                    showSaveError(new DBException("Cannot persist AI settings for connection '" + connection.getName() + "'"));
+        for (ProjectEntry project : snapshot.projects.values()) {
+            if (!project.loaded()) {
+                continue;
+            }
+            for (ConnectionEntry entry : project.connections.values()) {
+                DBPDataSourceContainer connection = entry.connection;
+                Object previous = connection.getExtension(AIContextSettingsDataSource.AI_DS_EXTENSION);
+                try {
+                    connection.setExtension(AIContextSettingsDataSource.AI_DS_EXTENSION, entry.settings.saveSettingsToMap());
+                    if (!connection.persistConfiguration()) {
+                        connection.setExtension(AIContextSettingsDataSource.AI_DS_EXTENSION, previous);
+                        showSaveError(new DBException("Cannot persist AI settings for connection '" + connection.getName() + "'"));
+                        return false;
+                    }
+                    AIProjectConnectionCount.refresh(connection.getRegistry());
+                } catch (Exception e) {
+                    connection.setExtension(AIContextSettingsDataSource.AI_DS_EXTENSION, previous);
+                    showSaveError(e);
                     return false;
                 }
-                AIProjectConnectionCount.refresh(connection.getRegistry());
-                pendingSettings.remove(connection);
-            } catch (RuntimeException e) {
-                showSaveError(e);
-                return false;
             }
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         boolean previousUngrouped = store.getBoolean(UNGROUPED_PREFERENCE);
-        if (previousUngrouped != ungroupedCheck.getSelection()) {
-            store.setValue(UNGROUPED_PREFERENCE, ungroupedCheck.getSelection());
+        if (previousUngrouped == groupByProjectCheck.getSelection()) {
+            store.setValue(UNGROUPED_PREFERENCE, !groupByProjectCheck.getSelection());
             try {
                 store.save();
             } catch (IOException e) {
@@ -562,15 +548,26 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
                 return false;
             }
         }
-        loadWarning.setText("");
+        List<DBPProject> loadedProjects = snapshot.projects.values().stream()
+            .filter(ProjectEntry::loaded)
+            .map(ProjectEntry::project)
+            .toList();
+        snapshot.reload();
+        for (DBPProject project : loadedProjects) {
+            try {
+                snapshot.get(project).load();
+            } catch (Exception e) {
+                viewer.setExpandedState(project, false);
+                showProjectError(e);
+            }
+        }
         refreshConnections();
         return true;
     }
 
     private void showSaveError(@NotNull Exception error) {
         log.error("Cannot save AI connection settings", error);
-        loadWarning.setText(AIUIMessages.ai_mcp_connections_save_error_message);
-        loadWarning.getParent().layout(true, true);
+        DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_mcp_connections_save_error_message, null, error);
     }
 
     @Override
@@ -585,11 +582,144 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
     @Override
     public boolean performCancel() {
-        pendingSettings.clear();
+        snapshot.projects.clear();
         return super.performCancel();
     }
 
-    private record ProjectPlaceholder(@NotNull DBPProject project) {
+    private static final class ConnectionsSnapshot {
+        private final Map<String, ProjectEntry> projects = new LinkedHashMap<>();
+
+        private void reload() {
+            projects.clear();
+            DBWorkbench.getPlatform().getWorkspace().getVisibleProjects().stream()
+                .sorted(Comparator.comparing(DBPProject::getName, String.CASE_INSENSITIVE_ORDER))
+                .forEach(this::get);
+        }
+
+        @NotNull
+        private ProjectEntry get(@NotNull DBPProject project) {
+            return projects.computeIfAbsent(project.getId(), id ->
+                new ProjectEntry(project, AIProjectConnectionCount.getCount(project)));
+        }
+
+        @NotNull
+        private ProjectEntry[] visibleProjects() {
+            return projects.values().stream()
+                .filter(project -> project.count() == null || project.count() > 0)
+                .toArray(ProjectEntry[]::new);
+        }
+    }
+
+    private static final class ProjectEntry {
+        @NotNull
+        private final DBPProject project;
+        @Nullable
+        private final Integer initialCount;
+        private final Map<String, ConnectionEntry> connections = new LinkedHashMap<>();
+        @Nullable
+        private Image icon;
+        private boolean loaded;
+
+        private ProjectEntry(@NotNull DBPProject project, @Nullable Integer initialCount) {
+            this.project = project;
+            this.initialCount = initialCount;
+        }
+
+        @NotNull
+        private DBPProject project() {
+            return project;
+        }
+
+        private boolean loaded() {
+            return loaded;
+        }
+
+        @NotNull
+        private AIContextSettingsDataSource getSettings(@NotNull DBPDataSourceContainer connection) {
+            return connections.computeIfAbsent(connection.getId(), id -> new ConnectionEntry(connection)).settings;
+        }
+
+        private void add(@NotNull DBPDataSourceContainer connection) throws DBException {
+            load();
+            getSettings(connection).setMetaTransferConfirmed(true);
+        }
+
+        private void load() throws DBException {
+            if (loaded) {
+                return;
+            }
+            boolean retry = project.isRegistryLoaded();
+            project.ensureOpen();
+            DBPDataSourceRegistry registry = project.getDataSourceRegistry();
+            if (retry && registry.hasError()) {
+                registry.refreshConfig();
+            }
+            if (registry.hasError()) {
+                throw new DBException("Cannot load AI connections for project '" + project.getName() + "'");
+            }
+            readConnections(registry);
+            if (retry) {
+                AIProjectConnectionCount.getInstance().handleRegistryLoad(registry);
+            }
+        }
+
+        private void readConnections(@NotNull DBPDataSourceRegistry registry) {
+            Map<String, ConnectionEntry> loadedConnections = new LinkedHashMap<>();
+            for (DBPDataSourceContainer connection : registry.getDataSources()) {
+                ConnectionEntry existing = connections.get(connection.getId());
+                loadedConnections.put(connection.getId(), existing == null ? new ConnectionEntry(connection) : existing);
+            }
+            connections.clear();
+            connections.putAll(loadedConnections);
+            loaded = true;
+            AIProjectConnectionCount.refresh(registry);
+        }
+
+        @NotNull
+        private Image getIcon(@Nullable ILabelDecorator decorator) {
+            if (icon == null || icon.isDisposed()) {
+                DBNRoot root = DBWorkbench.getPlatform().getNavigatorModel().getRoot();
+                DBNProject node = root == null ? null : root.getProjectNode(project);
+                Image base = DBeaverIcons.getImage(node == null ? DBIcon.PROJECT : node.getNodeIconDefault());
+                Image decorated = node == null || decorator == null ? null : decorator.decorateImage(base, node);
+                icon = decorated == null ? base : decorated;
+            }
+            return icon;
+        }
+
+        @Nullable
+        private Integer count() {
+            if (loaded) {
+                return (int) connections.values().stream()
+                    .filter(connection -> connection.settings.isMetaTransferConfirmed())
+                    .count();
+            }
+            if (initialCount == null) {
+                return null;
+            }
+            return initialCount;
+        }
+
+        @NotNull
+        private List<DBPDataSourceContainer> visibleConnections() {
+            return connections.values().stream()
+                .filter(connection -> connection.settings.isMetaTransferConfirmed())
+                .map(connection -> connection.connection)
+                .sorted(Comparator.comparing(DBPDataSourceContainer::getName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+        }
+    }
+
+    private static final class ConnectionEntry {
+        @NotNull
+        private final DBPDataSourceContainer connection;
+        @NotNull
+        private final AIContextSettingsDataSource settings;
+
+        private ConnectionEntry(@NotNull DBPDataSourceContainer connection) {
+            this.connection = connection;
+            this.settings = new AIContextSettingsDataSource(connection);
+        }
     }
 
     private static final class ContributionColumn {
@@ -630,7 +760,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
             /** Project group rows are present unless the user selects the ungrouped view. */
             void createColumns(
                 @NotNull TreeViewer viewer,
-                @NotNull Map<DBPDataSourceContainer, AIContextSettingsDataSource> pendingSettings
+                @NotNull Function<DBPDataSourceContainer, AIContextSettingsDataSource> settings
             );
         }
 
