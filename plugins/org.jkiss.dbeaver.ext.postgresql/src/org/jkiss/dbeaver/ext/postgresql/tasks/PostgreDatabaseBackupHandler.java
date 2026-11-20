@@ -111,7 +111,16 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             cmd.add("--encoding=" + settings.getEncoding());
         }
         if (settings.isUseInserts()) {
-            cmd.add("--inserts");
+            if (settings.getRowsPerInsert() > 1) {
+                int pgDumpVersion = PostgreDumpVersion.getMajorVersion(settings.getClientHome());
+                if (pgDumpVersion < PostgreDumpVersion.MIN_ROWS_PER_INSERT_VERSION) {
+                    throw new IOException("Rows per INSERT requires pg_dump 12 or newer (selected: " + pgDumpVersion
+                        + "). Choose a newer native client or set Rows per INSERT to 1.");
+                }
+                cmd.add("--rows-per-insert=" + settings.getRowsPerInsert());
+            } else {
+                cmd.add("--inserts");
+            }
         }
         if (settings.isNoPrivileges()) {
             cmd.add("--no-privileges");
