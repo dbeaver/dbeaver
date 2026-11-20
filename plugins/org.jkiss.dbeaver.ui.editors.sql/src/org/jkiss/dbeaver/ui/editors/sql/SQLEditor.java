@@ -3980,26 +3980,92 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     /**
-     * Formats the whole script with the SQL formatter. The caret position is kept and formatting is a single undo step.
+     * Formats the whole script with the SQL formatter. The selection and the caret are kept
+     * and formatting is a single undo step.
      */
     private void formatScript() {
         ISourceViewer viewer = getSourceViewer();
-        if (viewer == null) {
+        if (viewer == null || viewer.getDocument() == null) {
             return;
         }
         ITextOperationTarget target = viewer.getTextOperationTarget();
-        if (target != null && target.canDoOperation(ISourceViewer.FORMAT)) {
-            // With a selection only the selected text is formatted
-            Point selection = viewer.getSelectedRange();
-            viewer.setSelectedRange(selection.x, 0);
-            // "Format active query only" must not apply here, the whole script is formatted
-            setFormatWholeScript(true);
-            try {
-                target.doOperation(ISourceViewer.FORMAT);
-            } finally {
-                setFormatWholeScript(false);
+        if (target == null || !target.canDoOperation(ISourceViewer.FORMAT)) {
+            return;
+        }
+        Point selection = viewer.getSelectedRange();
+        StyledText textWidget = viewer.getTextWidget();
+        boolean caretAtStart = selection.y > 0 && textWidget != null
+            && textWidget.getCaretOffset() == textWidget.getSelection().x;
+
+        // The formatter replaces the text at once, so document positions do not survive it.
+        // It changes mostly whitespace, so the number of non-whitespace characters before
+        // an offset identifies the same place in the formatted text.
+        String text = viewer.getDocument().get();
+        int startCount = countNonWhitespace(text, selection.x);
+        int endCount = countNonWhitespace(text, selection.x + selection.y);
+
+        // With a selection only the selected text is formatted
+        viewer.setSelectedRange(selection.x, 0);
+        // "Format active query only" must not apply here, the whole script is formatted
+        setFormatWholeScript(true);
+        try {
+            target.doOperation(ISourceViewer.FORMAT);
+        } finally {
+            setFormatWholeScript(false);
+        }
+
+        String formatted = viewer.getDocument().get();
+        int end = offsetAfterNonWhitespace(formatted, endCount);
+        if (selection.y == 0) {
+            viewer.setSelectedRange(end, 0);
+            return;
+        }
+        int start = Math.min(offsetBeforeNonWhitespace(formatted, startCount), end);
+        if (caretAtStart) {
+            viewer.setSelectedRange(end, start - end);
+        } else {
+            viewer.setSelectedRange(start, end - start);
+        }
+    }
+
+    private static int countNonWhitespace(@NotNull String text, int offset) {
+        int count = 0;
+        int limit = Math.min(offset, text.length());
+        for (int i = 0; i < limit; i++) {
+            if (!Character.isWhitespace(text.charAt(i))) {
+                count++;
             }
         }
+        return count;
+    }
+
+    /**
+     * Returns the offset right after the given number of non-whitespace characters.
+     */
+    private static int offsetAfterNonWhitespace(@NotNull String text, int count) {
+        if (count == 0) {
+            return 0;
+        }
+        int seen = 0;
+        for (int i = 0; i < text.length(); i++) {
+            if (!Character.isWhitespace(text.charAt(i)) && ++seen == count) {
+                return i + 1;
+            }
+        }
+        return text.length();
+    }
+
+    /**
+     * Returns the offset of the non-whitespace character that follows the given number of them.
+     */
+    private static int offsetBeforeNonWhitespace(@NotNull String text, int count) {
+        int seen = 0;
+        for (int i = 0; i < text.length(); i++) {
+            if (!Character.isWhitespace(text.charAt(i)) && seen++ == count) {
+                return i;
+            }
+        }
+        return text.length();
     }
 
     @Override
