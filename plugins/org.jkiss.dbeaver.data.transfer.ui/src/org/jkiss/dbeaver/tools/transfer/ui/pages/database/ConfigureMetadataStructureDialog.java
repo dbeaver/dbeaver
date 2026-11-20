@@ -383,8 +383,8 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
             return panelObject;
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
-                "Can't create SQL panel",
-                "Error creating SQL panel",
+                DTUIMessages.database_sql_panel_create_error_title,
+                DTUIMessages.database_sql_panel_create_error_message,
                 e);
             return null;
         }

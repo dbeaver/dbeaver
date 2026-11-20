@@ -20,7 +20,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -83,7 +82,9 @@ public class MimerSetOnlineStateHandler extends AbstractHandler {
         if (anyOnline && anyOffline) {
             DBWorkbench.getPlatformUI().showMessageBox(
                 MimerUIMessages.action_set_online_state_title,
-                NLS.bind(MimerUIMessages.action_set_online_state_mixed_status_message, keyword.toLowerCase()),
+                shadowNodes.isEmpty()
+                    ? MimerUIMessages.action_set_online_state_mixed_databanks
+                    : MimerUIMessages.action_set_online_state_mixed_shadows,
                 true);
             return null;
         }
@@ -104,7 +105,9 @@ public class MimerSetOnlineStateHandler extends AbstractHandler {
         }
         MimerOnlineActionUtils.run(
             dataSource,
-            "Set " + keyword.toLowerCase() + " online state",
+            shadowNodes.isEmpty()
+                ? MimerUIMessages.action_set_databank_online_state
+                : MimerUIMessages.action_set_shadow_online_state,
             List.of(sql),
             true,
             () -> {

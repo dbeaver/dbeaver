@@ -117,7 +117,7 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
                 }
             });
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("File save IO error", null, e);
+            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_file_save_title, null, e);
         }
     }
 
@@ -160,7 +160,7 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
                 }
             });
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("File save IO error", null, e);
+            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_file_save_title, null, e);
         }
     }
 
@@ -216,7 +216,7 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
                         }
                     }
                 } catch (IOException e) {
-                    DBWorkbench.getPlatformUI().showError("IO error", null, e);
+                    DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_io_title, null, e);
                 }
             }
 

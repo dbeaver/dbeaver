@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -52,6 +53,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandlerUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -114,7 +116,8 @@ public class DataSourceHandler {
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
-                        DBWorkbench.getPlatformUI().showError(connectJob.getName(), null, result);
+                        DBWorkbench.getPlatformUI().showError(
+                            NLS.bind(UIConnectionMessages.dialog_connection_connect_title, dataSource.getName()), null, result);
                     }
                 }
             };
@@ -187,7 +190,8 @@ public class DataSourceHandler {
                     if (onFinish != null) {
                         onFinish.run();
                     } else if (result != null && !result.isOK()) {
-                        DBWorkbench.getPlatformUI().showError(disconnectJob.getName(), null, result);
+                        DBWorkbench.getPlatformUI().showError(
+                            NLS.bind(UIConnectionMessages.dialog_connection_disconnect_title, dataSourceDescriptor.getName()), null, result);
                     }
                     //DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
                 }

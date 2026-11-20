@@ -19,11 +19,22 @@ package org.jkiss.dbeaver.ext.postgresql;
 import org.eclipse.osgi.util.NLS;
 
 public class PostgreMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.PostgresResources"; //$NON-NLS-1$
+
+    public static String wizard_restore_msgbox_title;
+    public static String wizard_restore_msgbox_message;
+    public static String table_list_title;
+    public static String table_list_error;
+    public static String fdw_error_title;
+    public static String fdw_script_error;
+    public static String fdw_collect_data_sources_title;
+    public static String fdw_collect_data_sources_error;
+    public static String fdw_save_script_title;
+    public static String fdw_save_script_error;
     public static String session_editor_action_cancel_query;
     public static String session_editor_action_terminate;
     public static String session_editor_cancel_query_confirm_message;
     public static String session_editor_terminate_confirm_message;
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.PostgresResources"; //$NON-NLS-1$
 
     public static String dialog_create_publication_tables;
     public static String dialog_create_publication_filter_tables;

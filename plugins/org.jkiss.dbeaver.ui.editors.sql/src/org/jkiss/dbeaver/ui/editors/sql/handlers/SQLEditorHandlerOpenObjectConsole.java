@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorContributor;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -96,7 +97,7 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
         try {
             openConsole(workbenchWindow, generator, navContext, title, !entities.isEmpty(), currentSelection);
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_console_open_title, SQLEditorMessages.sql_editor_open_error, e);
         }
         return null;
     }

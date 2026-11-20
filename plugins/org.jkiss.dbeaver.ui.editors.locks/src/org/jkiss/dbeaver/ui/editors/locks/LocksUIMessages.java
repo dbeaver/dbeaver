@@ -19,9 +19,10 @@ package org.jkiss.dbeaver.ui.editors.locks;
 import org.eclipse.osgi.util.NLS;
 
 public class LocksUIMessages extends NLS {
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.locks.LocksUIResources"; //$NON-NLS-1$
+
     public static String session_terminate_confirm_title;
     public static String session_terminate_confirm_message;
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.locks.LocksUIResources"; //$NON-NLS-1$
     public static String actions_refresh_control_kill_waiting_session;
     public static String actions_refresh_control_refresh_locks;
     public static String create_editor_control_name_lock;

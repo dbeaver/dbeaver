@@ -538,7 +538,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                 if (streamConsumerSettings == null) {
                     DBWorkbench.getPlatformUI().showError(
                         DTMessages.stream_transfer_consumer_title_configuration_load_failed,
-                        "Current configuration do not support stream settings"
+                        DTUIMessages.data_transfer_stream_settings_unsupported_message
                     );
                     return;
                 }

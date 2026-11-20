@@ -965,7 +965,8 @@ public class DriverEditDialog extends BaseDialog {
             try {
                 syncDriverLibraries();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Error saving driver", "Driver libraries sync failed", e);
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_driver_save_error_title,
+                    UIConnectionMessages.dialog_driver_libraries_sync_error, e);
                 return;
             }
         } else {
@@ -983,7 +984,8 @@ public class DriverEditDialog extends BaseDialog {
         try {
             provider.getRegistry().saveDrivers();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Drivers save error", "Error saving drivers", e);
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.pref_page_network_profiles_save_error_title,
+                UIConnectionMessages.dialog_drivers_save_error, e);
             return;
         }
 

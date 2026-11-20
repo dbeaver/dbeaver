@@ -19,9 +19,10 @@ package org.jkiss.dbeaver.ext.mssql.ui;
 import org.eclipse.osgi.util.NLS;
 
 public class SQLServerUIMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages"; //$NON-NLS-1$
+
     public static String session_editor_action_terminate;
     public static String session_editor_terminate_confirm_message;
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages"; //$NON-NLS-1$
 
     public static String dialog_setting_connection_settings;
     public static String dialog_connection_database_schema_label;

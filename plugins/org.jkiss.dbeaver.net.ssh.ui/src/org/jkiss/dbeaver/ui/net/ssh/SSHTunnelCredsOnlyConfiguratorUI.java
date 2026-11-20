@@ -52,7 +52,7 @@ public class SSHTunnelCredsOnlyConfiguratorUI implements IObjectPropertyConfigur
             configurations = Arrays.stream(SSHUtils.loadHostConfigurations(handlerConfiguration, false))
                 .map(SSHTunnelDefaultConfiguratorUI.ConfigurationWrapper::new).toList();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("SSH configuration", "Unable to load SSH configuration due to an error", e);
+            DBWorkbench.getPlatformUI().showError(SSHUIMessages.ssh_configuration_title, SSHUIMessages.ssh_configuration_load_error, e);
             return;
         }
         Arrays.stream(this.credPanelsContainer.getChildren()).forEach(Widget::dispose);

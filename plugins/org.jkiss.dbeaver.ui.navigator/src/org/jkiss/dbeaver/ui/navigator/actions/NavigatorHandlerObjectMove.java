@@ -130,7 +130,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                         }
                     }
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Object move", "Error during object reposition", e);
+                    DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_move_title, UINavigatorMessages.error_move_message, e);
                     return null;
                 }
             }

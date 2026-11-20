@@ -69,7 +69,7 @@ public class MimerShadowRestoreFromLogHandler extends AbstractHandler {
         final List<DBNNode> parents = MimerOnlineActionUtils.parentsOf(nodes);
         MimerOnlineActionUtils.run(
             (MimerDataSource) nodes.get(0).getObject().getDataSource(),
-            "Restore shadow from log",
+            MimerUIMessages.action_shadow_restore_title,
             statements,
             false,
             () -> MimerOnlineActionUtils.refresh(parents));
