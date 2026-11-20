@@ -1034,7 +1034,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     e.x + e.width - 4, e.y + e.height - 4);
             }
 
-            e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_DARK_GREEN));
+            e.gc.setForeground(ResultSetThemeSettings.instance.dataPanelForegroundColor);
             e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
 
             int textOffset = 2;

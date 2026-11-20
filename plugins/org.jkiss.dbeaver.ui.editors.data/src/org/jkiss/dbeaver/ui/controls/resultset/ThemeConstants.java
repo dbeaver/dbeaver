@@ -51,6 +51,7 @@ public class ThemeConstants
 
     public static final String COLOR_SQL_RESULT_LINES_NORMAL = RESULTS_PROP_PREFIX + "color.lines.normal"; //$NON-NLS-1$
     public static final String COLOR_SQL_RESULT_LINES_SELECTED = RESULTS_PROP_PREFIX + "color.lines.selected"; //$NON-NLS-1$
+    public static final String COLOR_SQL_DATA_PANEL_FOREGROUND_COLOR = RESULTS_PROP_PREFIX + "color.data.panel.foreground"; //$NON-NLS-1$
 
 
     public static final String SQL_EDITOR_COLOR_KEYWORD = SQL_EDITOR_PROP_PREFIX + "color.keyword.foreground"; //$NON-NLS-1$
