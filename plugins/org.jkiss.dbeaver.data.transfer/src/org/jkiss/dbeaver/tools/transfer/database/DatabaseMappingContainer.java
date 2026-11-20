@@ -342,9 +342,9 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                     DBSObjectContainer objectContainer = consumerSettings.getContainer();
                     if (objectContainer != null) {
                         DBSObject child = objectContainer.getChild(new VoidProgressMonitor(), targetName);
-                        if (child instanceof DBSDataManipulator) {
-                            target = (DBSDataManipulator) child;
-                        }
+                        target = DatabaseTransferUtils.isValidTargetTable(child)
+                            ? (DBSDataManipulator) child
+                            : null;
                     }
                 }
 
