@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,11 @@ class ResultSetContextImpl implements IResultSetContext {
         DBDAttributeBinding[] attrs = viewer.getModel().getAttributes();
         return attrs.length > 0/* &&
             (attrs[0].getDataKind() != DBPDataKind.DOCUMENT || !CommonUtils.isEmpty(attrs[0].getNestedBindings()))*/;
+    }
+
+    @Override
+    public boolean hasRows() {
+        return viewer.getModel().getRowCount() > 0;
     }
 
     @Override
