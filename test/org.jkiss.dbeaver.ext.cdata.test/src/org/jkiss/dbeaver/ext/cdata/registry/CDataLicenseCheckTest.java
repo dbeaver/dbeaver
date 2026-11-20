@@ -48,6 +48,7 @@ public class CDataLicenseCheckTest extends DBeaverUnitTest {
             """);
         Assertions.assertEquals(CDataLicenseStatus.PURCHASED_ACTIVE, license.getStatus());
         Assertions.assertEquals(352, license.getRemainingDays());
+        Assertions.assertEquals(LocalDate.of(2027, 9, 18), license.getExpirationDate());
         Assertions.assertFalse(license.isTrialLicense());
     }
 
@@ -67,6 +68,7 @@ public class CDataLicenseCheckTest extends DBeaverUnitTest {
                 }
                 Assertions.assertEquals(expected, license.getStatus());
                 Assertions.assertEquals(days < 0 ? null : Integer.valueOf(days), license.getRemainingDays());
+                Assertions.assertEquals(days < 0 ? null : TODAY.plusDays(days), license.getExpirationDate());
             }
             Assertions.assertEquals(trial ? CDataLicenseStatus.TRIAL_EXPIRED : CDataLicenseStatus.EXPIRED,
                 parse(response(false, type, TODAY.minusDays(1))).getStatus());
@@ -82,7 +84,17 @@ public class CDataLicenseCheckTest extends DBeaverUnitTest {
             CDataDriverLicense license = parse("{\"active\": true, \"license_type\": \"Developer\"" + expiration + "}");
             Assertions.assertEquals(CDataLicenseStatus.PURCHASED_ACTIVE, license.getStatus());
             Assertions.assertNull(license.getRemainingDays());
+            Assertions.assertNull(license.getExpirationDate());
         }
+    }
+
+    @Test
+    public void cachedLicenseKeepsExpirationFromValidationDate() {
+        var license = new CDataDriverLicense(CDataLicenseStatus.TRIAL_ACTIVE, "", null, 30, TODAY);
+
+        Assertions.assertEquals(TODAY.plusDays(30), license.getExpirationDate());
+        Assertions.assertEquals(30, license.getRemainingDays());
+        Assertions.assertNull(new CDataDriverLicense(CDataLicenseStatus.PURCHASED_ACTIVE, "", null).getExpirationDate());
     }
 
     @Test

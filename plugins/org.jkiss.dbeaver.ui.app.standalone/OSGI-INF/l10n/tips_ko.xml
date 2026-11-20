@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tips xmlns="https://github.com/dbeaver/dbeaver/blob/devel/plugins/org.jkiss.dbeaver.ui.app.standalone/src/org/jkiss/dbeaver/ui/app/standalone/tipoftheday/tips.xsd">
+    <!--        Tips below were reviewed on 28th of November 2023   -->
+    <tip>DBeaver를 필요에 맞게 사용자 지정할 수 있습니다. 선택적으로 설치할 수 있는 확장 기능에 대한 자세한 내용은 <a href="https://dbeaver.com/docs/dbeaver/Eclipse-extensions/">여기</a>를 참조하세요.</tip>
+    <tip><a href="prefs://org.eclipse.ui.window.customizePerspective">메뉴 모음과 표시할 메뉴 항목 목록을 사용자 지정</a>하려면 <b>메뉴 표시</b> 탭을 사용하세요.</tip>
+    <tip><a href="prefs://org.eclipse.ui.window.customizePerspective">도구 모음을 사용자 지정</a>하려면 <b>도구 모음 표시</b> 탭을 사용하세요.</tip>
+    <tip>DBeaver의 대부분의 명령에 키보드 단축키를 지정할 수 있습니다. <a href="prefs://org.eclipse.ui.preferencePages.Keys">기존 단축키도 변경할 수 있습니다</a>.</tip>
+    <tip>도구 모음에서 현재 <a href="https://dbeaver.com/2022/05/26/change-the-data-in-the-smart-way/">데이터베이스 트랜잭션 모드</a>를 변경할 수 있습니다. <b>커밋 및 롤백 버튼</b> 오른쪽에 있는 드롭다운 메뉴를 클릭하세요.</tip>
+    <tip>테이블의 중요한 데이터를 실수로 변경하지 않으려면 <b>읽기 전용 모드</b>를 켜서 편집 옵션 없이 테이블을 확인하세요.</tip>
+    <tip>SSH 터널 비밀번호가 변경되어도 모든 연결을 수정할 필요는 없습니다. <a href="https://dbeaver.com/2022/03/10/how-to-create-network-profiles/">네트워크 프로필</a>을 사용하세요.</tip>
+    <tip>드라이버에 새 종속성을 추가할 때 <b>종속성 선언</b> 탭으로 전환하면 Maven 또는 Gradle 스크립트를 사용할 수 있습니다.</tip>
+    <tip>외부 변수를 DBeaver에 안전하게 전달하려면 -vars 명령줄 매개변수로 변수가 들어 있는 파일을 지정할 수 있습니다. 관리자 변수에 대한 자세한 내용은 <a href="https://dbeaver.com/docs/dbeaver/Admin-Variables#declare-external-variables-in-a-file">여기</a>를 참조하세요.</tip>
+    <tip>DBeaver 파일의 위치를 쉽게 변경할 수 있습니다. <b>파일 –> 작업 공간 전환</b>으로 이동하여 새 경로를 설정하세요.</tip>
+    <tip>테스트 또는 운영과 같은 <a href="https://dbeaver.com/2022/06/02/keep-calm-and-use-connection-types/">연결 유형을 강조 표시</a>하여 <b>탐색 트리, 데이터 편집기, SQL 편집기</b>에서 사용할 색상을 지정하세요. 이렇게 하면 운영 시스템을 실수로 변경하는 것을 방지할 수 있습니다.</tip>
+    <tip><commandRef commandId="org.jkiss.dbeaver.core.sql.editor.console" /> 명령으로 SQL 콘솔을 열 수 있습니다. 파일에 저장할 필요가 없는 쿼리를 실행할 때 적합합니다.</tip>
+    <tip>현재 쿼리를 실행하려면 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/> 명령을 사용하세요. 쿼리는 구분 기호 또는 빈 줄로 구분됩니다.</tip>
+    <tip>현재 SQL 스크립트를 실행하려면 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/> 명령을 사용하세요.</tip>
+    <tip>SQL 문의 서식을 정리하려면 <commandRef commandId="org.jkiss.dbeaver.ui.editors.text.content.format"/> 명령을 사용하세요.</tip>
+    <tip>SQL 편집기의 컨텍스트 메뉴에서 <b>실행 -> 쿼리에서 내보내기</b>를 선택하면 SQL 쿼리를 미리 실행하지 않고 쿼리에서 직접 데이터를 내보낼 수 있습니다.</tip>
+    <tip><commandRef commandId="org.eclipse.ui.edit.text.upperCase"/> 명령으로 선택한 텍스트를 대문자로 변환할 수 있습니다.</tip>
+    <tip><commandRef commandId="org.eclipse.ui.edit.text.lowerCase"/> 명령으로 선택한 텍스트를 소문자로 변환할 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/2022/04/14/your-first-queries-in-the-sql-editor/">SQL 편집기</a>에서 쿼리 결과를 새로 고치려면 <commandRef commandId="org.eclipse.ui.file.refresh"/> 명령을 사용하세요.</tip>
+    <tip>사용 가능한 SQL 문 <a href="https://dbeaver.com/docs/dbeaver/SQL-Templates">템플릿</a>을 보려면 <commandRef commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation"/> 명령을 사용하세요.</tip>
+    <tip>선택한 행을 기반으로 <b>SQL 문(SELECT/INSERT/UPDATE/DELETE)</b>을 생성할 수 있습니다. SQL을 생성하려면 선택한 행을 마우스 오른쪽 버튼으로 클릭하고 <b>SQL 생성</b>을 클릭한 다음 표시되는 SQL 명령 중 하나를 선택하세요.</tip>
+    <tip>현재 쿼리의 실행 계획을 보려면 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/> 명령을 사용하세요.</tip>
+    <tip>현재 스크립트의 쿼리를 동시에 실행하고 결과를 별도의 탭에 표시하려면 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/> 명령을 사용하세요.</tip>
+    <tip>현재 SQL 스크립트의 이전 쿼리로 이동하려면 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.query.prev"/> 명령을 사용하세요.</tip>
+    <tip>현재 SQL 스크립트의 다음 쿼리로 이동하려면 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.query.next"/> 명령을 사용하세요.</tip>
+    <tip>DBeaver에서 SQL 스크립트를 실행할 때 발생하는 모든 오류는 <a href="view://org.eclipse.pde.runtime.LogView">오류 로그</a> 뷰에서 확인할 수 있습니다. 오류 로그에는 SQL, 권한 및 설정 오류가 기록됩니다.</tip>
+    <tip>DBeaver에서 실행한 쿼리는 <b>쿼리 관리자</b>에서 확인할 수 있습니다. DBeaver가 메타데이터를 읽기 위해 실행하는 모든 내부 쿼리도 여기에서 확인할 수 있습니다.</tip>
+    <tip>편집기 설정을 필요에 맞게 변경할 수 있습니다. 톱니바퀴 아이콘을 클릭하고 <b>편집기 -> SQL 편집기</b>로 이동하세요. 여기에서 서식, 스크립트 처리 설정 등을 변경할 수 있습니다.</tip>
+    <tip>SQL 편집기에서 "SELECT * FROM tableName" 또는 "INSERT INTO tableName (*)"(괄호가 필요함)와 같은 쿼리의 별표 뒤에서 <commandRef commandId="org.eclipse.ui.edit.text.contentAssist.proposals"/> 명령을 호출하면 별표가 테이블의 모든 열 목록으로 바뀝니다.</tip>
+    <tip>SQL 편집기에서 객체의 정규화된 전체 이름을 선택하고 <b>Ctrl + 마우스 왼쪽 클릭</b>을 사용하면 해당 객체의 탭으로 이동합니다. 테이블, 열 및 프로시저에 사용할 수 있습니다.</tip>
+    <tip>그리드 위의 필터 필드에 <b>SQL 식을 입력</b>하여 결과를 필터링할 수 있습니다.<br/>오른쪽에 있는 펼치기 버튼(<b>&#9660;</b>)을 클릭하면 필터 기록을 볼 수 있습니다.<br/><b>필터 설정 저장</b>을 클릭하면 앱을 다시 시작한 후에도 필터 기록을 사용할 수 있습니다.</tip>
+    <tip>SQL 편집기로 스크립트를 하나씩 가져올 필요가 없습니다. DBeaver의 SQL 스크립트 가져오기 옵션을 사용하면 여러 파일을 동시에 선택하여 하나의 편집기에서 열 수 있습니다.</tip>
+    <tip>선택한 SQL 식을 실행하고 결과를 얻으려면 <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/> 명령을 사용하세요.</tip>
+    <tip><b>탐색 트리</b> 위의 SQL 버튼으로 SQL 스크립트를 열고 기본 명령을 변경할 수 있습니다. 예를 들어 이 버튼을 클릭하면 콘솔이 바로 열리도록 설정할 수 있습니다.</tip>
+    <tip>데이터 편집기에서 <commandRef commandId="org.jkiss.dbeaver.core.resultset.switchPresentation"/> 명령으로 보기 모드를 전환할 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">데이터 편집기</a>에서 <commandRef commandId="org.eclipse.ui.edit.findReplace"/> 명령을 사용하면 현재 테이블의 데이터를 빠르게 검색할 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">데이터 편집기</a>에서 열 값을 기준으로 테이블 행을 필터링하려면 <commandRef commandId="org.jkiss.dbeaver.core.resultset.filterMenu.distinct"/> 명령을 사용하세요. <commandRef commandId="org.jkiss.dbeaver.core.resultset.filterMenu"/>도 열 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/2023/01/12/top-5-shortcuts-for-data-editor/">데이터 편집기</a>에서 외래 키 메뉴를 열려면 <commandRef commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"/> 명령을 사용하세요.</tip>
+    <tip>데이터 편집기에서 클립보드의 값을 사용하여 필터를 적용할 수 있습니다. 원하는 곳에서 필요한 값을 복사하고 셀을 마우스 오른쪽 버튼으로 클릭한 다음 <b>필터 -> 클립보드</b>로 이동하여 적절한 옵션을 선택하세요.</tip>
+    <tip>데이터에서 반복되는 값을 강조 표시하면 쉽게 찾을 수 있습니다. 여기에서 '선택한 셀 값의 출현 위치 표시' 확인란을 선택하면 이 기능을 사용할 수 있습니다.</tip>
+    <tip>속성에서 불리언 표시 방식을 쉽게 변경할 수 있습니다. 톱니바퀴 아이콘을 클릭하고 <b>모양 –> 그리드</b>로 이동한 다음 <b>불리언 표시 설정</b> – 편집기를 클릭하세요. 불리언을 아이콘, 체크 표시 또는 단어로 표시할 수 있으며 단어의 글꼴 색상도 설정할 수 있습니다. 같은 방법으로 데이터 편집기의 다른 속성을 사용자 지정하고 데이터 서식, 글꼴 크기 등을 변경할 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/tag/colorization/">행을 강조 표시하거나 색상으로 셀을 필터링</a>하면 그리드의 데이터를 더 쉽게 확인하고 분석할 수 있습니다. 그라데이션을 적용하면 행의 값이 증가하는 정도를 크기에 따라 시각화할 수 있습니다.</tip>
+    <tip>테이블에서 하나 이상의 행을 선택하고 편집기의 측면 도구 모음에서 <b>레코드 버튼</b>을 클릭하면 행과 열의 위치가 바뀝니다. 레코드 모드는 테이블에 열이 많을 때 유용합니다.</tip>
+    <tip><b>필터 필드와 상단 도구 모음</b>을 사용하여 SQL 식을 입력하고 결과를 필터링할 수 있습니다. 여기에서 필터 기록도 확인할 수 있습니다. DBeaver PRO를 사용하면 앱을 다시 시작한 후에도 기록이 저장됩니다.</tip>
+    <tip><a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">값 패널</a>에서 GIS, 웹사이트, 이미지 등 다양한 데이터를 확인할 수 있습니다.</tip>
+    <tip>편리한 달력을 사용하여 테이블의 날짜 및 시간 필드를 편집할 수 있습니다. <a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">값 패널</a>을 열고 시계 아이콘을 클릭하면 편집기가 달력 보기로 전환됩니다. 환경 설정에서도 해당 확인란을 찾을 수 있습니다.</tip>
+    <tip><commandRef commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview"/> 명령으로 오른쪽 패널을 표시하거나 숨길 수 있습니다.</tip>
+    <tip>키가 포함된 셀을 선택하고 <a href="https://dbeaver.com/2022/04/28/the-most-convenient-way-for-data-review/">값 패널</a>로 이동하면 사전이 표시됩니다. 사전은 값과 설명 열로 구성됩니다. 이 테이블에서 필요한 데이터를 빠르게 확인하고 검색할 수 있습니다.</tip>
+    <tip>테이블의 값을 빠르게 집계하려면 그룹화 또는 계산 패널을 사용하세요. DBeaver 패널의 다양한 기능에 대한 자세한 내용은 <a href="https://dbeaver.com/2022/05/05/build-your-report-step-by-step/">여기</a>를 참조하세요.</tip>
+    <tip>메타데이터 패널에서 데이터 형식과 크기 제한에 대한 정보를 빠르게 확인할 수 있습니다. <a href="https://dbeaver.com/2022/05/19/think-about-the-content-not-about-the-structure/">메타데이터 패널</a>은 읽기 전용으로만 작동합니다. 변경하려면 속성 탭으로 이동하세요.</tip>
+    <tip>데이터를 추가하거나 편집하기 위해 여러 테이블을 계속 전환하는 대신 <a href="https://dbeaver.com/2022/05/19/think-about-the-content-not-about-the-structure/">참조 패널</a>을 사용하세요. 선택한 테이블이 어떤 테이블과 연결되어 있는지 빠르게 확인할 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">데이터베이스 탐색기</a>에서 <commandRef commandId="org.eclipse.ui.edit.rename"/> 명령을 사용하면 선택한 요소의 이름을 변경할 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">데이터베이스 탐색기</a>에서 <commandRef commandId="org.jkiss.dbeaver.core.object.open"/> 명령을 사용하면 선택한 요소의 속성을 편집할 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">데이터베이스 탐색기</a>에서 <commandRef commandId="org.eclipse.ui.file.refresh"/> 명령을 사용하면 선택한 요소를 새로 고칠 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">데이터베이스 탐색기</a>에서 <commandRef commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/> 명령을 사용하면 선택한 요소를 <a href="https://dbeaver.com/docs/dbeaver/Bookmarks">북마크</a>에 추가할 수 있습니다.</tip>
+    <tip>데이터베이스 탐색기 트리를 필요에 맞게 사용자 지정하세요. 탐색 트리 사용자 지정에 대한 자세한 내용은 <a href="https://dbeaver.com/2022/08/25/how-to-customize-your-navigation-tree/">여기</a>를 참조하세요.</tip>
+    <tip>필요에 따라 간단한 탐색 트리 보기 또는 고급 탐색 트리 보기를 선택하세요. 설정 방법에 대한 자세한 내용은 <a href="https://dbeaver.com/2022/08/18/simple-or-advanced-choose-your-navigation-tree-view/">여기</a>를 참조하세요.</tip>
+    <tip><a href="https://dbeaver.com/docs/dbeaver/Bookmarks">북마크</a>를 데이터베이스 객체에 빠르게 접근하는 링크로 사용하세요.</tip>
+    <tip>프로젝트 탭이 닫혀 있다면 <b>기본 메뉴 -> 창 -> 뷰 표시 -> 프로젝트</b>로 이동하여 열 수 있습니다.</tip>
+    <tip>프로젝트를 기본값으로 설정하면 해당 내용이 <b>데이터베이스 탐색기</b>에 표시됩니다. 프로젝트를 마우스 오른쪽 버튼으로 클릭하고 <b>'활성 프로젝트로 설정'</b>을 선택하세요.</tip>
+    <tip>프로젝트 간에 연결, 북마크, 다이어그램 및 스크립트를 복사할 수 있습니다.</tip>
+    <tip>DBeaver에서는 테이블, 뷰, 심지어 전체 데이터베이스 스키마까지 모든 객체의 다이어그램을 볼 수 있습니다. DBeaver의 ER 다이어그램에 대한 자세한 내용은 <a href="https://dbeaver.com/2022/06/30/two-ways-to-use-erd-in-dbeaver/">여기</a>를 참조하세요.</tip>
+    <tip>테이블, 관계 및 메모를 포함하는 사용자 지정 ER 다이어그램을 만들 수 있습니다. 이 기능에 대한 자세한 내용은 <a href="https://dbeaver.com/2022/06/30/two-ways-to-use-erd-in-dbeaver/">여기</a>를 참조하세요.</tip>
+    <tip><b>기본 도구 모음</b> 또는 <commandRef commandId="org.jkiss.dbeaver.ui.dashboard.open"/> 명령으로 대시보드 뷰를 열어 데이터베이스 상태를 모니터링할 수 있습니다.<br/>참고: 대시보드는 데이터베이스별로 다릅니다.</tip>
+    <tip>앱에서 작업하면서 데이터 가져오기 및 내보내기, 데이터베이스 덤프 및 복원, 데이터 비교 등 <a href="https://dbeaver.com/2022/09/08/working-with-tasks-how-to-get-started/">반복 작업을 저장</a>할 수 있습니다.</tip>
+    <tip>데이터베이스 작업에 표시되는 열을 <a href="https://dbeaver.com/2022/09/22/database-tasks-view-all-your-tasks-in-one-place/">사용자 지정</a>할 수 있습니다. 예를 들어 특정 작업의 실행 시간을 표시할 수 있습니다. 목록의 아무 곳이나 마우스 오른쪽 버튼으로 클릭하고 <b>열 설정</b>으로 이동하세요. 원하는 확인란을 선택하고 <b>확인을 클릭</b>하세요.</tip>
+    <tip>테이블로 <a href="https://dbeaver.com/docs/dbeaver/Data-Import-and-Replace">데이터를 가져올</a> 때 데이터 로드 설정에서 Replace 방식을 선택하면 기본 키 검증 제약 조건을 무시할 수 있습니다. Oracle, MySQL, PostgreSQL, Firebird 및 SQLite에서 지원됩니다.</tip>
+    <tip>데이터 전송 설정에서 삽입 시 <b>여러 행 값 사용</b>을 활성화하면 데이터 가져오기 성능을 높일 수 있습니다. 또한 <b>다중 삽입 배치</b>의 행 수를 늘릴 수 있습니다.</tip>
+    <tip><commandRef commandId="org.jkiss.dbeaver.core.resultset.grid.gotoColumn"/> 명령으로 결과 집합의 열로 이동할 수 있습니다.</tip>
+    <tip>스크립트 실행 결과를 하나의 탭에서 순서대로 보려면 SQL 편집기의 컨텍스트 메뉴에서 <b>실행 -> 실행 결과 방향 전환</b> 옵션을 활성화하세요.</tip>
+    <tip>DBeaver에서 로컬 클라이언트를 사용하여 데이터베이스를 백업하거나 복원하고 싶으신가요?<br/><a href="https://dbeaver.com/docs/dbeaver/Local-Client-Configuration/">클라이언트 설정 방법 알아보기</a></tip>
+    <tip><a href="prefs://org.jkiss.dbeaver.preferences.accessibility">여기</a>에서 데이터베이스 편집기에 대한 추가 스크린 리더 지원을 활성화할 수 있습니다.</tip>
+    <tip>프록시를 통해 연결하는 경우 연결을 생성하거나 편집할 때 <b>네트워크 설정</b> 버튼으로 프록시 설정을 지정할 수 있습니다.</tip>
+    <tip>고대비 테마가 필요하면 운영 체제에서 활성화하세요. DBeaver의 고대비 테마도 활성화됩니다.</tip>
+
+    <tip product="ce">DBeaver PRO는 <a href="https://dbeaver.com/docs/dbeaver/Project-team-work/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Git 버전 관리 시스템</a>과 완전히 통합되어 있습니다. DBeaver를 업그레이드하여 프로젝트 설정, 스크립트, 다이어그램, 북마크 및 기타 산출물을 Git 저장소에 보관하세요.</tip>
+    <tip product="ce,le,ee">DBeaver Ultimate에서는 AWS, Google Cloud 및 Microsoft Azure를 통해 접근할 수 있는 데이터베이스를 동시에 사용하고 각 설정을 쉽게 전환할 수 있습니다. DBeaver Ultimate에서 하이브리드 클라우드를 쉽게 사용하는 방법은 <a href="https://dbeaver.com/2023/06/01/hybrid-cloud-with-dbeaver-how-to-get-started/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <tip product="ce">DBeaver PRO로 <a href="https://dbeaver.com/2023/06/08/security-in-dbeaver-pro-questions-and-answers/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">데이터의 기밀성을 유지하며 관리</a>하세요. 로컬 작업 공간의 모든 프로젝트를 보호하는 마스터 비밀번호와 강력한 자격 증명 암호화를 사용할 수 있습니다.</tip>
+    <tip product="ce,ee,ue">팀과 함께 DBeaver를 사용한다면 <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a>으로 사용자 권리, 제한 및 권한을 관리하는 최적의 방법을 선택하세요. 사용자를 생성하고 기능이 미리 정의된 편리한 역할을 할당할 수 있습니다.</tip>
+    <tip product="ce">팀을 위한 서버 측 데이터 관리 솔루션을 찾고 있다면 <a href="https://dbeaver.com/cloudbeaver-enterprise/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">CloudBeaver</a>를 사용해 보세요.</tip>
+    <tip product="ce,le,ee">AWS 데이터베이스를 자주 사용하고 AWS에 저장된 파일에 접근해야 한다면 DBeaver Ultimate의 <a href="https://dbeaver.com/2022/04/21/easy-management-for-aws-s3-files/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">S3 브라우저</a>를 사용하세요.</tip>
+    <tip product="ce,le">DBeaver PRO의 <a href="https://dbeaver.com/2022/02/10/how-does-visual-query-builder-help-optimize-your-work/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">비주얼 쿼리 빌더</a> 도구로 SQL 스크립트 작성 과정을 간소화하세요.</tip>
+    <tip product="ce">DBeaver PRO는 MongoDB, CouchDB, InfluxDB 등 <a href="https://dbeaver.com/databases/?utm_source=ce&amp;tm_medium=cpc&amp;utm_campaign=tips">널리 사용되는 모든 NoSQL 데이터베이스</a>를 지원합니다. 또한 NoSQL에 익숙하지 않아도 DBeaver PRO의 일반 SQL 편집기에서 다양한 쿼리를 실행할 수 있습니다.</tip>
+    <tip>DBeaver의 AI 어시스턴트로 조인이 포함된 복잡한 쿼리를 자동으로 생성하세요. 사용 방법은 <a href="https://youtu.be/MOaEpDa5GP0">튜토리얼 동영상</a>에서 확인할 수 있습니다.</tip>
+    <tip product="ce">DBeaver PRO에서는 데이터 그리드, 패널 또는 SQL 편집기의 결과 집합에서 <a href="https://dbeaver.com/2022/06/09/visualize-data-with-dbeaver/?utm_source=c&amp;utm_medium=cpc&amp;utm_campaign=tips">차트</a>로 데이터를 빠르고 쉽게 시각화할 수 있습니다.</tip>
+    <tip product="ce">DBeaver PRO에서는 ERD 편집 모드로 데이터베이스 스키마를 직접 변경할 수 있습니다. DBeaver PRO의 데이터베이스 개발에 대한 자세한 내용은 <a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <tip product="ce">테스트를 위해 실제와 유사한 대량의 샘플 데이터가 필요하고 테스트 데이터를 수동으로 입력하는 번거롭고 시간 소모적인 작업을 피하고 싶다면 DBeaver PRO의 <a href="https://dbeaver.com/docs/dbeaver/Mock-Data-Generation/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">모의 데이터 생성기</a>를 사용하세요.</tip>
+    <tip product="ce">DBeaver PRO의 <a href="https://dbeaver.com/docs/dbeaver/Query-Execution-Plan/?utm_source=ce&amp;utm_&amp;edium=cpc&amp;utm_campaign=tips">쿼리 실행 계획</a> 그래프 모드로 쿼리 또는 스크립트 실행 속도를 확인하고 추정하며 비용이 가장 높은 계획 노드를 식별할 수 있습니다.</tip>
+    <tip product="ce">DBeaver PRO에서는 XLS, XLSL, XML 등 다양한 형식의 <a href="https://dbeaver.com/2022/06/23/import-data-with-dbeaver/?utm_source=ce&amp;utm&amp;medium=cpc&amp;utm_campaign=tips">파일을 가져오고 내보낼</a> 수 있습니다.</tip>
+    <tip product="ce">DBeaver PRO에서는 고급 옵션으로 유사한 두 테이블의 데이터를 비교하고 차이점을 확인할 수 있습니다. DBeaver PRO의 데이터 비교에 대한 자세한 내용은 <a href="https://dbeaver.com/docs/dbeaver/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <tip product="ce">DBeaver PRO에서는 <a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">작업을 예약</a>하여 DBeaver를 열지 않고도 지정한 주기로 실행할 수 있습니다.</tip>
+    <tip product="ce">DBeaver PRO에서는 여러 작업을 <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">하나의 복합 작업</a>으로 묶어 일련의 동작을 한 번의 클릭으로 쉽게 실행할 수 있습니다.</tip>
+    <tip product="ce">DBeaver PRO에서는 <a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">스키마 비교/마이그레이션 기능</a>으로 데이터베이스 스키마 백업을 생성하고 작업으로 저장할 수 있습니다. 또한 DBeaver PRO의 작업 스케줄러로 이 작업을 자동 실행할 수 있습니다.</tip>
+    <tip product="ce">DBeaver PRO에서는 같은 데이터베이스 안에서 또는 서로 다른 데이터베이스 간에 모든 메타데이터 객체를 포함한 스키마를 비교할 수 있습니다. DBeaver PRO의 강력한 스키마 비교에 대한 자세한 내용은 <a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <tip product="ce">ER 다이어그램 표기법을 전환하려면 다이어그램을 마우스 오른쪽 버튼으로 클릭하고 <b>표기법</b> 항목으로 이동한 다음 Crow's Foot 등 원하는 표기법을 선택하세요.</tip>
+    <tip product="ce,le,ee,ue">DBeaver PRO에서는 Kubernetes 클러스터의 데이터베이스에 연결하기 위한 Kubernetes 설정을 편리하게 구성할 수 있습니다.<br/>Kubernetes 설정에 대한 자세한 내용은 <a href="https://dbeaver.com/docs/dbeaver/Kubernetes-configuration/">여기</a>를 참조하세요.</tip>
+    <tip product="ce"><a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">DBeaver PRO</a>에서 네이티브 ODBC 드라이버를 사용하면 거의 모든 데이터베이스에 연결할 수 있습니다.</tip>
+    <tip>DBeaver의 <a href="https://dbeaver.com/docs/dbeaver/AI-Smart-Assistance/">AI 채팅</a>으로 SQL 쿼리를 자동으로 작성할 수 있습니다. 사용해 보려면 SQL 편집기 오른쪽에 있는 <b>AI 채팅</b> 탭을 여세요.</tip>
+    <tip product="ce,le,ee,ue">DBeaver와 Tableau의 통합을 설정하면 데이터베이스 연결을 생성하고 사용자 지정 SQL 쿼리를 편리하게 편집할 수 있습니다.<br/>DBeaver PRO의 Tableau 통합에 대한 자세한 내용은 <a href="https://dbeaver.com/docs/dbeaver/Tableau-integration-in-DBeaver/">여기</a>를 참조하세요.</tip>
+    <tip product="ce">DBeaver PRO에서는 DBeaver 팀에서 만든 <a href="https://dbeaver.com/docs/dbeaver/Database-driver-Salesforce/">Salesforce 드라이버</a>로 Salesforce 데이터베이스에 연결할 수 있습니다.</tip>
+
+    <tip product="le">팀을 위한 가벼운 웹 데이터 관리 도구를 찾고 있다면 <a href="https://dbeaver.com/cloudbeaver-enterprise/?utm_source=le&amp;utm_medium=cpc&amp;utm_campaign=tips">CloudBeaver Enterprise</a>를 사용해 보세요.</tip>
+    <tip product="le">추가 요청 없이 데이터에 빠르게 접근할 수 있는 편리한 협업 도구를 찾고 있다면 <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=le&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a>을 사용해 보세요. 팀 간에 데이터셋과 스크립트를 실시간으로 쉽게 공유할 수 있습니다.</tip>
+    <tip product="le,ee,ue">NoSQL에 익숙하지 않아도 일반 SQL 편집기에서 다양한 쿼리를 실행할 수 있습니다.</tip>
+    <tip product="le">DBeaver Enterprise에서는 고급 옵션으로 유사한 두 테이블의 데이터를 비교하고 차이점을 확인할 수 있습니다. DBeaver Enterprise의 데이터 비교에 대한 자세한 내용은 <a href="https://dbeaver.com/docs/dbeaver/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <tip product="le">DBeaver Enterprise에서는 <a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">작업을 예약</a>하여 DBeaver를 열지 않고도 지정한 주기로 실행할 수 있습니다.</tip>
+    <tip product="le">DBeaver Enterprise에서는 여러 작업을 <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">하나의 복합 작업</a>으로 묶어 일련의 동작을 한 번의 클릭으로 쉽게 실행할 수 있습니다.</tip>
+    <tip product="le,ee,ue"><a href="prefs://org.jkiss.dbeaver.preferences.main.truststore">여기</a>에서 DBeaver의 루트 인증서를 쉽게 관리할 수 있습니다.</tip>
+    <tip product="le,ee,ue"><a href="https://dbeaver.com/docs/dbeaver/ODBC-JDBC-Driver/">DBeaver ODBC</a>의 도움으로 네이티브 ODBC 드라이버를 사용하여 거의 모든 데이터베이스에 연결할 수 있습니다.</tip>
+    <tip product="le,ee,ue">DBeaver 팀에서 만든 <a href="https://dbeaver.com/docs/dbeaver/Database-driver-Salesforce/">Salesforce 드라이버</a>로 Salesforce 데이터베이스에 연결할 수 있습니다.</tip>
+    <tip product="le,ee,ue">ER 다이어그램 표기법을 전환하려면 다이어그램을 마우스 오른쪽 버튼으로 클릭하고 <b>표기법</b> 항목으로 이동한 다음 Crow's Foot 또는 Bachman 중 원하는 표기법을 선택하세요.</tip>
+
+    <tip product="ee">DBeaver Enterprise는 <a href="https://dbeaver.com/docs/dbeaver/Project-team-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Git 버전 관리 시스템</a>과 완전히 통합되어 있습니다. 프로젝트 설정, 스크립트, 다이어그램, 북마크 및 기타 산출물을 Git 저장소에 보관하세요.</tip>
+    <tip product="ee,ue">팀을 위한 편리한 데이터 협업 도구를 원한다면 <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a>을 사용해 보세요. 팀 간에 연결, 스크립트 및 데이터셋을 실시간으로 쉽게 공유할 수 있습니다. DBeaver Ultimate와 CloudBeaver Enterprise의 모든 기능을 사용할 수 있습니다.</tip>
+    <tip product="ee,ue"><a href="https://dbeaver.com/2022/02/10/how-does-visual-query-builder-help-optimize-your-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">비주얼 쿼리 빌더 도구</a>로 SQL 스크립트 작성 과정을 간소화하세요.</tip>
+    <tip product="ee,ue">데이터 그리드, 패널 또는 SQL 편집기의 결과 집합에서 <a href="https://dbeaver.com/2022/06/09/visualize-data-with-dbeaver/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">차트</a>로 데이터를 빠르고 쉽게 시각화할 수 있습니다.</tip>
+    <tip product="ee">DBeaver Enterprise에서는 ERD 편집 모드로 데이터베이스 스키마를 직접 변경할 수 있습니다. DBeaver Enterprise의 데이터베이스 개발에 대한 자세한 내용은 <a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <tip product="ee,ue">테스트를 위해 실제와 유사한 대량의 샘플 데이터가 필요하고 테스트 데이터를 수동으로 입력하는 번거롭고 시간 소모적인 작업을 피하고 싶다면 <a href="https://dbeaver.com/docs/dbeaver/Mock-Data-Generation/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">모의 데이터 생성기</a>를 사용하세요.</tip>
+    <tip product="ee,ue"><a href="https://dbeaver.com/docs/dbeaver/Query-Execution-Plan/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">쿼리 실행 계획</a> 그래프 모드로 쿼리 또는 스크립트 실행 속도를 확인하고 추정하며 비용이 가장 높은 계획 노드를 식별하세요.</tip>
+    <tip product="ee,ue">XLS, XLSL, XML 등 다양한 형식의 <a href="https://dbeaver.com/2022/06/23/import-data-with-dbeaver/?utm_source=ce&amp;utm&amp;medium=cpc&amp;utm_campaign=tips">파일을 가져오고 내보낼</a> 수 있습니다.</tip>
+    <tip product="ee,ue">고급 옵션으로 유사한 두 테이블의 데이터를 비교하고 차이점을 확인하세요. DBeaver PRO의 데이터 비교에 대한 자세한 내용은 <a href="https://dbeaver.com/docs/dbeaver/Data-compare?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <tip product="ee,ue"><a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">작업을 예약</a>하여 DBeaver를 열지 않고도 지정한 주기로 실행하세요.</tip>
+    <tip product="ee">여러 작업을 하나의 복합 작업으로 묶으면 일련의 동작을 한 번의 클릭으로 쉽게 실행할 수 있습니다. DBeaver PRO의 고급 작업 관리에 대한 자세한 내용은 <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <tip product="ee,ue"><a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">스키마 비교/마이그레이션 기능</a>으로 데이터베이스 스키마 백업을 생성하고 작업으로 저장할 수 있습니다. 또한 작업 스케줄러로 이 작업을 자동 실행할 수 있습니다.</tip>
+    <tip product="ee,ue">같은 데이터베이스 안에서 또는 서로 다른 데이터베이스 간에 모든 메타데이터 객체를 포함한 스키마를 비교하세요. DBeaver PRO의 강력한 스키마 비교에 대한 자세한 내용은 <a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <!--        Tips for UE   -->
+    <tip product="ue">DBeaver Ultimate는 <a href="https://dbeaver.com/docs/dbeaver/Project-team-work/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">Git 버전 관리 시스템</a>과 완전히 통합되어 있습니다. 프로젝트 설정, 스크립트, 다이어그램, 북마크 및 기타 산출물을 Git 저장소에 보관하세요.</tip>
+    <tip product="ue">AWS, Google Cloud 및 Microsoft Azure를 통해 접근할 수 있는 데이터베이스를 동시에 사용하고 각 설정을 쉽게 전환할 수 있습니다. DBeaver Ultimate에서 하이브리드 클라우드를 쉽게 사용하는 방법은 <a href="https://dbeaver.com/2023/06/01/hybrid-cloud-with-dbeaver-how-to-get-started/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <tip product="ue"><a href="https://dbeaver.com/2022/04/21/easy-management-for-aws-s3-files/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">S3 브라우저</a>를 사용하면 AWS에 저장된 파일에 빠르게 접근할 수 있습니다.</tip>
+    <tip product="ue">DBeaver Ultimate에서는 ERD 편집 모드로 데이터베이스 스키마를 직접 변경할 수 있습니다. DBeaver Ultimate의 데이터베이스 개발에 대한 자세한 내용은 <a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">여기</a>를 참조하세요.</tip>
+    <tip product="ue">여러 작업을 <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">하나의 복합 작업</a>으로 묶으면 일련의 동작을 한 번의 클릭으로 쉽게 실행할 수 있습니다.</tip>
+
+    <tip product="te">관리자는 공유 프로젝트를 개수 제한 없이 생성할 수 있습니다.</tip>
+    <tip product="te">관리 패널에서 공유 프로젝트를 생성, 편집 및 삭제할 수 있습니다.</tip>
+    <tip product="te">관리 패널에서 팀을 생성, 편집 및 삭제할 수 있습니다.</tip>
+    <tip product="te">관리 패널에서 사용자를 생성, 편집 및 삭제할 수 있습니다.</tip>
+    <tip product="te">Team Edition의 데스크톱 및 웹 버전에서 연결을 생성하고 기존 연결을 편집할 수 있습니다.</tip>
+    <tip product="te">데이터셋을 개수 제한 없이 생성하고 다른 사용자와 실시간으로 공유할 수 있습니다.</tip>
+    <tip product="te">스크립트를 개수 제한 없이 생성하고 다른 사용자와 실시간으로 공유할 수 있습니다.</tip>
+    <tip product="te">Team Edition에서는 고급 부하 확장성을 사용할 수 있습니다.</tip>
+    <tip product="te">사용자 역할의 수를 늘리거나 사용자 역할을 변경하려면 고객 성공 팀에 <a href="mailto:sales@dbeaver.com">문의</a>하세요.</tip>
+    <tip product="te">Team Edition 웹 버전의 쿼리 관리자를 사용하면 모든 사용자의 쿼리를 살펴볼 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/docs/dbeaver/AI-chat/">AI 채팅</a>에서 원하는 결과를 설명하고 관련 테이블과 열을 언급하면 더 정확한 SQL 제안을 받을 수 있습니다.</tip>
+    <tip><a href="https://dbeaver.com/docs/dbeaver/AI-chat/">AI 채팅</a>에서 후속 메시지로 답변을 다듬을 수 있습니다. 필터 추가, 정렬 변경 또는 제안된 SQL에 대한 설명을 요청해 보세요.</tip>
+    <tip>AI 채팅을 열려면 <commandRef commandId="org.jkiss.dbeaver.ui.ai.showCompletion"/> 명령을 사용하세요.</tip>
+</tips>

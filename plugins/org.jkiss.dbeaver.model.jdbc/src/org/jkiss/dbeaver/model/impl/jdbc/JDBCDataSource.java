@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDataSource;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.impl.jdbc.internal.JDBCModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -94,15 +94,20 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected List<Path> tempFiles;
 
 
-    protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
-        throws DBException
-    {
+    protected JDBCDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull SQLDialect dialect
+    ) throws DBException {
         this(monitor, container, dialect, true);
     }
 
-    protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect, boolean initContext)
-        throws DBException
-    {
+    protected JDBCDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull SQLDialect dialect,
+        boolean initContext
+    ) throws DBException {
         this(container, dialect);
         if (initContext) {
             try {
@@ -152,6 +157,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         connectionInfo.setUserPassword(userPassword);
         try (Connection ignored = openConnectionForPasswordValidation(monitor, connectionInfo)) {
             // The successful connection validates the supplied credentials.
+            log.trace("Connection has been established");
         } catch (SQLException e) {
             throw new DBCException("Error validating current user password", e);
         }
@@ -234,30 +240,39 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
 
-            Driver driverInstance = createDriverInstance(monitor, driver);
-            if (driverInstance != null) {
-                try {
-                    if (!driverInstance.acceptsURL(url)) {
-                        // Just set the mark. Some drivers are poorly coded and always returns false here.
-                        isInvalidURL = true;
-                    }
-                } catch (Throwable e) {
-                    log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
-                }
-                initializeDriverContext(driverInstance);
-            }
-
-            JDBCConnectionOpener connectTask = new JDBCConnectionOpener(
-                this,
-                driver,
-                driverInstance,
-                url,
-                connectProps,
-                authResult
-            );
-
+            JDBCConnectionOpener connectTask = null;
             boolean openTaskFinished;
             try {
+                try {
+                    this.fixupConnectionProperties(monitor, connectionInfo, url, connectProps);
+                } catch (DBException e) {
+                    throw new DBCException("Error preparing connection properties", e);
+                }
+                // Authentication and driver substitution may have changed both the URL and properties.
+                // Validate before creating the driver or invoking any of its URL-processing APIs.
+                validateConnectionProperties(url, connectProps);
+                validateConnectionParameters(monitor, url, connectProps);
+                Driver driverInstance = createDriverInstance(monitor, driver);
+                if (driverInstance != null) {
+                    try {
+                        if (!driverInstance.acceptsURL(url)) {
+                            // Just set the mark. Some drivers are poorly coded and always returns false here.
+                            isInvalidURL = true;
+                        }
+                    } catch (Throwable e) {
+                        log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
+                    }
+                    initializeDriverContext(driverInstance);
+                }
+
+                connectTask = new JDBCConnectionOpener(
+                    this,
+                    driver,
+                    driverInstance,
+                    url,
+                    connectProps,
+                    authResult
+                );
                 if (openTimeout <= 0) {
                     connectTask.run(monitor);
                     openTaskFinished = true;
@@ -267,7 +282,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             } finally {
                 authModel.endAuthentication(container, connectionInfo, connectProps);
 
-                if (connectionConfigurer != null) {
+                if (connectionConfigurer != null && connectTask != null) {
                     try {
                         connectionConfigurer.afterConnection(
                             monitor,
@@ -313,7 +328,40 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
-    private void initializeDriverContext(Driver driverInstance) {
+    protected void validateConnectionParameters(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String url,
+        @NotNull Properties connectProps
+    ) throws DBCException {
+    }
+
+    /**
+     * Adjusts final runtime properties after driver substitution and authentication initialization, before opening a connection.
+     * The URL is supplied for interpreting overrides; implementations must not modify the saved connection configuration.
+     */
+    protected void fixupConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull String connectionUrl,
+        @NotNull Properties connectionProperties
+    ) throws DBException {
+    }
+
+    /**
+     * Enforces connection policy on the final connection inputs, before any driver URL parsing.
+     * Implementations may sanitize the transient properties or reject the connection with a DBCException.
+     */
+    protected void validateConnectionProperties(@Nullable String url, @NotNull Properties connectProps) throws DBCException {
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()
+            || DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES)) {
+            JDBCConnectionValidator validator = GeneralUtils.adapt(this, JDBCConnectionValidator.class);
+            if (validator != null) {
+                validator.validateConnectionProperties(url, connectProps);
+            }
+        }
+    }
+
+    private void initializeDriverContext(@NotNull Driver driverInstance) {
         if (driverInstance instanceof ObjectWithContextParameters owcp) {
             DBPProject project = getContainer().getProject();
             owcp.setObjectContextParameter(DBConstants.CONTEXT_PARAMETER_PROJECT, getContainer().getProject());
@@ -416,7 +464,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     @NotNull
     protected Properties getAllConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -496,7 +544,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
 
     }
 
@@ -531,16 +583,24 @@ public abstract class JDBCDataSource extends AbstractDataSource
     @NotNull
     @Override
     public JDBCRemoteInstance getDefaultInstance() {
-        return defaultRemoteInstance;
+        JDBCRemoteInstance instance = defaultRemoteInstance;
+        if (instance == null) {
+            throw new IllegalStateException("Default JDBC instance is not initialized");
+        }
+        return instance;
+    }
+
+    @Override
+    public boolean hasDefaultInstance() {
+        return defaultRemoteInstance != null;
     }
 
     @NotNull
     @Override
     public List<? extends JDBCRemoteInstance> getAvailableInstances() {
-        JDBCRemoteInstance defaultInstance = getDefaultInstance();
-        return defaultInstance == null ?
+        return !hasDefaultInstance() ?
             Collections.emptyList() :
-            Collections.singletonList(defaultInstance);
+            Collections.singletonList(getDefaultInstance());
     }
 
     @Override
@@ -575,12 +635,12 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        JDBCRemoteInstance defaultInstance = getDefaultInstance();
-        if (defaultInstance == null) {
+        if (!hasDefaultInstance()) {
             throw new DBCException("Can't obtain default instance");
         }
+        JDBCRemoteInstance defaultInstance = getDefaultInstance();
         defaultInstance.initializeMetaContext(monitor);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, JDBCModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
             readDatabaseServerVersion(session, metaData);
@@ -682,24 +742,21 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return this;
     }
 
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
+    @NotNull
+    protected JDBCExecutionContext createExecutionContext(
+        @NotNull JDBCRemoteInstance instance,
+        @NotNull String type
+    ) throws DBCException {
         return new JDBCExecutionContext(instance, type);
     }
 
     @Nullable
     @Override
-    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type)
-    {
-//        if (type == DBCQueryTransformType.ORDER_BY) {
-//
-//        } else if (type == DBCQueryTransformType.FILTER) {
-//
-//        }
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         return null;
     }
 
-    private static int getValueTypeByTypeName(@NotNull String typeName, int valueType)
-    {
+    private static int getValueTypeByTypeName(@NotNull String typeName, int valueType) {
         // [JDBC: SQLite driver uses VARCHAR value type for all LOBs]
         if (valueType == Types.OTHER || valueType == Types.VARCHAR) {
             if ("BLOB".equalsIgnoreCase(typeName)) {
@@ -732,8 +789,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @Nullable
     @Override
-    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException
-    {
+    public DBSDataType resolveDataType(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String typeFullName
+    ) throws DBException {
         return getLocalDataType(typeFullName);
     }
 
@@ -750,8 +809,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @NotNull
     @Override
-    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind)
-    {
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         String typeName = getStandardSQLDataTypeName(dataKind);
         DBSDataType dataType = getLocalDataType(typeName);
         if (dataType == null) {
@@ -778,10 +836,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return false;
     }
 
-    @Nullable
-    protected Driver getDriverInstance(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+    @NotNull
+    protected Driver getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         final DBPDriverSubstitutionDescriptor driverSubstitution = container.getDriverSubstitution();
         if (driverSubstitution != null) {
             return driverSubstitution.getInstance().getSubstitutingDriverInstance(monitor);
@@ -799,15 +855,18 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         return null;
     }
 
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-    {
+    @NotNull
+    protected DBPDataSourceInfo createDataSourceInfo(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
         return new JDBCDataSourceInfo(metaData);
     }
 
@@ -821,8 +880,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @NotNull
     @Override
-    public ErrorType discoverErrorType(@NotNull Throwable error)
-    {
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
         String sqlState = SQLState.getStateFromException(error);
         if (sqlState != null) {
             if (SQLState.SQL_HY008.getCode().equals(sqlState)) {
@@ -869,9 +927,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return null;
     }
 
+    @Nullable
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {
+            if (!hasDefaultInstance()) {
+                return null;
+            }
             return adapter.cast(DBUtils.getDefaultContext(getDefaultInstance(), false));
         } else if (adapter == DBCQueryTransformProvider.class) {
             return adapter.cast(this);
@@ -882,7 +944,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
     /////////////////////////////////////////////////
     // Canceling
 
-    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+    public void cancelStatementExecute(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCStatement statement
+    ) throws DBException {
         try {
             statement.cancel();
         } catch (SQLException e) {
@@ -894,7 +959,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
-    public boolean cancelCurrentExecution(@NotNull Connection connection, @Nullable Thread connectionThread) throws DBException {
+    public boolean cancelCurrentExecution(
+        @NotNull Connection connection,
+        @Nullable Thread connectionThread
+    ) throws DBException {
         if (connectionThread != null) {
             connectionThread.interrupt();
         }
@@ -904,7 +972,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
     /////////////////////////////////////////////////
     // Certs
 
-    protected String saveCertificateToFile(String rootCertProp) throws IOException {
+    @NotNull
+    protected String saveCertificateToFile(@NotNull String rootCertProp) throws IOException {
         Path certPath = Files.createTempFile(
             DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
             getContainer().getDriver().getId() + "-" + getContainer().getId(),
@@ -914,7 +983,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return certPath.toAbsolutePath().toString();
     }
 
-    protected String saveTrustStoreToFile(byte[] trustStoreData) throws IOException {
+    @NotNull
+    protected String saveTrustStoreToFile(@NotNull byte[] trustStoreData) throws IOException {
         Path trustStorePath = Files.createTempFile(
             DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
             getContainer().getDriver().getId() + "-" + getContainer().getId(),
@@ -924,7 +994,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return trustStorePath.toAbsolutePath().toString();
     }
 
-    public void trackTempFile(Path file) {
+    public void trackTempFile(@NotNull Path file) {
         if (this.tempFiles == null) {
             this.tempFiles = new ArrayList<>();
         }

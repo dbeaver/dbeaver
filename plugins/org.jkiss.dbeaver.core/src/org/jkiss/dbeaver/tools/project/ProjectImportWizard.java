@@ -24,6 +24,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.project.ProjectImportRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -53,6 +55,7 @@ import org.w3c.dom.Element;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -64,6 +67,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     private static final Log log = Log.getLog(ProjectImportWizard.class);
 
     private ProjectImportData data = new ProjectImportData();
+    private final ProjectImportRegistry importRegistry = new ProjectImportRegistry();
 
     public ProjectImportWizard() {
 	}
@@ -403,9 +407,13 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         return project;
     }
 
-    private void importChildResources(DBRProgressMonitor monitor, IContainer resource, Element resourceElement, String containerPath, ZipFile zipFile)
-        throws DBException, IOException, CoreException
-    {
+    private void importChildResources(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IContainer resource,
+        @NotNull Element resourceElement,
+        @NotNull String containerPath,
+        @NotNull ZipFile zipFile
+    ) throws DBException, IOException, CoreException {
         for (Element childElement : XMLUtils.getChildElementList(resourceElement, ExportConstants.TAG_RESOURCE)) {
             String childName = childElement.getAttribute(ExportConstants.ATTR_NAME);
             monitor.subTask("Import " + childName);
@@ -443,7 +451,21 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     throw new DBException("Unsupported container type '" + resource.getClass().getName() + "'");
                 }
                 if (!file.exists()) {
-                    file.create(zipFile.getInputStream(resourceEntry), true, RuntimeUtils.getNestedMonitor(monitor));
+                    String charsetName = childElement.getAttribute(ExportConstants.ATTR_CHARSET);
+                    Charset charset = CommonUtils.isEmpty(charsetName)
+                        ? GeneralUtils.DEFAULT_FILE_CHARSET
+                        : Charset.forName(charsetName);
+                    try (InputStream contents = zipFile.getInputStream(resourceEntry);
+                         InputStream transformed = importRegistry.transformResource(
+                             monitor,
+                             Path.of(file.getProjectRelativePath().toPortableString()),
+                             contents,
+                             charset,
+                             data.getProjectNameMap()
+                         )
+                    ) {
+                        file.create(transformed, true, RuntimeUtils.getNestedMonitor(monitor));
+                    }
                 }
                 childResource = file;
             }

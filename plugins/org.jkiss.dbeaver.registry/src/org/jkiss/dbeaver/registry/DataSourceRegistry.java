@@ -844,8 +844,11 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             // Remove untouched profiles
             // purgeUntouched removes only data sources and folders
             // Profiles are always removed if they are not in the config
+            Set<String> updatedProfileIds = parseResults.updatedProfiles.stream()
+                .map(DBWNetworkProfile::getProfileId)
+                .collect(Collectors.toSet());
             for (DBWNetworkProfile profile : networkProfileManager.getProfiles()) {
-                if (!parseResults.updatedProfiles.contains(profile)) {
+                if (!updatedProfileIds.contains(profile.getProfileId())) {
                     parseResults.removedProfiles.add(profile);
                 }
             }

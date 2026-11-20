@@ -100,28 +100,45 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
 
     @Property(viewable = true, order = 2)
     public String getObjectType() {
-        if (objectType.startsWith("i")) {
-            return "Index";
-        } else if (objectType.startsWith("R")) {
-            return "Rule";
-        } else if (objectType.startsWith("C")) {
-            if (objectType.endsWith("f")) {
-                return "Foreign Key";
-            } else if (objectType.endsWith("p")) {
-                return "Primary Key";
-            } else {
-                return "Constraint";
-            }
-        } else if (objectType.startsWith("r")) {
-            return "Table";
-        } else if (objectType.startsWith("A")) {
-            return "Attribute";
-        } else if (objectType.startsWith("T")) {
-            return "Trigger";
-        } else if (objectType.startsWith("S")) {
-            return "Sequence";
+        if (CommonUtils.isEmpty(objectType)) {
+            return objectType;
         }
-        return objectType;
+        // Disambiguate a standalone procedure ('p') from a partitioned table relkind ('p' + sub-object number)
+        if ("p".equals(objectType)) {
+            return "Procedure";
+        }
+        char code = objectType.charAt(0);
+        return switch (code) {
+            case 'r' -> "Table";
+            case 'i' -> "Index";
+            case 'I' -> "Partitioned Index";
+            case 'S' -> "Sequence";
+            case 't' -> "TOAST Table";
+            case 'v' -> "View";
+            case 'm' -> "Materialized View";
+            case 'c' -> "Composite Type";
+            case 'f' -> "Foreign Table";
+            case 'p' -> "Partitioned Table";
+            case 'T' -> "Trigger";
+            case 'y' -> "Type";
+            case 'n' -> "Schema";
+            case 'l' -> "Language";
+            case 'R' -> "Rule";
+            case 'A' -> "Attribute";
+            case 'C' -> getConstraintType(objectType);
+            default -> objectType;
+        };
+    }
+
+    private static String getConstraintType(String objectType) {
+        return switch (objectType) {
+            case "Cp" -> "Primary Key";
+            case "Cf" -> "Foreign Key";
+            case "Cu" -> "Unique Constraint";
+            case "Cc" -> "Check Constraint";
+            case "Cx" -> "Exclusion Constraint";
+            default -> "Constraint";
+        };
     }
 
     @Property(viewable = true, order = 3)

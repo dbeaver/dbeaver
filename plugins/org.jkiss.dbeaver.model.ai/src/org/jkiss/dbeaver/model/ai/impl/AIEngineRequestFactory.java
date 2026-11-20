@@ -47,7 +47,7 @@ public class AIEngineRequestFactory {
 
     private final TokenCounter tokenCounter;
 
-    protected record RequestFunctions(
+    public record RequestFunctions(
         @NotNull Collection<AIFunctionDescriptor> autoFunctions,
         @NotNull Collection<AIFunctionDescriptor> supportedFunctions
     ) {

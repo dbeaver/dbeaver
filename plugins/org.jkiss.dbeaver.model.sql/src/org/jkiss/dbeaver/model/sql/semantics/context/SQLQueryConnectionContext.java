@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryVariablesSubset;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -37,11 +38,20 @@ public abstract class SQLQueryConnectionContext {
 
     @NotNull
     public final SQLDialect dialect;
+    @NotNull
+    private final SQLQueryVariablesSubset variablesSubset;
 
     protected SQLQueryConnectionContext(
-        @NotNull SQLDialect dialect
+        @NotNull SQLDialect dialect,
+        @NotNull SQLQueryVariablesSubset variablesSubset
     ) {
         this.dialect = dialect;
+        this.variablesSubset = variablesSubset;
+    }
+
+    @NotNull
+    public SQLQueryVariablesSubset getVariablesSubset() {
+        return this.variablesSubset;
     }
 
     @NotNull
@@ -107,6 +117,11 @@ public abstract class SQLQueryConnectionContext {
             return objs.stream().filter(o ->  objectType.getTypeClass().isInstance(o)).toList();
         }
     }
+
+    /** Resolve a complete data type spelling, including arguments, when supported by the connection. */
+    @Nullable
+    public abstract DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String fullTypeName)
+        throws DBException;
 
     public abstract boolean isDummy();
 

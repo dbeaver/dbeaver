@@ -2,11 +2,34 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension-point id="desktopRpcService" name="Desktop DataDam RPC service"/>
+    <extension-point id="desktopMcpFunction" name="Desktop DataDam MCP function"/>
+
+    <extension point="org.jkiss.dbeaver.model.datadam.desktopMcpFunction">
+        <function
+            id="listDatasources"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
+            name="List datasources"
+            description="Lists database connections allowed for DataDam MCP calls. requires_manual_connection means the connection is currently disconnected. Its tools can still try to connect; if they fail, connect in DBeaver and retry."
+            class="org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListDatasourcesFunction"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.model.datadam.desktopRpcService">
+        <service id="mcp" class="org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopRpcRegistration"/>
+        <service id="sharedProjects" class="org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectDesktopRpcRegistration"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.pluginService">
+        <service class="org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionPluginService"/>
+    </extension>
+
     <extension point="com.dbeaver.ai.engine">
         <completionEngine
             id="datadam" label="DataDam AI"
-            class="org.jkiss.dbeaver.model.datadam.DDAIEngine"
+            class="org.jkiss.dbeaver.model.datadam.ai.DDAIEngine"
             supportsFunctions="true"
-            properties="org.jkiss.dbeaver.model.datadam.DDAIEngineProperties"/>
+            properties="org.jkiss.dbeaver.model.datadam.ai.DDAIEngineProperties"/>
     </extension>
 </plugin>

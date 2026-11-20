@@ -51,6 +51,10 @@ public class CDataHierarchyTestDriver implements Driver {
     @NotNull
     @Override
     public Connection connect(@NotNull String url, @NotNull Properties properties) throws SQLException {
+        AtomicInteger reads = (AtomicInteger) System.getProperties().get("cdata.hierarchy.test.reads");
+        if (reads != null) {
+            reads.incrementAndGet();
+        }
         if (Boolean.getBoolean("cdata.hierarchy.test.fail")) {
             throw new SQLException("Configuration connection failed");
         }

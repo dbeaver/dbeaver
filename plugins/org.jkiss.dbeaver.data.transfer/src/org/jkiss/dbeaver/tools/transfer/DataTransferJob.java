@@ -99,12 +99,12 @@ public class DataTransferJob extends AbstractJob {
             if (transferPipe == null) {
                 break;
             }
+            PrintStream oldLogWriter = Log.getLogWriter();
             try {
                 if (logStream != null) {
                     Log.setLogWriter(logStream);
                 }
                 transferData(monitor, transferPipe);
-                Log.setLogWriter(null);
 
                 if (parentMonitor != null) {
                     parentMonitor.worked(1);
@@ -113,14 +113,18 @@ public class DataTransferJob extends AbstractJob {
             } catch (DBInterruptedException e) {
                 return Status.CANCEL_STATUS;
             } catch (Exception e) {
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
                 // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
                 return new Status(IStatus.OK, getClass(), "Data transfer failed", e);
             } finally {
+                Log.setLogWriter(oldLogWriter);
                 monitor.done();
                 elapsedTime = System.currentTimeMillis() - startTime;
             }
         }
-        return Status.OK_STATUS;
+        return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
     }
 
     @Override

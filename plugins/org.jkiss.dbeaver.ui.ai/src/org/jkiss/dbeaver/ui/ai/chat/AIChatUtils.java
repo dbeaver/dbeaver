@@ -94,14 +94,15 @@ public class AIChatUtils {
                                 null,
                                 e
                             );
-                        } else {
-                            chooseContextCustomScope(shell, settings, container, contextProvider, conversation, context);
                         }
                     });
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
             });
+            if (container.isConnected() && !shell.isDisposed()) {
+                chooseContextCustomScope(shell, settings, container, contextProvider, conversation, context);
+            }
         } catch (InvocationTargetException e) {
             log.error(e.getTargetException());
         } catch (InterruptedException ignored) {

@@ -18,39 +18,57 @@ package org.jkiss.dbeaver.ui.ai.controls;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectSelectionTree;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class ScopeSelectorDialog extends BaseDialog {
 
-    private static final String DIALOG_ID = "DBeaver.AIScopeSelectorDialog";//$NON-NLS-1$
+    private static final String DIALOG_ID = "DBeaver.AIScopeSelectorDialog.v2";//$NON-NLS-1$
 
     private final DBRRunnableContext runnableContext;
     private final DBPDataSourceContainer dataSourceContainer;
     private final DBCExecutionContext executionContext;
-    private DatabaseObjectsSelectorPanel selectorPanel;
+    private DatabaseObjectSelectionTree selectorTree;
+    private Label scopeInfoLabel;
     private List<? extends DBNNode> selectedNodes;
 
     public ScopeSelectorDialog(
@@ -60,7 +78,7 @@ public class ScopeSelectorDialog extends BaseDialog {
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<? extends DBNNode> selectedNodes
     ) {
-        super(parentShell, "Customize database objects accessible to AI", null);
+        super(parentShell, AIUIMessages.scope_selector_title, null);
         this.runnableContext = runnableContext;
         this.dataSourceContainer = container;
         this.executionContext = executionContext;
@@ -84,69 +102,88 @@ public class ScopeSelectorDialog extends BaseDialog {
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
+        UIUtils.createInfoLabel(dialogArea, AIUIMessages.scope_selector_hint);
 
-        DBPProject project = dataSourceContainer.getProject();
-        DBNModel navigatorModel = project.getNavigatorModel();
-
-        // Default root node is datasource
-        // But if the datasource consists of databases which are isolated instance (e.g. PostgreSQL) then
-        // too node is the default database (cross database queries are not supported in this cases)
-        DBNDatabaseNode rootNode = navigatorModel.getNodeByObject(dataSourceContainer);
+        DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, dataSourceContainer.getDataSource());
         DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
-        if (contextDefaults != null && false) {
-            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
-            if (defaultCatalog instanceof DBSInstance) {
-                DBNDatabaseNode catalogNode = navigatorModel.getNodeByObject(new VoidProgressMonitor(), defaultCatalog, false);
-                if (catalogNode != null) {
-                    rootNode = catalogNode;
+
+        if (root != null) {
+            selectorTree = new DatabaseObjectSelectionTree(dialogArea, runnableContext, root);
+            GridData treeData = new GridData(GridData.FILL_BOTH);
+            treeData.widthHint = convertWidthInCharsToPixels(60);
+            treeData.heightHint = 300;
+            selectorTree.setLayoutData(treeData);
+            selectorTree.setCheckedObjects(selectedNodes.stream()
+                .filter(DBNDatabaseNode.class::isInstance)
+                .map(DBNDatabaseNode.class::cast)
+                .map(DBNDatabaseNode::getObject)
+                .filter(Objects::nonNull)
+                .toList());
+            Button showSystemObjects = UIUtils.createCheckbox(
+                dialogArea, UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
+                selectorTree.isShowSystemObjects());
+            showSystemObjects.addSelectionListener(SelectionListener.widgetSelectedAdapter(
+                event -> selectorTree.setShowSystemObjects(showSystemObjects.getSelection())));
+            try {
+                if (contextDefaults != null) {
+                    DBSObject defaultObject = contextDefaults.getDefaultSchema();
+                    if (defaultObject == null) {
+                        defaultObject = contextDefaults.getDefaultCatalog();
+                    }
+                    if (defaultObject != null) {
+                        selectorTree.expandObject(defaultObject);
+                    }
                 }
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError(AIUIMessages.scope_selector_load_error, null, e.getTargetException());
+            } catch (InterruptedException e) {
+                // Keep the current selection if loading was cancelled.
             }
         }
 
-        DBNDatabaseNode finalRootNode = rootNode;
-        selectorPanel = new DatabaseObjectsSelectorPanel(
-            dialogArea,
-            this.runnableContext,
-            SWT.SINGLE | SWT.BORDER | SWT.CHECK,
-            true
-        ) {
-            @Override
-            protected DBPProject getSelectedProject() {
-                return project;
-            }
-
-            @Override
-            protected DBNNode getRootNode() {
-                return finalRootNode;
-            }
-
-            @Override
-            protected boolean isDatabaseFolderVisible(DBNDatabaseFolder folder) {
-                Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
-                if (childrenClass == null) {
-                    return false;
-                }
-                return DBSEntity.class.isAssignableFrom(childrenClass) ||
-                    DBSEntityContainer.class.isAssignableFrom(childrenClass) ||
-                    DBSStructContainer.class.isAssignableFrom(childrenClass);
-            }
-
-            @Override
-            protected boolean isDatabaseObjectVisible(DBSObject obj) {
-                return obj instanceof DBSStructContainer || obj instanceof DBSEntityContainer || obj instanceof DBSEntity;
-            }
-
-        };
-        selectorPanel.getCheckboxTreeManager().setAutoCheckNested(false);
-        selectorPanel.getNavigatorTree().getViewer().expandToLevel(2);
-        selectorPanel.checkNodes(selectedNodes, true);
-        selectorPanel.setSelection(selectedNodes);
-        selectorPanel.getNavigatorTree().getCheckboxViewer().addCheckStateListener(event -> updateOkButton());
-        selectorPanel.getNavigatorTree().getViewer().addDoubleClickListener(event -> updateOkButton());
-
-        UIUtils.createInfoLabel(dialogArea, "Customize database metadata accessible to AI.");
+        scopeInfoLabel = new Label(dialogArea, SWT.WRAP);
+        scopeInfoLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        CSSUtils.applyStyles(scopeInfoLabel);
+        updateScopeInfo();
+        if (selectorTree != null) {
+            selectorTree.addCheckListener(() -> {
+                updateOkButton();
+                updateScopeInfo();
+            });
+        }
 
         return dialogArea;
+    }
+
+    private void updateScopeInfo() {
+        int catalogs = 0;
+        int schemas = 0;
+        int tables = 0;
+        if (selectorTree != null) {
+            for (DBSObject object : selectorTree.getCheckedObjects()) {
+                if (object instanceof DBSCatalog) {
+                    catalogs++;
+                } else if (object instanceof DBSSchema) {
+                    schemas++;
+                } else if (object instanceof DBSEntity) {
+                    tables++;
+                }
+            }
+        }
+        List<String> summary = new ArrayList<>();
+        if (catalogs > 0) {
+            summary.add(NLS.bind(AIUIMessages.scope_selector_selection_catalogs, catalogs));
+        }
+        if (schemas > 0) {
+            summary.add(NLS.bind(AIUIMessages.scope_selector_selection_schemas, schemas));
+        }
+        if (tables > 0) {
+            summary.add(NLS.bind(AIUIMessages.scope_selector_selection_tables, tables));
+        }
+        boolean emptyScope = summary.isEmpty();
+        scopeInfoLabel.setText(emptyScope ? AIUIMessages.scope_selector_empty_scope : String.join(", ", summary));
+        scopeInfoLabel.setForeground(emptyScope ? BaseThemeSettings.instance.colorErrorForeground : null);
+        scopeInfoLabel.requestLayout();
     }
 
     @Override
@@ -158,27 +195,48 @@ public class ScopeSelectorDialog extends BaseDialog {
     private void updateOkButton() {
         Button okButton = getButton(IDialogConstants.OK_ID);
         if (okButton != null) {
-            okButton.setEnabled(selectorPanel.getCheckedNodes().stream().anyMatch(ScopeSelectorDialog::isSupportedNode));
+            okButton.setEnabled(selectorTree != null && selectorTree.hasCheckedObjects());
         }
-    }
-
-    private static boolean isSupportedNode(@NotNull DBNNode node) {
-        if (node instanceof DBNDatabaseNode databaseNode) {
-            DBSObject object = databaseNode.getObject();
-            return object instanceof DBSEntity || object instanceof DBSEntityContainer || object instanceof DBSStructContainer;
-        }
-        return false;
     }
 
     @Override
     protected void okPressed() {
-        selectedNodes = selectorPanel.getCheckedNodes();
-        selectedNodes.removeIf(n -> !isSupportedNode(n));
-        selectedNodes.removeIf(n -> selectedNodes.contains(n.getParentNode()));
-        if (selectedNodes.isEmpty()) {
+        Set<DBNNode> resolvedNodes = new LinkedHashSet<>();
+        List<DBSObject> checkedObjects = selectorTree.getCheckedObjects();
+        DBNModel navigatorModel = dataSourceContainer.getProject().getNavigatorModel();
+        try {
+            runnableContext.run(true, true, monitor -> {
+                monitor.beginTask(AIUIMessages.scope_selector_loading, checkedObjects.size());
+                try {
+                    for (DBSObject object : checkedObjects) {
+                        if (monitor.isCanceled()) {
+                            throw new InterruptedException();
+                        }
+                        DBNDatabaseNode node = navigatorModel.getNodeByObject(monitor, object, true);
+                        if (node == null) {
+                            throw new InvocationTargetException(new DBException("Cannot resolve selected object " + object.getName()));
+                        }
+                        resolvedNodes.add(node);
+                        monitor.worked(1);
+                    }
+                    if (monitor.isCanceled()) {
+                        throw new InterruptedException();
+                    }
+                } finally {
+                    monitor.done();
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(AIUIMessages.scope_selector_load_error, null, e.getTargetException());
+            return;
+        } catch (InterruptedException e) {
             return;
         }
-
+        if (resolvedNodes.isEmpty()) {
+            MessageDialog.openInformation(getShell(), AIUIMessages.scope_selector_customize, AIUIMessages.scope_selector_empty);
+            return;
+        }
+        selectedNodes = new ArrayList<>(resolvedNodes);
         super.okPressed();
     }
 

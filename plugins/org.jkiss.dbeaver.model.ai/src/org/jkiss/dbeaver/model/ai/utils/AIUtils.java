@@ -30,10 +30,12 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
+import org.jkiss.dbeaver.model.impl.app.SecurePreferencesSecretController;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.security.DBSecurityUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
@@ -54,6 +56,7 @@ import java.util.stream.Stream;
 public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
     public static final double DEFAULT_TEMPERATURE = 0.0;
+    private static final String INTEGRATED_ACCOUNT_TOKEN_PREFIX = "integrated.";
 
     @NotNull
     public static String getSettingsAccessMessage(
@@ -122,6 +125,77 @@ public final class AIUtils {
             return;
         }
         globalSecretController.setPrivateSecretValue(secret + getSecretSuffix(profile), null);
+    }
+
+    /** Read account tokens from integrated storage, falling back to older global secrets. */
+    @Nullable
+    public static String getAccountTokenOrDefault(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secretId,
+        @Nullable String defaultValue
+    ) throws DBException {
+        DBSSecretController globalController = DBSSecretController.getGlobalSecretControllerOrNull();
+        if (globalController == null) {
+            return defaultValue;
+        }
+        String key = INTEGRATED_ACCOUNT_TOKEN_PREFIX + secretId + getSecretSuffix(profile);
+        DBSSecretController nativeController = getNativeAccountTokenController();
+        if (nativeController != null) {
+            String value = nativeController.getPrivateSecretValue(key);
+            if (value != null) {
+                return value;
+            }
+        }
+        String value = globalController.getPrivateSecretValue(key);
+        if (value != null) {
+            return value;
+        }
+        return getSecretValueOrDefault(profile, secretId, defaultValue);
+    }
+
+    public static void setAccountToken(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secretId,
+        @Nullable String value
+    ) throws DBException {
+        DBSSecretController globalController = DBSSecretController.getGlobalSecretControllerOrNull();
+        if (globalController == null) {
+            return;
+        }
+        String key = INTEGRATED_ACCOUNT_TOKEN_PREFIX + secretId + getSecretSuffix(profile);
+        SecurePreferencesSecretController nativeController = getNativeAccountTokenController();
+        if (value == null) {
+            if (nativeController != null) {
+                nativeController.setPrivateSecretValue(key, null);
+            }
+            globalController.setPrivateSecretValue(key, null);
+            globalController.setPrivateSecretValue(secretId + getSecretSuffix(profile), null);
+        } else if (nativeController == null) {
+            globalController.setPrivateSecretValue(key, value);
+        } else {
+            nativeController.setPrivateSecretValue(key, value);
+            if (!nativeController.isPrivateSecretEncrypted(key)) {
+                nativeController.setPrivateSecretValue(key, null);
+                throw new DBException("Native secure storage did not encrypt account token");
+            }
+        }
+        if (nativeController != null) {
+            nativeController.flushChanges();
+        }
+    }
+
+    public static void deleteAccountToken(@NotNull AIConfigurationProfile profile, @NotNull String secretId) throws DBException {
+        setAccountToken(profile, secretId, null);
+    }
+
+    @Nullable
+    private static SecurePreferencesSecretController getNativeAccountTokenController() {
+        if (!DBWorkbench.isPlatformStarted() || DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return null;
+        }
+        String providerId = DBSecurityUtils.findNativeOSProvider();
+        return providerId == null ? null : SecurePreferencesSecretController.create(
+            SecurePreferencesSecretController.SECRET_PREFS_ROOT, providerId);
     }
 
     @NotNull
@@ -208,7 +282,7 @@ public final class AIUtils {
                 AIMessages.ai_execute_query_confirm_dml_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
         }
-        if (queryCategories.contains(SQLQueryCategory.SQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
+        if (queryCategories.contains(SQLQueryCategory.DQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_sql_message :
                 AIMessages.ai_execute_query_confirm_sql_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
@@ -278,24 +352,18 @@ public final class AIUtils {
         return new DataSourceContextProvider(dataSource);
     }
 
+    @NotNull
+    public static AIDatabaseScope getDefaultScope() {
+        return AIDatabaseScope.CURRENT_DATASOURCE;
+    }
+
     public static void updateScopeSettingsIfNeeded(
         @NotNull AIContextSettings settings,
         @NotNull DBPDataSourceContainer container,
         @Nullable DBCExecutionContext executionContext
     ) {
-        if (settings.getScope() != null || !container.isConnected()) {
-            return;
-        }
-        if (executionContext == null || executionContext.getContextDefaults() == null) {
-            // default scope
-            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
-            return;
-        }
-        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-        if (contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange()) {
-            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
-        } else {
-            settings.setScope(AIDatabaseScope.CURRENT_DATASOURCE);
+        if (settings.getScope() == null) {
+            settings.setScope(getDefaultScope());
         }
     }
 
@@ -347,7 +415,7 @@ public final class AIUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSCatalog catalog
     ) {
-        if (context.isObjectExcluded(catalog)) {
+        if (!context.isObjectAllowed(catalog)) {
             return false;
         }
         switch (context.getScope()) {
@@ -375,7 +443,7 @@ public final class AIUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSSchema schema
     ) {
-        if (context.isObjectExcluded(schema)) {
+        if (!context.isObjectAllowed(schema)) {
             return false;
         }
         switch (context.getScope()) {
@@ -418,9 +486,6 @@ public final class AIUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObject object
     ) {
-        if (context.isObjectExcluded(object)) {
-            return false;
-        }
         if (object instanceof DBPDataSource || object instanceof DBPDataSourceContainer) {
             return true;
         }
@@ -429,6 +494,9 @@ public final class AIUtils {
         } else if (object instanceof DBSSchema schema) {
             return isSchemaInScope(context, executionContext, schema);
         } else {
+            if (!context.isObjectAllowed(object)) {
+                return false;
+            }
             if (context.getScope() == AIDatabaseScope.CUSTOM) {
                 // Check that this object in the custom entity list
                 List<DBSObject> customEntities = context.getCustomEntities();

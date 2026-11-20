@@ -16,11 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.sync.core;
 
-import com.dbeaver.datadam.share.api.model.DDConfiguration;
-import com.dbeaver.datadam.share.api.model.DDConfigurationPart;
-import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
-import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import org.jkiss.code.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,29 +26,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 class DDGraphQlFieldMappingTest {
-
-    @Test
-    void configurationSummaryFieldsMatchResponseKeys() {
-        assertSelectionMatchesRecord(DDSyncApi.CONFIGURATION_FIELDS, DDConfigurationSummary.class);
-    }
-
-    @Test
-    void configurationFieldsMatchResponseKeys() {
-        assertSelectionMatchesRecord(DDSyncApi.CONFIGURATION_WITH_PARTS_FIELDS, DDConfiguration.class);
-    }
-
-    @Test
-    void configurationPartFieldsMatchResponseKeys() {
-        assertSelectionMatchesRecord(
-            extractBlock(DDSyncApi.CONFIGURATION_WITH_PARTS_FIELDS, "parts"), DDConfigurationPart.class);
-    }
-
-    @Test
-    void updateConfigurationResultFieldsMatchResponseKeys() {
-        assertSelectionMatchesRecord(
-            extractBlock(DDSyncApi.MUTATION_UPDATE_CONFIGURATION, "updateConfiguration("),
-            DDUpdateConfigurationResult.class);
-    }
 
     @Test
     void sharedProjectFieldsMatchResponseKeys() {
@@ -96,23 +69,4 @@ class DDGraphQlFieldMappingTest {
         return keys;
     }
 
-    @NotNull
-    private static String extractBlock(@NotNull String source, @NotNull String marker) {
-        int markerIndex = source.indexOf(marker);
-        int braceIndex = source.indexOf('{', markerIndex);
-        int depth = 0;
-        int i = braceIndex;
-        for (; i < source.length(); i++) {
-            char c = source.charAt(i);
-            if (c == '{') {
-                depth++;
-            } else if (c == '}') {
-                depth--;
-                if (depth == 0) {
-                    break;
-                }
-            }
-        }
-        return source.substring(braceIndex + 1, i);
-    }
 }

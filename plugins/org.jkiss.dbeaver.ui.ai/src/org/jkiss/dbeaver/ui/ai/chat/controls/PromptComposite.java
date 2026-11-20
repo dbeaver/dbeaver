@@ -111,7 +111,9 @@ public class PromptComposite extends Composite {
                     if (!busy) {
                         sendButton.setToolTipText(AIChatMessagesUI.ai_chat_send_button_tip);
                         sendButton.setImage(DBeaverIcons.getImage(AIChatIcons.SEND));
-                        setFocusOnPrompt();
+                        if (getShell() == getDisplay().getActiveShell()) {
+                            setFocusOnPrompt();
+                        }
                     } else {
                         new AbstractUIJob("Enable AI cancellation") {
                             @NotNull
@@ -132,12 +134,17 @@ public class PromptComposite extends Composite {
         });
 
         setLayout(GridLayoutFactory.fillDefaults().margins(1, 1).numColumns(3).create());
-        imageAttachments = new AIImageAttachmentsComposite(this, index -> {
-            if (!chat.getChatSession().isBusy()) {
-                images.remove(index);
-                refreshImages();
+        WebViewMessageList messageList = chat.getMessageList();
+        imageAttachments = new AIImageAttachmentsComposite(
+            this,
+            messageList == null ? null : messageList.getThumbnailBrowser(),
+            index -> {
+                if (!chat.getChatSession().isBusy()) {
+                    images.remove(index);
+                    refreshImages();
+                }
             }
-        });
+        );
         GridData attachmentData = new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1);
         attachmentData.exclude = true;
         imageAttachments.setLayoutData(attachmentData);
@@ -369,7 +376,7 @@ public class PromptComposite extends Composite {
         }
     }
 
-    private void updatePromptEditorSize() {
+    void updatePromptEditorSize() {
         int textLength = promptText.getCharCount();
         int lineHeight = promptText.getLineCount() * promptText.getLineHeight();
         Rectangle textBounds = textLength <= 0 ?

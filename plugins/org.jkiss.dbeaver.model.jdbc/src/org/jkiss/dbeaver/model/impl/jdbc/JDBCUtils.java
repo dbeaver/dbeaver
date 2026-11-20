@@ -495,7 +495,8 @@ public class JDBCUtils {
                     }
                 } else {
                     try {
-                        isValid[0] = connection.isValid(invalidateTimeout);
+                        // isValid takes seconds, the preference is in milliseconds (rounded up, at least 1 s)
+                        isValid[0] = connection.isValid(Math.max(1, (int) ((invalidateTimeout + 999L) / 1000)));
                     } catch (Throwable e) {
                         // isValid may be unsupported by driver
                         // Let's try to read table list
@@ -963,7 +964,7 @@ public class JDBCUtils {
     public static DBPDataKind getDataKindByTypeID(int typeId, @Nullable String typeName) {
         return switch (typeId) {
             case Types.BOOLEAN -> DBPDataKind.BOOLEAN;
-            case Types.CHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR -> DBPDataKind.STRING;
+            case Types.CHAR, Types.NCHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR -> DBPDataKind.STRING;
             case Types.BIGINT, Types.DECIMAL, Types.DOUBLE, Types.FLOAT, Types.INTEGER, Types.NUMERIC, Types.REAL, Types.SMALLINT ->
                 DBPDataKind.NUMERIC;
             case Types.BIT, Types.TINYINT -> {

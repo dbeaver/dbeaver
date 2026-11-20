@@ -285,7 +285,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                                 }
                             }
                         } else {
-                            rsv.resetCellValue(attr, row, selection.getElementRowIndexes(cell));
+                            rsv.resetCellValue(attr, row, selection.getElementRowIndexes(cell), selection.getElementValuePath(cell));
                         }
                     }
                 }
@@ -398,8 +398,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)) {
                     UIUtils.showMessageBox(
                         HandlerUtil.getActiveShell(event),
-                        UIMessages.dialog_policy_data_copy_title,
-                        UIMessages.dialog_policy_data_copy_msg,
+                        ResultSetMessages.dialog_policy_data_copy_title,
+                        ResultSetMessages.dialog_policy_data_copy_msg,
                         SWT.ICON_WARNING
                     );
                 } else {

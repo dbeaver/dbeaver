@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
@@ -266,21 +267,21 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
 
     private static class CommandExecutionListener implements IExecutionListener {
         @Override
-        public void notHandled(String commandId, NotHandledException exception) {
+        public void notHandled(@NotNull String commandId, @NotNull NotHandledException exception) {
 
         }
 
         @Override
-        public void postExecuteFailure(String commandId, ExecutionException exception) {
+        public void postExecuteFailure(@NotNull String commandId, @NotNull ExecutionException exception) {
 
         }
 
         @Override
-        public void postExecuteSuccess(String commandId, Object returnValue) {
+        public void postExecuteSuccess(@NotNull String commandId, @Nullable Object returnValue) {
         }
 
         @Override
-        public void preExecute(String commandId, ExecutionEvent event) {
+        public void preExecute(@NotNull String commandId, @NotNull ExecutionEvent event) {
             final DBRFeature commandFeature = DBRFeatureRegistry.getInstance().findCommandFeature(commandId);
             if (commandFeature != null) {
                 commandFeature.use(event.getParameters());

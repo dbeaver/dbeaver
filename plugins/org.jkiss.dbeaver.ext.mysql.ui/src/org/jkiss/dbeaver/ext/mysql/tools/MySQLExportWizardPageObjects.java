@@ -82,7 +82,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         {
             Composite catPanel = UIUtils.createComposite(sash, 1);
             catPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-            catalogTable = new Table(catPanel, SWT.BORDER | SWT.CHECK);
+            catalogTable = new Table(catPanel, SWT.BORDER | SWT.CHECK | SWT.MULTI);
             catalogTable.addListener(SWT.Selection, event -> {
                 TableItem item = (TableItem) event.item;
                 if (item != null) {
@@ -109,7 +109,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             Composite tablesPanel = UIUtils.createComposite(sash, 1);
             tablesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            tablesTable = new Table(tablesPanel, SWT.BORDER | SWT.CHECK);
+            tablesTable = new Table(tablesPanel, SWT.BORDER | SWT.CHECK | SWT.MULTI);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 50;
             tablesTable.setLayoutData(gd);

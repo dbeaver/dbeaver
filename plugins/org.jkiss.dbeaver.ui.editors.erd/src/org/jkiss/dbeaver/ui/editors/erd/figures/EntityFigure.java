@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,9 @@ public class EntityFigure extends Figure {
     private AttributeListFigure attributeFigure;
     private EditableLabel nameLabel;
     private Label descLabel;
+    private Color themeBackground;
 
-    public EntityFigure(EntityPart part)
-    {
+    public EntityFigure(@NotNull EntityPart part) {
         this.part = part;
 
         ERDEntity entity = part.getEntity();
@@ -170,6 +170,26 @@ public class EntityFigure extends Figure {
                 setBackgroundColor(ERDThemeSettings.instance.entityRegularBackground);
             }
         }
+        themeBackground = getBackgroundColor();
+    }
+
+    public void refreshTheme() {
+        Color background = getBackgroundColor();
+        boolean customBackground = background != themeBackground;
+        refreshColors();
+        if (customBackground && background != null) {
+            // Custom node colors belong to the diagram, not to the workbench theme.
+            setBackgroundColor(background);
+        }
+        if (getBorder() instanceof LineBorder border) {
+            border.setColor(getBorderColor());
+        } else if (getBorder() instanceof CompoundBorder border && border.getOuterBorder() instanceof LineBorder lineBorder) {
+            lineBorder.setColor(getBorderColor());
+        }
+        keyFigure.setBackgroundColor(ERDThemeSettings.instance.attrBackground);
+        keyFigure.setForegroundColor(ERDThemeSettings.instance.attrForeground);
+        attributeFigure.setBackgroundColor(ERDThemeSettings.instance.attrBackground);
+        attributeFigure.setForegroundColor(ERDThemeSettings.instance.attrForeground);
     }
 
     private void changeHeaderColor() {

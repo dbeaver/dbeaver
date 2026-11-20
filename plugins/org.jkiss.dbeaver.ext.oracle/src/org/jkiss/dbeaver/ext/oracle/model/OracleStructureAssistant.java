@@ -244,8 +244,10 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         String mask = params.getMask();
         StringBuilder query = new StringBuilder();
         String ownerClause = schema != null ? " AND OWNER = ?" : "";
+        // Normalize package bodies before DISTINCT: both catalog types resolve to the same package.
         query.append("SELECT ")
-            .append(OracleUtils.getSysCatalogHint(dataSource)).append(" DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM (")
+            .append(OracleUtils.getSysCatalogHint(dataSource)).append(" DISTINCT OWNER,OBJECT_NAME,")
+            .append("CASE WHEN OBJECT_TYPE = 'PACKAGE BODY' THEN 'PACKAGE' ELSE OBJECT_TYPE END AS OBJECT_TYPE FROM (")
             .append("\nSELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ")
             .append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS"))
             .append(" WHERE ").append("OBJECT_TYPE IN (").append(objectTypeClause).append(") AND ")
@@ -325,11 +327,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                     final String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OWNER);
                     final String objectName = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME);
                     final String objectTypeName = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_TYPE);
-                    OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
-                    if (objectType == OracleObjectType.PACKAGE_BODY) {
-                        // We do not store bodies as separate objects
-                        objectType = OracleObjectType.PACKAGE;
-                    }
+                    final OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
                     if (objectType != null && objectType.isBrowsable() && oracleObjectTypes.contains(objectType)) {
                         OracleSchema objectSchema = this.dataSource.getSchema(session.getProgressMonitor(), schemaName);
                         if (objectSchema == null) {

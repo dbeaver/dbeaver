@@ -243,7 +243,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
         final String fullTypeName = column.getFullTypeName();
         String typeClause = fullTypeName;
-        if (column.getDataSource().getServerType().supportsAlterTableColumnWithUSING()) {
+        // PostgreSQL doesn't support USING clause when altering column type of a foreign table
+        if (!(table instanceof PostgreTableForeign)
+            && column.getDataSource().getServerType().supportsAlterTableColumnWithUSING()) {
             typeClause += " USING ";
             typeClause += column.getDataSource().getSQLDialect().getTypeCastClause(column, DBUtils.getQuotedIdentifier(column), true);
             typeClause += "::" + fullTypeName;

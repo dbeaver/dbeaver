@@ -68,12 +68,11 @@ public final class SWTThemeUtils {
         if (menuBar.foreground != display.menuBarForegroundPixel || menuBar.background != display.menuBarBackgroundPixel) {
             menuBar.initThemeColors();
             menuBar.updateBackground();
-            menuBar.updateForeground();
             boolean callback = menuBar.needsMenuCallback();
             MenuItem[] items = menuBar.getItems();
             for (int i = 0; i < items.length; i++) {
                 // SWT chooses both the owner-draw type and bitmap callback when it creates a menu item.
-                // Menu.updateForeground() changes only the bitmap, leaving Windows to draw the text twice.
+                // Changing only the bitmap leaves Windows to draw the text twice.
                 MENUITEMINFO info = new MENUITEMINFO();
                 info.cbSize = MENUITEMINFO.sizeof;
                 info.fMask = OS.MIIM_FTYPE;
@@ -141,6 +140,15 @@ public final class SWTThemeUtils {
                 null
             );
         }
+        if (control instanceof Tree tree && tree.hwndHeader != 0) {
+            // SWT's columned trees have separate native parent and header windows.
+            // Neither is an SWT Control, so the skin listener cannot update them.
+            OS.AllowDarkModeForWindow(tree.hwndParent, dark);
+            OS.SetWindowTheme(tree.hwndParent, dark ? WINDOW_THEME_DEFAULT : null, null);
+            OS.AllowDarkModeForWindow(tree.hwndHeader, dark);
+            OS.SetWindowTheme(tree.hwndHeader, dark ? WINDOW_THEME_DEFAULT : null, null);
+            OS.InvalidateRect(tree.hwndHeader, null, true);
+        }
     }
 
     public static void installTreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
@@ -149,7 +157,7 @@ public final class SWTThemeUtils {
 
     /**
      * Workaround for SWT's Windows Tree painting: Windows draws the first column, while SWT draws
-     * the remaining columns, producing different hover and selection backgrounds in dark theme.
+     * the remaining columns, producing different hover and selection backgrounds.
      * TODO: Fix SWT Tree to use the same native TreeView state across all columns and preserve
      * the hovered state when drawing subsequent columns, then remove this workaround.
      */
@@ -164,7 +172,7 @@ public final class SWTThemeUtils {
         }
 
         private void eraseItem(@NotNull Event event) {
-            if (!isDarkTheme.getAsBoolean() || tree.getColumnCount() < 2) {
+            if (tree.getColumnCount() < 2) {
                 return;
             }
             boolean selected = (event.detail & SWT.SELECTED) != 0;
@@ -218,7 +226,9 @@ public final class SWTThemeUtils {
                 }
                 OS.DrawThemeBackground(theme, event.gc.handle, OS.TVP_TREEITEM, state, row, cell);
                 if (selected) {
-                    event.gc.setForeground(tree.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+                    event.gc.setForeground(isDarkTheme.getAsBoolean()
+                        ? tree.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT)
+                        : tree.getForeground());
                 }
                 event.detail &= ~(SWT.SELECTED | SWT.HOT | SWT.BACKGROUND);
             } finally {

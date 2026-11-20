@@ -23,12 +23,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
@@ -49,10 +51,21 @@ import java.util.Map;
 /**
  * DTTaskHandlerTransfer
  */
-public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollector {
+public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollector, DBTTaskImportTransformer {
     private static final Log log = Log.getLog(DTTaskHandlerTransfer.class);
 
     private final DBCStatistics totalStatistics = new DBCStatistics();
+
+    @Override
+    public boolean transformTaskState(@NotNull Map<String, Object> state, @NotNull Map<String, String> projectNames) {
+        boolean changed = false;
+        for (Object producer : JSONUtils.getObjectList(state, "producers")) {
+            if (producer instanceof Map<?, ?> node && "databaseTransferProducer".equals(node.get("type"))) {
+                changed |= DBTTaskImportTransformer.remapProjectReference(node.get("location"), projectNames);
+            }
+        }
+        return changed;
+    }
 
     @Override
     @NotNull
@@ -189,6 +202,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
             return error;
         } catch (InterruptedException | OperationCanceledException e) {
             log.debug("Data transfer was interrupted", e);
+            taskExecutor.recordException(new DBInterruptedException("Data transfer was canceled", e));
         }
         return taskExecutor.error;
     }
@@ -305,6 +319,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                     try {
                         group.join(0, new ProxyProgressMonitor(monitor));
                     } catch (InterruptedException | OperationCanceledException e) {
+                        monitor.getNestedMonitor().setCanceled(true);
                         group.cancel();
                         canceled = true;
                         interrupted = e instanceof InterruptedException;
@@ -332,14 +347,10 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                             }
                         }
                         if (canceled || monitor.isCanceled()) {
+                            monitor.getNestedMonitor().setCanceled(true);
                             canceled = true;
                             break;
                         }
-                        final IStatus result = job.getResult();
-                        if (result.getException() != null) {
-                            recordException(result.getException());
-                        }
-                        totalStatistics.accumulate(job.getTotalStatistics());
                     }
                 }
                 if (canceled || monitor.isCanceled()) {
@@ -360,6 +371,25 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                     if (interrupted) {
                         Thread.currentThread().interrupt();
                     }
+                }
+
+                for (DataTransferJob job : jobs) {
+                    IStatus result = job.getResult();
+                    if (result == null) {
+                        // jobs canceled before starting have no result
+                        canceled = true;
+                        continue;
+                    }
+                    if (result.matches(IStatus.CANCEL)) {
+                        canceled = true;
+                    }
+                    if (result.getException() != null) {
+                        recordException(result.getException());
+                    }
+                    totalStatistics.accumulate(job.getTotalStatistics());
+                }
+                if (canceled || monitor.isCanceled()) {
+                    recordException(new DBInterruptedException("Data transfer was canceled"));
                     return;
                 }
 

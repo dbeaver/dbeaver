@@ -19,12 +19,22 @@ package org.jkiss.dbeaver.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class UIConnectionMessages extends NLS {
-
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIConnectionMessages"; //$NON-NLS-1$
 
+    public static String dialog_connection_virtual_model_group;
+    public static String dialog_connection_virtual_model_show;
+    public static String dialog_connection_virtual_model_show_tip;
+    public static String dialog_connection_virtual_model_reset;
+    public static String dialog_connection_virtual_model_reset_tip;
+    public static String dialog_connection_virtual_model_reset_title;
+    public static String dialog_connection_virtual_model_reset_message;
+
     public static String dialog_connection_edit_wizard_conn_conf_general_link;
+    public static String dialog_connection_name_pattern_settings;
     public static String dialog_connection_edit_connection_settings_variables_hint_label;
     public static String dialog_connection_database_documentation;
+    public static String dialog_connection_view_documentation;
+    public static String dialog_connection_view_driver_license;
     public static String dialog_connection_advanced_settings;
 
     public static String dialog_connection_driver;
@@ -283,7 +293,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_group_location;
 
     public static String dialog_connection_driver_project;
-    public static String dialog_connection_show_cdata;
+    public static String dialog_connection_show_commercial_drivers;
 
     public static String dialog_edit_driver_edit_maven_raw;
     public static String dialog_edit_driver_edit_maven_settings;
@@ -309,6 +319,28 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_select_viewer_order_by_name_description;
     public static String dialog_driver_select_viewer_order_by_score_label;
     public static String dialog_driver_select_viewer_order_by_score_description;
+
+    public static String dialog_connection_advanced_tab;
+    public static String dialog_connection_driver_type;
+    public static String dialog_connection_driver_type_tip;
+    public static String dialog_connection_network_profile_edit;
+    public static String dialog_connection_network_profile_active;
+    public static String dialog_connection_network_profile_name;
+    public static String dialog_connection_network_profile_active_name;
+    public static String dialog_connection_network_profile_no_profile;
+    public static String dialog_connection_network_profile_no_active;
+    public static String dialog_connection_network_profile_none;
+    public static String dialog_connection_network_profile_change;
+    public static String dialog_connection_network_profile_keep;
+    public static String dialog_connection_network_profile_remove;
+    public static String dialog_connection_network_profile_unselect_confirmation;
+    public static String dialog_connection_network_profile_change_confirmation;
+    public static String dialog_connection_network_profile_provided;
+    public static String pref_page_network_profiles_save_error_title;
+    public static String pref_page_network_profiles_save_error;
+    public static String pref_page_network_profiles_no_secret_controller;
+    public static String pref_page_network_profiles_project_error_title;
+    public static String pref_page_network_profiles_project_error;
 
     public static String pref_page_network_profiles_tool_create_title;
     public static String pref_page_network_profiles_tool_create_text;
@@ -552,6 +584,9 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_transactions_ddl_behavior_label;
     public static String pref_page_transactions_ddl_behavior_tip;
     public static String pref_page_ui_general_group_general;
+
+    public static String preference_page_no_edit_access;
+    public static String dialog_connection_wizard_start_connection_monitor_connected;
 
     static {
         // initialize resource bundle

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,10 @@ import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
+import org.jkiss.dbeaver.model.sql.SQLScriptVariableScope;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.*;
+import org.jkiss.dbeaver.model.struct.DBSNamespace;
+import org.jkiss.dbeaver.model.struct.DBSNamespaceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -53,6 +56,12 @@ public class RequestBuilder {
             @Override
             public boolean supportsAliasInSelect() {
                 return true;
+            }
+
+            @NotNull
+            @Override
+            public SQLScriptVariableScope getScriptVariableScope() {
+                return SQLScriptVariableScope.BATCH;
             }
         };
         when(dataSource.getSQLDialect()).thenReturn(dialect);
@@ -90,6 +99,11 @@ public class RequestBuilder {
         return this;
     }
 
+    public RequestBuilder typeNamespace(@NotNull DBSNamespace namespace) {
+        when(dataSource.getNamespaceForObjectType(RelationalObjectType.TYPE_DATA_TYPE)).thenReturn(namespace);
+        return this;
+    }
+
     @NotNull
     public RequestResult prepare() throws DBException {
         final DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
@@ -113,6 +127,11 @@ public class RequestBuilder {
     }
 
     @NotNull
+    public DBPDataSource getDataSource() {
+        return this.dataSource;
+    }
+
+    @NotNull
     private static DataSource createDataSource() {
         DBPDataSourceInfo dsInfo = mock(DBPDataSourceInfo.class);
         when(dsInfo.getSupportedObjectTypes()).then(x -> new DBSObjectType[] {
@@ -133,6 +152,6 @@ public class RequestBuilder {
         return ds;
     }
 
-    public interface DataSource extends DBPDataSource, DBSObjectContainer {
+    public interface DataSource extends DBPDataSource, DBSObjectContainer, DBSNamespaceContainer {
     }
 }

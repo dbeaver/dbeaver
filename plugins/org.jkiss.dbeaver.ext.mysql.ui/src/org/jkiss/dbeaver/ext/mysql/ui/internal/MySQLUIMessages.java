@@ -21,6 +21,9 @@ import org.eclipse.osgi.util.NLS;
 public final class MySQLUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages"; //$NON-NLS-1$
 
+    public static String table_column_length_tooltip;
+    public static String table_column_length;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, MySQLUIMessages.class);

@@ -26,6 +26,9 @@ import java.util.Map;
  * Queries persisted project configurations for global network profile management.
  */
 public interface DBWNetworkProfileUsageProvider {
+    /**
+     * Returns project IDs mapped to project names for projects defining a local profile with this name.
+     */
     @NotNull
     Map<String, String> findLocalProfileConflicts(@NotNull String profileName) throws DBException;
 

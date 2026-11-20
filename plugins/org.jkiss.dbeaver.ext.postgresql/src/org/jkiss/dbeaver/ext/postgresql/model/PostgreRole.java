@@ -436,7 +436,7 @@ public class PostgreRole implements
         if (extension.supportsRoleBypassRLS()) {
             addOptionToDDL(ddl, isBypassRls(), "BYPASSRLS");
         }
-        if (getConnLimit() > 0) {
+        if (getConnLimit() >= 0) {
             ddl.append(lineBreak);
             ddl.append("\tCONNECTION LIMIT ").append(getConnLimit());
         } else {

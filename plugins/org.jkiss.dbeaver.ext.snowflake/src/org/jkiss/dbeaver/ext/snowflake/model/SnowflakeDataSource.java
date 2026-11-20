@@ -58,11 +58,12 @@ public class SnowflakeDataSource extends GenericDataSource {
         super(monitor, container, metaModel, dialect);
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) {
@@ -120,7 +121,7 @@ public class SnowflakeDataSource extends GenericDataSource {
     @Override
     protected Properties getAllConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -133,7 +134,7 @@ public class SnowflakeDataSource extends GenericDataSource {
 
     @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new SnowflakeExecutionContext(instance, type);
     }
 

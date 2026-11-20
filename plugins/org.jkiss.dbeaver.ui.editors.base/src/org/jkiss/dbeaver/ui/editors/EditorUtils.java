@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IStorage;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
@@ -142,8 +143,14 @@ public class EditorUtils {
             if (file != null) {
                 return file;
             }
-        } else if (editorInput instanceof IURIEditorInput) {
-            // Most likely it is an external file
+        } else if (editorInput instanceof IURIEditorInput uriInput) {
+            // File-store inputs can refer to workspace files, including linked resources.
+            IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uriInput.getURI());
+            for (IFile file : files) {
+                if (file.exists()) {
+                    return file;
+                }
+            }
             return null;
         }
         // Try to get path input adapter (works for external files)

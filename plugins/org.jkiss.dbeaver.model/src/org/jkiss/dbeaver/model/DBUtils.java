@@ -86,6 +86,7 @@ public final class DBUtils {
                     }
                 } else {
                     log.debug("Path index item " + indexItem.index() + " is out of range for " + arg);
+                    return DBDVoid.INSTANCE;
                 }
             } else {
                 log.debug("Cannot apply path index item to " + arg);
@@ -612,26 +613,23 @@ public final class DBUtils {
     @NotNull
     public static DBSObject[] getObjectPath(@NotNull DBSObject object, boolean includeSelf) {
         int depth = 0;
-        final DBSObject root = includeSelf ? object :
-            ((object instanceof DBSTablePartition part) && part.needFullPath() && part.isSubPartition()) ? part.getPartitionParent() :
-            object.getParentObject();
-        for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+        final DBSObject root = includeSelf ? object : getStructuralParent(object);
+        for (DBSObject obj = root; obj != null; obj = getStructuralParent(obj)) {
             obj = getPublicObjectContainer(obj);
-            depth++;
-        }
-        if ((object instanceof DBSTablePartition part) && part.needFullPath()) {
-            // For a parent table
             depth++;
         }
         DBSObject[] path = new DBSObject[depth];
-        for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+        for (DBSObject obj = root; obj != null; obj = getStructuralParent(obj)) {
             obj = getPublicObjectContainer(obj);
             path[depth-- - 1] = obj;
-            if ((obj instanceof DBSTablePartition part) && part.needFullPath()) {
-                path[depth-- - 1] = part.getParentTable();
-            }
         }
         return path;
+    }
+
+    @Nullable
+    public static DBSObject getStructuralParent(@NotNull DBSObject object) {
+        return object instanceof DBSObjectWithStructuralParent structuralObject
+            ? structuralObject.getStructuralParent() : object.getParentObject();
     }
 
     public static String getObjectFullId(@NotNull DBSObject object) {
@@ -878,9 +876,8 @@ public final class DBUtils {
      */
     @Nullable
     public static Object getRowValueByPath(@NotNull DBDValueRow row, @NotNull ResultSetValuePath valuePath) {
-        if (!(valuePath.pathItems().getFirst() instanceof ResultSetValuePath.PathAttributeItem rootAttr
-            && rootAttr.attribute() instanceof DBDAttributeBinding rootBinding)
-        ) {
+        DBDAttributeBinding rootBinding = getRootValueBinding(valuePath);
+        if (rootBinding == null) {
             log.debug("Root valuePath item expected to be an attribute binding.");
             return null;
         }
@@ -895,12 +892,74 @@ public final class DBUtils {
         int i = 1;
         while (value != null && i < valuePath.pathItems().size()) {
             value = valuePath.pathItems().get(i).apply(RSV_PATH_ITEM_VALUE_RESOLVER, value);
+            if (value == DBDVoid.INSTANCE) {
+                return value;
+            }
             i++;
         }
         if (i < valuePath.pathItems().size()) {
             log.debug("ResultSet value valuePath was not completely applied.");
         }
         return value;
+    }
+
+    @Nullable
+    public static DBDAttributeBinding getRootValueBinding(@Nullable ResultSetValuePath valuePath) {
+        if (valuePath != null && !valuePath.pathItems().isEmpty()
+            && valuePath.pathItems().getFirst() instanceof ResultSetValuePath.PathAttributeItem root
+            && root.attribute() instanceof DBDAttributeBinding binding) {
+            return binding;
+        }
+        return null;
+    }
+
+    /**
+     * Update a nested value using the same ordered attribute and index steps as {@link #getRowValueByPath}.
+     * The first step identifies the root attribute; the supplied root value is its already resolved value.
+     * Traverse the intermediate steps and set the last collection item or composite attribute.
+     * An invalid or missing intermediate step throws instead of silently returning null as a read can.
+     */
+    public static void updateValueByPath(
+        @NotNull DBDValue rootValue,
+        @NotNull ResultSetValuePath valuePath,
+        @Nullable Object newValue
+    ) throws DBCException {
+        List<ResultSetValuePath.PathItem> items = valuePath.pathItems();
+        if (items.size() < 2 || getRootValueBinding(valuePath) == null) {
+            throw new DBCException("Invalid nested value path");
+        }
+
+        Object parent = rootValue;
+        for (int i = 1; i < items.size() - 1; i++) {
+            ResultSetValuePath.PathItem item = items.get(i);
+            if (item instanceof ResultSetValuePath.PathIndexItem index && parent instanceof DBDCollection collection) {
+                checkValuePathIndex(index.index(), collection);
+                parent = collection.getItem(index.index());
+            } else if (item instanceof ResultSetValuePath.PathAttributeItem attribute && parent instanceof DBDComposite composite) {
+                parent = composite.getAttributeValue(attribute.attribute());
+            } else {
+                throw new DBCException("Cannot resolve nested value path");
+            }
+            if (parent == null) {
+                throw new DBCException("Nested value path contains a null intermediate value");
+            }
+        }
+
+        ResultSetValuePath.PathItem last = items.getLast();
+        if (last instanceof ResultSetValuePath.PathIndexItem index && parent instanceof DBDCollection collection) {
+            checkValuePathIndex(index.index(), collection);
+            collection.setItem(index.index(), newValue);
+        } else if (last instanceof ResultSetValuePath.PathAttributeItem attribute && parent instanceof DBDComposite composite) {
+            composite.setAttributeValue(attribute.attribute(), newValue);
+        } else {
+            throw new DBCException("Cannot update nested value path");
+        }
+    }
+
+    private static void checkValuePathIndex(int index, @NotNull DBDCollection collection) throws DBCException {
+        if (index < 0 || index >= collection.getItemCount()) {
+            throw new DBCException("Collection index out of range: " + index);
+        }
     }
 
     @Nullable
@@ -973,7 +1032,9 @@ public final class DBUtils {
             }
         }
         if (currentIndex < nestedIndexes.length) {
-            log.debug("Not all of nested indexes were used, we might have missed the desired value.");
+            // An index belonging to a deeper row must not resolve to this attribute's ancestor value.
+            log.debug("Not all of nested indexes were used to resolve the value.");
+            return null;
         }
         return value;
     }
@@ -2378,7 +2439,7 @@ public final class DBUtils {
             }
         }
         DBPDataSource dataSource = object.getDataSource();
-        if (dataSource == null || dataSource.isConnectionRefreshing()) {
+        if (dataSource == null || dataSource.isConnectionRefreshing() || !dataSource.hasDefaultInstance()) {
             return null;
         }
         return dataSource.getDefaultInstance();
@@ -2891,7 +2952,8 @@ public final class DBUtils {
         StringTokenizer st = new StringTokenizer(arrayString, ",", false);
         while (st.hasMoreTokens()) {
             String token = st.nextToken().trim();
-            if (token.startsWith("\"") && token.endsWith("\"")) {
+            // A lone quote (e.g. left after splitting a quoted element that contains a comma) must stay as is
+            if (token.length() > 1 && token.startsWith("\"") && token.endsWith("\"")) {
                 token = token.substring(1, token.length() - 1);
             }
             items.add(token);

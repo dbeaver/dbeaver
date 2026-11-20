@@ -118,33 +118,37 @@ public class AIAssistantImpl implements AIAssistant {
                 AIMessageMeta requestMeta = new AIMessageMeta(
                     AIMetaTypes.PROMPT,
                     engineDescriptor.getId(),
-                    engine.getProperties().getModel(),
+                    engine.getProperties().getModelDisplayName(),
                     usage,
                     Duration.between(now, Instant.now()),
                     systemPromptLength
                 );
 
                 if (completionResponse.getType() == AIMessageType.FUNCTION) {
-                    AIFunctionCall functionCall = completionResponse.getFunctionCall();
-                    if (functionCall != null) {
+                    List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
+                    List<String> actionResults = new ArrayList<>();
+                    List<AIFunctionCall> calls = completionResponse.getFunctionCalls();
+                    for (AIFunctionCall functionCall : calls) {
                         AIFunctionResult result = callFunction(functionContext, functionCall);
-                        String stringValue = CommonUtils.toString(result.getValue());
                         if (result.getType() == AIFunctionType.ACTION) {
-                            return new AIAssistantResponse(
-                                AIAssistantResponse.Type.FUNCTION,
-                                stringValue,
-                                List.of(requestMeta)
-                            );
+                            actionResults.add(CommonUtils.toString(result.getValue()));
                         } else {
-                            List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
                             AIMessage fcMessage = AIMessage.functionCall(functionCall, result);
                             newMessages.add(fcMessage);
-                            AIEngineRequest newRequest = new AIEngineRequest(newMessages);
-                            newRequest.setFunctions(request.getFunctions());
-
-                            request = newRequest;
-                            continue;
                         }
+                    }
+                    if (!actionResults.isEmpty()) {
+                        return new AIAssistantResponse(
+                            AIAssistantResponse.Type.FUNCTION,
+                            String.join("\n", actionResults),
+                            List.of(requestMeta)
+                        );
+                    }
+                    if (!completionResponse.getFunctionCalls().isEmpty()) {
+                        AIEngineRequest newRequest = new AIEngineRequest(newMessages);
+                        newRequest.setFunctions(request.getFunctions());
+                        request = newRequest;
+                        continue;
                     }
                 } else {
                     List<String> variants = completionResponse.getVariants();
@@ -289,9 +293,12 @@ public class AIAssistantImpl implements AIAssistant {
                 engine.requestCompletionStream(monitor, request, listener);
             } else {
                 AIEngineResponse response = engine.requestCompletion(monitor, request);
+                listener.messageMetadata(response.getMessageMetadata());
 
-                if (response.getFunctionCall() != null) {
-                    listener.nextChunk(new AIEngineResponseChunk(response.getFunctionCall()));
+                if (!response.getFunctionCalls().isEmpty()) {
+                    for (AIFunctionCall functionCall : response.getFunctionCalls()) {
+                        listener.nextChunk(new AIEngineResponseChunk(functionCall));
+                    }
                     listener.usage(response.getUsage());
                     listener.completeBlock();
                 } else if (response.getVariants() != null) {
@@ -351,12 +358,17 @@ public class AIAssistantImpl implements AIAssistant {
                     AIMessage fcMessage = AIMessage.functionCall(fc, result);
                     // Visualize result in chat
                     chatListener.processFunctionCall(fcMessage);
-                    if (function.getType() == AIFunctionType.INFORMATION || result.getException() != null) {
+                    if (result.getException() != null) {
+                        chatListener.error(result.getException());
+                        chatListener.complete(List.of(), true, false);
+                        return;
+                    }
+                    if (function.getType() == AIFunctionType.INFORMATION) {
                         newMessages.add(fcMessage);
                     }
                 } catch (Exception e) {
                     chatListener.error(e);
-                    conversation.promptProcessed(true);
+                    chatListener.complete(List.of(), true, false);
                     return;
                 }
             }
@@ -368,6 +380,7 @@ public class AIAssistantImpl implements AIAssistant {
                     generateTextStream(monitor, chatSession, conversation, new AIChatRequest(context, newMessages, null), chatListener);
                 } catch (Exception e) {
                     chatListener.error(e);
+                    chatListener.complete(List.of(), true, false);
                 }
             } else {
                 // No more messages for AI
@@ -450,6 +463,13 @@ public class AIAssistantImpl implements AIAssistant {
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
+        AIFunctionSettings settings = getToolboxManager().getFunctionSettings();
+        AIToolbox toolbox = function.getToolbox();
+        if (!settings.isFunctionsEnabled() || !toolbox.isEnabled() || !toolbox.isAccessible()
+            || !settings.getToolboxSettings(toolbox).isEnabled()
+            || !settings.getToolboxSettings(toolbox).isFunctionEnabled(function)) {
+            throw new DBCMessageException("Function '" + functionName + "' is disabled");
+        }
         Map<String, Object> arguments = functionCall.getArguments();
 
         if (isLoggingEnabled()) {
@@ -530,7 +550,7 @@ public class AIAssistantImpl implements AIAssistant {
     protected static String getEngineInfo(@NotNull AIConfigurationProfile profile, @NotNull AIEngine<?> engine) {
         return "profile: " + profile.getProfileName()
             + ", engine: " + profile.getEngineId()
-            + ", model: " + engine.getProperties().getModel();
+            + ", model: " + engine.getProperties().getModelDisplayName();
     }
 
     protected boolean isLoggingEnabled() {

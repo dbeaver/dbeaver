@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.erd.ERDAssociation;
@@ -69,15 +70,24 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     private ERDHighlightingHandle associatedAttributesHighlighing = null;
     protected AccessibleGraphicalEditPart accPart;
-    private final Color labelForegroundColor;
+    @NotNull
+    private Color labelForegroundColor;
+    @Nullable
+    private Color notationBackgroundColor;
 
     public AssociationPart() {
+        labelForegroundColor = createLabelForegroundColor();
+    }
+
+    @NotNull
+    private static Color createLabelForegroundColor() {
         Color foreground = ERDThemeSettings.instance.attrForeground;
         final Color contrastColor = UIStyles.getContrastColor(foreground);
         final RGB labelForeground = UIUtils.blend(foreground.getRGB(), contrastColor.getRGB(), 60);
-        labelForegroundColor = UIUtils.getSharedColor(labelForeground);
+        return UIUtils.getSharedColor(labelForeground);
     }
 
+    @NotNull
     public ERDAssociation getAssociation() {
         return (ERDAssociation) getModel();
     }
@@ -210,11 +220,42 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             return;
         }
         Color background = getParent().getViewer().getControl().getBackground();
+        notationBackgroundColor = background;
         ERDNotation notation = diagramNotationDescriptor.getNotation();
         if (notation != null) {
             notation.applyNotationForArrows(monitor, conn, getAssociation(), background, labelForegroundColor);
         } else {
             log.error("ERD notation instance not created for id: " + diagramNotationDescriptor.getId());
+        }
+    }
+
+    public void refreshTheme() {
+        PolylineConnection connection = (PolylineConnection) getFigure();
+        connection.setForegroundColor(ERDThemeSettings.instance.linesForeground);
+        Color oldLabelColor = labelForegroundColor;
+        labelForegroundColor = createLabelForegroundColor();
+        Color newBackground = ERDThemeSettings.instance.diagramBackground;
+        for (Object child : connection.getChildren()) {
+            if (child instanceof IFigure figure && child instanceof RotatableDecoration) {
+                refreshDecoration(figure, notationBackgroundColor, newBackground, oldLabelColor);
+            } else if (child instanceof Label label) {
+                label.setForegroundColor(connection.getLayoutManager().getConstraint(label) instanceof ConnectionEndpointLocator
+                    ? labelForegroundColor : ERDThemeSettings.instance.attrForeground);
+            }
+        }
+        notationBackgroundColor = newBackground;
+    }
+
+    private void refreshDecoration(
+        @NotNull IFigure decoration,
+        @Nullable Color oldBackground,
+        @NotNull Color newBackground,
+        @NotNull Color oldLabelColor
+    ) {
+        if (decoration.getBackgroundColor() == oldBackground) {
+            decoration.setBackgroundColor(newBackground);
+        } else if (decoration.getBackgroundColor() == oldLabelColor) {
+            decoration.setBackgroundColor(labelForegroundColor);
         }
     }
 

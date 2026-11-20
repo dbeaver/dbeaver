@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -71,7 +72,8 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     public DBNNode getRootNode() {
         DBNModel model = getGlobalNavigatorModel();
         DBNProject projectNode = model.getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
-        return projectNode != null ? projectNode : model.getRoot();
+        return projectNode == null ? model.getRoot()
+            : ProjectVisibility.isVisible(projectNode) ? projectNode : new DBNEmptyNode();
     }
 
     @Override
@@ -82,6 +84,12 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
         
         TreeViewer viewer = getNavigatorViewer();
+        viewer.addFilter(new ViewerFilter() {
+            @Override
+            public boolean select(@NotNull Viewer viewer, @Nullable Object parentElement, @NotNull Object element) {
+                return !(element instanceof DBNProject project) || ProjectVisibility.isVisible(project);
+            }
+        });
         viewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
@@ -309,24 +317,31 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
         updateRepresentation();
     }
+
+    public void refreshRepresentation() {
+        updateRepresentationNow();
+    }
     
     private void updateRepresentation() {
-        UIExecutionQueue.queueExec(() -> {
-            if (getNavigatorTree().isDisposed()) {
-                return;
-            }
-            getNavigatorTree().reloadTree(getRootNode());
-            boolean viewable = ObjectPropertyTester.nodeProjectHasPermission(
-                getRootNode(),
-                RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW
-            );
-            getNavigatorTree().setVisible(viewable);
-            treeViewLayoutInfo.exclude = !viewable;
-            lockPlaceholder.setVisible(!viewable);
-            lockPlaceholderLayoutInfo.exclude = viewable;
-            treeContainer.layout(true, true);
-        });
+        UIExecutionQueue.queueExec(this::updateRepresentationNow);
         //columnController.autoSizeColumns();
+    }
+
+    private void updateRepresentationNow() {
+        if (getNavigatorTree().isDisposed()) {
+            return;
+        }
+        DBNNode rootNode = getRootNode();
+        getNavigatorTree().reloadTree(rootNode);
+        boolean viewable = ObjectPropertyTester.nodeProjectHasPermission(
+            rootNode,
+            RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW
+        );
+        getNavigatorTree().setVisible(viewable);
+        treeViewLayoutInfo.exclude = !viewable;
+        lockPlaceholder.setVisible(!viewable);
+        lockPlaceholderLayoutInfo.exclude = viewable;
+        treeContainer.layout(true, true);
     }
 
 }

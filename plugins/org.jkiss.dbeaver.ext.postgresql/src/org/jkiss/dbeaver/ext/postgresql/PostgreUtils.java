@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePrivilege.ObjectPermission;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
@@ -62,11 +63,13 @@ import java.lang.reflect.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Types;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * postgresql utils
@@ -398,6 +401,7 @@ public class PostgreUtils {
             return attr.getDataType();
         } else {
             DBRProgressMonitor monitor = session.getProgressMonitor();
+            PostgreDatabase lookedUpDatabase = null;
             if (type instanceof JDBCColumnMetaData cmd) {
                 try {
                     DBCEntityMetaData entityMetaData = cmd.getEntityMetaData();
@@ -417,10 +421,13 @@ public class PostgreUtils {
                         String databaseName = cmd.getCatalogName();
                         PostgreDatabase database = dataSource.getDatabase(databaseName);
                         if (database != null) {
+                            lookedUpDatabase = database;
                             String typeName = type.getTypeName();
                             if (PostgreUtils.isCompositeTypeName(typeName)) {
-                                // Type name in JDBCColumnMetaData can be fully qualified and quoted. Let's fix it for the better search in the getDataType() method
-                                String[] identifiers = SQLUtils.splitFullIdentifier(typeName, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
+                                // Type name in JDBCColumnMetaData can be fully qualified and quoted.
+                                // Normalize it for the lookup in getDataType().
+                                String[] identifiers = SQLUtils.splitFullIdentifier(
+                                    typeName, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
                                 if (!ArrayUtils.isEmpty(identifiers)) {
                                     typeName = identifiers[identifiers.length - 1];
                                     if (identifiers.length == 2) {
@@ -438,7 +445,8 @@ public class PostgreUtils {
                                     }
                                 }
                             }
-                            PostgreDataType dataType = database.getDataType(monitor, typeName);
+                            // JDBC can report a temporary row type that the metadata connection cannot resolve.
+                            PostgreDataType dataType = database.getDataType(monitor, typeName, type.getTypeID() != Types.STRUCT);
                             if (dataType != null) {
                                 return dataType;
                             }
@@ -451,8 +459,9 @@ public class PostgreUtils {
 
             String typeName = type.getTypeName();
             DBSInstance ownerInstance = session.getExecutionContext().getOwnerInstance();
-            if (ownerInstance instanceof PostgreDatabase pdb) {
-                PostgreDataType localDataType = pdb.getDataType(monitor, typeName);
+            if (ownerInstance instanceof PostgreDatabase pdb && pdb != lookedUpDatabase) {
+                PostgreDataType localDataType = pdb.getDataType(
+                    monitor, typeName, !(type instanceof JDBCColumnMetaData) || type.getTypeID() != Types.STRUCT);
                 if (localDataType != null) {
                     return localDataType;
                 }
@@ -827,7 +836,8 @@ public class PostgreUtils {
     public static String getObjectTypeName(@NotNull PostgrePrivilegeOwner object) {
         return switch (object) {
             case PostgreSequence ignored -> "SEQUENCE";
-            case PostgreProcedure postgreProcedure -> postgreProcedure.getProcedureTypeName();
+            // GRANT/REVOKE accept only FUNCTION or PROCEDURE, aggregates and window functions use FUNCTION
+            case PostgreProcedure postgreProcedure -> postgreProcedure.getKind() == PostgreProcedureKind.p ? "PROCEDURE" : "FUNCTION";
             case PostgreSchema ignored2 -> "SCHEMA";
             case PostgreDatabase ignored3 -> "DATABASE";
             default -> "TABLE";
@@ -866,10 +876,38 @@ public class PostgreUtils {
 
             // Permissions
             Collection<PostgrePrivilege> permissions = object.getPrivileges(monitor, true);
+            if (object instanceof PostgreProcedure && !CommonUtils.isEmpty(permissions) && !hasPublicGrantee(permissions)) {
+                // Functions and procedures grant EXECUTE to PUBLIC on creation, so re-running the DDL
+                // must revoke it when the ACL no longer has it, as pg_dump does.
+                // An empty list means the ACL couldn't be read, so PUBLIC may still be there.
+                PostgreObjectPrivilege publicPrivilege = new PostgreObjectPrivilege(
+                    object,
+                    new PostgreRoleReference(object.getDatabase(), PostgreConstants.PUBLIC_ROLE_NAME, null),
+                    Collections.emptyList()
+                );
+                Collections.addAll(actions,
+                    new PostgreCommandGrantPrivilege(object, false, object, publicPrivilege, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
+                        .getPersistActions(monitor, executionContext, options));
+            }
             if (!CommonUtils.isEmpty(permissions)) {
 
                 for (PostgrePrivilege permission : permissions) {
-                    if (permission.hasAllPrivileges(object)) {
+                    Map<Boolean, List<PostgrePrivilegeType>> typesByGrantOption = Arrays.stream(permission.getPermissions())
+                        .collect(Collectors.partitioningBy(
+                            p -> CommonUtils.isBitSet(p.getPermissions(), PostgrePrivilege.WITH_GRANT_OPTION),
+                            Collectors.mapping(ObjectPermission::getPrivilegeType, Collectors.toList())
+                        ));
+                    List<PostgrePrivilegeType> grantableTypes = typesByGrantOption.get(true);
+                    List<PostgrePrivilegeType> nonGrantableTypes = typesByGrantOption.get(false);
+                    if (!grantableTypes.isEmpty() && !nonGrantableTypes.isEmpty()) {
+                        // WITH GRANT OPTION applies to the whole statement, so mixed grant options
+                        // are split into separate GRANT statements (as pg_dump does)
+                        for (List<PostgrePrivilegeType> types : List.of(nonGrantableTypes, grantableTypes)) {
+                            Collections.addAll(actions,
+                                    new PostgreCommandGrantPrivilege(permission.getOwner(), true, object, permission, types.toArray(new PostgrePrivilegeType[0]))
+                                            .getPersistActions(monitor, executionContext, options));
+                        }
+                    } else if (permission.hasAllPrivileges(object)) {
                         Collections.addAll(actions,
                                 new PostgreCommandGrantPrivilege(permission.getOwner(), true, object, permission, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
                                         .getPersistActions(monitor, executionContext, options));
@@ -880,6 +918,18 @@ public class PostgreUtils {
                 }
             }
         }
+    }
+
+    private static boolean hasPublicGrantee(@NotNull Collection<PostgrePrivilege> permissions) {
+        for (PostgrePrivilege permission : permissions) {
+            if (permission instanceof PostgreObjectPrivilege objectPrivilege
+                && objectPrivilege.getGrantee() != null
+                && PostgreConstants.PUBLIC_ROLE_NAME.equals(objectPrivilege.getGrantee().getRoleName())
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isGISDataType(@NotNull String typeName) {

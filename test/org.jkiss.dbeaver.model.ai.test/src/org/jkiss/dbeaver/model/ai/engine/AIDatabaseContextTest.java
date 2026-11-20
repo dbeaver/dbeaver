@@ -21,11 +21,19 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -33,6 +41,7 @@ import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class AIDatabaseContextTest extends DBeaverUnitTest {
     private static final String EMPTY_SCOPE_MESSAGE =
@@ -72,32 +81,116 @@ public class AIDatabaseContextTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void excludesConfiguredObjectAndItsDescendants() throws DBException {
+    public void scopedMetadataOmitsCrossScopeRelationships() throws DBException {
+        final AISchemaGenerationOptions options = AISchemaGenerationOptions.builder()
+            .withSendForeignKeys(true)
+            .withSendFullDDL(true)
+            .withSendReferences(true)
+            .build();
+
+        DBSCatalog catalog = Mockito.mock(DBSCatalog.class);
+        DBSSchema schema = Mockito.mock(DBSSchema.class);
+        Mockito.when(schema.getParentObject()).thenReturn(catalog);
+        DBSSchema otherSchema = Mockito.mock(DBSSchema.class);
+        Mockito.when(otherSchema.getParentObject()).thenReturn(Mockito.mock(DBSCatalog.class));
+        DBSEntity allowed = Mockito.mock(DBSEntity.class);
+        Mockito.when(allowed.getParentObject()).thenReturn(schema);
+        DBSEntity excluded = Mockito.mock(DBSEntity.class);
+        Mockito.when(excluded.getParentObject()).thenReturn(otherSchema);
+        DBCExecutionContext executionContext = Mockito.mock(DBCExecutionContext.class);
+        DBCExecutionContextDefaults<?, ?> defaults = Mockito.mock(DBCExecutionContextDefaults.class);
+        Mockito.doReturn(schema).when(defaults).getDefaultSchema();
+        Mockito.doReturn(catalog).when(defaults).getDefaultCatalog();
+        Mockito.when(executionContext.getContextDefaults()).thenReturn(defaults);
+        DBSEntityAssociation foreignKey = Mockito.mock(DBSEntityAssociation.class);
+        Mockito.when(foreignKey.getParentObject()).thenReturn(allowed);
+        DBSEntityAttribute column = Mockito.mock(DBSEntityAttribute.class);
+        Mockito.when(column.getParentObject()).thenReturn(allowed);
+        VoidProgressMonitor monitor = new VoidProgressMonitor();
+
+        for (AIDatabaseScope scope : List.of(AIDatabaseScope.CURRENT_SCHEMA, AIDatabaseScope.CURRENT_DATABASE, AIDatabaseScope.CUSTOM)) {
+            AIDatabaseContext.Builder builder = createBuilder(scope).setExecutionContext(executionContext)
+                .setSchemaGenerationOptions(options);
+            if (scope == AIDatabaseScope.CUSTOM) {
+                builder.setCustomEntities(List.of(allowed));
+            }
+            AISchemaGenerationOptions scoped = builder.build().getSchemaGenerationOptions();
+            Assertions.assertTrue(scoped.sendForeignKeys(), scope.name());
+            Assertions.assertTrue(scoped.sendFullDDL(), scope.name());
+            Assertions.assertTrue(scoped.sendReferences(), scope.name());
+            Assertions.assertTrue(scoped.includesObject(monitor, allowed), scope.name());
+            Assertions.assertTrue(scoped.includesObject(monitor, column), scope.name());
+            Assertions.assertFalse(scoped.includesObject(monitor, excluded), scope.name());
+            Mockito.when(foreignKey.getAssociatedEntity()).thenReturn(excluded);
+            Assertions.assertFalse(scoped.includesObject(monitor, foreignKey), scope.name());
+            Mockito.when(foreignKey.getAssociatedEntity()).thenReturn(allowed);
+            Assertions.assertTrue(scoped.includesObject(monitor, foreignKey), scope.name());
+            Mockito.when(foreignKey.getParentObject()).thenReturn(excluded);
+            Assertions.assertFalse(scoped.includesObject(monitor, foreignKey), scope.name());
+            Mockito.when(foreignKey.getParentObject()).thenReturn(allowed);
+        }
+
+        AISchemaGenerationOptions unrestricted = createBuilder(AIDatabaseScope.CURRENT_DATASOURCE)
+            .setSchemaGenerationOptions(options).build().getSchemaGenerationOptions();
+        Assertions.assertTrue(unrestricted.sendForeignKeys());
+        Assertions.assertTrue(unrestricted.sendFullDDL());
+        Assertions.assertTrue(unrestricted.sendReferences());
+    }
+
+    @Test
+    public void limitsObjectsToDataSourceCustomScope() throws DBException {
         DBPDataSourceContainer dataSource = Mockito.mock(DBPDataSourceContainer.class);
         Mockito.when(dataSource.getId()).thenReturn("data-source");
         Mockito.when(dataSource.getExtension(AIContextSettingsDataSource.AI_DS_EXTENSION))
-            .thenReturn(Map.of("excludedObjects", List.of("data-source/restricted")));
+            .thenReturn(Map.of(
+                "scope", AIDatabaseScope.CUSTOM.name(),
+                "objects", List.of("data-source/allowed")
+            ));
+
+        DBSObjectContainer allowedSchema = Mockito.mock(DBSObjectContainer.class);
+        Mockito.when(allowedSchema.getName()).thenReturn("allowed");
+        Mockito.when(allowedSchema.getParentObject()).thenReturn(dataSource);
+
+        DBSEntity allowedTable = Mockito.mock(DBSEntity.class);
+        Mockito.when(allowedTable.getName()).thenReturn("documents");
+        Mockito.when(allowedTable.getParentObject()).thenReturn(allowedSchema);
 
         DBSObjectContainer restrictedSchema = Mockito.mock(DBSObjectContainer.class);
         Mockito.when(restrictedSchema.getName()).thenReturn("restricted");
         Mockito.when(restrictedSchema.getParentObject()).thenReturn(dataSource);
 
-        DBSEntity restrictedTable = Mockito.mock(DBSEntity.class);
-        Mockito.when(restrictedTable.getName()).thenReturn("documents");
-        Mockito.when(restrictedTable.getParentObject()).thenReturn(restrictedSchema);
-
-        DBSObjectContainer publicSchema = Mockito.mock(DBSObjectContainer.class);
-        Mockito.when(publicSchema.getName()).thenReturn("public");
-        Mockito.when(publicSchema.getParentObject()).thenReturn(dataSource);
-
+        DBCExecutionContext executionContext = Mockito.mock(DBCExecutionContext.class);
         AIDatabaseContext context = new AIDatabaseContext.Builder(new DBSLogicalDataSource(dataSource))
             .setScope(AIDatabaseScope.CURRENT_DATASOURCE)
-            .setExecutionContext(Mockito.mock(DBCExecutionContext.class))
+            .setExecutionContext(executionContext)
+            .setSchemaGenerationOptions(AISchemaGenerationOptions.builder()
+                .withSendForeignKeys(true)
+                .withSendFullDDL(true)
+                .withSendReferences(true)
+                .build())
             .build();
 
-        Assertions.assertTrue(context.isObjectExcluded(restrictedSchema));
-        Assertions.assertTrue(context.isObjectExcluded(restrictedTable));
-        Assertions.assertFalse(context.isObjectExcluded(publicSchema));
+        Assertions.assertTrue(context.hasDataSourceCustomScope());
+        Assertions.assertEquals(Set.of("data-source/allowed"), context.getDataSourceCustomObjectIds());
+        Assertions.assertTrue(context.isObjectAllowed(dataSource));
+        Assertions.assertTrue(context.isObjectAllowed(allowedSchema));
+        Assertions.assertTrue(context.isObjectAllowed(allowedTable));
+        Assertions.assertFalse(context.isObjectAllowed(restrictedSchema));
+        Assertions.assertTrue(AIUtils.isObjectInScope(context, executionContext, allowedTable));
+        Assertions.assertFalse(AIUtils.isObjectInScope(context, executionContext, restrictedSchema));
+        Assertions.assertTrue(context.getSchemaGenerationOptions().sendForeignKeys());
+        Assertions.assertTrue(context.getSchemaGenerationOptions().sendFullDDL());
+        Assertions.assertTrue(context.getSchemaGenerationOptions().sendReferences());
+        Assertions.assertTrue(context.getSchemaGenerationOptions().includesObject(new VoidProgressMonitor(), allowedTable));
+        Assertions.assertFalse(context.getSchemaGenerationOptions().includesObject(new VoidProgressMonitor(), restrictedSchema));
+
+        AIDatabaseContext narrowedContext = new AIDatabaseContext.Builder(new DBSLogicalDataSource(dataSource))
+            .setScope(AIDatabaseScope.CUSTOM)
+            .setCustomEntities(List.of(allowedTable, restrictedSchema))
+            .setExecutionContext(executionContext)
+            .build();
+        Assertions.assertTrue(AIUtils.isObjectInScope(narrowedContext, executionContext, allowedTable));
+        Assertions.assertFalse(AIUtils.isObjectInScope(narrowedContext, executionContext, restrictedSchema));
     }
 
     @NotNull

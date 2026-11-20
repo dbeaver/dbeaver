@@ -50,6 +50,9 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final boolean ui;
     private final boolean enabledByDefault;
     private final boolean omitConfirmation;
+    private final boolean readOnlyHint;
+    private final boolean destructiveHint;
+    private final boolean idempotentHint;
     private final AIFunctionAllowMode defaultAllowMode;
     private final AIFunctionPurpose purpose;
     private final AIFunctionType type;
@@ -89,6 +92,9 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
             AIFunctionAllowMode.ALWAYS_ALLOW
         );
         this.omitConfirmation = CommonUtils.toBoolean(config.getAttribute("omitConfirmation"), false);
+        this.readOnlyHint = CommonUtils.toBoolean(config.getAttribute("readOnlyHint"), false);
+        this.destructiveHint = CommonUtils.toBoolean(config.getAttribute("destructiveHint"), true);
+        this.idempotentHint = CommonUtils.toBoolean(config.getAttribute("idempotentHint"), false);
         this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
         this.aiDescription = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -184,6 +190,21 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     }
 
     @Override
+    public boolean isReadOnlyHint() {
+        return readOnlyHint;
+    }
+
+    @Override
+    public boolean isDestructiveHint() {
+        return destructiveHint;
+    }
+
+    @Override
+    public boolean isIdempotentHint() {
+        return idempotentHint;
+    }
+
+    @Override
     public boolean isOmitConfirmation() {
         return omitConfirmation;
     }
@@ -240,7 +261,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
 
     boolean hasImplementation() {
         return (implementation != null && (implementation.hasClass() ||
-            implementation.isHeadless() && type == AIFunctionType.ACTION)) ||
+            implementation.isHeadless() && (type == AIFunctionType.ACTION || ui))) ||
             CommonUtils.isNotEmpty(objectType.getImplName());
     }
 

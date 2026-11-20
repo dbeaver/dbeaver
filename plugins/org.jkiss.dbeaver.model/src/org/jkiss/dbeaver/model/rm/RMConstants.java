@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ public interface RMConstants {
     String PERMISSION_DATABASE_DEVELOPER = "database-developer";
     String PERMISSION_METADATA_EDITOR = "metadata-editor";
     String PERMISSION_SQL_GENERATOR = "sql-generator";
+    String PERMISSION_SQL_EXECUTE_QUERY = "sql-execute-query";
 
     /**
      * <b>SQL script execution</b>: allows users to execute custom SQL scripts.

@@ -15,10 +15,14 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -38,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
@@ -191,16 +196,21 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void reportRuntimeExpirationOnlyOnce() {
-        CDataDriverDescriptor driver = mockDriver();
+    public void recognizeRepeatedRuntimeExpirationAndNotifyOnlyOnce() {
+        var driver = Mockito.spy(new CDataDriverDescriptor(
+            DataSourceProviderRegistry.getInstance().getDataSourceProvider("generic"), "test-cdata-license",
+            new CDataDriverInfo("postgresql", "postgresql", "Test driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://example.org", "postgresql", null)));
         CDataDriverLoaderDescriptor loader = new CDataDriverLoaderDescriptor("default", driver);
-        Mockito.when(driver.getDefaultDriverLoader()).thenReturn(loader);
-        Mockito.when(driver.reportLicenseError(Mockito.any())).thenCallRealMethod();
+        Mockito.doReturn(loader).when(driver).getDefaultDriverLoader();
+        var listener = Mockito.mock(Runnable.class);
+        driver.addLicenseChangeListener(listener);
         SQLException error = new SQLException("The trial license has expired [code: J nodeid: TEST].");
 
         Assertions.assertTrue(driver.reportLicenseError(error));
-        Assertions.assertFalse(driver.reportLicenseError(error));
-        Mockito.when(driver.getLicenseStatus()).thenCallRealMethod();
+        Assertions.assertTrue(driver.reportLicenseError(error));
+        Mockito.verify(listener, Mockito.times(1)).run();
+        Assertions.assertFalse(driver.reportLicenseError(new SQLException("Connection refused")));
         Assertions.assertEquals(CDataLicenseStatus.TRIAL_EXPIRED, driver.getLicenseStatus());
     }
 
@@ -296,7 +306,7 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
             new CDataLicenseActivationRequest("ABC", "test@example.org", CDataLicenseType.PURCHASED, "ABC-SECRET"),
             new CDataLicenseActivationRequest("user", "user@example.org", CDataLicenseType.PURCHASED, "user@example.org-SECRET"),
             new CDataLicenseActivationRequest("ABC-SECRET", "test@example.org", CDataLicenseType.PURCHASED, "ABC"),
-            new CDataLicenseActivationRequest("name[1]", "name[1]@example.org", CDataLicenseType.PURCHASED, "name[1]@example.org-SECRET$")
+            new CDataLicenseActivationRequest("name[1]", "name+tag@example.org", CDataLicenseType.PURCHASED, "name+tag@example.org-SECRET$")
         )) {
             String output = "Name: " + request.name() + " Email: " + request.email() + " Key: " + request.productKey();
             Assertions.assertEquals("Name: <redacted> Email: <redacted> Key: <redacted>",
@@ -383,6 +393,52 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
         Assertions.assertEquals("CData cancellation test was canceled", error.getMessage());
         long pid = Long.parseLong(Files.readString(pidFile));
         Assertions.assertFalse(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false));
+    }
+
+    @Test
+    public void cancelingActivationJobTerminatesItsProcess() throws Exception {
+        Path testBundle = Path.of(CDataPromptProcess.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        Path pidFile = tempDirectory.resolve("activation-job.pid");
+        var job = new AbstractJob("CData activation cancellation test") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    CDataProcessExecutor.execute(
+                        monitor,
+                        List.of(
+                            GeneralUtils.findJavaExecutable(), "-cp", testBundle.toString(),
+                            CDataPromptProcess.class.getName(), pidFile.toString()
+                        ),
+                        tempDirectory,
+                        "CData activation cancellation test",
+                        List.of(new CDataProcessExecutor.PromptResponse("unmatched prompt", ""))
+                    );
+                    return Status.OK_STATUS;
+                } catch (Exception e) {
+                    return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.error("CData test process failed", e);
+                }
+            }
+        };
+        job.schedule();
+        try {
+            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
+                while (!Files.isRegularFile(pidFile)) {
+                    Thread.sleep(10);
+                }
+            });
+
+            job.cancel();
+
+            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
+                job.join();
+            });
+            Assertions.assertSame(Status.CANCEL_STATUS, job.getResult());
+            long pid = Long.parseLong(Files.readString(pidFile));
+            Assertions.assertFalse(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false));
+        } finally {
+            job.cancel();
+        }
     }
 
     @Test

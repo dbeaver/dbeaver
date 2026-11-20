@@ -177,12 +177,14 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
             addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.CUT);
             addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.COPY);
             addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.PASTE);
+            addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.SELECT_ALL);
             IAction action= getAction(ITextEditorActionConstants.QUICK_ASSIST);
             if (action != null && action.isEnabled()) {
                 addAction(menu, ITextEditorActionConstants.GROUP_EDIT, ITextEditorActionConstants.QUICK_ASSIST);
             }
         } else {
             addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.COPY);
+            addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.SELECT_ALL);
         }
 
         IAction preferencesAction = getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES);

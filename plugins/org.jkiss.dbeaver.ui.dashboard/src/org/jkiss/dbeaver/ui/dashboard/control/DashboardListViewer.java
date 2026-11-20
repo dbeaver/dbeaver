@@ -194,7 +194,9 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         if (dataSourceContainer == null) {
             return null;
         }
-        return DBUtils.getDefaultContext(dataSourceContainer.getDataSource().getDefaultInstance(), true);
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        return dataSource == null || !dataSource.hasDefaultInstance()
+            ? null : DBUtils.getDefaultContext(dataSource.getDefaultInstance(), true);
     }
 
     @NotNull

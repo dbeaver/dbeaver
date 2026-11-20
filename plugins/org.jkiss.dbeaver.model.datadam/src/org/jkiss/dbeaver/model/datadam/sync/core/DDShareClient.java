@@ -18,29 +18,23 @@ package org.jkiss.dbeaver.model.datadam.sync.core;
 
 import com.dbeaver.datadam.share.api.exception.DDShareException;
 import com.dbeaver.datadam.share.api.model.*;
-import com.dbeaver.datadam.share.api.model.DDConfiguration;
-import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
-import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import com.dbeaver.datadam.share.api.service.DDSharedProjectService;
-import com.dbeaver.rest.client.AbstractRestClient;
-import com.dbeaver.rest.client.MediaType;
-import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
-import com.dbeaver.rest.client.interceptor.HttpResponseWrapper;
-import com.dbeaver.rest.client.interceptor.InterceptorChain;
 import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.DDClient;
+import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.GsonUtils;
-import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.Pair;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.net.http.HttpRequest;
+import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -48,10 +42,9 @@ import java.time.ZoneOffset;
 import java.util.*;
 import javax.crypto.SecretKey;
 
-public class DDShareClient extends AbstractRestClient implements DDSyncTransport, DDSharedProjectService {
+public class DDShareClient extends DDClient implements DDSharedProjectService {
 
     private static final int TIMEOUT_MS = 30000;
-    private static final String SERVER_TIME_HEADER = "X-DD-Server-Time";
     private static final String FIELD_NAME = "name";
     private static final String FIELD_DESCRIPTION = "description";
 
@@ -62,16 +55,78 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         projectOwner: ownerAccountId
         createTime
         updateTime""";
+    private static final String REVISION_FIELDS = """
+        id: revisionId
+        userId
+        updateTime
+        configurationFingerprint""";
+    private static final String LIST_PROJECTS_QUERY = """
+        query {
+            projects {
+        %s
+            }
+        }""".formatted(PROJECT_FIELDS.indent(8));
+    private static final String CREATE_PROJECT_MUTATION = """
+        mutation($apiKeyId: ID!, $projectId: ID!, $name: String!, $description: String) {
+            project: createProject(apiKeyId: $apiKeyId, projectId: $projectId, name: $name, description: $description) {
+        %s
+            }
+        }""".formatted(PROJECT_FIELDS.indent(8));
+    private static final String UPDATE_PROJECT_MUTATION = """
+        mutation($projectId: ID!, $name: String!, $description: String) {
+            project: updateProject(projectId: $projectId, name: $name, description: $description) {
+        %s
+            }
+        }""".formatted(PROJECT_FIELDS.indent(8));
+    private static final String DELETE_PROJECT_MUTATION = """
+        mutation($projectId: ID!) {
+            deleteProject(projectId: $projectId)
+        }""";
+    private static final String CURRENT_REVISION_QUERY = """
+        query($projectId: ID!) {
+            revision: projectCurrentRevision(projectId: $projectId) {
+        %s
+            }
+        }""".formatted(REVISION_FIELDS.indent(8));
+    private static final String PULL_CONFIGURATION_QUERY = """
+        query($projectId: ID!) {
+            projectPullConfiguration(projectId: $projectId) {
+                files {
+                    fileName
+                    encryptedContents
+                    fingerprint
+                }
+                currentRevision {
+        %s
+                }
+            }
+        }""".formatted(REVISION_FIELDS.indent(12));
+    private static final String PUSH_CONFIGURATION_MUTATION = """
+        mutation(
+            $apiKeyId: ID!, $projectId: ID!,
+            $projectContent: ProjectConfigurationInput!, $lastKnownConfigurationFingerprint: String!
+        ) {
+            revision: pushProjectConfiguration(
+                apiKeyId: $apiKeyId
+                projectId: $projectId
+                projectContent: $projectContent
+                lastKnownConfigurationFingerprint: $lastKnownConfigurationFingerprint
+            ) {
+        %s
+            }
+        }""".formatted(REVISION_FIELDS.indent(8));
+    private static final String PROJECT_REVISIONS_QUERY = """
+        query($projectId: ID!, $startTime: DateTime, $endTime: DateTime) {
+            revisions: projectRevisions(projectId: $projectId, startTime: $startTime, endTime: $endTime) {
+        %s
+            }
+        }""".formatted(REVISION_FIELDS.indent(8));
 
-    private final DDSyncCredentials credentials;
-    private final ThreadLocal<byte[]> requestBody = new ThreadLocal<>();
-    private SecretKey dataKey;
-
-    public DDShareClient(@NotNull String url, @NotNull DDSyncCredentials credentials) {
-        super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of());
-        this.credentials = credentials;
+    public DDShareClient(@NotNull String url, @NotNull DDDesktopAccessService accessService) {
+        super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of(), HttpClient.Redirect.NEVER, accessService);
         this.gson = GsonUtils.gsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeIsoAdapter())
+            .setObjectToNumberStrategy(ToNumberPolicy.BIG_DECIMAL)
             .create();
     }
 
@@ -101,56 +156,10 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
 
     @NotNull
     @Override
-    public List<DDConfigurationSummary> listConfigurations() throws DBException {
-        JsonObject data = call(DDSyncApi.QUERY_LIST_CONFIGURATIONS, Map.of());
-        return List.of(gson.fromJson(data.get("configurations"), DDConfigurationSummary[].class));
-    }
-
-    @NotNull
-    @Override
-    public DDConfiguration getConfiguration(@NotNull String configurationId) throws DBException {
-        JsonObject data = call(DDSyncApi.QUERY_GET_CONFIGURATION, Map.of("configurationId", configurationId));
-        JsonElement configuration = data.get("configuration");
-        if (configuration == null || configuration.isJsonNull()) {
-            throw new DDConfigurationNotFoundException("Configuration '" + configurationId + "' not found");
-        }
-        return gson.fromJson(configuration, DDConfiguration.class);
-    }
-
-    @NotNull
-    @Override
-    public DDConfiguration createConfiguration(@NotNull DDCreateConfigurationRequest request) throws DBException {
-        JsonObject data = call(DDSyncApi.MUTATION_CREATE_CONFIGURATION, Map.of("input", request));
-        return gson.fromJson(data.get("createConfiguration"), DDConfiguration.class);
-    }
-
-    @NotNull
-    @Override
-    public DDUpdateConfigurationResult updateConfiguration(
-        @NotNull String configurationId,
-        @NotNull DDUpdateConfigurationRequest request
-    ) throws DBException {
-        JsonObject data = call(
-            DDSyncApi.MUTATION_UPDATE_CONFIGURATION,
-            Map.of("configurationId", configurationId, "input", request));
-        JsonElement result = data.get("updateConfiguration");
-        if (result == null || result.isJsonNull()) {
-            throw new DDConfigurationNotFoundException("Configuration '" + configurationId + "' not found");
-        }
-        return gson.fromJson(result, DDUpdateConfigurationResult.class);
-    }
-
-    @NotNull
-    @Override
     public List<DDSharedProject> listProjects() throws DDShareException {
         try {
-            JsonObject data = call("""
-                query {
-                    projects {
-                %s
-                    }
-                }""".formatted(PROJECT_FIELDS.indent(8)), Map.of());
-            return List.of(gson.fromJson(data.get("projects"), DDSharedProject[].class));
+            ProjectsData data = executeGraphQl(LIST_PROJECTS_QUERY, ProjectsData.class, "GraphQL request failed");
+            return List.of(data.projects());
         } catch (DBException e) {
             throw new DDShareException("Failed to list projects", e);
         }
@@ -164,15 +173,11 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         try {
             Map<String, Object> variables = new HashMap<>();
             variables.put("projectId", projectId.toString());
+            variables.put("apiKeyId", requireCredentialBundle().apiKeyId());
             variables.put(FIELD_NAME, name);
             variables.put(FIELD_DESCRIPTION, description);
-            JsonObject data = call("""
-                mutation($projectId: ID!, $name: String!, $description: String) {
-                    createProject(projectId: $projectId, name: $name, description: $description) {
-                %s
-                    }
-                }""".formatted(PROJECT_FIELDS.indent(8)), variables);
-            return gson.fromJson(data.get("createProject"), DDSharedProject.class);
+            ProjectData data = executeGraphQl(CREATE_PROJECT_MUTATION, variables, ProjectData.class, "GraphQL request failed");
+            return data.project();
         } catch (DBException e) {
             throw new DDShareException("Failed to create project", e);
         }
@@ -188,17 +193,11 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
             variables.put("projectId", projectId.toString());
             variables.put(FIELD_NAME, name);
             variables.put(FIELD_DESCRIPTION, description);
-            JsonObject data = call("""
-                mutation($projectId: ID!, $name: String!, $description: String) {
-                    updateProject(projectId: $projectId, name: $name, description: $description) {
-                %s
-                    }
-                }""".formatted(PROJECT_FIELDS.indent(8)), variables);
-            JsonElement result = data.get("updateProject");
-            if (result == null || result.isJsonNull()) {
+            ProjectData data = executeGraphQl(UPDATE_PROJECT_MUTATION, variables, ProjectData.class, "GraphQL request failed");
+            if (data.project() == null) {
                 throw new DDShareException("Project not found: " + projectId);
             }
-            return gson.fromJson(result, DDSharedProject.class);
+            return data.project();
         } catch (DBException e) {
             throw new DDShareException("Failed to update project", e);
         }
@@ -207,11 +206,9 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
     @Override
     public boolean deleteProject(@NotNull UUID projectId) throws DDShareException {
         try {
-            JsonObject data = call("""
-                mutation($projectId: ID!) {
-                    deleteProject(projectId: $projectId)
-                }""", Map.of("projectId", projectId.toString()));
-            return data.get("deleteProject") instanceof JsonPrimitive p && p.getAsBoolean();
+            DeleteData data = executeGraphQl(DELETE_PROJECT_MUTATION, Map.of("projectId", projectId.toString()),
+                DeleteData.class, "GraphQL request failed");
+            return Boolean.TRUE.equals(data.deleteProject());
         } catch (DBException e) {
             throw new DDShareException("Failed to delete project", e);
         }
@@ -221,22 +218,12 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
     @Override
     public DDSharedProjectRevision getCurrentProjectRevision(@NotNull UUID projectId) throws DDShareException {
         try {
-            JsonObject data = call(
-                """
-                    query($projectId: ID!) {
-                        projectCurrentRevision(projectId: $projectId) {
-                            id: revisionId
-                            userId
-                            updateTime
-                            configurationFingerprint
-                        }
-                    }""", Map.of("projectId", projectId.toString())
-            );
-            JsonElement result = data.get("projectCurrentRevision");
-            if (result == null || result.isJsonNull()) {
+            RevisionData data = executeGraphQl(CURRENT_REVISION_QUERY, Map.of("projectId", projectId.toString()),
+                RevisionData.class, "GraphQL request failed");
+            if (data.revision() == null) {
                 throw new DDShareException("Project not found or has no current revision: " + projectId);
             }
-            return gson.fromJson(result, DDSharedProjectRevision.class);
+            return data.revision();
         } catch (DBException e) {
             throw new DDShareException("Failed to get current project revision", e);
         }
@@ -246,27 +233,12 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
     @Override
     public DDSharedProjectPullResponse pullProjectConfiguration(@NotNull UUID projectId) throws DDShareException {
         try {
-            JsonObject data = call("""
-                query($projectId: ID!) {
-                    projectPullConfiguration(projectId: $projectId) {
-                        files {
-                            fileName
-                            encryptedContents
-                            fingerprint
-                        }
-                        currentRevision {
-                            id: revisionId
-                            userId
-                            updateTime
-                            configurationFingerprint
-                        }
-                    }
-                }""", Map.of("projectId", projectId.toString()));
-            JsonElement result = data.get("projectPullConfiguration");
-            if (result == null || result.isJsonNull()) {
+            PullData data = executeGraphQl(PULL_CONFIGURATION_QUERY, Map.of("projectId", projectId.toString()),
+                PullData.class, "GraphQL request failed");
+            if (data.projectPullConfiguration() == null) {
                 throw new DDShareException("Project not found or has no current revision: " + projectId);
             }
-            return gson.fromJson(result, DDSharedProjectPullResponse.class);
+            return data.projectPullConfiguration();
         } catch (DBException e) {
             throw new DDShareException("Failed to pull project configuration", e);
         }
@@ -280,8 +252,11 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         try {
             DDSharedProjectPullResponse response = pullProjectConfiguration(projectId);
             Map<String, byte[]> files = new LinkedHashMap<>();
-            for (DDSharedProjectFile file : response.files()) {
-                files.put(file.fileName(), decryptBytes(projectId.toString(), file.fileName(), file.encryptedContents()));
+            if (!response.files().isEmpty()) {
+                SecretKey key = getDataKey();
+                for (DDSharedProjectFile file : response.files()) {
+                    files.put(file.fileName(), decryptBytes(key, projectId.toString(), file.fileName(), file.encryptedContents()));
+                }
             }
             return new DDSharedProjectPullResult(files, response.currentRevision());
         } catch (DBException e) {
@@ -297,28 +272,31 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DDShareException {
         try {
-            JsonObject data = call("""
-                mutation($projectId: ID!, $projectContent: ProjectConfigurationInput!, $lastKnownConfigurationFingerprint: String!) {
-                    pushProjectConfiguration(
-                        projectId: $projectId
-                        projectContent: $projectContent
-                        lastKnownConfigurationFingerprint: $lastKnownConfigurationFingerprint
-                    ) {
-                        id: revisionId
-                        userId
-                        updateTime
-                        configurationFingerprint
-                    }
-                }""",
+            return pushProjectConfiguration(projectId, projectContent, lastKnownConfigurationFingerprint, requireCredentialBundle());
+        } catch (DBException e) {
+            throw new DDShareException("Failed to push project configuration", e);
+        }
+    }
+
+    @NotNull
+    private DDSharedProjectRevision pushProjectConfiguration(
+        @NotNull UUID projectId,
+        @NotNull DDSharedProjectConfiguration projectContent,
+        @NotNull String lastKnownConfigurationFingerprint,
+        @NotNull DDKeyBundle bundle
+    ) throws DDShareException {
+        try {
+            RevisionData data = executeGraphQl(PUSH_CONFIGURATION_MUTATION,
                 Map.of(
                     "projectId", projectId.toString(),
                     "projectContent", projectContent,
-                    "lastKnownConfigurationFingerprint", lastKnownConfigurationFingerprint));
-            JsonElement result = data.get("pushProjectConfiguration");
-            if (result == null || result.isJsonNull()) {
+                    "lastKnownConfigurationFingerprint", lastKnownConfigurationFingerprint,
+                    "apiKeyId", Objects.requireNonNull(bundle.apiKeyId())),
+                RevisionData.class, "GraphQL request failed");
+            if (data.revision() == null) {
                 throw new DDShareException("Project not found or configuration fingerprint is stale: " + projectId);
             }
-            return gson.fromJson(result, DDSharedProjectRevision.class);
+            return data.revision();
         } catch (DBException e) {
             throw new DDShareException("Failed to push project configuration", e);
         }
@@ -334,18 +312,22 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DDShareException {
         try {
+            DDKeyBundle bundle = requireCredentialBundle();
             List<DDSharedProjectFile> projectFiles = new ArrayList<>();
-            for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
-                Pair<String, byte[]> preparedFile = file.getValue();
-                projectFiles.add(new DDSharedProjectFile(
-                    file.getKey(),
-                    encryptBytes(projectId.toString(), file.getKey(), preparedFile.getSecond()),
-                    preparedFile.getFirst()));
+            if (!preparedFiles.files().isEmpty()) {
+                SecretKey key = new DDBundleCredentials(bundle).getDataKey();
+                for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
+                    Pair<String, byte[]> preparedFile = file.getValue();
+                    projectFiles.add(new DDSharedProjectFile(
+                        file.getKey(),
+                        encryptBytes(key, projectId.toString(), file.getKey(), preparedFile.getSecond()),
+                        preparedFile.getFirst()));
+                }
             }
             return pushProjectConfiguration(
                 projectId,
                 new DDSharedProjectConfiguration(preparedFiles.configurationFingerprint(), projectFiles),
-                lastKnownConfigurationFingerprint);
+                lastKnownConfigurationFingerprint, bundle);
         } catch (DBException e) {
             throw new DDShareException("Failed to encrypt project files", e);
         }
@@ -361,29 +343,43 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
             variables.put("projectId", projectId.toString());
             variables.put("startTime", startTime);
             variables.put("endTime", endTime);
-            JsonObject data = call("""
-                query($projectId: ID!, $startTime: DateTime, $endTime: DateTime) {
-                    projectRevisions(projectId: $projectId, startTime: $startTime, endTime: $endTime) {
-                        id: revisionId
-                        userId
-                        updateTime
-                        configurationFingerprint
-                    }
-                }""", variables);
-            return List.of(gson.fromJson(data.get("projectRevisions"), DDSharedProjectRevision[].class));
+            RevisionsData data = executeGraphQl(PROJECT_REVISIONS_QUERY, variables, RevisionsData.class, "GraphQL request failed");
+            return List.of(data.revisions());
         } catch (DBException e) {
             throw new DDShareException("Failed to get project revisions", e);
         }
     }
 
     @NotNull
-    private String encryptBytes(@NotNull String projectId, @NotNull String field, @NotNull byte[] data) throws DBException {
-        return Base64.getEncoder().encodeToString(DDCrypto.encrypt(getDataKey(), data, aad(projectId, field)));
+    private String encryptBytes(
+        @NotNull SecretKey key, @NotNull String projectId, @NotNull String field, @NotNull byte[] data
+    ) throws DBException {
+        return Base64.getEncoder().encodeToString(DDCrypto.encrypt(key, data, aad(projectId, field)));
     }
 
     @NotNull
-    private byte[] decryptBytes(@NotNull String projectId, @NotNull String field, @NotNull String ciphertext) throws DBException {
-        return DDCrypto.decrypt(getDataKey(), decodeBase64(ciphertext), aad(projectId, field));
+    private byte[] decryptBytes(
+        @NotNull SecretKey key, @NotNull String projectId, @NotNull String field, @NotNull String ciphertext
+    ) throws DBException {
+        return DDCrypto.decrypt(key, decodeBase64(ciphertext), aad(projectId, field));
+    }
+
+    @NotNull
+    private DDKeyBundle requireCredentialBundle() throws DBException {
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        if (bundle == null || bundle.apiKeyId() == null) {
+            throw new DBException("Import the current DataDam recovery phrase before sharing projects");
+        }
+        return bundle;
+    }
+
+    @NotNull
+    private SecretKey getDataKey() throws DBException {
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        if (bundle == null) {
+            throw new DBException("Import encryption keys for the current DataDam account before transferring files");
+        }
+        return new DDBundleCredentials(bundle).getDataKey();
     }
 
     @NotNull
@@ -404,31 +400,31 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         return (projectId + '\u0000' + field).getBytes(StandardCharsets.UTF_8);
     }
 
-    @NotNull
-    private SecretKey getDataKey() throws DBException {
-        if (dataKey == null) {
-            dataKey = credentials.getDataKey();
-        }
-        return dataKey;
+    private record ProjectsData(@NotNull DDSharedProject[] projects) {
+    }
+
+    private record ProjectData(@Nullable DDSharedProject project) {
+    }
+
+    private record DeleteData(@Nullable Boolean deleteProject) {
+    }
+
+    private record RevisionData(@Nullable DDSharedProjectRevision revision) {
+    }
+
+    private record PullData(@Nullable DDSharedProjectPullResponse projectPullConfiguration) {
+    }
+
+    private record RevisionsData(@NotNull DDSharedProjectRevision[] revisions) {
     }
 
     @NotNull
-    private JsonObject call(@NotNull String query, @NotNull Map<String, Object> variables) throws DBException {
-        byte[] body = gson.toJson(Map.of("query", query, "variables", variables)).getBytes(StandardCharsets.UTF_8);
-        JsonObject response = execute(request(body), JsonObject.class);
-
-        if (response.get("errors") instanceof JsonArray errors && !errors.isEmpty()) {
-            throw mapGraphQlError(errors);
+    @Override
+    protected DBException mapGraphQlError(@NotNull String fallback, @Nullable List<?> errors) {
+        if (errors == null || errors.isEmpty() || !(errors.get(0) instanceof Map<?, ?> first)) {
+            return new DBException(fallback);
         }
-        return response.getAsJsonObject("data");
-    }
-
-    @NotNull
-    private DBException mapGraphQlError(@NotNull JsonArray errors) {
-        if (!(errors.get(0) instanceof JsonObject first)) {
-            return new DBException("GraphQL request failed");
-        }
-        String message = first.get("message") instanceof JsonPrimitive m ? m.getAsString() : "GraphQL request failed";
+        String message = first.get("message") instanceof String detail ? detail : fallback;
         if ("INTERNAL_ERROR".equals(extractClassification(first))) {
             return new DDTransportException(message);
         }
@@ -436,57 +432,11 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
     }
 
     @Nullable
-    private static String extractClassification(@NotNull JsonObject error) {
-        if (!(error.get("extensions") instanceof JsonObject extensions)) {
+    private String extractClassification(@NotNull Map<?, ?> error) {
+        if (!(error.get("extensions") instanceof Map<?, ?> extensions)) {
             return null;
         }
-        return extensions.get("classification") instanceof JsonPrimitive c ? c.getAsString() : null;
-    }
-
-    @NotNull
-    private HttpRequest.Builder request(@NotNull byte[] body) throws DBException {
-        URI uri = buildUri(CommonUtils.removeLeadingSlash(DDSyncApi.GRAPHQL_ENDPOINT), Map.of());
-        HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
-            .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
-            .header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + buildToken("POST", uri, body))
-            .POST(HttpRequest.BodyPublishers.ofByteArray(body));
-        requestBody.set(body);
-        return builder;
-    }
-
-    @NotNull
-    @Override
-    protected <T> T execute(@NotNull HttpRequest.Builder builder, @NotNull Type type) throws DBException {
-        try {
-            return super.execute(builder, type);
-        } finally {
-            requestBody.remove();
-        }
-    }
-
-    @NotNull
-    @Override
-    protected HttpResponseWrapper executeChain(
-        @NotNull InterceptorChain chain,
-        @NotNull HttpRequestWrapper request,
-        @NotNull URI uri
-    ) throws Exception {
-        HttpResponseWrapper response = chain.proceed(request);
-        String serverTime = header(response, SERVER_TIME_HEADER);
-        if (serverTime == null) {
-            return response;
-        }
-        credentials.updateServerTime(Long.parseLong(serverTime));
-        request.withHeader(
-            HttpConstants.HEADER_AUTHORIZATION,
-            HttpConstants.BEARER_PREFIX + buildToken("POST", uri, requestBody.get()));
-        return chain.proceed(request);
-    }
-
-    @NotNull
-    private String buildToken(@NotNull String method, @NotNull URI uri, @NotNull byte[] body) throws DBException {
-        String pathAndQuery = uri.getRawQuery() == null ? uri.getRawPath() : uri.getRawPath() + "?" + uri.getRawQuery();
-        return credentials.buildToken(method, pathAndQuery, body);
+        return extensions.get("classification") instanceof String classification ? classification : null;
     }
 
     @NotNull
@@ -507,14 +457,5 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
             throw new DDTransportException(message, e);
         }
         super.handleRequestException(message, e);
-    }
-
-    @Nullable
-    private static String header(@NotNull HttpResponseWrapper response, @NotNull String name) {
-        return response.headers().entrySet().stream()
-            .filter(entry -> entry.getKey().equalsIgnoreCase(name))
-            .flatMap(entry -> entry.getValue().stream())
-            .findFirst()
-            .orElse(null);
     }
 }

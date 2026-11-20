@@ -170,6 +170,63 @@ public class StringTemplateTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void testReplaceParametersPreservesSourceFormatting() throws StringTemplate.StringTemplateException {
+        StringTemplate template = StringTemplate.parseTemplate(URL_TEMPLATE);
+
+        Assertions.assertEquals(
+            "jdbc:MyDriver://UsEr:PaSs@127.0.0.1:05432/Host.Name",
+            template.replaceParameters(
+                "jdbc:MyDriver://UsEr:PaSs@Host.Name:05432/Host.Name",
+                Map.of(DBConstants.PROP_HOST, "127.0.0.1")
+            )
+        );
+        Assertions.assertEquals(
+            "MyDriver://UsEr:PaSs@127.0.0.1:05432/Host.Name",
+            template.replaceParameters(
+                "MyDriver://UsEr:PaSs@Host.Name:05432/Host.Name",
+                Map.of(DBConstants.PROP_HOST, "127.0.0.1")
+            )
+        );
+        Assertions.assertEquals(
+            "jdbc:test:localhost.example",
+            StringTemplate.parseTemplate("jdbc:test:{host}.example").replaceParameters(
+                "jdbc:test:source.example", Map.of(DBConstants.PROP_HOST, "localhost")
+            )
+        );
+    }
+
+    @Test
+    public void testReplaceParametersAtSeparatePositions() throws StringTemplate.StringTemplateException {
+        StringTemplate template = StringTemplate.parseTemplate("jdbc:teradata://{host}/DATABASE={database}[,DBS_PORT={port}]");
+
+        Assertions.assertEquals(
+            "jdbc:teradata://127.0.0.1/DATABASE=My_database,DBS_PORT=6000",
+            template.replaceParameters(
+                "jdbc:teradata://Host.Name/DATABASE=My_database,DBS_PORT=05432",
+                Map.of(DBConstants.PROP_HOST, "127.0.0.1", DBConstants.PROP_PORT, "6000")
+            )
+        );
+    }
+
+    @Test
+    public void testReplaceParametersRejectsUnavailableTargetsAndUnmatchedInput() throws StringTemplate.StringTemplateException {
+        StringTemplate template = StringTemplate.parseTemplate("jdbc:test://{host}[:{port}]/{database}");
+        StringTemplate repeatedTemplate = StringTemplate.parseTemplate("jdbc:test://{host}/{host}");
+        Map<String, String> replacements = Map.of(DBConstants.PROP_HOST, "127.0.0.1", DBConstants.PROP_PORT, "6000");
+
+        Assertions.assertNull(template.replaceParameters("jdbc:test://Host.Name/My_database", replacements));
+        Assertions.assertNull(template.replaceParameters(
+            "jdbc:test://Host.Name:05432/My_database",
+            Map.of(DBConstants.PROP_HOST, "127.0.0.1", "unknown", "value")
+        ));
+        Assertions.assertNull(repeatedTemplate.replaceParameters(
+            "jdbc:test://primary/secondary", Map.of(DBConstants.PROP_HOST, "127.0.0.1")
+        ));
+        Assertions.assertNull(template.replaceParameters("jdbc:other://Host.Name:05432/My_database", replacements));
+        Assertions.assertNull(template.replaceParameters("jdbc:test://Host.Name:05432/My_database;unexpected=true", replacements));
+    }
+
+    @Test
     public void testBranching() throws StringTemplate.StringTemplateException {
         evaluatePlainUrl("abc{x{x}|y{y}}def", "abcx134def", Map.of("x", "134"));
         evaluatePlainUrl("abc{x{x}|y{y}}def", "abcy456def", Map.of("y", "456"));

@@ -5,15 +5,24 @@
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="yashandb" parent="oracle" class="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSQLDialect"
                  label="YashanDB" description="YashanDB SQL dialect." icon="icons/yashandb_icon.png">
-            <property name="insertMethods" value="yashandbInsertIgnore"/>
+            <property name="insertMethods" value="oracleInsertIgnore"/>
         </dialect>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+                id="yashandb"
+                label="YashanDB"
+                description="YashanDB database"
+                dataSourceInformation="Relational database management system"
+                icon="icons/yashandb_icon.png"
+                iconBig="icons/yashandb_big.png"
+                logoImage="icons/yashandb_logo.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.yashandb.YashanDBDataSourceProvider"
                 description="YashanDB connector"
                 id="yashandb"
+                dataSourceType="yashandb"
                 label="YashanDB"
                 parent="oracle"
                 icon="icons/yashandb_icon.png"
@@ -50,6 +59,7 @@
                         label="YashanDB"
                         icon="icons/yashandb_icon.png"
                         iconBig="icons/yashandb_big.png"
+                        logoImage="icons/yashandb_logo.png"
                         class="com.yashandb.jdbc.Driver"
                         sampleURL="jdbc:yasdb://{host}:{port}/{database}"
                         useURL="false"

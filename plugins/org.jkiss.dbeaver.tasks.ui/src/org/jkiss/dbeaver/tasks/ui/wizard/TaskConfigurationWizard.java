@@ -180,7 +180,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     public boolean isTaskSaveEnabled() {
-        return !getContainer().isSelectorMode();
+        return !getContainer().isSelectorMode() && PlatformUI.getWorkbench().getViewRegistry().find(TASKS_VIEW_ID) != null;
     }
 
     public boolean isNewTaskEditor() {
@@ -219,7 +219,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     @Override
     public boolean canFinish() {
         if (isCurrentTaskSaved()) {
-            return true;
+            TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+            return taskPage == null || taskPage.isPageComplete();
         }
         for (IWizardPage page : getPages()) {
             if (isPageNeedsCompletion(page) && isPageValid(page) && !page.isPageComplete()) {
@@ -280,6 +281,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     boolean saveTask() {
+        TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+        if (taskPage != null && !taskPage.isPageComplete()) {
+            return false;
+        }
         IWizardPage currentPage = getContainer().getCurrentPage();
         // Save current page settings
         if (currentPage instanceof IWizardPageActive) {
@@ -307,7 +312,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 return false;
             }
         } else {
-            TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
             if (taskPage != null) {
                 taskPage.saveSettings();
             }

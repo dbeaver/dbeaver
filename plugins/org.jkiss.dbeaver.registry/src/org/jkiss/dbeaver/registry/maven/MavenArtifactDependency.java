@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ public class MavenArtifactDependency extends MavenArtifactReference {
 
     private final Scope scope;
     private final boolean optional;
+    private final String type;
     private List<MavenArtifactReference> exclusions;
     private boolean broken;
 
@@ -46,12 +47,30 @@ public class MavenArtifactDependency extends MavenArtifactReference {
         @NotNull String artifactId,
         @Nullable String classifier,
         @NotNull String version,
-        Scope scope,
+        @NotNull Scope scope,
         boolean optional
+    ) {
+        this(groupId, artifactId, classifier, version, scope, optional, MavenArtifact.FILE_JAR);
+    }
+
+    public MavenArtifactDependency(
+        @NotNull String groupId,
+        @NotNull String artifactId,
+        @Nullable String classifier,
+        @NotNull String version,
+        @NotNull Scope scope,
+        boolean optional,
+        @NotNull String type
     ) {
         super(groupId, artifactId, classifier, null, version);
         this.scope = scope;
         this.optional = optional;
+        this.type = type;
+    }
+
+    @NotNull
+    public String getType() {
+        return type;
     }
 
     public Scope getScope() {

@@ -285,21 +285,37 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     void updateDirtyFlag();
 
-    // TODO introduce value path here
+    /**
+     * Updates a cell using the ordered value path when it identifies a nested member.
+     *
+     * @param rowIndexes flat collection indexes used when the path is absent or identifies only the root
+     * @param valuePath ordered record-mode location; null for ordinary grid cells
+     */
     boolean updateCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         @Nullable Object value,
-        boolean refreshHints) throws DBException;
+        boolean refreshHints
+    ) throws DBException;
 
-    // TODO introduce value path here
+    /**
+     * Resets a changed cell. A nested edit restores its saved top-level value, not just the selected member.
+     *
+     * @param rowIndexes flat collection indexes for cells without a nested value path
+     * @param valuePath ordered record-mode location; null for ordinary grid cells
+     */
     void resetCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes);
+        @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath
+    );
 
     /**
+     * Refreshes cached hints for the specified attributes and rows.
+     *
      * @param rowIndexes          applicable only when single row is passed
      */
     void refreshHintCache(

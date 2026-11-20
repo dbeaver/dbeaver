@@ -83,6 +83,9 @@ public class AIToolboxRegistry implements AIToolboxManager {
             if (!CommonUtils.isEmpty(mcpConfig)) {
                 try (Reader configReader = new StringReader(mcpConfig)) {
                     functionSettings = JSONUtils.GSON.fromJson(configReader, AIFunctionSettings.class);
+                    if (functionSettings != null) {
+                        functionSettings.finishSettingsLoading();
+                    }
                 } catch (IOException e) {
                     log.error("Error parsing tools configuration", e);
                 }

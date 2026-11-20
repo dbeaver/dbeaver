@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -28,8 +29,16 @@ public abstract class BaseAIEngineProperties implements AIEngineProperties {
 
     private boolean global = true;
 
+    @SerializedName(value = "ai.useEnvVariables", alternate = {"anthropic.useEnvVariables"})
+    private boolean useEnvVariables;
+
     @SerializedName(value = "gpt.model.temperature", alternate = {"anthropic.temperature", "aws.temperature"})
     protected double temperature;
+
+    // an absent flag preserves temperature fallbacks in existing configurations
+    @Nullable
+    @SerializedName("ai.useServerDefaultTemperature")
+    private Boolean useServerDefaultTemperature;
 
     @Nullable
     @SerializedName(value = "gpt.log.query", alternate = {"anthropic.log.query", "aws.log.query"})
@@ -52,6 +61,27 @@ public abstract class BaseAIEngineProperties implements AIEngineProperties {
 
     public void setTemperature(double temperature) {
         this.temperature = AIUtils.normalizeTemperature(temperature);
+        useServerDefaultTemperature = false;
+    }
+
+    public void clearTemperature() {
+        temperature = AIUtils.DEFAULT_TEMPERATURE;
+        useServerDefaultTemperature = true;
+    }
+
+    protected void resetTemperature() {
+        temperature = AIUtils.DEFAULT_TEMPERATURE;
+        useServerDefaultTemperature = null;
+    }
+
+    @Nullable
+    @Override
+    public Double getRequestTemperature() {
+        return Boolean.TRUE.equals(useServerDefaultTemperature) ? null : getTemperature();
+    }
+
+    protected boolean hasExplicitTemperature() {
+        return Boolean.FALSE.equals(useServerDefaultTemperature);
     }
 
     @Override
@@ -74,5 +104,56 @@ public abstract class BaseAIEngineProperties implements AIEngineProperties {
     @Override
     public void setTimeout(int timeout) {
         this.timeout = timeout;
+    }
+
+    @Override
+    public boolean isUseEnvVariables() {
+        return useEnvVariables;
+    }
+
+    @Override
+    public void setUseEnvVariables(boolean useEnvVariables) {
+        this.useEnvVariables = useEnvVariables;
+    }
+
+    @Nullable
+    @Override
+    public String getEffectiveModel() {
+        String environmentModel = getEnvironmentModel();
+        return environmentModel == null ? getModel() : environmentModel;
+    }
+
+    @Override
+    public boolean isModelSelectionSupported() {
+        return getEnvironmentModel() == null;
+    }
+
+    @Nullable
+    protected String getEnvironmentModel() {
+        return null;
+    }
+
+    @Nullable
+    protected String resolveEnvironmentValue(@Nullable String configuredValue, @NotNull String... names) {
+        String environmentValue = getEnvironmentValue(names);
+        return environmentValue == null ? configuredValue : environmentValue;
+    }
+
+    @Nullable
+    protected String getEnvironmentValue(@NotNull String... names) {
+        if (useEnvVariables) {
+            for (String name : names) {
+                String value = getEnvironmentVariable(name);
+                if (value != null && !value.isBlank()) {
+                    return value.trim();
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    protected String getEnvironmentVariable(@NotNull String name) {
+        return System.getenv(name);
     }
 }

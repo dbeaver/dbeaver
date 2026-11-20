@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryLocalVariableInfo;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
@@ -34,7 +36,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
      */
     public enum VariableExpressionKind {
         /**
-         * The variable of kind @var
+         * The variable of kind @var (dialect-specific) // FIXME support other prefixes
          */
         BATCH_VARIABLE(SQLQuerySymbolClass.SQL_BATCH_VARIABLE),
         /**
@@ -45,7 +47,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
          * The variable of kind :var
          */
         CLIENT_PARAMETER(SQLQuerySymbolClass.DBEAVER_PARAMETER);
-        
+
         public final SQLQuerySymbolClass symbolClass;
 
         VariableExpressionKind(@NotNull SQLQuerySymbolClass symbolClass) {
@@ -59,7 +61,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     private final VariableExpressionKind kind;
     @NotNull
     private final String rawName;
-    
+
     public SQLQueryValueVariableExpression(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQuerySymbolEntry name,
@@ -104,14 +106,33 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        this.resolveVariableImpl();
-        return SQLQueryExprType.UNKNOWN;
-    }
+        SQLQueryRowsSourceContext rowsSources = context.getRowsSources();
+        boolean isBatchVariable = this.kind == VariableExpressionKind.BATCH_VARIABLE && this.name != null;
+        SQLQueryLocalVariableInfo localVariable = isBatchVariable
+            ? rowsSources.getLocalVariables().findLocalVariable(this.name, SQLDialectFeatures.LocalVariableCapability.VALUE)
+            : null;
 
-    private void resolveVariableImpl() {
-        if (this.name != null && this.name.isNotClassified()) {
-            this.name.getSymbol().setSymbolClass(this.kind.symbolClass);
+        SQLQueryExprType resultType;
+        if (localVariable != null) {
+            if (this.name.isNotClassified()) {
+                this.name.setDefinition(localVariable.declaration());
+            }
+            resultType = localVariable.type();
+        } else {
+            SQLQueryVariableInfo scriptVariable = isBatchVariable ? rowsSources.resolveScriptVariable(this.name) : null;
+            if (this.name != null && this.name.isNotClassified()) {
+                if (scriptVariable == null) {
+                    this.name.getSymbol().setSymbolClass(this.kind.symbolClass);
+                } else {
+                    this.name.setDefinition(scriptVariable);
+                }
+            }
+            resultType = scriptVariable == null ? SQLQueryExprType.UNKNOWN : scriptVariable.type();
         }
+        if (isBatchVariable && this.name.getOrigin() == null) {
+            this.name.setOrigin(new SQLQuerySymbolOrigin.ScriptVariableRef(rowsSources));
+        }
+        return resultType;
     }
 
     @Nullable

@@ -132,6 +132,34 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldNotTreatNextLineAsPartOfEmptyComment() {
+        //given
+        String expectedString = "--" + lineBreak + "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
+        String inputString = "--" + lineBreak + "select * from mytable;";
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(expectedString, formattedString);
+    }
+
+    @Test
+    public void shouldEndCommentAtAnyLineSeparator() {
+        for (String separator : new String[]{"\n", "\r\n"}) {
+            //given
+            String inputString = "-- test" + separator + "select * from mytable;";
+
+            //when
+            String formattedString = format(inputString);
+
+            //then
+            Assertions.assertTrue(formattedString.startsWith("-- test"), formattedString);
+            Assertions.assertTrue(formattedString.endsWith("SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;"), formattedString);
+        }
+    }
+
+    @Test
     public void shouldAddLineBreakBeforeBraceBySpecialSetting() {
         //given
         String expectedString = getExpectedStringWithLineBreakBeforeBraces();
@@ -577,5 +605,50 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
 
         //then
         Assertions.assertEquals(inputString, formattedString);
+    }
+
+    @Test
+    public void shouldPreservePostgresAtQuestionOperator() {
+        //given
+        String inputString = "SELECT * FROM t WHERE c @? CAST('$.x' AS JSONPATH)"; //$NON-NLS-1$
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("c @? CAST"), //$NON-NLS-1$
+            "SQLFormatterTokenized must keep PostgreSQL @? operator intact, got: " + formattedString);
+        Assertions.assertFalse(formattedString.contains("@ ?"), //$NON-NLS-1$
+            "SQLFormatterTokenized must not split @? into @ ?, got: " + formattedString);
+    }
+
+    @Test
+    public void shouldKeepAtVariablesIntact() {
+        //given
+        String inputString = "SELECT @myvar FROM mytable"; //$NON-NLS-1$
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("@myvar"), //$NON-NLS-1$
+            "SQLFormatterTokenized must keep @var variables intact, got: " + formattedString);
+        Assertions.assertFalse(formattedString.contains("@ myvar"), //$NON-NLS-1$
+            "SQLFormatterTokenized must not split @var into @ myvar, got: " + formattedString);
+    }
+
+    @Test
+    public void shouldPreserveAtQuestionOperatorTouchingLeftOperand() {
+        //given
+        String inputString = "SELECT * FROM t WHERE c@?'$.x'"; //$NON-NLS-1$
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("c @?"), //$NON-NLS-1$
+            "SQLFormatterTokenized must keep @? intact without left whitespace, got: " + formattedString);
+        Assertions.assertFalse(formattedString.contains("@ ?"), //$NON-NLS-1$
+            "SQLFormatterTokenized must not split @? into @ ?, got: " + formattedString);
     }
 }

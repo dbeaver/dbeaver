@@ -116,6 +116,7 @@
          <attribute name="dataSourceType" type="string"/>
          <attribute name="dialect" type="string"/>
          <attribute name="supports-migration" type="boolean"/>
+         <attribute name="migration-completed-property" type="string"/>
          <attribute name="inheritAuthModels" type="boolean"/>
          <attribute name="driverProvider" type="boolean"/>
          <attribute name="inheritClients" type="boolean"/>
@@ -263,6 +264,11 @@
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="labelTerm" type="string">
+            <annotation>
+               <documentation>Optional term identifier passed to DBPTermProvider with the first child item's path and multiple=true. A nonempty term overrides the folder label; otherwise the localized label is used.</documentation>
             </annotation>
          </attribute>
          <attribute name="icon" type="string">
@@ -686,6 +692,7 @@
          <attribute name="remove" type="boolean"/>
          <attribute name="changeFolderType" type="string"/>
          <attribute name="changeFolderLabel" type="string"/>
+         <attribute name="changeProperty" type="string"/>
       </complexType>
    </element>
 

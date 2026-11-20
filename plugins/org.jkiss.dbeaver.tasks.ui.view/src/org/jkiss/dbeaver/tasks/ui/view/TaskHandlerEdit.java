@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -42,26 +44,30 @@ public class TaskHandlerEdit extends AbstractHandler implements IElementUpdater 
         if (selection instanceof IStructuredSelection) {
             Object element = ((IStructuredSelection)selection).getFirstElement();
             if (element instanceof DBTTask) {
-                DBTTask task = (DBTTask) element;
-                DBTTaskType taskTypeDescriptor = task.getType();
-                if (!TaskUIRegistry.getInstance().supportsConfigurator(taskTypeDescriptor)) {
-                    DBWorkbench.getPlatformUI().showError("No configurator", "Task '" + taskTypeDescriptor.getName() + "' has no configurator");
-                    return null;
-                }
-                try {
-                    TaskConfigurationWizard wizard = TaskUIRegistry.getInstance().createConfigurator(taskTypeDescriptor).createTaskConfigWizard(task);
-                    if (wizard != null) {
-                        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event), wizard);
-                        dialog.setEditMode(true);
-                        dialog.open();
-                    }
-                } catch (Throwable e) {
-                    DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task '" + task.getName() + "' configuration editor", e);
-                }
+                openTaskEditor(HandlerUtil.getActiveWorkbenchWindow(event), (DBTTask) element);
             }
         }
 
         return null;
+    }
+
+    public static void openTaskEditor(@NotNull IWorkbenchWindow window, @NotNull DBTTask task) {
+        DBTTaskType taskTypeDescriptor = task.getType();
+        if (!TaskUIRegistry.getInstance().supportsConfigurator(taskTypeDescriptor)) {
+            DBWorkbench.getPlatformUI().showError("No configurator", "Task '" + taskTypeDescriptor.getName() + "' has no configurator");
+            return;
+        }
+        try {
+            TaskConfigurationWizard<?> wizard = TaskUIRegistry.getInstance().createConfigurator(taskTypeDescriptor)
+                .createTaskConfigWizard(task);
+            if (wizard != null) {
+                TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(window, wizard);
+                dialog.setEditMode(true);
+                dialog.open();
+            }
+        } catch (Throwable e) {
+            DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task '" + task.getName() + "' configuration editor", e);
+        }
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.information.IInformationProvider;
 import org.eclipse.jface.text.information.IInformationProviderExtension;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.BorderData;
@@ -39,6 +40,8 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionHelper;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.*;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryLocalVariableInfo;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
@@ -47,6 +50,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.util.AnnotationsInformationView;
 import org.jkiss.dbeaver.ui.editors.sql.util.ObjectInformationView;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
@@ -184,12 +188,15 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                 switch (symbolEntry.getDefinition()) {
                     case SQLQueryObjectDataModel byObjDataRefDef -> {
                         dbObject = byObjDataRefDef.getObject();
+                        message = null;
                     }
                     case SQLQuerySymbolByDbObjectDefinition byObjDef -> {
                         dbObject = byObjDef.getDbObject();
+                        message = null;
                     }
                     case SQLQueryRowsTableDataModel byTableRefDef -> {
                         dbObject = byTableRefDef.getImmediateTargetObject();
+                        message = null;
                     }
                     case SQLQueryResultPseudoColumn pseudoColumn -> {
                         dbObject = null;
@@ -205,9 +212,22 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                     }
                     case SQLQuerySymbolEntry defSymbolEntry -> {
                         dbObject = null;
+                        message = null;
+                    }
+                    case SQLQueryVariableInfo variable -> {
+                        dbObject = null;
+                        message = "Script variable " + variable.rawName();
+                        if (variable.type() != SQLQueryExprType.UNKNOWN) {
+                            message += " of type " +  variable.type().getDisplayName();
+                        }
+                    }
+                    case SQLQueryLocalVariableInfo local -> {
+                        dbObject = null;
+                        message = getLocalVariableInformation(local);
                     }
                     case null -> {
                         dbObject = null;
+                        message = null;
                     }
                     default -> throw new IllegalStateException("Not implemented");
                 };
@@ -218,16 +238,17 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                     if (navModel != null) {
                         navModel.getNodeByObject(new VoidProgressMonitor(), dbObject, true);
                     }
-                    message = null;
                 } else {
                     info = null;
-                    message = SQLCompletionHelper.readAdditionalProposalInfo(
-                        null,
-                        editor.getCompletionContext(),
-                        dbObject,
-                        contextInformer.getKeywords(),
-                        contextInformer.getKeywordType()
-                    );
+                    if (message == null) {
+                        message = SQLCompletionHelper.readAdditionalProposalInfo(
+                            null,
+                            editor.getCompletionContext(),
+                            dbObject,
+                            contextInformer.getKeywords(),
+                            contextInformer.getKeywordType()
+                        );
+                    }
                 }
                 if (message == null  || message.equals(symbolEntry.getRawName())
                     || (contextInformer.getKeywords().length > 0 && message.equals(contextInformer.getKeywords()[0]))) {
@@ -253,6 +274,28 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
             annotationsInfo = new AnnotationsInformationView.AnnotationsHoverInfo(Collections.emptyList(), subject, -1);
         }
         return new SubjectInformation(annotationsInfo, message, info);
+    }
+
+    @NotNull
+    private static String getLocalVariableInformation(@NotNull SQLQueryLocalVariableInfo local) {
+        String kind;
+        if (local.parameter()) {
+            kind = SQLEditorMessages.sql_information_local_kind_parameter;
+        } else {
+            kind = switch (local.kind()) {
+                case VALUE -> SQLEditorMessages.sql_information_local_kind_variable;
+                case ROW_VALUE -> SQLEditorMessages.sql_information_local_kind_row_variable;
+                case ROW_REFERENCE -> SQLEditorMessages.sql_information_local_kind_row_reference;
+                case ROWSET -> SQLEditorMessages.sql_information_local_kind_rowset;
+                case CURSOR -> SQLEditorMessages.sql_information_local_kind_cursor;
+                case CURSOR_VALUE -> SQLEditorMessages.sql_information_local_kind_cursor_variable;
+            };
+        }
+        String message = NLS.bind(SQLEditorMessages.sql_information_local_entity, kind, local.declaration().getRawName());
+        if (local.type() != SQLQueryExprType.UNKNOWN) {
+            message += " " + NLS.bind(SQLEditorMessages.sql_information_local_type, local.type().getDisplayName());
+        }
+        return message;
     }
 
     @Nullable

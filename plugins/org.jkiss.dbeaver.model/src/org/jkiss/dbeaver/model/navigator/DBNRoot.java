@@ -80,6 +80,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         }
     }
 
+    @NotNull
     @Override
     public DBNModel getModel() {
         return model;
