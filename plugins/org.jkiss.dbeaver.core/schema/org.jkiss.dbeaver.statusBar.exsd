@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+    <annotation>
+        <appInfo>
+            <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.statusBar" name="Status bar contributions"/>
+        </appInfo>
+        <documentation>Ordered window-local status bar items. Implementation classes are loaded only when enabledWhen evaluates to true.</documentation>
+    </annotation>
+    <element name="extension">
+        <annotation><appInfo><meta.element/></appInfo></annotation>
+        <complexType>
+            <sequence><element ref="item" minOccurs="0" maxOccurs="unbounded"/></sequence>
+            <attribute name="point" type="string" use="required"/>
+            <attribute name="id" type="string"/>
+            <attribute name="name" type="string"/>
+        </complexType>
+    </element>
+    <element name="item">
+        <complexType>
+            <sequence><element ref="enabledWhen" minOccurs="0" maxOccurs="1"/></sequence>
+            <attribute name="id" type="string" use="required"/>
+            <attribute name="order" type="integer">
+                <annotation><documentation>Lower values appear first. Unspecified items follow explicitly ordered items.</documentation></annotation>
+            </attribute>
+            <attribute name="class" type="string" use="required">
+                <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.IStatusBarContributor"/></appInfo></annotation>
+            </attribute>
+        </complexType>
+    </element>
+    <element name="enabledWhen">
+        <annotation><documentation>One Eclipse core expression. App-property changes trigger reevaluation. The item is created lazily while true and disposed when false.</documentation></annotation>
+        <complexType><sequence><any minOccurs="1" maxOccurs="1" processContents="lax"/></sequence></complexType>
+    </element>
+</schema>

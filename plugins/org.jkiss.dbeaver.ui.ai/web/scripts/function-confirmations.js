@@ -12,6 +12,7 @@ function addFunctionConfirmation(args) {
         description: args.description,
         arguments: args.arguments,
         functionName: args.functionName,
+        functionCallId: args.functionCallId,
         paramsLabel: args.paramsLabel,
         resultLabel: args.resultLabel
     };
@@ -160,8 +161,8 @@ function formatArguments(args) {
 function createCollapsibleStatus(text, statusClass, data) {
     const details = document.createElement('details');
     details.className = 'fn-collapsible';
-    if (data && data.functionName) {
-        details.setAttribute('data-function-name', data.functionName);
+    if (data && data.functionCallId) {
+        details.setAttribute('data-function-call-id', data.functionCallId);
         if (data.awaitResult !== false) {
             details.classList.add('fn-awaiting-result');
         }
@@ -307,27 +308,12 @@ function updateCollapsibleStatus(collapsible, text, statusClass) {
 }
 
 function findFunctionStatusTarget(args) {
-    const candidates = Array.from(document.querySelectorAll('.fn-collapsible')).filter(el =>
-        el.getAttribute('data-function-name') === args.functionName
-    );
-
-    const awaitingCandidates = candidates.filter(el => el.classList.contains('fn-awaiting-result'));
-    if (awaitingCandidates.length > 0) {
-        return awaitingCandidates[awaitingCandidates.length - 1];
+    if (!args.functionCallId) {
+        return null;
     }
-
-    if (args.messageId !== undefined && args.messageId !== null) {
-        const messageId = String(args.messageId);
-        const messageScopedCandidates = candidates.filter(el => {
-            const container = el.closest('.message.confirmation-result, .message.confirmation');
-            return container && container.dataset.messageId === messageId;
-        });
-        if (messageScopedCandidates.length > 0) {
-            return messageScopedCandidates[messageScopedCandidates.length - 1];
-        }
-    }
-
-    return candidates.length > 0 ? candidates[candidates.length - 1] : null;
+    return Array.from(document.querySelectorAll('.fn-collapsible')).find(el =>
+        el.getAttribute('data-function-call-id') === args.functionCallId
+    ) || null;
 }
 
 function updateFunctionResult(args) {
@@ -360,7 +346,7 @@ function updateFunctionResult(args) {
         return;
     }
 
-    if (!args.hasException) {
+    if (!args.hasException || !args.functionCallId) {
         return;
     }
 

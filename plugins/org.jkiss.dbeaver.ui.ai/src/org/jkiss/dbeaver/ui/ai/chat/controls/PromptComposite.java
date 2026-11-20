@@ -111,7 +111,9 @@ public class PromptComposite extends Composite {
                     if (!busy) {
                         sendButton.setToolTipText(AIChatMessagesUI.ai_chat_send_button_tip);
                         sendButton.setImage(DBeaverIcons.getImage(AIChatIcons.SEND));
-                        setFocusOnPrompt();
+                        if (getShell() == getDisplay().getActiveShell()) {
+                            setFocusOnPrompt();
+                        }
                     } else {
                         new AbstractUIJob("Enable AI cancellation") {
                             @NotNull

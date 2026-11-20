@@ -127,11 +127,15 @@ public class CustomSashForm extends SashForm {
 
     private static final Listener selectionFixFilterListener = e -> {
         if (e.widget instanceof Sash s && !s.isDisposed() && s.getParent() instanceof CustomSashForm p) {
+            SashInfo sashInfo = p.currentSashInfo;
+            if (sashInfo == null || sashInfo.sash != s || sashInfo.sashLocs == null) {
+                return;
+            }
             Point pt = s.toControl(e.display.getCursorLocation());
             int x = pt.x;
             int y = pt.y;
-            for (int i = 0; i < p.currentSashInfo.sashLocs.length; i++) {
-                int[] locs = p.currentSashInfo.sashLocs[i];
+            for (int i = 0; i < sashInfo.sashLocs.length; i++) {
+                int[] locs = sashInfo.sashLocs[i];
                 boolean vertical = p.getOrientation() == SWT.VERTICAL;
                 int loc = vertical ? x : y;
                 int locIndex = vertical ? X_INDEX : Y_INDEX;

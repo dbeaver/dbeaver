@@ -21,6 +21,13 @@ import org.eclipse.osgi.util.NLS;
 public class PostgreSQLMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages"; //$NON-NLS-1$
 
+    public static String pgagent_access_error_title;
+    public static String pgagent_access_error_message;
+    public static String drop_tablespace_title;
+    public static String drop_system_tablespace_error;
+    public static String warning_title;
+    public static String restore_warning_message;
+
     public static String pseudo_column_oid_description;
     public static String global_variable_current_date_description;
     public static String global_variable_current_time_description;

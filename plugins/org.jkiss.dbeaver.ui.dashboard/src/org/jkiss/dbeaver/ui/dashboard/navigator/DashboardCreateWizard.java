@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
 import org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView;
@@ -149,7 +150,7 @@ public class DashboardCreateWizard extends Wizard implements INewWizard {
                 }
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Error creating dashboard", null, e);
+            DBWorkbench.getPlatformUI().showError(UIDashboardMessages.dashboard_create_error, null, e);
         }
         return false;
 	}

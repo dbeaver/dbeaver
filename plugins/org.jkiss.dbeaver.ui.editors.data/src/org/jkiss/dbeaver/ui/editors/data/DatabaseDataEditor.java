@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.IRevertableEditor;
 import org.jkiss.utils.CommonUtils;
 
@@ -89,7 +90,7 @@ public class DatabaseDataEditor extends AbstractDataEditor<DBSDataContainer> imp
         try {
             getActivePreferenceStore().save();
         } catch (IOException e) {
-            DBWorkbench.getPlatformUI().showError("Smart commit", "Error saving smart auto-commit option", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_smart_commit_title, ResultSetMessages.error_smart_commit_message, e);
         }
     }
 

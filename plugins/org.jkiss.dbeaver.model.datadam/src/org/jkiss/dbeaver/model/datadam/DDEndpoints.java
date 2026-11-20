@@ -29,8 +29,12 @@ public final class DDEndpoints {
     private static final String BASE_DD_HOST = /*<DD-PROD-URL*/"datadam.cloud"/*/>*/;
     private static final String ACCOUNT_URL = System.getProperty(
         "dbeaver.datadam.account.url", "https://account." + BASE_DD_HOST);
+    private static final String SSO_URL = System.getProperty(
+        "dbeaver.datadam.sso.url", "https://sso." + BASE_DD_HOST);
     private static final String STORAGE_URL = System.getProperty(
         "dbeaver.datadam.storage.url", "https://dbeaver-storage." + BASE_DD_HOST);
+    private static final String AI_URL = System.getProperty(
+        "dbeaver.datadam.ai.url", "https://ai." + BASE_DD_HOST + "/v1/");
     private static final String REMOTE_DAM_URL = System.getProperty(
         "dbeaver.datadam.remote.url", "wss://dam." + BASE_DD_HOST + DDRemoteDamProtocol.WEBSOCKET_PATH);
 
@@ -43,8 +47,18 @@ public final class DDEndpoints {
     }
 
     @NotNull
+    public static String getSsoBaseUrl() {
+        return SSO_URL;
+    }
+
+    @NotNull
     public static String getStorageBaseUrl() {
         return STORAGE_URL;
+    }
+
+    @NotNull
+    public static String getAiBaseUrl() {
+        return AI_URL;
     }
 
     @NotNull

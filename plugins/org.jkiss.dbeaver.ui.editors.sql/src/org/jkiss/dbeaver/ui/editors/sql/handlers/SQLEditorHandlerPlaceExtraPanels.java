@@ -42,7 +42,7 @@ public class SQLEditorHandlerPlaceExtraPanels extends AbstractHandler implements
     public static final String LOCATION_PARAMETER = "location";
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
             editor.setExtraPanelsLocation(event.getParameter(LOCATION_PARAMETER));
@@ -51,9 +51,12 @@ public class SQLEditorHandlerPlaceExtraPanels extends AbstractHandler implements
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters) {
+    public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
         IWorkbenchWindow window = element.getServiceLocator().getService(IWorkbenchWindow.class);
         IEditorPart activeEditor = window == null || window.getActivePage() == null ? null : window.getActivePage().getActiveEditor();
+        if (activeEditor == null) {
+            return;
+        }
         SQLEditor editor = RuntimeUtils.getObjectAdapter(activeEditor, SQLEditor.class);
         String location = (String) parameters.get(LOCATION_PARAMETER);
         if (editor != null && location != null) {

@@ -29,9 +29,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumerSettings;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -63,7 +63,7 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
             setProcessorEnabled(enabledCheckbox.getSelection())));
 
         if (hasControl) {
-            configureLink = UIUtils.createLink(this, DTMessages.data_transfer_wizard_output_event_processor_configure, SelectionListener.widgetSelectedAdapter(e -> {
+            configureLink = UIUtils.createLink(this, DTUIMessages.data_transfer_wizard_output_event_processor_configure, SelectionListener.widgetSelectedAdapter(e -> {
                     if (rawSettings != null) {
                         configurator.loadSettings(rawSettings);
                         rawSettings = null;
@@ -132,7 +132,7 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
 
     private class ConfigureDialog extends BaseDialog {
         public ConfigureDialog(@NotNull Shell shell) {
-            super(shell, NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_configure_title, descriptor.getLabel()), null);
+            super(shell, NLS.bind(DTUIMessages.data_transfer_wizard_output_event_processor_configure_title, descriptor.getLabel()), null);
             setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
         }
 

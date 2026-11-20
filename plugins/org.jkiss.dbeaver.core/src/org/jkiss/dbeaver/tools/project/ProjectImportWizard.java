@@ -88,7 +88,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 	@Override
 	public boolean performFinish() {
         if (!DBWorkbench.getPlatform().getWorkspace().canManageProjects()) {
-            DBWorkbench.getPlatformUI().showError("Import error", "You can't import projects");
+            DBWorkbench.getPlatformUI().showError(
+                CoreMessages.dialog_scripts_import_wizard_dialog_error_title,
+                CoreMessages.dialog_project_import_error_message);
             return false;
         }
 
@@ -109,8 +111,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
         catch (InvocationTargetException ex) {
             DBWorkbench.getPlatformUI().showError(
-                    "Import error",
-                "Cannot import projects",
+                CoreMessages.dialog_scripts_import_wizard_dialog_error_title,
+                CoreMessages.dialog_project_import_error_message,
                 ex.getTargetException());
             return false;
         }

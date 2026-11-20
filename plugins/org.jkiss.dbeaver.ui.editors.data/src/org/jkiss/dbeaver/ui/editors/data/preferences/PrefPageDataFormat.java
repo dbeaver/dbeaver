@@ -377,7 +377,7 @@ public class PrefPageDataFormat extends TargetPrefPage {
         try {
             reloadSampleThrowable();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Data formats", "Can't apply formatter values to the sample", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_data_formats_title, ResultSetMessages.error_data_formats_message, e);
             log.warn("Can't render sample value", e); //$NON-NLS-1$
         }
     }

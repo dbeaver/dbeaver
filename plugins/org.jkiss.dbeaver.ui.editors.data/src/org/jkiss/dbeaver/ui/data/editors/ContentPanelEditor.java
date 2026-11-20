@@ -268,7 +268,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 streamEditor = curStreamManager.getInstance().createPanelEditor(valueController);
                 appliedStreamManager = curStreamManager;
             } catch (Throwable e) {
-                DBWorkbench.getPlatformUI().showError("No stream editor", "Can't create stream editor", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_stream_editor_title, ResultSetMessages.error_stream_editor_message, e);
             }
         }
         if (streamEditor == null) {
@@ -608,7 +608,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                         }
                     } catch (Exception e) {
                         valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
-                        DBWorkbench.getPlatformUI().showError("Value panel", "Error loading contents", e);
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_value_panel_title, ResultSetMessages.error_load_content_message, e);
                     }
                 });
             } finally {

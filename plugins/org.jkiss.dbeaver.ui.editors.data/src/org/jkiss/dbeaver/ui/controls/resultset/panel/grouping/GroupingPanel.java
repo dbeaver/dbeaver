@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.registry.GroupingRegistry;
@@ -150,7 +151,7 @@ public class GroupingPanel extends ResultSetPanelBase {
             try {
                 groupingResultsContainer.rebuildGrouping();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Grouping error", "Can't refresh grouping query", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.grouping_panel_error_title, ResultSetMessages.error_refresh_grouping_message, e);
             }
         }
         groupingPlaceholder.layout(true, true);

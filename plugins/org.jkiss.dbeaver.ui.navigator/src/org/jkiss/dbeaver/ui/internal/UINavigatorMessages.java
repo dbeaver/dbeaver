@@ -21,6 +21,74 @@ import org.eclipse.osgi.util.NLS;
 public class UINavigatorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UINavigatorMessages"; //$NON-NLS-1$
 
+    public static String dialog_project_create_wizard_error_cannot_manage;
+    public static String error_drop_title;
+    public static String error_drop_node_message;
+    public static String error_drop_file_message;
+    public static String error_no_object_title;
+    public static String error_no_object_message;
+    public static String error_refresh_title;
+    public static String error_refresh_node_message;
+    public static String error_move_title;
+    public static String error_move_message;
+    public static String error_file_save_title;
+    public static String error_io_title;
+    public static String error_schema_list_title;
+    public static String error_schema_list_message;
+    public static String error_commit_title;
+    public static String error_commit_message;
+    public static String error_node_load_title;
+    public static String error_navigator_title;
+    public static String error_open_object_title;
+    public static String error_open_object_message;
+    public static String error_open_view_title;
+    public static String error_open_navigator_view_message;
+    public static String error_paste_title;
+    public static String error_paste_nodes_message;
+    public static String error_paste_node_message;
+    public static String error_owner_project_not_found;
+    public static String error_copy_title;
+    public static String error_copy_resource_message;
+    public static String error_open_browser_title;
+    public static String error_open_browser_message;
+    public static String error_toggle_view_title;
+    public static String error_open_view_message;
+    public static String error_copy_file_message;
+    public static String error_navigator_node_not_found;
+    public static String error_create_object_title;
+    public static String error_create_object_message;
+    public static String error_load_title;
+    public static String error_service_busy_message;
+    public static String projects_refresh_title;
+    public static String projects_refresh_message;
+    public static String error_refresh_workspace_title;
+    public static String error_refresh_workspace_message;
+    public static String error_read_file_attributes_title;
+    public static String error_set_property_title;
+    public static String error_set_property_message;
+    public static String editors_entity_read_only_title;
+    public static String editors_entity_read_only_message;
+    public static String editors_entity_save_error_title;
+    public static String error_navigate_node_title;
+    public static String error_node_not_found_message;
+    public static String error_read_navigator_node_message;
+    public static String error_create_sql_viewer_title;
+    public static String error_filter_node_title;
+    public static String error_filter_node_message;
+    public static String error_create_file_title;
+    public static String error_create_file_message;
+    public static String error_goto_object_title;
+    public static String error_goto_object_message;
+    public static String dialog_select_database_not_found_title;
+    public static String dialog_select_database_not_found_message;
+    public static String reorder_script_confirm_title;
+    public static String file_exists_confirm_title;
+    public static String file_exists_confirm_message;
+    public static String file_overwrite_confirm_message;
+
+    public static String pref_page_navigator_localize_folder_names;
+    public static String pref_page_navigator_localize_folder_names_tip;
+
     //object properties editor
     public static String obj_editor_properties_control_action_filter_setting;
     public static String obj_editor_properties_control_action_configure_columns;
@@ -134,8 +202,6 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_statistics_tip;
     public static String pref_page_database_general_label_show_node_actions;
     public static String pref_page_database_general_label_show_node_actions_tip;
-    public static String dialog_connection_set_default_connection_settings;
-    public static String dialog_connection_set_default_connection_settings_tip;
     public static String pref_page_database_general_label_show_child_count;
     public static String pref_page_database_general_label_show_child_count_tip;
     public static String pref_page_database_general_label_color_all_nodes;
@@ -180,6 +246,8 @@ public class UINavigatorMessages extends NLS {
     public static String CreateLinkHandler_e_create_link_title;
     public static String CreateLinkHandler_e_create_link_validation;
     public static String dialog_select_datasource_title;
+    public static String dialog_select_datasource_button_select;
+    public static String dialog_select_datasource_button_none;
 
     public static String controls_object_list_job_props_read;
     public static String controls_object_list_message_items;
@@ -296,6 +364,12 @@ public class UINavigatorMessages extends NLS {
 
     public static String confirm_commit_after_defaults_change_title;
     public static String confirm_commit_after_defaults_change_message;
+
+    public static String model_navigator_Description;
+    public static String CreateLinkedFileRunnable_e_cancelled_link;
+    public static String CreateLinkedFileRunnable_e_unable_to_link;
+    public static String CreateLinkedFolderRunnable_e_cancelled_link;
+    public static String CreateLinkedFolderRunnable_e_unable_to_link;
 
     static {
         // initialize resource bundle

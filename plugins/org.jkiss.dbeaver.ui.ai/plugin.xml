@@ -91,12 +91,12 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <category id="com.dbeaver.ai" name="AI commands" description="AI commands"/>
+        <category id="com.dbeaver.ai" name="%category.com.dbeaver.ai.name" description="%category.com.dbeaver.ai.description"/>
         <command id="org.jkiss.dbeaver.ui.ai.showCompletion" name="%command.org.jkiss.dbeaver.ui.ai.showCompletion.name" description="%command.org.jkiss.dbeaver.ui.ai.showCompletion.description" categoryId="com.dbeaver.ai"/>
         <command id="org.jkiss.dbeaver.ui.ai.configuration" name="%command.org.jkiss.dbeaver.ui.ai.configuration.name" description="%command.org.jkiss.dbeaver.ui.ai.configuration.description" categoryId="com.dbeaver.ai"/>
-        <command id="com.dbeaver.ai.chat.sendPrompt" name="Send" description="Send prompt to AI engine" categoryId="com.dbeaver.ai"/>
-        <command id="com.dbeaver.ai.chat.attach" name="Attach" description="Attach file" categoryId="com.dbeaver.ai"/>
-        <command id="com.dbeaver.ai.chat.toggle" name="AI Chat" description="Toggle AI Chat visibility" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.sendPrompt" name="%command.com.dbeaver.ai.chat.sendPrompt.name" description="%command.com.dbeaver.ai.chat.sendPrompt.description" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.attach" name="%command.com.dbeaver.ai.chat.attach.name" description="%command.com.dbeaver.ai.chat.attach.description" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.toggle" name="%command.com.dbeaver.ai.chat.toggle.name" description="%command.com.dbeaver.ai.chat.toggle.description" categoryId="com.dbeaver.ai"/>
         <command id="com.dbeaver.ai.chat.focusPrompt" name="%command.com.dbeaver.ai.chat.focusPrompt.name" description="%command.com.dbeaver.ai.chat.focusPrompt.description" categoryId="com.dbeaver.ai"/>
         <command id="com.dbeaver.ai.chat.focusChat" name="%command.com.dbeaver.ai.chat.focusChat.name" description="%command.com.dbeaver.ai.chat.focusChat.description" categoryId="com.dbeaver.ai"/>
         <command id="com.dbeaver.ai.chat.newConversation" name="%command.com.dbeaver.ai.chat.newConversation.name" description="%command.com.dbeaver.ai.chat.newConversation.description" categoryId="com.dbeaver.ai"/>
@@ -259,8 +259,8 @@
               category="org.jkiss.dbeaver.core.category"
               class="org.jkiss.dbeaver.ui.ai.chat.AIChatView"
               icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/ai.svg"
-              name="Chat">
-            <description>AI Chat</description>
+              name="%view.com.dbeaver.ai.chat.name">
+            <description>%view.com.dbeaver.ai.chat.description</description>
         </view>
     </extension>
 

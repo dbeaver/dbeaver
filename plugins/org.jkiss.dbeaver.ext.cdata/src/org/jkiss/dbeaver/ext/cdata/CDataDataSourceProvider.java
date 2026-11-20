@@ -125,7 +125,6 @@ public class CDataDataSourceProvider extends GenericDataSourceProvider<CDataData
         );
         configureDriver(driver, driverInfo);
         driver.setSingleConnection(true);
-        driver.setCategories(List.of(dataSourceProvider.getId()));
         driver.addDriverLibrary(createLibrary(driver, driverInfo), false);
         return driver;
     }

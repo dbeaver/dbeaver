@@ -19,6 +19,40 @@ package org.jkiss.dbeaver.ui.ai.chat.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class AIChatMessagesUI extends NLS {
+    private static final String BUNDLE_NAME = AIChatMessagesUI.class.getName();
+
+    public static String ai_chat_connect_error_title;
+    public static String ai_chat_connect_error_message;
+    public static String ai_chat_settings_save_title;
+    public static String ai_chat_settings_save_error;
+    public static String ai_chat_query_execution_error;
+    public static String ai_chat_insert_sql_title;
+    public static String ai_chat_insert_sql_error;
+    public static String ai_chat_open_editor_error;
+    public static String ai_chat_active_connection_required;
+    public static String ai_chat_set_data_source_error;
+    public static String ai_chat_toggle_title;
+    public static String ai_chat_open_error;
+    public static String ai_chat_file_open_error_title;
+    public static String ai_chat_file_open_error_message;
+    public static String ai_chat_conversation_create_error_title;
+    public static String ai_chat_conversation_create_error_message;
+    public static String ai_chat_conversation_delete_error_title;
+    public static String ai_chat_conversation_delete_error_message;
+    public static String ai_chat_file_not_found_title;
+    public static String ai_chat_file_not_found_message;
+    public static String ai_chat_file_explorer_error;
+    public static String ai_chat_conversation_update_error_title;
+    public static String ai_chat_conversation_update_error_message;
+    public static String ai_chat_context_load_error_title;
+    public static String ai_chat_context_load_error_message;
+    public static String ai_chat_data_source_set_error_title;
+    public static String ai_chat_data_source_set_error_message;
+    public static String ai_chat_data_source_clear_error_title;
+    public static String ai_chat_data_source_clear_error_message;
+    public static String ai_chat_conversation_select_error_title;
+    public static String ai_chat_conversation_select_error_message;
+
     public static String ai_chat_message_role_user_label;
     public static String ai_chat_message_role_assistant_label;
     public static String ai_chat_message_role_function_label;
@@ -111,6 +145,6 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_image_clipboard_name;
 
     static {
-        NLS.initializeMessages(AIChatMessagesUI.class.getName(), AIChatMessagesUI.class);
+        NLS.initializeMessages(BUNDLE_NAME, AIChatMessagesUI.class);
     }
 }
