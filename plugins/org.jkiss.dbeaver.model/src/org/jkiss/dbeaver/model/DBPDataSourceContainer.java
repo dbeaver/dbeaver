@@ -117,6 +117,11 @@ public interface DBPDataSourceContainer extends
 
     boolean isSharedCredentials();
 
+    // revoked shared credentials may still be in use until disconnect
+    default boolean isSharedCredentialsRevoked() {
+        return false;
+    }
+
     /**
      * find all available shared credentials for the current user
      */
