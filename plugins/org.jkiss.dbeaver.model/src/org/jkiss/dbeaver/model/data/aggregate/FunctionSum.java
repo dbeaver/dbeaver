@@ -16,32 +16,45 @@
  */
 package org.jkiss.dbeaver.model.data.aggregate;
 
+import java.math.BigDecimal;
+
 /**
  * FunctionSum
  */
 public class FunctionSum extends FunctionNumeric {
 
-    protected double result = Double.NaN;
+    private BigDecimal preciseResult;
+
+    private double specialResult;
+    private boolean hasSpecialValue;
 
     @Override
     public boolean accumulate(Object value, boolean aggregateAsStrings) {
-        Number num = getNumeric(value);
-        if (num != null) {
-            if (Double.isNaN(result)) {
-                result = 0.0;
-            }
-            result += num.doubleValue();
-            return true;
+        Number num = getNumericForAggregation(value);
+        if (num == null) {
+            return false;
         }
-        return false;
+
+        BigDecimal decimal = getBigDecimal(value);
+
+        if (decimal != null) {
+            if (preciseResult == null) {
+                preciseResult = decimal;
+            } else {
+                preciseResult = preciseResult.add(decimal);
+            }
+        } else {
+            specialResult += num.doubleValue();
+            hasSpecialValue = true;
+        }
+        return true;
     }
 
     @Override
     public Object getResult(int valueCount) {
-        if (Double.isNaN(result)) {
-            return null;
+        if (hasSpecialValue) {
+            return Double.isNaN(specialResult) ? null : specialResult;
         }
-        return result;
+        return preciseResult;
     }
-
 }
