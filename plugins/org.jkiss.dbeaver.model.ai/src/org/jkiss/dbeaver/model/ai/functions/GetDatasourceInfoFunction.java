@@ -20,6 +20,7 @@ import com.dbeaver.datadam.mcp.api.model.DDMcpDatasourceInfo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -34,10 +35,15 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class GetDatasourceInfoFunction implements AIFunction {
     private static final Gson GSON = new GsonBuilder().serializeNulls().create();
+    private static final Pattern CREDENTIAL_PARAMETER = Pattern.compile(
+        "(?i)(?:password|passwd|pwd|secret|token|key|credential|authorization|user(?:name)?)\\s*=");
 
     @NotNull
     @Override
@@ -64,7 +70,7 @@ public class GetDatasourceInfoFunction implements AIFunction {
         var response = new DDMcpDatasourceInfo(
             dataSource.getContainer().getId(),
             dataSource.getContainer().getName(),
-            dataSource.getContainer().getConnectionConfiguration().getUrl(),
+            publicConnectionURL(dataSource.getContainer().getConnectionConfiguration().getUrl()),
             info.getDriverName(),
             info.getDriverVersion(),
             connected ? info.getDatabaseProductName() : null,
@@ -77,5 +83,19 @@ public class GetDatasourceInfoFunction implements AIFunction {
             AIFunctionType.INFORMATION,
             GSON.toJsonTree(response)
         );
+    }
+
+    @Nullable
+    private static String publicConnectionURL(@Nullable String url) {
+        if (url == null) {
+            return null;
+        }
+        try {
+            String decoded = URLDecoder.decode(url, StandardCharsets.UTF_8);
+            // Omit credential-bearing URLs rather than trying to parse each driver's credential syntax.
+            return decoded.indexOf('@') >= 0 || CREDENTIAL_PARAMETER.matcher(decoded).find() ? null : url;
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }

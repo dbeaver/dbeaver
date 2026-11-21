@@ -83,6 +83,24 @@ class GetDatasourceInfoFunctionTest {
     }
 
     @Test
+    void omitsCredentialBearingConnectionURLs() throws Exception {
+        var configuration = dataSourceContainer.getConnectionConfiguration();
+        for (String url : new String[] {
+            "jdbc:sample://user:private-value@localhost/example",
+            "jdbc:sample://localhost/example?password=private-value",
+            "jdbc:sqlserver://localhost;password={private;value}",
+            "jdbc:oracle:thin:user/private-value@localhost:1521/example",
+            "jdbc:sample://localhost/example?accessToken=private-value",
+            "jdbc:sample://localhost/example?pass%77ord=private-value",
+            "jdbc:sample://localhost/example?password%3Dprivate-value",
+            "jdbc:sample://localhost/example?api_key=private-value"
+        }) {
+            configuration.setUrl(url);
+            Assertions.assertTrue(result().get("connectionURL").isJsonNull());
+        }
+    }
+
+    @Test
     void disconnectedDatasourceDoesNotExposeCachedServerInfoOrReadStructure() throws Exception {
         Mockito.when(dataSourceContainer.isConnected()).thenReturn(false);
 
