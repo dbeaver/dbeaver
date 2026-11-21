@@ -87,11 +87,11 @@ public final class DDProjectKeyUIManager {
         if (recovery == null || monitor.isCanceled() || !bundle.equals(access.getKeyBundle())) {
             return false;
         }
+        DDProjectManager manager = DDProjectManager.getInstance();
+        prepareProjectDeletion(manager, bundle.accountId());
         if (recovery.phrase() != null) {
             access.importKeys(recovery.phrase());
         }
-        DDProjectManager manager = DDProjectManager.getInstance();
-        prepareProjectDeletion(manager, bundle.accountId());
         manager.deleteAccountProjects(bundle.accountId());
         if (recovery.phrase() == null) {
             access.forgetKeys();
