@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,10 +158,17 @@ public class BooleanStyleSet {
     }
 
     public static void installStyleChangeListener(@NotNull Control control, @NotNull IPropertyChangeListener listener) {
+        // Theme notifications can arrive before the editor foreground preferences have been updated.
+        final IPropertyChangeListener deferredListener = event -> control.getDisplay().asyncExec(() -> {
+            if (!control.isDisposed()) {
+                listener.propertyChange(event);
+            }
+        });
         final DBPPreferenceListener preferenceListener = e ->
-            listener.propertyChange(new PropertyChangeEvent(e.getSource(), e.getProperty(), e.getOldValue(), e.getNewValue()));
+            deferredListener.propertyChange(new PropertyChangeEvent(e.getSource(), e.getProperty(), e.getOldValue(), e.getNewValue()));
 
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(listener);
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(deferredListener);
+        UIStyles.getEditorsPreferenceStore().addPropertyChangeListener(deferredListener);
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(preferenceListener);
         DBWorkbench.getPlatform().getDataSourceProviderRegistry()
             .getGlobalDataSourcePreferenceStore().addPropertyChangeListener(preferenceListener);
@@ -170,7 +177,8 @@ public class BooleanStyleSet {
             DBWorkbench.getPlatform().getDataSourceProviderRegistry()
                 .getGlobalDataSourcePreferenceStore().removePropertyChangeListener(preferenceListener);
             DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(preferenceListener);
-            PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(listener);
+            UIStyles.getEditorsPreferenceStore().removePropertyChangeListener(deferredListener);
+            PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(deferredListener);
         });
     }
 
