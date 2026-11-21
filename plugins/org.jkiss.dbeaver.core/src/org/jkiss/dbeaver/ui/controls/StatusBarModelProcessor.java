@@ -16,32 +16,26 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.menu.MToolBar;
 import org.eclipse.e4.ui.model.application.ui.menu.MToolControl;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.HashSet;
-
-/** Removes restored standalone trims whose items are now hosted by the status-bar extension point. */
+/** Removes obsolete DataDam status-bar controls from restored workbench models. */
 public class StatusBarModelProcessor {
     @Execute
     public void process(@NotNull MApplication application, @NotNull EModelService modelService) {
-        var itemIds = new HashSet<String>();
-        for (var config : Platform.getExtensionRegistry().getConfigurationElementsFor(DBeaverStatusBarTrim.EXTENSION_ID)) {
-            if ("item".equals(config.getName())) {
-                String id = config.getAttribute(RegistryConstants.ATTR_ID);
-                if (!CommonUtils.isEmpty(id)) {
-                    itemIds.add(id);
-                }
+        for (MToolBar toolbar : modelService.findElements(application, "dbeaver-datadam-status", MToolBar.class, null)) {
+            if (toolbar.getParent() != null) {
+                toolbar.getParent().getChildren().remove(toolbar);
             }
         }
         for (MToolControl control : modelService.findElements(application, null, MToolControl.class, null)) {
-            if (itemIds.contains(control.getElementId()) && control.getParent() != null) {
+            if (("org.jkiss.dbeaver.core.ui.Projects".equals(control.getElementId())
+                || "org.jkiss.dbeaver.core.ui.StatusBar".equals(control.getElementId())
+                || "org.jkiss.dbeaver.ui.datadam.status".equals(control.getElementId())) && control.getParent() != null) {
                 control.getParent().getChildren().remove(control);
             }
         }

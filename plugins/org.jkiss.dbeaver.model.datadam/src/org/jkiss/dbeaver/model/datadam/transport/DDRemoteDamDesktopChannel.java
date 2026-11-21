@@ -579,7 +579,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                 log.debug("Desktop message client could not be closed");
             }
         }
-        DBException failure = new DBException("Desktop DAM session closed");
+        DBException failure = new DBException("Desktop Dam session closed");
         for (Outgoing outgoing : attempt.failed) {
             outgoing.result.completeExceptionally(failure);
         }
@@ -589,7 +589,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
     private final class Attempt {
         private final AttemptListener listener = new AttemptListener(this);
         private final ChannelJob connect = new ChannelJob("Connect Desktop message channel", () -> connect(this));
-        private final ChannelJob connectDeadline = new ChannelJob("Desktop DAM session deadline", () -> deadline(this, false));
+        private final ChannelJob connectDeadline = new ChannelJob("Desktop Dam session deadline", () -> deadline(this, false));
         private final ChannelJob readyDeadline = new ChannelJob("Desktop ready deadline", () -> deadline(this, true));
         private final ChannelJob sender = new ChannelJob("Send Desktop messages", () -> sendPending(this));
         private final ArrayDeque<String> incoming = new ArrayDeque<>();

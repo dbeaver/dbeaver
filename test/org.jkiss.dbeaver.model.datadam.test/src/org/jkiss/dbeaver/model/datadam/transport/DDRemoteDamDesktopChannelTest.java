@@ -383,7 +383,7 @@ class DDRemoteDamDesktopChannelTest extends DBeaverUnitTest {
             channel.start();
             Peer peer = clients.next();
             AbstractJob deadline = Arrays.stream(Job.getJobManager().find(null))
-                .filter(job -> job.getName().equals("Desktop DAM session deadline"))
+                .filter(job -> job.getName().equals("Desktop Dam session deadline"))
                 .map(AbstractJob.class::cast)
                 .findFirst().orElseThrow();
             peer.open();

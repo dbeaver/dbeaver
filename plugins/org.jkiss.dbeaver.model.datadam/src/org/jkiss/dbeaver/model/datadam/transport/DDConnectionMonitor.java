@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.datadam.transport;
 
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -25,29 +27,84 @@ import org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpAiFunctionCatalog;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.LongSupplier;
 
 /**
  * Bounded, in-memory diagnostics for the current or most recent WebSocket connection.
  * Traffic counts application payload bytes, excluding WebSocket framing, control frames and TLS overhead.
  */
 public final class DDConnectionMonitor {
+    public static final String MCP_RESULT_OK = "OK";
     private static final int MAX_EVENTS = 10_000;
     private static final int MAX_DETAILS_LENGTH = 100_000;
+    private static final int MAX_RETAINED_TEXT_LENGTH = 10_000_000;
 
     public enum EventType {
         CONNECTING, CONNECTED, DISCONNECTED, CLOSED, SIGNED_IN, SIGNED_OUT, INVALID_TOKEN, ERROR,
-        MCP_REQUEST
+        MCP_REQUEST, MCP_RESPONSE
     }
 
-    public record Event(@NotNull Instant time, @NotNull EventType type, @NotNull String details, @Nullable McpRequest request) {
+    public record Event(
+        @NotNull Instant time, @NotNull EventType type, @NotNull String details, @Nullable McpRequest request,
+        long requestId, @Nullable McpResponse response, long startedNanos
+    ) {
+        public Event(
+            @NotNull Instant time, @NotNull EventType type, @NotNull String details, @Nullable McpRequest request,
+            long requestId, @Nullable McpResponse response
+        ) {
+            this(time, type, details, request, requestId, response, 0);
+        }
+
+        public Event(@NotNull Instant time, @NotNull EventType type, @NotNull String details, @Nullable McpRequest request) {
+            this(time, type, details, request, 0, null);
+        }
+
         public Event(@NotNull Instant time, @NotNull EventType type, @NotNull String details) {
             this(time, type, details, null);
+        }
+
+        @NotNull
+        public String fullDetails() {
+            return response == null ? details : details + "\n\n" + response.code()
+                + (response.error() == null ? "" : "\n" + response.error())
+                + "\n" + response.processingTime() + "\n\n" + response.body();
+        }
+
+        public boolean isPending() {
+            return requestId != 0 && response == null;
+        }
+
+        public boolean isError() {
+            return type == EventType.ERROR || response != null && (response.error() != null || !MCP_RESULT_OK.equals(response.code()));
+        }
+    }
+
+    public record McpResponse(@NotNull String code, @Nullable String error, @NotNull String body, @NotNull Duration processingTime) {
+        public McpResponse(@NotNull String code, @Nullable String error, @NotNull String body) {
+            this(code, error, body, Duration.ZERO);
+        }
+
+        @NotNull
+        public String valueText() {
+            try {
+                var json = JsonParser.parseString(body);
+                if (!json.isJsonObject()) {
+                    return "";
+                }
+                var value = json.getAsJsonObject().get("value");
+                if (value == null) {
+                    return "";
+                }
+                return value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()
+                    ? value.getAsString() : JSONUtils.PRETTY_GSON.toJson(value);
+            } catch (JsonParseException e) {
+                return "";
+            }
         }
     }
 
@@ -72,7 +129,8 @@ public final class DDConnectionMonitor {
     ) {
     }
 
-    private final ArrayDeque<Event> events = new ArrayDeque<>();
+    private final Map<Long, Event> events = new LinkedHashMap<>();
+    private final LongSupplier nanoTime;
     private DDRemoteDamChannelState state = DDRemoteDamChannelState.DISCONNECTED;
     @Nullable
     private Instant connectedAt;
@@ -83,10 +141,21 @@ public final class DDConnectionMonitor {
     private boolean open;
     private long bytesSent;
     private long bytesReceived;
+    private long nextRequestId;
+    private long nextStandaloneEventId;
+    private long retainedTextLength;
+
+    public DDConnectionMonitor() {
+        this(System::nanoTime);
+    }
+
+    DDConnectionMonitor(@NotNull LongSupplier nanoTime) {
+        this.nanoTime = nanoTime;
+    }
 
     synchronized void opened() {
         connectedAt = Instant.now();
-        startedNanos = System.nanoTime();
+        startedNanos = nanoTime.getAsLong();
         durationNanos = 0;
         bytesSent = 0;
         bytesReceived = 0;
@@ -95,7 +164,7 @@ public final class DDConnectionMonitor {
 
     synchronized void disconnected() {
         if (open) {
-            durationNanos = System.nanoTime() - startedNanos;
+            durationNanos = nanoTime.getAsLong() - startedNanos;
             open = false;
         }
     }
@@ -132,9 +201,13 @@ public final class DDConnectionMonitor {
     }
 
     public synchronized void recordMcpRequest(@NotNull String operation, @Nullable Map<String, Object> arguments) {
+        addEvent(createMcpRequest(operation, arguments, 0));
+    }
+
+    @NotNull
+    private Event createMcpRequest(@NotNull String operation, @Nullable Map<String, Object> arguments, long requestId) {
         if (arguments == null) {
-            record(EventType.MCP_REQUEST, operation);
-            return;
+            return new Event(Instant.now(), EventType.MCP_REQUEST, limit(operation), null, requestId, null, nanoTime.getAsLong());
         }
         Map<String, String> parameters = new LinkedHashMap<>();
         int remaining = MAX_DETAILS_LENGTH;
@@ -166,8 +239,28 @@ public final class DDConnectionMonitor {
         var request = new McpRequest(limit(operation),
             argumentId(arguments, DDMcpAiFunctionCatalog.PROJECT_ID_PARAMETER),
             argumentId(arguments, DDMcpAiFunctionCatalog.DATASOURCE_ID_PARAMETER), parameters);
-        addEvent(new Event(Instant.now(), EventType.MCP_REQUEST,
-            limit(operation + "\n\n" + JSONUtils.PRETTY_GSON.toJson(arguments)), request));
+        return new Event(Instant.now(), EventType.MCP_REQUEST,
+            limit(operation + "\n\n" + JSONUtils.PRETTY_GSON.toJson(arguments)), request, requestId, null, nanoTime.getAsLong());
+    }
+
+    @NotNull
+    public synchronized Event beginMcpRequest(@NotNull String operation, @Nullable Map<String, Object> arguments) {
+        Event request = createMcpRequest(operation, arguments, ++nextRequestId);
+        addEvent(request);
+        return request;
+    }
+
+    public synchronized void recordMcpResponse(
+        @NotNull Event request, @NotNull String code, @Nullable String errorMessage, @NotNull String body
+    ) {
+        Event pending = events.get(request.requestId());
+        if (pending == null || !pending.isPending()) {
+            return;
+        }
+        String responseError = errorMessage == null ? null : limit(errorMessage);
+        Duration processingTime = Duration.ofNanos(Math.max(0, nanoTime.getAsLong() - pending.startedNanos()));
+        addEvent(new Event(pending.time(), pending.type(), pending.details(), pending.request(), pending.requestId(),
+            new McpResponse(code, responseError, body, processingTime), pending.startedNanos()));
     }
 
     @Nullable
@@ -176,25 +269,57 @@ public final class DDConnectionMonitor {
     }
 
     private void addEvent(@NotNull Event event) {
-        if (events.size() == MAX_EVENTS) {
-            events.removeFirst();
+        // Positive keys identify requests; negative keys keep standalone events in the same ordered history.
+        long key = event.requestId() == 0 ? --nextStandaloneEventId : event.requestId();
+        Event previous = events.put(key, event);
+        retainedTextLength += textLength(event) - (previous == null ? 0 : textLength(previous));
+        // A single oversized response remains available in full, but cannot accumulate with other events.
+        while (events.size() > 1 && (events.size() > MAX_EVENTS || retainedTextLength > MAX_RETAINED_TEXT_LENGTH)) {
+            var iterator = events.entrySet().iterator();
+            var oldest = iterator.next();
+            if (oldest.getKey() == key) {
+                oldest = iterator.next();
+            }
+            retainedTextLength -= textLength(oldest.getValue());
+            iterator.remove();
         }
-        events.addLast(event);
+    }
+
+    private static long textLength(@NotNull Event event) {
+        long length = event.details().length();
+        if (event.request() != null) {
+            for (var parameter : event.request().parameters().entrySet()) {
+                length += parameter.getKey().length() + parameter.getValue().length();
+            }
+        }
+        if (event.response() != null) {
+            length += event.response().body().length();
+            if (event.response().error() != null) {
+                length += event.response().error().length();
+            }
+        }
+        return length;
     }
 
     @NotNull
     public synchronized Snapshot snapshot() {
-        return new Snapshot(state, connectedAt, Duration.ofNanos(open ? System.nanoTime() - startedNanos : durationNanos),
+        return new Snapshot(state, connectedAt, Duration.ofNanos(open ? nanoTime.getAsLong() - startedNanos : durationNanos),
             bytesSent, bytesReceived, error);
     }
 
     @NotNull
     public synchronized List<Event> getEvents() {
-        return List.copyOf(events);
+        return List.copyOf(events.values());
+    }
+
+    @Nullable
+    public synchronized Event getRequestEvent(long requestId) {
+        return events.get(requestId);
     }
 
     public synchronized void clearEvents() {
         events.clear();
+        retainedTextLength = 0;
     }
 
     @NotNull

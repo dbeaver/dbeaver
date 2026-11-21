@@ -25,52 +25,82 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
-/** Records live MCP requests and their parameters without retaining result data. */
+/** Records MCP requests and responses for the desktop monitoring view. */
 public final class DDMcpTrackingFunctionService implements DDMcpFunctionService {
     private static final Log log = Log.getLog(DDMcpTrackingFunctionService.class);
 
     private final DDMcpFunctionService delegate;
-    private final BiConsumer<String, Map<String, Object>> events;
+    @Nullable
+    private final DDConnectionMonitor monitor;
 
     public DDMcpTrackingFunctionService(@NotNull DDMcpFunctionService delegate) {
-        this(delegate, DDMcpTrackingFunctionService::recordEvent);
+        this(delegate, null);
     }
 
-    public DDMcpTrackingFunctionService(@NotNull DDMcpFunctionService delegate, @NotNull DDConnectionMonitor monitor) {
-        this(delegate, monitor::recordMcpRequest);
-    }
-
-    private DDMcpTrackingFunctionService(@NotNull DDMcpFunctionService delegate, @NotNull BiConsumer<String, Map<String, Object>> events) {
+    public DDMcpTrackingFunctionService(@NotNull DDMcpFunctionService delegate, @Nullable DDConnectionMonitor monitor) {
         this.delegate = delegate;
-        this.events = events;
+        this.monitor = monitor;
     }
 
     @Override
     @NotNull
     public List<DDMcpFunctionDescriptor> getFunctions() throws DDMcpFunctionException {
-        events.accept("getFunctions", null);
-        return delegate.getFunctions();
+        return track("getFunctions", null, delegate::getFunctions);
     }
 
     @Override
     @NotNull
     public DDMcpFunctionResult callFunction(@NotNull DDMcpFunctionCall call) throws DDMcpFunctionException {
-        events.accept("callFunction: " + call.functionId(), call.arguments());
-        return delegate.callFunction(call);
+        return track("callFunction: " + call.functionId(), call.arguments(), () -> delegate.callFunction(call));
     }
 
-    private static void recordEvent(@NotNull String operation, @Nullable Map<String, Object> arguments) {
-        try {
-            DDRemoteDamDesktopSessionService.getInstance().getMonitor().recordMcpRequest(operation, arguments);
-        } catch (DBException e) {
-            log.debug("Cannot record DataDam MCP request", e);
+    @NotNull
+    private <T> T track(@NotNull String operation, @Nullable Map<String, Object> arguments, @NotNull McpCall<T> call)
+        throws DDMcpFunctionException {
+        DDConnectionMonitor target = monitor;
+        if (target == null) {
+            try {
+                target = DDRemoteDamDesktopSessionService.getInstance().getMonitor();
+            } catch (DBException e) {
+                log.debug("Cannot record DataDam MCP request", e);
+            }
         }
+        if (target == null) {
+            return call.run();
+        }
+        var request = target.beginMcpRequest(operation, arguments);
+        T result;
+        try {
+            result = call.run();
+        } catch (DDMcpFunctionException e) {
+            var response = new LinkedHashMap<String, Object>();
+            response.put("code", e.getCode());
+            response.put("message", e.getMessage());
+            response.put("data", e.getData());
+            target.recordMcpResponse(request, e.getCode().name(), e.getMessage(), JSONUtils.PRETTY_GSON.toJson(response));
+            throw e;
+        } catch (RuntimeException e) {
+            target.recordMcpResponse(request, "INTERNAL_ERROR", e.getMessage(), JSONUtils.PRETTY_GSON.toJson(e.getMessage()));
+            throw e;
+        }
+        boolean failed = result instanceof DDMcpFunctionResult functionResult && functionResult.error();
+        String body = JSONUtils.PRETTY_GSON.toJson(result);
+        target.recordMcpResponse(request, failed ? "ERROR" : DDConnectionMonitor.MCP_RESULT_OK,
+            failed ? JSONUtils.PRETTY_GSON.toJson(((DDMcpFunctionResult) result).value()) : null, body);
+        return result;
+    }
+
+    @FunctionalInterface
+    private interface McpCall<T> {
+        @NotNull
+        T run() throws DDMcpFunctionException;
     }
 }

@@ -175,17 +175,72 @@ public class DDDesktopAccessService {
     public void importKeys(@NotNull String recoveryPhrase) throws DBException {
         operationLock.writeLock().lock();
         try {
-            if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
-                throw new DBException("Sign in to DataDam before importing keys");
-            }
-            var state = accountClient.getCryptoState();
-            DDKeyBundle bundle = DDKeyStore.unpack(state, recoveryPhrase);
-            DDKeyStore.save(bundle);
-            setKeyBundle(bundle);
-            log.debug("Imported DataDam encryption keys");
+            saveImportedKeys(prepareKeyImport(recoveryPhrase));
         } finally {
             operationLock.writeLock().unlock();
         }
+    }
+
+    /** Validates a recovery phrase without replacing the saved keys. */
+    @NotNull
+    public DDKeyBundle prepareKeyImport(@NotNull String recoveryPhrase) throws DBException {
+        operationLock.writeLock().lock();
+        try {
+            if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
+                throw new DBException("Sign in to DataDam before importing keys");
+            }
+            return DDKeyStore.unpack(accountClient.getCryptoState(), recoveryPhrase);
+        } finally {
+            operationLock.writeLock().unlock();
+        }
+    }
+
+    /** Commits a prepared replacement only if access has not changed during project cleanup. */
+    public void completeKeyImport(@NotNull DDKeyBundle expectedKeys, @NotNull DDKeyBundle replacement) throws DBException {
+        operationLock.writeLock().lock();
+        try {
+            requireRecoveryKeys(expectedKeys, replacement);
+            saveImportedKeys(replacement);
+        } finally {
+            operationLock.writeLock().unlock();
+        }
+    }
+
+    @FunctionalInterface
+    public interface ProjectCleanup {
+        void run() throws DBException;
+    }
+
+    /** Prevents account and key changes from interleaving with destructive local recovery. */
+    public void recoverProjectKeys(
+        @NotNull DDKeyBundle expectedKeys, @Nullable DDKeyBundle replacement, @NotNull ProjectCleanup cleanup
+    ) throws DBException {
+        operationLock.writeLock().lock();
+        try {
+            requireRecoveryKeys(expectedKeys, replacement);
+            cleanup.run();
+            requireRecoveryKeys(expectedKeys, replacement);
+            if (replacement == null) {
+                forgetKeys();
+            } else {
+                saveImportedKeys(replacement);
+            }
+        } finally {
+            operationLock.writeLock().unlock();
+        }
+    }
+
+    private void requireRecoveryKeys(@NotNull DDKeyBundle expectedKeys, @Nullable DDKeyBundle replacement) throws DBException {
+        if (getStatus() != Status.SIGNED_IN || !expectedKeys.equals(keyBundle)
+            || replacement != null && !expectedKeys.accountId().equals(replacement.accountId())) {
+            throw new DBException("DataDam account or encryption keys changed during recovery");
+        }
+    }
+
+    private void saveImportedKeys(@NotNull DDKeyBundle bundle) throws DBException {
+        DDKeyStore.save(bundle);
+        setKeyBundle(bundle);
+        log.debug("Imported DataDam encryption keys");
     }
 
     public void forgetKeys() throws DBException {
@@ -197,6 +252,18 @@ public class DDDesktopAccessService {
         } finally {
             operationLock.writeLock().unlock();
         }
+    }
+
+    /** Checks the key identity, which changes when account encryption is reset. */
+    public boolean validateProjectKeys() throws DBException {
+        DDKeyBundle bundle = getKeyBundle();
+        if (getStatus() != Status.SIGNED_IN || bundle == null) {
+            return false;
+        }
+        // Do not hold the operation lock over an Account call: token refresh may need to change access.
+        var state = accountClient.getCryptoState();
+        return bundle.equals(getKeyBundle()) && state.cryptoConfigured() && bundle.accountId().equals(state.accountId())
+            && Objects.equals(bundle.apiKeyId(), state.apiKeyId());
     }
 
     public void signOut() throws DBException {

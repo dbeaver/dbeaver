@@ -203,6 +203,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
+        <menuContribution locationURI="toolbar:org.eclipse.ui.trim.command2?before=dbeaver-version-update">
+            <toolbar id="dbeaver-datadam-monitor" label="DataDam"/>
+        </menuContribution>
+        <menuContribution class="org.jkiss.dbeaver.ui.datadam.management.DDStatusContribution$Factory"
+                          locationURI="toolbar:dbeaver-datadam-monitor"/>
         <menuContribution locationURI="toolbar:dbeaver-general?after=org.jkiss.dbeaver.core.menu.newConnection">
             <command commandId="org.jkiss.dbeaver.datadam.configure" id="org.jkiss.dbeaver.datadam.menu" style="pulldown">
                 <visibleWhen>
@@ -250,12 +255,6 @@
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
         <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer" order="100"/>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.statusBar">
-        <item id="org.jkiss.dbeaver.ui.datadam.status" class="org.jkiss.dbeaver.ui.datadam.management.DDStatusContribution" order="200">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ui.datadam.integrationEnabled"/></enabledWhen>
-        </item>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

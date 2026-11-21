@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,6 +43,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(5)
 class DDMcpTrackingFunctionServiceTest {
@@ -50,14 +52,17 @@ class DDMcpTrackingFunctionServiceTest {
     private final DDMcpTrackingFunctionService service = new DDMcpTrackingFunctionService(delegate, monitor);
 
     @Test
-    void recordsParametersBeforeExecutionWithoutRetainingResults() throws Exception {
+    void recordsParametersBeforeExecutionAndCorrelatesTheFullResponse() throws Exception {
         var arguments = new HashMap<String, Object>();
         arguments.put("query", "select 'example'\nfrom sample");
         arguments.put("options", Map.of("limit", 10, "columns", List.of("id", "name")));
         var call = new DDMcpFunctionCall("query", arguments);
         var result = new DDMcpFunctionResult(new JsonPrimitive("result-secret"), false);
+        var started = new AtomicReference<DDConnectionMonitor.Event>();
         Mockito.when(delegate.callFunction(call)).thenAnswer(invocation -> {
             Assertions.assertEquals(List.of(EventType.MCP_REQUEST), types());
+            started.set(monitor.getEvents().getFirst());
+            Assertions.assertTrue(started.get().isPending());
             Assertions.assertEquals("select 'example'\nfrom sample", JsonParser.parseString(
                 details(0).substring(details(0).indexOf('\n'))).getAsJsonObject().get("query").getAsString());
             arguments.clear();
@@ -75,7 +80,17 @@ class DDMcpTrackingFunctionServiceTest {
         Assertions.assertEquals("select 'example'\nfrom sample", request.parameters().get("query"));
         Assertions.assertEquals(parameters.get("options"), JsonParser.parseString(request.parameters().get("options")));
         Assertions.assertThrows(UnsupportedOperationException.class, () -> request.parameters().clear());
-        Assertions.assertFalse(monitor.getEvents().toString().contains("result-secret"));
+        var response = monitor.getEvents().getLast();
+        Assertions.assertEquals(started.get().requestId(), response.requestId());
+        Assertions.assertEquals(started.get().time(), response.time());
+        Assertions.assertSame(started.get().request(), response.request());
+        Assertions.assertFalse(response.isPending());
+        Assertions.assertFalse(response.isError());
+        Assertions.assertFalse(response.response().processingTime().isNegative());
+        Assertions.assertTrue(response.requestId() > 0);
+        Assertions.assertSame(request, response.request());
+        Assertions.assertEquals("OK", response.response().code());
+        Assertions.assertEquals("result-secret", JsonParser.parseString(response.response().body()).getAsJsonObject().get("value").getAsString());
         Mockito.verify(delegate).callFunction(call);
     }
 
@@ -124,10 +139,11 @@ class DDMcpTrackingFunctionServiceTest {
         Assertions.assertEquals(List.of(EventType.MCP_REQUEST), types());
         Assertions.assertEquals("getFunctions", details(0));
         Assertions.assertNull(monitor.getEvents().getFirst().request());
+        Assertions.assertEquals("[]", monitor.getEvents().getLast().response().body());
     }
 
     @Test
-    void recordsOnlyRequestForErrorResults() throws Exception {
+    void recordsErrorResultsWithoutChangingConnectionStatus() throws Exception {
         var call = new DDMcpFunctionCall("query", Map.of());
         var result = new DDMcpFunctionResult(new JsonPrimitive("private-error-data"), true);
         Mockito.when(delegate.callFunction(call)).thenReturn(result);
@@ -135,31 +151,39 @@ class DDMcpTrackingFunctionServiceTest {
         Assertions.assertEquals(List.of(EventType.MCP_REQUEST), types());
         Assertions.assertEquals("callFunction: query\n\n{}", details(0));
         Assertions.assertNull(monitor.snapshot().error());
-        Assertions.assertFalse(monitor.getEvents().toString().contains("private-error-data"));
+        Assertions.assertEquals("ERROR", monitor.getEvents().getLast().response().code());
+        Assertions.assertTrue(monitor.getEvents().getLast().isError());
+        Assertions.assertFalse(monitor.getEvents().getLast().isPending());
+        Assertions.assertTrue(monitor.getEvents().getLast().response().error().contains("private-error-data"));
     }
 
     @Test
-    void preservesCheckedAndUncheckedFailuresWithoutRecordingTheirSensitiveDetails() throws Exception {
+    void preservesCheckedAndUncheckedFailuresAndRecordsTheirCodesAndMessages() throws Exception {
         var checked = new DDMcpFunctionException(DDMcpFunctionErrorCode.INVALID_ARGUMENTS, "private-error-message", new JsonObject());
         Mockito.when(delegate.getFunctions()).thenThrow(checked);
         Assertions.assertSame(checked, Assertions.assertThrows(DDMcpFunctionException.class, service::getFunctions));
         Assertions.assertEquals("getFunctions", details(0));
+        Assertions.assertEquals("INVALID_ARGUMENTS", monitor.getEvents().getLast().response().code());
+        Assertions.assertEquals("private-error-message", monitor.getEvents().getLast().response().error());
         var unchecked = new IllegalStateException("private-error-message");
         Mockito.doThrow(unchecked).when(delegate).getFunctions();
         Assertions.assertSame(unchecked, Assertions.assertThrows(IllegalStateException.class, service::getFunctions));
         Assertions.assertEquals("getFunctions", details(1));
         Assertions.assertEquals(List.of(EventType.MCP_REQUEST, EventType.MCP_REQUEST), types());
-        Assertions.assertFalse(monitor.getEvents().toString().contains("private-error-message"));
+        Assertions.assertEquals("INTERNAL_ERROR", monitor.getEvents().getLast().response().code());
+        Assertions.assertEquals("private-error-message", monitor.getEvents().getLast().response().error());
     }
 
     @Test
     void recordsConcurrentRequestsOnceEach() throws Exception {
         var entered = new CountDownLatch(2);
         var release = new CountDownLatch(1);
+        var requestOrder = new ArrayList<Long>();
         Mockito.when(delegate.callFunction(Mockito.any())).thenAnswer(invocation -> {
             entered.countDown();
             Assertions.assertTrue(release.await(1, TimeUnit.SECONDS));
-            return new DDMcpFunctionResult(new JsonPrimitive("ok"), false);
+            DDMcpFunctionCall call = invocation.getArgument(0);
+            return new DDMcpFunctionResult(new JsonPrimitive(call.functionId()), false);
         });
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             var first = executor.submit(() -> service.callFunction(new DDMcpFunctionCall("first", Map.of())));
@@ -167,6 +191,8 @@ class DDMcpTrackingFunctionServiceTest {
             try {
                 Assertions.assertTrue(entered.await(1, TimeUnit.SECONDS));
                 Assertions.assertEquals(List.of(EventType.MCP_REQUEST, EventType.MCP_REQUEST), types());
+                requestOrder.addAll(monitor.getEvents().stream().map(DDConnectionMonitor.Event::requestId).toList());
+                Assertions.assertTrue(monitor.getEvents().stream().allMatch(DDConnectionMonitor.Event::isPending));
             } finally {
                 release.countDown();
             }
@@ -175,6 +201,24 @@ class DDMcpTrackingFunctionServiceTest {
         }
         Assertions.assertEquals(List.of(EventType.MCP_REQUEST, EventType.MCP_REQUEST), types());
         Assertions.assertEquals(Set.of("callFunction: first\n\n{}", "callFunction: second\n\n{}"), Set.of(details(0), details(1)));
+        var events = monitor.getEvents();
+        Assertions.assertNotEquals(events.get(0).requestId(), events.get(1).requestId());
+        Assertions.assertEquals(requestOrder, events.stream().map(DDConnectionMonitor.Event::requestId).toList());
+        for (var event : events) {
+            Assertions.assertFalse(event.isPending());
+            String function = JsonParser.parseString(event.response().body()).getAsJsonObject().get("value").getAsString();
+            Assertions.assertEquals("callFunction: " + function, event.request().operation());
+        }
+    }
+
+    @Test
+    void retainsFullResponsesBeyondTheRequestDetailsLimit() throws Exception {
+        String value = "x".repeat(100_001);
+        var call = new DDMcpFunctionCall("query", Map.of());
+        Mockito.when(delegate.callFunction(call)).thenReturn(new DDMcpFunctionResult(new JsonPrimitive(value), false));
+        service.callFunction(call);
+        Assertions.assertEquals(value, JsonParser.parseString(monitor.getEvents().getLast().response().body())
+            .getAsJsonObject().get("value").getAsString());
     }
 
     @Test
