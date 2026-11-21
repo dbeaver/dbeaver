@@ -20,7 +20,6 @@ import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobGroup;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.DDWorkspace;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
 import org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectEventsServiceDesktop;
@@ -373,8 +373,13 @@ public class DDProjectUIManager {
         if (jobs.isEmpty()) {
             return new ProjectJobBatchResult<>(List.of(), List.of(), false);
         }
+        DDKeyBundle validatedKeys;
         try {
             if (!DDProjectKeyUIManager.getInstance().ensureKeysReady(monitor)) {
+                return new ProjectJobBatchResult<>(List.of(), List.of(), true);
+            }
+            validatedKeys = accessService.getKeyBundle();
+            if (validatedKeys == null) {
                 return new ProjectJobBatchResult<>(List.of(), List.of(), true);
             }
         } catch (DBException e) {
@@ -384,7 +389,8 @@ public class DDProjectUIManager {
         boolean canceled;
         monitor.beginTask(title, jobs.size());
         try {
-            for (Job job : jobs) {
+            for (J job : jobs) {
+                job.setValidatedKeys(validatedKeys);
                 job.setJobGroup(group);
                 job.setSystem(true);
                 job.schedule();

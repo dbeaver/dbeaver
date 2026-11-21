@@ -21,8 +21,11 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
@@ -34,6 +37,8 @@ public abstract class DDProjectOperationJob<T> extends AbstractJob {
     private final String errorMessage;
     @Nullable
     private T operationResult;
+    @Nullable
+    private DDKeyBundle validatedKeys;
 
     protected DDProjectOperationJob(@NotNull String name, @NotNull String errorMessage) {
         super(name);
@@ -44,6 +49,10 @@ public abstract class DDProjectOperationJob<T> extends AbstractJob {
     @Nullable
     public T getOperationResult() {
         return operationResult;
+    }
+
+    public void setValidatedKeys(@NotNull DDKeyBundle keys) {
+        validatedKeys = keys;
     }
 
     @NotNull
@@ -69,6 +78,14 @@ public abstract class DDProjectOperationJob<T> extends AbstractJob {
     }
 
     protected boolean canRun(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (validatedKeys != null) {
+            if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+                return false;
+            }
+            if (validatedKeys.equals(DDDesktopAccessService.getInstance().getKeyBundle())) {
+                return true;
+            }
+        }
         return DDProjectKeyUIManager.getInstance().ensureKeysReady(monitor);
     }
 
