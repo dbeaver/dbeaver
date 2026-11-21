@@ -29,8 +29,11 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 final class InstallCacheCleaner {
+
+    private static final Pattern VERSION_DIRECTORY_PATTERN = Pattern.compile("\\d+\\.\\d+\\.\\d+-\\d{12}");
 
     private InstallCacheCleaner() {
     }
@@ -49,7 +52,8 @@ final class InstallCacheCleaner {
         // install-data/<product>/<version>: scan only this product's versions, excluding the active one.
         try (DirectoryStream<Path> versions = Files.newDirectoryStream(productDirectory)) {
             for (Path version : versions) {
-                if (version.equals(currentVersion) || !Files.isDirectory(version, LinkOption.NOFOLLOW_LINKS)) {
+                if (version.equals(currentVersion) || !Files.isDirectory(version, LinkOption.NOFOLLOW_LINKS) ||
+                    !VERSION_DIRECTORY_PATTERN.matcher(version.getFileName().toString()).matches()) {
                     continue;
                 }
                 try {
