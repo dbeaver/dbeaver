@@ -186,6 +186,28 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void parsesOwnerNameWithEqualsSign() throws DBException {
+        // proacl for a function owned by role "a=b", as PostgreSQL prints it
+        PostgreRole owner = new PostgreRole(testSchema.getDatabase(), "a=b", "test", true);
+        String ddl = generatePermissionsDDL(
+            PostgreProcedureKind.f, owner, createAclArray(new String[]{"=X/\"a=b\"", "\"a=b\"=X/\"a=b\""}));
+
+        Assertions.assertFalse(ddl.contains("REVOKE"), ddl);
+        Assertions.assertTrue(ddl.contains("GRANT ALL ON FUNCTION public.acltest() TO \"a=b\""), ddl);
+    }
+
+    @Test
+    public void parsesOwnerNameWithSlashAndQuote() throws DBException {
+        // role x"/y is printed as "x""/y" in aclitem text
+        PostgreRole owner = new PostgreRole(testSchema.getDatabase(), "x\"/y", "test", true);
+        String ddl = generatePermissionsDDL(
+            PostgreProcedureKind.f, owner, createAclArray(new String[]{"\"x\"\"/y\"=X/\"x\"\"/y\""}));
+
+        Assertions.assertFalse(ddl.contains("FROM \"x"), ddl);
+        Assertions.assertTrue(ddl.contains("REVOKE ALL ON FUNCTION public.acltest() FROM PUBLIC"), ddl);
+    }
+
+    @Test
     public void keepsGrantOption() throws DBException {
         // proacl after GRANT EXECUTE ... TO qa_acl_user WITH GRANT OPTION (#42798)
         String ddl = generatePermissionsDDL(PostgreProcedureKind.f, "tester=X/tester", "qa_acl_user=X*/tester");
