@@ -71,7 +71,7 @@ class DDTrackingDetailsDialog extends AbstractPopupPanel {
         text.setLayoutData(data);
         text.setText(time + "\n" + type
             + (event.requestId() == 0 ? "" : "\n" + DDTrackingUIMessages.mcp_request_id + ": " + event.requestId())
-            + "\n\n" + (request == null || response ? event.details() : request.operation()));
+            + "\n\n" + (request == null || response ? event.fullDetails() : request.operation()));
         if (request != null && !response) {
             createParameters(area, request.parameters());
         }

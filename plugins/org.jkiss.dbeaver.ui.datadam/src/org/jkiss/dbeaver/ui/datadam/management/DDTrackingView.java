@@ -86,6 +86,7 @@ public class DDTrackingView extends ViewPart {
             public boolean select(@NotNull Viewer source, @Nullable Object parentElement, @NotNull Object element) {
                 var event = (DDConnectionMonitor.Event) element;
                 if (filterPattern.isEmpty() || StringUtils.containsIgnoreCase(event.details(), filterPattern)
+                    || event.response() != null && StringUtils.containsIgnoreCase(event.response().body(), filterPattern)
                     || StringUtils.containsIgnoreCase(eventLabel(event.type()), filterPattern)) {
                     return true;
                 }
@@ -169,7 +170,7 @@ public class DDTrackingView extends ViewPart {
             public void run() {
                 var selected = (DDConnectionMonitor.Event) viewer.getStructuredSelection().getFirstElement();
                 if (selected != null && !selected.details().isEmpty()) {
-                    UIUtils.setClipboardContents(viewer.getControl().getDisplay(), TextTransfer.getInstance(), selected.details());
+                    UIUtils.setClipboardContents(viewer.getControl().getDisplay(), TextTransfer.getInstance(), selected.fullDetails());
                 }
             }
         };

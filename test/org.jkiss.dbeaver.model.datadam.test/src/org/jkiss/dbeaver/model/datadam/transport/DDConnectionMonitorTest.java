@@ -24,6 +24,39 @@ import org.junit.jupiter.api.Test;
 
 class DDConnectionMonitorTest {
     @Test
+    void evictsOlderResponsesInsteadOfAccumulatingLargePayloads() {
+        var monitor = new DDConnectionMonitor();
+        var request = monitor.beginMcpRequest("query", null);
+        monitor.recordMcpResponse(request, "OK", null, "a".repeat(6_000_000));
+        String body = "b".repeat(6_000_000);
+        monitor.recordMcpResponse(request, "OK", null, body);
+
+        var events = monitor.getEvents();
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertSame(body, events.getFirst().response().body());
+        Assertions.assertEquals("query\nOK", events.getFirst().details());
+        Assertions.assertTrue(events.getFirst().fullDetails().endsWith(body));
+    }
+
+    @Test
+    void keepsOneOversizedResponseCompleteUntilTheNextEvent() {
+        var monitor = new DDConnectionMonitor();
+        var request = monitor.beginMcpRequest("query", null);
+        String body = "x".repeat(10_000_001);
+        monitor.recordMcpResponse(request, "OK", null, body);
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertSame(body, monitor.getEvents().getFirst().response().body());
+
+        monitor.record(DDConnectionMonitor.EventType.CONNECTED, "connected");
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertEquals(DDConnectionMonitor.EventType.CONNECTED, monitor.getEvents().getFirst().type());
+
+        monitor.clearEvents();
+        monitor.recordMcpResponse(request, "OK", null, body);
+        Assertions.assertSame(body, monitor.getEvents().getFirst().response().body());
+    }
+
+    @Test
     void retainsFinalConnectionStatisticsUntilTheNextSocketOpens() {
         var monitor = new DDConnectionMonitor();
         monitor.opened();

@@ -39,6 +39,7 @@ import java.util.Map;
 public final class DDConnectionMonitor {
     private static final int MAX_EVENTS = 10_000;
     private static final int MAX_DETAILS_LENGTH = 100_000;
+    private static final int MAX_RETAINED_TEXT_LENGTH = 10_000_000;
 
     public enum EventType {
         CONNECTING, CONNECTED, DISCONNECTED, CLOSED, SIGNED_IN, SIGNED_OUT, INVALID_TOKEN, ERROR,
@@ -55,6 +56,11 @@ public final class DDConnectionMonitor {
 
         public Event(@NotNull Instant time, @NotNull EventType type, @NotNull String details) {
             this(time, type, details, null);
+        }
+
+        @NotNull
+        public String fullDetails() {
+            return response == null ? details : details + "\n\n" + response.body();
         }
     }
 
@@ -94,6 +100,7 @@ public final class DDConnectionMonitor {
     private long bytesSent;
     private long bytesReceived;
     private long nextRequestId;
+    private long retainedTextLength;
 
     synchronized void opened() {
         connectedAt = Instant.now();
@@ -194,9 +201,10 @@ public final class DDConnectionMonitor {
         @NotNull Event request, @NotNull String code, @Nullable String errorMessage, @NotNull String body
     ) {
         String operation = request.request() == null ? request.details() : request.request().operation();
+        String responseError = errorMessage == null ? null : limit(errorMessage);
         addEvent(new Event(Instant.now(), EventType.MCP_RESPONSE,
-            operation + "\n" + code + (errorMessage == null ? "" : "\n" + errorMessage) + "\n\n" + body,
-            request.request(), request.requestId(), new McpResponse(code, errorMessage, body)));
+            limit(operation + "\n" + code + (responseError == null ? "" : "\n" + responseError)),
+            request.request(), request.requestId(), new McpResponse(code, responseError, body)));
     }
 
     @Nullable
@@ -205,10 +213,29 @@ public final class DDConnectionMonitor {
     }
 
     private void addEvent(@NotNull Event event) {
-        if (events.size() == MAX_EVENTS) {
-            events.removeFirst();
+        long textLength = textLength(event);
+        // A single oversized response remains available in full, but cannot accumulate with other events.
+        while (!events.isEmpty() && (events.size() >= MAX_EVENTS || retainedTextLength + textLength > MAX_RETAINED_TEXT_LENGTH)) {
+            retainedTextLength -= textLength(events.removeFirst());
         }
         events.addLast(event);
+        retainedTextLength += textLength;
+    }
+
+    private static long textLength(@NotNull Event event) {
+        long length = event.details().length();
+        if (event.request() != null) {
+            for (var parameter : event.request().parameters().entrySet()) {
+                length += parameter.getKey().length() + parameter.getValue().length();
+            }
+        }
+        if (event.response() != null) {
+            length += event.response().body().length();
+            if (event.response().error() != null) {
+                length += event.response().error().length();
+            }
+        }
+        return length;
     }
 
     @NotNull
@@ -224,6 +251,7 @@ public final class DDConnectionMonitor {
 
     public synchronized void clearEvents() {
         events.clear();
+        retainedTextLength = 0;
     }
 
     @NotNull
