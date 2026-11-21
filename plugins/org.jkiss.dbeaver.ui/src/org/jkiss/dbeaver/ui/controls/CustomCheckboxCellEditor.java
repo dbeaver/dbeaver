@@ -129,9 +129,11 @@ public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyle
         final BooleanStyle style = booleanStyles.getStyle(checked);
 
         if (style.getMode() == BooleanMode.TEXT) {
+            checkBox.setImage(null);
             checkBox.setText(style.getText());
             checkBox.setForeground(UIUtils.getSharedColor(style.getColor()));
         } else {
+            checkBox.setText("");
             checkBox.setImage(DBeaverIcons.getImage(style.getIcon()));
         }
 
