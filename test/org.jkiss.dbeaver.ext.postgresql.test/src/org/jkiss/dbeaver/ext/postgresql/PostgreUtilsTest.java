@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ext.postgresql;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
@@ -46,6 +48,52 @@ public class PostgreUtilsTest extends DBeaverUnitTest {
     private JDBCColumnMetaData column;
     @Mock
     private DBSTypedObject otherType;
+
+    @Test
+    public void resolvesTheDecodedDatabaseNameFromTheUrl() {
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+        configuration.setConfigurationType(DBPDriverConfigurationType.URL);
+        configuration.setUrl("jdbc:postgresql://[::1]:5432,server:5432/actual%20db%2fdata%2Barchive?sslrootcert=/tmp/root.crt");
+        Assertions.assertEquals("actual db/data+archive", PostgreUtils.getDatabaseNameFromConfiguration(configuration));
+
+        configuration.setUrl("jdbc:postgresql:actual%20db");
+        Assertions.assertEquals("actual db", PostgreUtils.getDatabaseNameFromConfiguration(configuration));
+    }
+
+    @Test
+    public void replacesTheEntireDatabaseSegmentAndPreservesTheQuery() throws Exception {
+        Assertions.assertEquals(
+            "jdbc:postgresql://[::1]:5432,server:5432/new%20db%2Fdata%2Barchive?sslrootcert=/tmp/root.crt",
+            PostgreUtils.updateDatabaseNameInURL(
+                "jdbc:postgresql://[::1]:5432,server:5432/actual%20db?sslrootcert=/tmp/root.crt",
+                "new db/data+archive"
+            )
+        );
+        Assertions.assertEquals(
+            "jdbc:postgresql:new%20db?sslmode=require",
+            PostgreUtils.updateDatabaseNameInURL("jdbc:postgresql:actual%20db?sslmode=require", "new db")
+        );
+    }
+
+    @Test
+    public void resolvesAndUpdatesPgDbNameOptions() throws Exception {
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+        configuration.setConfigurationType(DBPDriverConfigurationType.URL);
+        String url = "jdbc:postgresql://host/ignored?PGDBNAME=first&sslrootcert=/tmp/root.crt&PGDBNAME=actual%20db";
+        configuration.setUrl(url);
+        Assertions.assertEquals("actual db", PostgreUtils.getDatabaseNameFromConfiguration(configuration));
+        Assertions.assertEquals(
+            "jdbc:postgresql://host/new%20db?PGDBNAME=new%20db&sslrootcert=/tmp/root.crt&PGDBNAME=new%20db",
+            PostgreUtils.updateDatabaseNameInURL(url, "new db")
+        );
+
+        configuration.setUrl("jdbc:postgresql:?PGDBNAME=actual%20db");
+        Assertions.assertEquals("actual db", PostgreUtils.getDatabaseNameFromConfiguration(configuration));
+        Assertions.assertEquals(
+            "jdbc:postgresql:new%20db?PGDBNAME=new%20db",
+            PostgreUtils.updateDatabaseNameInURL(configuration.getUrl(), "new db")
+        );
+    }
 
     @Test
     public void unresolvedResultColumnRowTypeDoesNotLogOrRetrySameDatabase() throws Exception {
