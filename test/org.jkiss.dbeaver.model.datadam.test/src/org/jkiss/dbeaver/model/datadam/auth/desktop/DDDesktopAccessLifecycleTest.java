@@ -44,10 +44,107 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(60)
 class DDDesktopAccessLifecycleTest {
+
+    @Test
+    void failedRecoveryCleanupPreservesKeysForBothResetAndReplacement() throws Exception {
+        var accountId = UUID.randomUUID();
+        var current = new DDKeyBundle(accountId, "signing", "data", 1, UUID.randomUUID());
+        var replacement = new DDKeyBundle(accountId, "new-signing", "new-data", 1, UUID.randomUUID());
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenReturn(accountId))) {
+            keys.when(DDKeyStore::load).thenReturn(current);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+            var failure = new DBException("Cannot delete a project");
+
+            for (DDKeyBundle candidate : new DDKeyBundle[] { null, replacement }) {
+                Assertions.assertSame(failure, Assertions.assertThrows(DBException.class,
+                    () -> access.recoverProjectKeys(current, candidate, () -> { throw failure; })));
+                Assertions.assertSame(current, access.getKeyBundle());
+            }
+            keys.verify(DDKeyStore::clear, Mockito.never());
+            keys.verify(() -> DDKeyStore.save(Mockito.any()), Mockito.never());
+        }
+    }
+
+    @Test
+    void staleRecoveryCannotDeleteProjectsOrForgetNewerKeys() throws Exception {
+        var accountId = UUID.randomUUID();
+        var current = new DDKeyBundle(accountId, "signing", "data", 1, UUID.randomUUID());
+        var replacement = new DDKeyBundle(accountId, "new-signing", "new-data", 1, UUID.randomUUID());
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenReturn(accountId))) {
+            keys.when(DDKeyStore::load).thenReturn(current);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+            access.completeKeyImport(current, replacement);
+            var cleanupCalled = new AtomicBoolean();
+
+            Assertions.assertThrows(DBException.class,
+                () -> access.recoverProjectKeys(current, null, () -> cleanupCalled.set(true)));
+            Assertions.assertFalse(cleanupCalled.get());
+            Assertions.assertSame(replacement, access.getKeyBundle());
+            keys.verify(DDKeyStore::clear, Mockito.never());
+        }
+    }
+
+    @Test
+    void recoverySerializesOtherAccessOperationsUntilCleanupAndCommitFinish() throws Exception {
+        var accountId = UUID.randomUUID();
+        var current = new DDKeyBundle(accountId, "signing", "data", 1, UUID.randomUUID());
+        var replacement = new DDKeyBundle(accountId, "new-signing", "new-data", 1, UUID.randomUUID());
+        var competing = new DDKeyBundle(UUID.randomUUID(), "other-signing", "other-data", 1, UUID.randomUUID());
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenReturn(accountId));
+             var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            keys.when(DDKeyStore::load).thenReturn(current);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+            var started = new CountDownLatch(1);
+            var transition = new AtomicReference<Future<?>>();
+
+            access.recoverProjectKeys(current, replacement, () -> {
+                transition.set(executor.submit(() -> {
+                    started.countDown();
+                    access.completeKeyImport(current, competing);
+                    return null;
+                }));
+                try {
+                    Assertions.assertTrue(started.await(1, TimeUnit.SECONDS));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new DBException("Interrupted while checking recovery serialization", e);
+                }
+                Assertions.assertThrows(TimeoutException.class, () -> transition.get().get(100, TimeUnit.MILLISECONDS));
+                Assertions.assertSame(current, access.getKeyBundle());
+            });
+
+            Assertions.assertSame(replacement, access.getKeyBundle());
+            var rejected = Assertions.assertThrows(ExecutionException.class, () -> transition.get().get(1, TimeUnit.SECONDS));
+            Assertions.assertInstanceOf(DBException.class, rejected.getCause());
+            keys.verify(() -> DDKeyStore.save(replacement));
+        }
+    }
 
     @Test
     void preparedReplacementDoesNotChangeSavedKeysUntilCommitted() throws Exception {

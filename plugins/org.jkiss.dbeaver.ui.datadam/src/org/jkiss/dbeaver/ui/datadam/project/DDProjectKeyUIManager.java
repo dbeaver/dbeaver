@@ -97,12 +97,7 @@ public final class DDProjectKeyUIManager {
         }
         DDProjectManager manager = DDProjectManager.getInstance();
         prepareProjectDeletion(manager, bundle.accountId());
-        manager.deleteAccountProjects(bundle.accountId());
-        if (replacement == null) {
-            access.forgetKeys();
-        } else {
-            access.completeKeyImport(bundle, replacement);
-        }
+        access.recoverProjectKeys(bundle, replacement, () -> manager.deleteAccountProjects(bundle.accountId()));
         // Callers may already hold project objects that were removed during recovery.
         return false;
     }

@@ -199,13 +199,41 @@ public class DDDesktopAccessService {
     public void completeKeyImport(@NotNull DDKeyBundle expectedKeys, @NotNull DDKeyBundle replacement) throws DBException {
         operationLock.writeLock().lock();
         try {
-            if (getStatus() != Status.SIGNED_IN || !expectedKeys.equals(keyBundle)
-                || !expectedKeys.accountId().equals(replacement.accountId())) {
-                throw new DBException("DataDam account or encryption keys changed during recovery");
-            }
+            requireRecoveryKeys(expectedKeys, replacement);
             saveImportedKeys(replacement);
         } finally {
             operationLock.writeLock().unlock();
+        }
+    }
+
+    @FunctionalInterface
+    public interface ProjectCleanup {
+        void run() throws DBException;
+    }
+
+    /** Prevents account and key changes from interleaving with destructive local recovery. */
+    public void recoverProjectKeys(
+        @NotNull DDKeyBundle expectedKeys, @Nullable DDKeyBundle replacement, @NotNull ProjectCleanup cleanup
+    ) throws DBException {
+        operationLock.writeLock().lock();
+        try {
+            requireRecoveryKeys(expectedKeys, replacement);
+            cleanup.run();
+            requireRecoveryKeys(expectedKeys, replacement);
+            if (replacement == null) {
+                forgetKeys();
+            } else {
+                saveImportedKeys(replacement);
+            }
+        } finally {
+            operationLock.writeLock().unlock();
+        }
+    }
+
+    private void requireRecoveryKeys(@NotNull DDKeyBundle expectedKeys, @Nullable DDKeyBundle replacement) throws DBException {
+        if (getStatus() != Status.SIGNED_IN || !expectedKeys.equals(keyBundle)
+            || replacement != null && !expectedKeys.accountId().equals(replacement.accountId())) {
+            throw new DBException("DataDam account or encryption keys changed during recovery");
         }
     }
 
