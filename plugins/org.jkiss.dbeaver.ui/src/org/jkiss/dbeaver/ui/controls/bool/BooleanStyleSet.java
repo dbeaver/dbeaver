@@ -22,7 +22,9 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -34,6 +36,8 @@ import org.jkiss.dbeaver.ui.UIElementFontStyle;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BooleanStyleSet {
     private static final String PREF_BOOLEAN_STYLE = "ui.render.boolean.style";
@@ -158,17 +162,32 @@ public class BooleanStyleSet {
     }
 
     public static void installStyleChangeListener(@NotNull Control control, @NotNull IPropertyChangeListener listener) {
-        // Theme notifications can arrive before the editor foreground preferences have been updated.
-        final IPropertyChangeListener deferredListener = event -> control.getDisplay().asyncExec(() -> {
-            if (!control.isDisposed()) {
-                listener.propertyChange(event);
+        final Display display = control.getDisplay();
+        final AtomicBoolean refreshPending = new AtomicBoolean();
+        // Reload after theme preferences settle, once per event batch rather than once per changed color.
+        final IPropertyChangeListener deferredListener = event -> {
+            if (!refreshPending.getAndSet(true)) {
+                display.asyncExec(() -> {
+                    refreshPending.set(false);
+                    if (!control.isDisposed()) {
+                        listener.propertyChange(event);
+                    }
+                });
             }
-        });
-        final DBPPreferenceListener preferenceListener = e ->
-            deferredListener.propertyChange(new PropertyChangeEvent(e.getSource(), e.getProperty(), e.getOldValue(), e.getNewValue()));
+        };
+        final IPropertyChangeListener editorPreferenceListener = event -> {
+            if (AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND.equals(event.getProperty())) {
+                deferredListener.propertyChange(event);
+            }
+        };
+        final DBPPreferenceListener preferenceListener = e -> {
+            if (e.getProperty().startsWith(PREF_BOOLEAN_STYLE)) {
+                deferredListener.propertyChange(new PropertyChangeEvent(e.getSource(), e.getProperty(), e.getOldValue(), e.getNewValue()));
+            }
+        };
 
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(deferredListener);
-        UIStyles.getEditorsPreferenceStore().addPropertyChangeListener(deferredListener);
+        UIStyles.getEditorsPreferenceStore().addPropertyChangeListener(editorPreferenceListener);
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(preferenceListener);
         DBWorkbench.getPlatform().getDataSourceProviderRegistry()
             .getGlobalDataSourcePreferenceStore().addPropertyChangeListener(preferenceListener);
@@ -177,7 +196,7 @@ public class BooleanStyleSet {
             DBWorkbench.getPlatform().getDataSourceProviderRegistry()
                 .getGlobalDataSourcePreferenceStore().removePropertyChangeListener(preferenceListener);
             DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(preferenceListener);
-            UIStyles.getEditorsPreferenceStore().removePropertyChangeListener(deferredListener);
+            UIStyles.getEditorsPreferenceStore().removePropertyChangeListener(editorPreferenceListener);
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(deferredListener);
         });
     }

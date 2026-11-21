@@ -67,9 +67,6 @@ public final class NativeThemeUtils {
             EventHandler themeListener = event -> display.asyncExec(() -> {
                 if (!display.isDisposed()) {
                     updateNativeShellsAndMenus(display);
-                    for (Shell shell : display.getShells()) {
-                        shell.reskin(SWT.ALL);
-                    }
                 }
             });
             eventBroker.subscribe(IThemeEngine.Events.THEME_CHANGED, themeListener);
