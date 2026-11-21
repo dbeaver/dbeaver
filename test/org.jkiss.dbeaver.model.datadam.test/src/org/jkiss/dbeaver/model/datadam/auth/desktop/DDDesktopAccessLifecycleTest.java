@@ -50,6 +50,35 @@ import java.util.concurrent.atomic.AtomicReference;
 class DDDesktopAccessLifecycleTest {
 
     @Test
+    void failedReplacementValidationPreservesTheSavedKeys() throws Exception {
+        var accountId = UUID.randomUUID();
+        var keyId = UUID.randomUUID();
+        var bundle = new DDKeyBundle(accountId, "signing", "data", 1, keyId);
+        var state = new DDCryptoState(accountId, true, "bundle", 1L, "salt", 1, keyId);
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) -> {
+                 Mockito.when(account.getAccountId()).thenReturn(accountId);
+                 Mockito.when(account.getCryptoState()).thenReturn(state);
+             })) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            keys.when(() -> DDKeyStore.unpack(state, "invalid-phrase")).thenThrow(new DBException("Incorrect recovery phrase"));
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+
+            Assertions.assertThrows(DBException.class, () -> access.importKeys("invalid-phrase"));
+            Assertions.assertSame(bundle, access.getKeyBundle());
+
+            Mockito.when(accounts.constructed().getLast().getCryptoState()).thenThrow(new DBException("Unavailable"));
+            Assertions.assertThrows(DBException.class, () -> access.importKeys("replacement-phrase"));
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            keys.verify(DDKeyStore::clear, Mockito.never());
+            keys.verify(() -> DDKeyStore.save(Mockito.any()), Mockito.never());
+        }
+    }
+
+    @Test
     void detectsEncryptionResetWithoutDiscardingKeysBeforeUserRecovery() throws Exception {
         var accountId = UUID.randomUUID();
         var keyId = UUID.randomUUID();

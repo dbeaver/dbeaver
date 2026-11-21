@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.datadam.sync.project;
 import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.datadam.sync.core.DDShareClient;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProjectSyncBindingStore;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProjectSyncLocalBinding;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProjectSyncService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
@@ -62,6 +64,40 @@ class DDProjectManagerTest {
         Mockito.verify(workspace, Mockito.never()).deleteProject(otherAccount);
         Mockito.verify(workspace, Mockito.never()).deleteProject(local);
         Mockito.verifyNoInteractions(access);
+    }
+
+    @Test
+    void preflightsTheActiveProjectBeforeDeletingAnySharedProjects() throws Exception {
+        UUID accountId = UUID.randomUUID();
+        DBPProject first = project("first", accountId);
+        DBPProject active = project("active", accountId);
+        DBPWorkspace workspace = Mockito.mock(DBPWorkspace.class);
+        Mockito.when(workspace.getProjects()).thenAnswer(invocation -> List.of(first, active));
+        Mockito.when(workspace.getActiveProject()).thenReturn(active);
+        var access = Mockito.mock(DDDesktopAccessService.class);
+        var client = new DDShareClient("https://example.invalid", access);
+        var manager = new DDProjectManager(workspace, client, new DDProjectSyncService(client), access);
+
+        Assertions.assertThrows(DBException.class, () -> manager.deleteAccountProjects(accountId));
+
+        Mockito.verify(workspace, Mockito.never()).deleteProject(Mockito.any());
+    }
+
+    @Test
+    void readsAllBindingsBeforeDeletingAnySharedProjects() throws Exception {
+        UUID accountId = UUID.randomUUID();
+        DBPProject first = project("first", accountId);
+        DBPProject corrupt = project("corrupt", accountId);
+        Files.writeString(DDProjectSyncBindingStore.getBindingFile(corrupt), "{}");
+        DBPWorkspace workspace = Mockito.mock(DBPWorkspace.class);
+        Mockito.when(workspace.getProjects()).thenAnswer(invocation -> List.of(first, corrupt));
+        var access = Mockito.mock(DDDesktopAccessService.class);
+        var client = new DDShareClient("https://example.invalid", access);
+        var manager = new DDProjectManager(workspace, client, new DDProjectSyncService(client), access);
+
+        Assertions.assertThrows(DBException.class, () -> manager.deleteAccountProjects(accountId));
+
+        Mockito.verify(workspace, Mockito.never()).deleteProject(Mockito.any());
     }
 
     @NotNull
