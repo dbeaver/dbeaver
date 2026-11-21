@@ -93,7 +93,7 @@ public final class DDMcpTrackingFunctionService implements DDMcpFunctionService 
         }
         boolean failed = result instanceof DDMcpFunctionResult functionResult && functionResult.error();
         String body = JSONUtils.PRETTY_GSON.toJson(result);
-        target.recordMcpResponse(request, failed ? "ERROR" : "OK",
+        target.recordMcpResponse(request, failed ? "ERROR" : DDConnectionMonitor.MCP_RESULT_OK,
             failed ? JSONUtils.PRETTY_GSON.toJson(((DDMcpFunctionResult) result).value()) : null, body);
         return result;
     }

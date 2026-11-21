@@ -70,6 +70,16 @@ public class DDTrackingUIMessages extends NLS {
     public static String mcp_response;
     public static String mcp_request_id;
     public static String mcp_result_code;
+    public static String mcp_pending;
+    public static String mcp_result_with_time;
+    public static String mcp_processing_time;
+    public static String mcp_function;
+    public static String mcp_response_code;
+    public static String mcp_response_size;
+    public static String mcp_processing_time_label;
+    public static String mcp_duration;
+    public static String mcp_input_parameters;
+    public static String mcp_show_response;
 
     public static String project_sync_title;
     public static String project_no_projects_title;

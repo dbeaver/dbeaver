@@ -21,10 +21,12 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.graphics.Color;
@@ -87,6 +89,7 @@ public class DDTrackingView extends ViewPart {
                 var event = (DDConnectionMonitor.Event) element;
                 if (filterPattern.isEmpty() || StringUtils.containsIgnoreCase(event.details(), filterPattern)
                     || event.response() != null && StringUtils.containsIgnoreCase(event.response().body(), filterPattern)
+                    || StringUtils.containsIgnoreCase(formatResult(event), filterPattern)
                     || StringUtils.containsIgnoreCase(eventLabel(event.type()), filterPattern)) {
                     return true;
                 }
@@ -115,10 +118,11 @@ public class DDTrackingView extends ViewPart {
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
         BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_ERROR, settings -> viewer.refresh(), table);
+        BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_WARNING, settings -> viewer.refresh(), table);
         createColumn(DDTrackingUIMessages.event_time, 165, event -> TIME_FORMAT.format(event.time()));
         createColumn(DDTrackingUIMessages.event_type, 170, event -> eventLabel(event.type()));
         createColumn(DDTrackingUIMessages.mcp_request_id, 100, event -> event.requestId() == 0 ? "" : Long.toString(event.requestId()));
-        createColumn(DDTrackingUIMessages.mcp_result_code, 130, event -> event.response() == null ? "" : event.response().code());
+        createColumn(DDTrackingUIMessages.mcp_result_code, 180, DDTrackingView::formatResult);
         createColumn(DDTrackingUIMessages.event_details, 600, event -> event.requestId() != 0
             ? event.details().lines().findFirst().orElse("")
                 + (event.response() == null || event.response().error() == null ? "" : ": " + event.response().error())
@@ -170,7 +174,8 @@ public class DDTrackingView extends ViewPart {
             public void run() {
                 var selected = (DDConnectionMonitor.Event) viewer.getStructuredSelection().getFirstElement();
                 if (selected != null && !selected.details().isEmpty()) {
-                    UIUtils.setClipboardContents(viewer.getControl().getDisplay(), TextTransfer.getInstance(), selected.fullDetails());
+                    UIUtils.setClipboardContents(viewer.getControl().getDisplay(), TextTransfer.getInstance(),
+                        DDTrackingDetailsDialog.formatDetails(selected));
                 }
             }
         };
@@ -242,8 +247,10 @@ public class DDTrackingView extends ViewPart {
         @Nullable
         public Color getBackground(@NotNull Object element) {
             var event = (DDConnectionMonitor.Event) element;
-            return event.type() == DDConnectionMonitor.EventType.ERROR || event.response() != null && event.response().error() != null
-                ? BaseThemeSettings.instance.colorError : null;
+            if (event.isError()) {
+                return BaseThemeSettings.instance.colorError;
+            }
+            return event.isPending() ? BaseThemeSettings.instance.colorWarning : null;
         }
 
         @Override
@@ -291,12 +298,18 @@ public class DDTrackingView extends ViewPart {
             return;
         }
         var selection = viewer.getSelection();
+        var selected = (DDConnectionMonitor.Event) viewer.getStructuredSelection().getFirstElement();
         Table table = viewer.getTable();
         int top = table.getTopIndex();
         table.setRedraw(false);
         try {
             viewer.setInput(events);
-            viewer.setSelection(selection);
+            if (selected != null && selected.requestId() != 0) {
+                var updated = events.stream().filter(event -> event.requestId() == selected.requestId()).findFirst().orElse(null);
+                viewer.setSelection(updated == null ? StructuredSelection.EMPTY : new StructuredSelection(updated));
+            } else {
+                viewer.setSelection(selection);
+            }
             table.setTopIndex(top);
             displayed = events;
         } finally {
@@ -304,12 +317,22 @@ public class DDTrackingView extends ViewPart {
         }
     }
 
+    @NotNull
+    private static String formatResult(@NotNull DDConnectionMonitor.Event event) {
+        if (event.isPending()) {
+            return DDTrackingUIMessages.mcp_pending;
+        }
+        var response = event.response();
+        return response == null ? "" : NLS.bind(DDTrackingUIMessages.mcp_result_with_time,
+            response.code(), response.processingTime().toMillis());
+    }
+
     private void showDetails() {
         var event = (DDConnectionMonitor.Event) viewer.getStructuredSelection().getFirstElement();
         if (event == null) {
             return;
         }
-        new DDTrackingDetailsDialog(viewer.getControl().getShell(), event, TIME_FORMAT.format(event.time()), eventLabel(event.type())).open();
+        new DDTrackingDetailsDialog(viewer.getControl().getShell(), event, eventLabel(event.type())).open();
     }
 
     @NotNull
