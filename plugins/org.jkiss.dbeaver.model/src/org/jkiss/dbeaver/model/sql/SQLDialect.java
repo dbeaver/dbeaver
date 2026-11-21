@@ -467,6 +467,21 @@ public interface SQLDialect {
      */
     String[] getSingleLineComments();
 
+    @NotNull
+    default List<String> getExecutableCommentPrefixes() {
+        return List.of();
+    }
+
+    @Nullable
+    default Boolean isExecutableCommentActive(@NotNull String prefix, int version) {
+        // null means the server's applicability cannot be determined
+        return null;
+    }
+
+    default int getExecutableCommentVersionLength(int digits, char following) {
+        return digits;
+    }
+
     /**
      * True if anonymous SQL blocks must be finished with delimiter
      */

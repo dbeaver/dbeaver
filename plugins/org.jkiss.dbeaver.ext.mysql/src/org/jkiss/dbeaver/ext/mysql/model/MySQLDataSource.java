@@ -77,7 +77,7 @@ import java.util.regex.Pattern;
  */
 public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector {
     private static final Log log = Log.getLog(MySQLDataSource.class);
-    private static final Pattern VERSION_PATTERN = Pattern.compile("([0-9]+\\.[0-9]+\\.[0-9]+).+");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(?:5\\.5\\.5-)?([0-9]+\\.[0-9]+\\.[0-9]+).*");
 
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
     private List<MySQLEngine> engines;
@@ -1119,7 +1119,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return true;
     }
 
-    private Version getVersion() {
+    @Nullable
+    Version getVersion() {
         if (version == null) {
             String versionInfo = getInfo().getDatabaseProductVersion(); // getInfo().getDatabaseVersion() can return incorrect value
             Matcher matcher = VERSION_PATTERN.matcher(versionInfo);

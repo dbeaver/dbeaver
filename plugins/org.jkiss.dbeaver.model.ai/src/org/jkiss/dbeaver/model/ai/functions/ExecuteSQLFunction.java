@@ -54,9 +54,15 @@ import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.utils.AIDataExportUtils;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
@@ -64,6 +70,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.sql.exec.SQLScriptProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
@@ -116,14 +123,62 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull DBCExecutionContext executionContext,
         @NotNull SQLQuery query
     ) throws DBException {
-        // Some dialects execute special comments that JSQLParser otherwise ignores.
-        if (query.getText().contains("/*!") || query.getText().contains("/*M!") || query.getText().contains("/*m!")) {
-            tokenize(executionContext.getDataSource().getSQLDialect(), query.getText());
+        String queryText = query.getText();
+        SQLDialect dialect = null;
+        SQLQuery validationQuery = query;
+        SQLUtils.PreparedQuery prepared = null;
+        if (hasBackslashQuote(queryText)) {
+            dialect = executionContext.getDataSource().getSQLDialect();
+            if (!dialect.getExecutableCommentPrefixes().isEmpty()) {
+                String sqlMode = verifySqlMode(context, executionContext);
+                boolean ansiQuotes = sqlMode.contains("ANSI_QUOTES");
+                prepared = SQLUtils.prepareQueryForParsing(dialect, queryText, !ansiQuotes, ansiQuotes,
+                    sqlMode.contains("NO_BACKSLASH_ESCAPES"));
+                if (!ansiQuotes && queryText.contains("\\\"")) {
+                    validationQuery = new SQLQuery(executionContext.getDataSource(), prepared.sql(), query);
+                }
+            }
         }
-        if (query.getStatement() == null || query.getParseError() != null || query.getStatement() instanceof UnsupportedStatement) {
-            verifyQueryText(context, executionContext, query.getText());
+        if (validationQuery.getStatement() == null || validationQuery.getParseError() != null
+            || validationQuery.getStatement() instanceof UnsupportedStatement) {
+            if (dialect == null) {
+                dialect = executionContext.getDataSource().getSQLDialect();
+            }
+            if (!dialect.getExecutableCommentPrefixes().isEmpty()) {
+                if (prepared == null) {
+                    prepared = SQLUtils.prepareQueryForParsing(dialect, queryText, false, false, false);
+                }
+                if (prepared.activeExecutableComment()) {
+                    throw new DBException("Cannot verify database object scope in an unparsed SQL statement containing executable comments");
+                }
+            }
+            verifyQueryText(context, executionContext, validationQuery.getText());
         } else {
-            verifyStatement(context, executionContext, query);
+            verifyStatement(context, executionContext, validationQuery);
+        }
+    }
+
+    private static boolean hasBackslashQuote(@Nullable String sql) {
+        return sql != null && (sql.contains("\\'") || sql.contains("\\\""));
+    }
+
+    @NotNull
+    private static String verifySqlMode(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext
+    ) throws DBException {
+        try (DBCSession session = executionContext.openSession(context.getMonitor(), DBCExecutionPurpose.UTIL, "Read SQL mode");
+             DBCStatement statement = session.prepareStatement(DBCStatementType.QUERY, "SELECT @@SESSION.sql_mode", false, false, false)) {
+            if (!statement.executeStatement()) {
+                throw new DBException("Cannot verify session SQL mode");
+            }
+            try (DBCResultSet resultSet = statement.openResultSet()) {
+                if (resultSet == null || !resultSet.nextRow() || !(resultSet.getAttributeValue(0) instanceof String sqlMode)) {
+                    throw new DBException("Cannot verify session SQL mode");
+                }
+                String normalizedMode = sqlMode.toUpperCase(Locale.ROOT);
+                return normalizedMode;
+            }
         }
     }
 
@@ -178,9 +233,31 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         if (processor != null && queries.size() > 1 && !processor.isAppendable()) {
             throw new DBException("Format '" + processor.getAIFormatId() + "' supports only one statement per call");
         }
+        if (queries.size() > 1 && !executionContext.getDataSource().getSQLDialect().getExecutableCommentPrefixes().isEmpty()) {
+            boolean modeMayChange = false;
+            for (SQLQuery query : queries) {
+                if (modeMayChange && hasBackslashQuote(query.getText())) {
+                    throw new DBException("Cannot verify SQL string escapes after a statement that may change the session SQL mode");
+                }
+                modeMayChange |= !isModeStableQuery(query);
+            }
+        }
         for (SQLQuery query : queries) {
             verifyQuery(context, executionContext, query);
         }
+    }
+
+    private static boolean isModeStableQuery(@NotNull SQLQuery query) {
+        if (!(query.getStatement() instanceof Select select) || query.getParseError() != null || query.isModifying()) {
+            return false;
+        }
+        Set<String> routines = new HashSet<>();
+        try {
+            objectFinder(new HashSet<>(), routines, Set.of()).getTables((Statement) select);
+        } catch (UnsupportedOperationException | ClassCastException | IllegalArgumentException e) {
+            return false;
+        }
+        return routines.isEmpty();
     }
 
     @NotNull
@@ -818,17 +895,12 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             for (String[] quotes : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
                 bracketIdentifiers |= quotes.length == 2 && quotes[0].equals("[") && quotes[1].equals("]");
             }
-            CCJSqlParser lexer = new CCJSqlParser(sql).withSquareBracketQuotation(bracketIdentifiers)
+            CCJSqlParser lexer = new CCJSqlParser(SQLUtils.prepareQueryForParsing(dialect, sql))
+                .withSquareBracketQuotation(bracketIdentifiers)
                 .withBackslashEscapeCharacter(dialect.getStringEscapeCharacter() == '\\');
             List<String> tokens = new ArrayList<>();
             while (true) {
                 Token token = lexer.getNextToken();
-                for (Token comment = token.specialToken; comment != null; comment = comment.specialToken) {
-                    String text = comment.image.toUpperCase(Locale.ROOT);
-                    if (text.startsWith("/*!") || text.startsWith("/*M!")) {
-                        throw new DBException("Cannot verify executable SQL comments");
-                    }
-                }
                 if (token.kind == CCJSqlParserConstants.EOF) {
                     return tokens;
                 }
