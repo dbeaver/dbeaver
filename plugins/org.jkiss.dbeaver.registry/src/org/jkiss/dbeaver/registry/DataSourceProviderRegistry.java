@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -69,6 +70,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             instance.loadExtensions(Platform.getExtensionRegistry());
         }
         return instance;
+    }
+
+    /**
+     * Loads the registry in a background job; callers of {@link #getInstance()} wait until it is complete.
+     */
+    public static void loadInBackground() {
+        Job.createSystem("Load data source providers", monitor -> {
+            getInstance();
+        }).schedule();
     }
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<>();
