@@ -135,8 +135,20 @@ CTabFolder,
 
     swt-unselected-hot-tab-color-background: #161616;
     swt-selected-tab-highlight: #2b79d7;
-    swt-selected-highlight-top: true;
+    swt-selected-highlight-top: false;
     swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100% 100%;
+}
+
+/* Eclipse reverses the highlight edge for bottom-positioned tabs. */
+CTabFolder[style~='SWT.BOTTOM'],
+#org-eclipse-ui-editorss CTabFolder[style~='SWT.BOTTOM'] {
+    swt-selected-highlight-top: true;
+}
+
+/* Keep the top highlight on Eclipse's main editor tabs. */
+.EditorStack,
+#org-eclipse-ui-editorss CTabFolder.EditorStack {
+    swt-selected-highlight-top: true;
 }
 
 ExpandableComposite,
