@@ -95,7 +95,7 @@ public class ExasolServerSessionEditor extends AbstractSessionEditor {
         public void run() {
             final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
             final String action = ExasolMessages.editors_exasol_session_editor_action_kill;
-            if (UIUtils.confirmAction(getSite().getShell(), "Confirm kill session",
+            if (UIUtils.confirmAction(getSite().getShell(), ExasolMessages.editors_exasol_session_editor_confirm_title,
                 NLS.bind(ExasolMessages.editors_exasol_session_editor_confirm_action, action.toLowerCase(), sessions))) {
                 getSessionsViewer().alterSessions(sessions, Collections.singletonMap(ExasolServerSessionManager.PROP_KILL_QUERY, killQuery));
             }

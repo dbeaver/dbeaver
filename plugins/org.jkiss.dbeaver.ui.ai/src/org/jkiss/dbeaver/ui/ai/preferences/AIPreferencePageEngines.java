@@ -60,10 +60,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     private static final Log log = Log.getLog(AIPreferencePageEngines.class);
@@ -74,6 +71,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     private TableViewer profilesViewer;
 
     private final Map<String, EngineConfiguratorPage> profileConfiguratorMapping = new HashMap<>();
+    private final Set<AIConfigurationProfile> resolvedProfiles = new HashSet<>();
     private EngineConfiguratorPage activeEngineConfiguratorPage;
     private Button connectionTestButton;
     private Text profileIdText;
@@ -247,6 +245,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 // Editors are re-bound to the new profile, so push their state into the old one first
                 flushSelectedProfile();
                 selectedProfile = profile;
+                resolveSelectedProfileSecrets();
                 showProfileSettings();
                 relayoutPage();
             });
@@ -284,7 +283,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             if (partDivider.isDisposed()) {
                 return;
             }
-            settings.resolveSecrets();
+            resolveSelectedProfileSecrets();
             loadSelectedProfileSettings();
             relayoutPage();
         });
@@ -548,6 +547,18 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             );
         }
         updateTestConnectionButton();
+    }
+
+    private void resolveSelectedProfileSecrets() {
+        if (selectedProfile == null || !selectedProfile.isAvailable() || resolvedProfiles.contains(selectedProfile)) {
+            return;
+        }
+        try {
+            selectedProfile.resolveSecrets();
+            resolvedProfiles.add(selectedProfile);
+        } catch (DBException e) {
+            log.error("Error resolving profile secrets", e);
+        }
     }
 
     private void handleConfiguratorChange() {

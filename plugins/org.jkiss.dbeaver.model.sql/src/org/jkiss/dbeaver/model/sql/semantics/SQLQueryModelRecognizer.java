@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures.ArraySubquerySemantics;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
@@ -175,6 +176,12 @@ public class SQLQueryModelRecognizer {
     @Nullable
     public SQLQueryModelContent recognizeQueryBody(@NotNull STMTreeNode queryBodyNode) {
         STMTreeNode queryNode = queryBodyNode.findFirstNonErrorChild();
+        if (queryNode != null && queryNode.getNodeKindId() == SQLStandardParser.RULE_explainStatement) {
+            queryNode = queryNode.findFirstChildOfName(STMKnownRuleNames.explainableSqlQueryBody);
+        }
+        if (queryNode != null && queryNode.getNodeKindId() == SQLStandardParser.RULE_explainableSqlQueryBody) {
+            queryNode = queryNode.findFirstNonErrorChild();
+        }
         if (queryNode == null) {
             return null;
         }
@@ -186,7 +193,7 @@ public class SQLQueryModelRecognizer {
                     case SQLStandardParser.RULE_deleteStatement -> SQLQueryDeleteModel.recognize(this, stmtBodyNode);
                     case SQLStandardParser.RULE_insertStatement -> SQLQueryInsertModel.recognize(this, stmtBodyNode);
                     case SQLStandardParser.RULE_updateStatement -> SQLQueryUpdateModel.recognize(this, stmtBodyNode);
-                    default -> this.collectQueryExpression(queryBodyNode);
+                    default -> this.collectQueryExpression(queryNode);
                 };
             }
             case SQLStandardParser.RULE_sqlSchemaStatement -> {
@@ -210,7 +217,9 @@ public class SQLQueryModelRecognizer {
                 SQLQueryProgrammaticalStatementModel.recognize(this, queryNode);
             case SQLStandardParser.RULE_localRelationDeclaration, SQLStandardParser.RULE_cursorDeclaration,
                 SQLStandardParser.RULE_cursorOperation -> SQLQueryStatementModel.recognize(this, queryNode);
-            case SQLStandardParser.RULE_selectStatementSingleRow -> this.collectQueryExpression(queryBodyNode);
+            case SQLStandardParser.RULE_selectStatementSingleRow -> this.collectQueryExpression(queryNode);
+            case SQLStandardParser.RULE_explicitTable, SQLStandardParser.RULE_tableValueConstructor ->
+                this.collectQueryExpression(queryNode);
             case SQLStandardParser.RULE_callStatement -> SQLQueryCallModel.recognize(this, queryNode);
             default -> null;
         };
@@ -748,7 +757,20 @@ public class SQLQueryModelRecognizer {
 
     @NotNull
     public SQLQueryValueExpression collectValueExpression(@NotNull STMTreeNode node, @Nullable SQLQueryLexicalScope scope) {
-        if (!knownValueExpressionRootNames.contains(node.getNodeName())) {
+        return this.collectValueExpression(node, scope, false);
+    }
+
+    @NotNull
+    public SQLQueryValueExpression collectTargetValueExpression(@NotNull STMTreeNode node, @Nullable SQLQueryLexicalScope scope) {
+        boolean updateTarget = STMKnownRuleNames.setTarget.equals(node.getNodeName());
+        return this.collectValueExpression(node, scope, updateTarget);
+    }
+
+    @NotNull
+    private SQLQueryValueExpression collectValueExpression(
+        @NotNull STMTreeNode node, @Nullable SQLQueryLexicalScope scope, boolean updateTarget
+    ) {
+        if (!knownValueExpressionRootNames.contains(node.getNodeName()) && !updateTarget) {
             log.debug("Search condition or value expression expected while facing with " + node.getNodeName());
             return new SQLQueryValueFlattenedExpression(node, Collections.emptyList());
         }
@@ -775,7 +797,9 @@ public class SQLQueryModelRecognizer {
                             if (knownRecognizableValueExpressionNames.contains(rn.getNodeName())
                                 || rn.getNodeName().equals(STMKnownRuleNames.valueExpressionPrimary)
                             ) {
-                                childLists.peek().add(this.collectKnownValueExpression(rn, scope));
+                                childLists.peek().add(updateTarget && n == node
+                                    ? this.collectUpdateTargetExpression(node, rn, scope)
+                                    : this.collectKnownValueExpression(rn, scope));
                             } else {
                                 stack.push(n);
                                 stack.push(null);
@@ -815,6 +839,35 @@ public class SQLQueryModelRecognizer {
                 }
             }
         }
+    }
+
+    @NotNull
+    private SQLQueryValueExpression collectUpdateTargetExpression(
+        @NotNull STMTreeNode target, @NotNull STMTreeNode expression, @Nullable SQLQueryLexicalScope scope
+    ) {
+        if (expression.getNodeKindId() == SQLStandardParser.RULE_valueReference) {
+            STMTreeNode columnRef = expression.findFirstChildOfName(STMKnownRuleNames.columnReference);
+            STMTreeNode qualifiedName = columnRef == null ? null : columnRef.findFirstChildOfName(STMKnownRuleNames.qualifiedName);
+            if (expression.getChildCount() == 1 && qualifiedName != null &&
+                qualifiedName.getChildCount() == 1 && !qualifiedName.hasErrorChildren()) {
+                // Bare assignment names resolve as target columns, except for dialect-supported variable targets.
+                STMTreeNode identifier = qualifiedName.findFirstChildOfName(STMKnownRuleNames.identifier);
+                SQLQuerySymbolEntry name = identifier == null ? null : this.collectLocalVariableName(identifier);
+                return new SQLQueryValueTargetReferenceExpression(target, name);
+            }
+        } else if (expression.getNodeKindId() == SQLStandardParser.RULE_columnName) {
+            STMTreeNode identifier = expression.findFirstChildOfName(STMKnownRuleNames.identifier);
+            SQLQuerySymbolEntry name = identifier == null ? null : this.collectLocalVariableName(identifier);
+            return new SQLQueryValueTargetReferenceExpression(target, name);
+        } else if (expression.getNodeKindId() == SQLStandardParser.RULE_variableExpression) {
+            STMTreeNode term = expression.findFirstNonErrorChild();
+            if (term != null && term.getPayload() instanceof Token token && token.getType() == SQLStandardLexer.BatchVariableName) {
+                String rawName = term.getTextContent();
+                SQLQuerySymbolEntry name = this.registerSymbolEntry(term, rawName.substring(1), rawName, null);
+                return new SQLQueryValueTargetReferenceExpression(target, name);
+            }
+        }
+        return this.collectKnownValueExpression(expression, scope);
     }
 
     /** Immutable recognition result; an empty nameParts list forbids structural object lookup. */
@@ -1199,14 +1252,25 @@ public class SQLQueryModelRecognizer {
         List<SQLQueryValueExpression> argExprs = new ArrayList<>(argNodes.size());
         for (STMTreeNode argNode : argNodes) {
             STMTreeNode value = argNode.findFirstNonErrorChild();
-            STMTreeNode n = value == null ? null : value.findFirstNonErrorChild();
-            SQLQueryValueExpression expr = n != null
-                ? this.collectValueExpression(n, scope)
-                : new SQLQueryValueFlattenedExpression(argNode, Collections.emptyList());
+            SQLQueryValueExpression expr;
+            if (value != null && value.getNodeName().equals(STMKnownRuleNames.directSubqueryExpression)) {
+                // Retain references even for a dialect where this is not a recognized ARRAY constructor.
+                expr = new SQLQueryValueSubqueryExpression(value, this.collectQueryExpression(value));
+            } else {
+                STMTreeNode n = value == null ? null : value.findFirstNonErrorChild();
+                expr = n != null
+                    ? this.collectValueExpression(n, scope)
+                    : new SQLQueryValueFlattenedExpression(argNode, Collections.emptyList());
+            }
             argExprs.add(expr);
         }
 
-        return new SQLQueryValueFunctionExpression(callNode, name, argExprs, forRows);
+        boolean arraySubqueryConstructor = argExprs.size() == 1 &&
+            argExprs.getFirst() instanceof SQLQueryValueSubqueryExpression &&
+            this.dialect.getDialectFeatures().getArraySubquerySemantics() != ArraySubquerySemantics.DEFAULT &&
+            name != null && name.invalidPartsCount == 0 && name.parts.size() == 1 &&
+            STMKnownRuleNames.ARRAY_TERM.equalsIgnoreCase(name.parts.getFirst().getRawName());
+        return new SQLQueryValueFunctionExpression(callNode, name, argExprs, forRows, arraySubqueryConstructor);
     }
 
     /**

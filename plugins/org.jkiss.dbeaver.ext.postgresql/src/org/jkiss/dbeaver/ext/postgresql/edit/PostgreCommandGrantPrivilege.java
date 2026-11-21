@@ -48,7 +48,8 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         super(user, grant ? "Grant" : "Revoke");
         this.grant = grant;
         this.privilege = privilege;
-        this.privilegeTypes = new HashSet<>();
+        // EnumSet keeps privileges in declaration order, so generated statements are stable
+        this.privilegeTypes = EnumSet.noneOf(PostgrePrivilegeType.class);
         this.privilegeOwner = privilegeOwner;
 
         if (privilegeTypes != null) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,7 +133,8 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
                     }
                 }
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Task configurator error", "Error creating task configuration UI", e);
+                DBWorkbench.getPlatformUI().showError(
+                    TaskUIMessages.task_configurator_error_title, TaskUIMessages.task_configurator_error_message, e);
             }
         }
     }

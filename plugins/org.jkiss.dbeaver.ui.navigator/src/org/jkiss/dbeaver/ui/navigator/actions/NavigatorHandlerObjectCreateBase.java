@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -121,7 +122,8 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         }
                     });
                 } catch (InvocationTargetException e) {
-                    DBWorkbench.getPlatformUI().showError("New object", "Error creating new object", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        UINavigatorMessages.error_create_object_title, UINavigatorMessages.error_create_object_message, e);
                 } catch (InterruptedException e) {
                     // ignore
                 }
@@ -169,7 +171,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             );
         }
         catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Create object", null, e);
+            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_create_object_title, null, e);
             return false;
         }
 
@@ -187,7 +189,8 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         try {
             UIUtils.runInProgressService(objectCreator);
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("New object", "Error creating new object", e);
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.error_create_object_title, UINavigatorMessages.error_create_object_message, e);
             return;
         } catch (InterruptedException e) {
             return;
@@ -316,7 +319,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     throw new DBException("Can't find node corresponding to new object");
                 }
             } catch (Throwable e) {
-                DBWorkbench.getPlatformUI().showError("Create object", null, e);
+                DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_create_object_title, null, e);
             }
         }
 

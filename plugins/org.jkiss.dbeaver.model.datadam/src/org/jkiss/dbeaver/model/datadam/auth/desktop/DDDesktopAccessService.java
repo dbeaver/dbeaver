@@ -93,6 +93,10 @@ public class DDDesktopAccessService {
         }
     }
 
+    public boolean hasKeyBundle() {
+        return getStatus() == Status.SIGNED_IN && keyBundle != null;
+    }
+
     @Nullable
     public UUID getAccountId() {
         DDKeyBundle bundle = getKeyBundle();
@@ -127,6 +131,12 @@ public class DDDesktopAccessService {
     @NotNull
     public DDLoggedUserView getLoggedUserView() {
         return userService.getLoggedUserView(getAccountId());
+    }
+
+    /** Reads display-only user identity from the local token without making an Account request. */
+    @NotNull
+    public DDLoggedUserView getLoggedUserIdentity() {
+        return userService.getLoggedUserView(null);
     }
 
 
@@ -263,7 +273,7 @@ public class DDDesktopAccessService {
         try {
             getAccessTokenForResource(storageUrl);
         } catch (DBException e) {
-            log.debug("DataDam authorization requires sign-in");
+            log.debug("DataDam authorization requires sign-in", e);
         }
         operationLock.writeLock().lock();
         try {

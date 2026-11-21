@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.QMQueryFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -236,7 +237,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         try {
             filterManager.saveQueryFilterValue(executionContext, filter);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Save filter failed", null, e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_save_filter_title, null, e);
         }
     }
 
@@ -244,7 +245,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         try {
             filterManager.deleteQueryFilterValue(executionContext, filter);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Save filter failed", null, e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_save_filter_title, null, e);
         }
     }
 

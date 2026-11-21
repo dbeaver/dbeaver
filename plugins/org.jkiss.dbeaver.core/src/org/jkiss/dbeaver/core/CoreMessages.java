@@ -21,6 +21,34 @@ import org.eclipse.osgi.util.NLS;
 public class CoreMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
 
+    public static String dialog_export_error_title;
+    public static String dialog_error_title;
+    public static String dialog_project_export_error_message;
+    public static String dialog_project_import_error_message;
+    public static String dialog_scripts_export_error_message;
+    public static String resource_open_error_title;
+    public static String resource_open_external_error_message;
+    public static String resource_open_unknown_error_message;
+    public static String resource_project_missing_title;
+    public static String resource_project_missing_message;
+    public static String actions_navigator_bookmark_connection_message;
+    public static String action_transaction_autocommit_error_message;
+    public static String connection_secrets_error_title;
+    public static String connection_secrets_error_message;
+    public static String pending_transactions_no_active_part_title;
+    public static String pending_transactions_no_active_part_message;
+    public static String external_file_system_not_supported_title;
+    public static String external_file_system_not_supported_message;
+    public static String notification_transaction_committed;
+    public static String notification_transaction_rolled_back;
+    public static String task_transaction_commit_title;
+    public static String task_transaction_rollback_title;
+    public static String notification_agent_title;
+
+    public static String pref_page_ui_language_restart_title;
+    public static String pref_page_ui_language_restart_message;
+    public static String resource_open_remote_confirm_message;
+
     public static String connection_init_confirmation_title;
     public static String connection_init_confirmation_message;
     public static String connection_init_confirmation_connection;

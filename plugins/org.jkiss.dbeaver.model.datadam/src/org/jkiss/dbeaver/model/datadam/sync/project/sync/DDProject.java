@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.datadam.sync.project.ConflictResolution;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 
 import java.nio.file.Path;
+import java.util.UUID;
 
 /**
  * DataDam operations for one local binding-file location, bound or unbound.
@@ -91,10 +92,10 @@ public class DDProject {
 
     @NotNull
     public synchronized DDSharedProject share(
-        @NotNull DBPProject project, @NotNull String name, @Nullable String description
+        @NotNull DBPProject project, @NotNull UUID remoteProjectId, @NotNull String name, @Nullable String description
     ) throws DBException {
         requireUnbound(project);
-        DDProjectSyncService.ShareResult result = syncService.createRemoteProject(project, name, description);
+        DDProjectSyncService.ShareResult result = syncService.createRemoteProject(project, remoteProjectId, name, description);
         bindingStore.save(result.binding());
         // Persist the new association before uploading, so a failed upload can be retried without sharing again.
         synchronize(project);

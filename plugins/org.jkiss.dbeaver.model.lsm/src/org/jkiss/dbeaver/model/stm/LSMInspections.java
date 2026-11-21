@@ -248,7 +248,10 @@ public class LSMInspections {
                     if (nodeRange.b + 1 >= position) {
                         // containing term found
                         STMTreeTermNode prevNode = index <= 0 ? null : this.allNonErrorTerms.get(index - 1);
-                        if (prevNode != null && isAnySomething(node) && !isAnySomething(prevNode)) {
+                        if (nodeRange.b + 1 == position && KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType())) {
+                            // The caret is after the separator, not on it: predict the next operand or list item.
+                            initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
+                        } else if (prevNode != null && isAnySomething(node) && !isAnySomething(prevNode)) {
                             node = prevNode;
                             initialState =  atn.states.get(node.getAtnState()).getTransitions()[0].target;
                         } else if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType()) || (nodeRange.a == position && index > 0)) {

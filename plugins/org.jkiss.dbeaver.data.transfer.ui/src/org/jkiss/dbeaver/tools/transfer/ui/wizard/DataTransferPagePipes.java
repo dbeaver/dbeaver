@@ -538,7 +538,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                 if (streamConsumerSettings == null) {
                     DBWorkbench.getPlatformUI().showError(
                         DTMessages.stream_transfer_consumer_title_configuration_load_failed,
-                        "Current configuration do not support stream settings"
+                        DTUIMessages.data_transfer_stream_settings_unsupported_message
                     );
                     return;
                 }
@@ -606,7 +606,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         columnsButton.setToolTipText(!columnsButton.isEnabled() ?
             getWizard().getSettings().isPipeChangeRestricted() ? DTUIMessages.data_transfer_wizard_sources_locked :
                 inputsTable.getSelection().isEmpty() ? DTUIMessages.data_transfer_wizard_select_source :
-                    DTUIMessages.data_transfer_wizard_columns_unavailable : null);
+                    DTUIMessages.data_transfer_wizard_columns_unavailable :
+            DTUIMessages.data_transfer_wizard_configure_columns);
     }
 
     private boolean isDatabaseMigrationSelected() {
