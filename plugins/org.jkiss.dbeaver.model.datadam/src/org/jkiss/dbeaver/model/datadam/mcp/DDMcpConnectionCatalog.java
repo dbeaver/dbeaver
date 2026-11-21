@@ -78,7 +78,7 @@ public class DDMcpConnectionCatalog {
                 return available;
             }
         }
-        throw new DDMcpFunctionException(DDMcpFunctionErrorCode.ACCESS_DENIED, "Datasource is unavailable", null);
+        throw new DDMcpFunctionException(DDMcpFunctionErrorCode.ACCESS_DENIED, "Datasource is unavailable");
     }
 
     public record AvailableConnection(

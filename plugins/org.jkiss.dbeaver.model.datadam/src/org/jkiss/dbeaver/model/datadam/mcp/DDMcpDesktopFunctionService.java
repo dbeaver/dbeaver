@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretPromptContext;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -78,7 +79,7 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
         if (aiFunction != null) {
             return callAiFunction(aiFunction, call.arguments());
         }
-        throw new DDMcpFunctionException(DDMcpFunctionErrorCode.FUNCTION_NOT_FOUND, "Function not found", null);
+        throw new DDMcpFunctionException(DDMcpFunctionErrorCode.FUNCTION_NOT_FOUND, "Function '" + call.functionId() + "' not found");
     }
 
     @NotNull
@@ -99,11 +100,8 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
             AIFunctionResult result = function.getInstance().callFunction(context, functionArguments);
             return new DDMcpFunctionResult(result.getValue(), false);
         } catch (DBException e) {
-            if (isMasterPasswordRequired(e)) {
-                throw masterPasswordRequired();
-            }
             log.debug("Cannot call DBeaver function through DataDam MCP", e);
-            throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR, "Cannot call DBeaver function", null);
+            throw new DDMcpFunctionException(DDMcpFunctionErrorCode.FUNCTION_ERROR, CommonUtils.getAllExceptionMessages(e));
         }
     }
 
@@ -150,7 +148,7 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
     @NotNull
     private DDMcpFunctionException masterPasswordRequired() {
         return new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
-            "Unlock the master password in DBeaver and retry the MCP request", null);
+            "Unlock the master password in DBeaver and retry the MCP request");
     }
 
     private boolean connectOrWait(@NotNull DBPDataSourceContainer connection, @NotNull DBRProgressMonitor monitor)
@@ -172,13 +170,12 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
-                    "Waiting for database connection was interrupted", null);
+                    "Waiting for database connection was interrupted");
             }
         }
         if (!connection.isConnected()) {
             throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
-                connection.isConnecting() ? "Timed out waiting for database connection" : "Database connection is unavailable",
-                null);
+                connection.isConnecting() ? "Timed out waiting for database connection" : "Database connection is unavailable");
         }
     }
 
@@ -189,7 +186,7 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
         if (value instanceof String string && !string.isBlank()) {
             return string;
         }
-        throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INVALID_ARGUMENTS, "Missing or invalid " + name, null);
+        throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INVALID_ARGUMENTS, "Missing or invalid " + name);
     }
 
     private class EmptyPromptGenerator implements AIPromptGenerator {

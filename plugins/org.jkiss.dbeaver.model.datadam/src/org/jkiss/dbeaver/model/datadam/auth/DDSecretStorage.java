@@ -45,8 +45,6 @@ public final class DDSecretStorage implements DBSSecretController {
             : SecurePreferencesSecretController.createWithoutEquinoxPrompts(NODE, nativeProviderId);
         if (nativeController == null) {
             log.debug("DataDam native secure storage provider not found; using the configured default provider");
-        } else {
-            log.debug("DataDam using native secure storage provider '" + nativeProviderId + "'");
         }
     }
 

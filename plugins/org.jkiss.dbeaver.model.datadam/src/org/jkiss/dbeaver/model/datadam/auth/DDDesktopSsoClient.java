@@ -22,6 +22,7 @@ import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.oauth.OAuthConstants;
 
 import java.net.URI;
@@ -132,16 +134,36 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
     @NotNull
     @Override
     protected DBException mapErrorResponse(int code, @NotNull String message, @NotNull URI uri) {
+        if (code == HttpConstants.CODE_BAD_REQUEST) {
+            try {
+                var response = JsonParser.parseString(message);
+                var error = response.isJsonObject() ? response.getAsJsonObject().get(OAuthConstants.PARAM_ERROR) : null;
+                if (error != null && error.isJsonPrimitive() && DDSsoConstants.ERROR_INVALID_GRANT.equals(error.getAsString())) {
+                    return new InvalidGrantException();
+                }
+            } catch (JsonParseException e) {
+                // An unrecognized error response does not invalidate saved credentials.
+            }
+        }
         return new DBException("Desktop SSO request failed (HTTP " + code + ")");
     }
 
     @Override
     protected void handleRequestException(@NotNull String message, @NotNull Throwable e) throws DBException {
+        if (e instanceof InvalidGrantException exception) {
+            throw exception;
+        }
         if (e instanceof JsonParseException) {
             throw new DBException("Invalid desktop SSO response", e);
         }
         // Transport errors can include response data. A failed rotation is never retried automatically.
         throw new DBException("Desktop SSO request failed", e);
+    }
+
+    public static class InvalidGrantException extends DBException {
+        public InvalidGrantException() {
+            super("DataDam authorization grant has expired or is no longer valid. Sign in again");
+        }
     }
 
     private void requireSecureServer(@NotNull URI url) throws DBException {

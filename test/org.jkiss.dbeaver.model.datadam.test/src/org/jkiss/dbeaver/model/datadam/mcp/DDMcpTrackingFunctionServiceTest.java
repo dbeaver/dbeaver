@@ -160,7 +160,7 @@ class DDMcpTrackingFunctionServiceTest {
 
     @Test
     void preservesCheckedAndUncheckedFailuresAndRecordsTheirCodesAndMessages() throws Exception {
-        var checked = new DDMcpFunctionException(DDMcpFunctionErrorCode.INVALID_ARGUMENTS, "private-error-message", new JsonObject());
+        var checked = new DDMcpFunctionException(DDMcpFunctionErrorCode.INVALID_ARGUMENTS, "private-error-message");
         Mockito.when(delegate.getFunctions()).thenThrow(checked);
         Assertions.assertSame(checked, Assertions.assertThrows(DDMcpFunctionException.class, service::getFunctions));
         Assertions.assertEquals("getFunctions", details(0));

@@ -40,7 +40,7 @@ public class DDMcpListDatasourcesFunction implements DDMcpFunction {
     public DDMcpFunctionResult call(@NotNull Map<String, Object> arguments) throws DDMcpFunctionException {
         Object projectId = arguments.get("projectId");
         if (projectId != null && (!(projectId instanceof String string) || string.isBlank())) {
-            throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INVALID_ARGUMENTS, "Invalid projectId", null);
+            throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INVALID_ARGUMENTS, "Invalid projectId");
         }
         List<DDMcpDatasource> datasources = new ArrayList<>();
         for (DDMcpConnectionCatalog.AvailableConnection available : connections.getAllowedConnections((String) projectId)) {
