@@ -175,17 +175,44 @@ public class DDDesktopAccessService {
     public void importKeys(@NotNull String recoveryPhrase) throws DBException {
         operationLock.writeLock().lock();
         try {
-            if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
-                throw new DBException("Sign in to DataDam before importing keys");
-            }
-            var state = accountClient.getCryptoState();
-            DDKeyBundle bundle = DDKeyStore.unpack(state, recoveryPhrase);
-            DDKeyStore.save(bundle);
-            setKeyBundle(bundle);
-            log.debug("Imported DataDam encryption keys");
+            saveImportedKeys(prepareKeyImport(recoveryPhrase));
         } finally {
             operationLock.writeLock().unlock();
         }
+    }
+
+    /** Validates a recovery phrase without replacing the saved keys. */
+    @NotNull
+    public DDKeyBundle prepareKeyImport(@NotNull String recoveryPhrase) throws DBException {
+        operationLock.writeLock().lock();
+        try {
+            if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
+                throw new DBException("Sign in to DataDam before importing keys");
+            }
+            return DDKeyStore.unpack(accountClient.getCryptoState(), recoveryPhrase);
+        } finally {
+            operationLock.writeLock().unlock();
+        }
+    }
+
+    /** Commits a prepared replacement only if access has not changed during project cleanup. */
+    public void completeKeyImport(@NotNull DDKeyBundle expectedKeys, @NotNull DDKeyBundle replacement) throws DBException {
+        operationLock.writeLock().lock();
+        try {
+            if (getStatus() != Status.SIGNED_IN || !expectedKeys.equals(keyBundle)
+                || !expectedKeys.accountId().equals(replacement.accountId())) {
+                throw new DBException("DataDam account or encryption keys changed during recovery");
+            }
+            saveImportedKeys(replacement);
+        } finally {
+            operationLock.writeLock().unlock();
+        }
+    }
+
+    private void saveImportedKeys(@NotNull DDKeyBundle bundle) throws DBException {
+        DDKeyStore.save(bundle);
+        setKeyBundle(bundle);
+        log.debug("Imported DataDam encryption keys");
     }
 
     public void forgetKeys() throws DBException {

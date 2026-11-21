@@ -50,6 +50,59 @@ import java.util.concurrent.atomic.AtomicReference;
 class DDDesktopAccessLifecycleTest {
 
     @Test
+    void preparedReplacementDoesNotChangeSavedKeysUntilCommitted() throws Exception {
+        var accountId = UUID.randomUUID();
+        var current = new DDKeyBundle(accountId, "old-signing", "old-data", 1, UUID.randomUUID());
+        var replacement = new DDKeyBundle(accountId, "new-signing", "new-data", 1, UUID.randomUUID());
+        var state = new DDCryptoState(accountId, true, "bundle", 1L, "salt", 1, replacement.apiKeyId());
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) -> {
+                 Mockito.when(account.getAccountId()).thenReturn(accountId);
+                 Mockito.when(account.getCryptoState()).thenReturn(state);
+             })) {
+            keys.when(DDKeyStore::load).thenReturn(current);
+            keys.when(() -> DDKeyStore.unpack(state, "replacement-phrase")).thenReturn(replacement);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+
+            Assertions.assertSame(replacement, access.prepareKeyImport("replacement-phrase"));
+            Assertions.assertSame(current, access.getKeyBundle());
+            keys.verify(() -> DDKeyStore.save(Mockito.any()), Mockito.never());
+            keys.verify(DDKeyStore::clear, Mockito.never());
+
+            access.completeKeyImport(current, replacement);
+            Assertions.assertSame(replacement, access.getKeyBundle());
+            keys.verify(() -> DDKeyStore.save(replacement));
+
+            Assertions.assertThrows(DBException.class, () -> access.completeKeyImport(current, replacement));
+            keys.verify(() -> DDKeyStore.save(replacement));
+        }
+    }
+
+    @Test
+    void preparedReplacementCannotOverwriteKeysAfterAnExplicitReset() throws Exception {
+        var accountId = UUID.randomUUID();
+        var current = new DDKeyBundle(accountId, "signing", "data", 1, UUID.randomUUID());
+        var replacement = new DDKeyBundle(accountId, "replacement-signing", "replacement-data", 1, UUID.randomUUID());
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenReturn(accountId))) {
+            keys.when(DDKeyStore::load).thenReturn(current);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+            access.forgetKeys();
+
+            Assertions.assertThrows(DBException.class, () -> access.completeKeyImport(current, replacement));
+            Assertions.assertNull(access.getKeyBundle());
+            keys.verify(() -> DDKeyStore.save(Mockito.any()), Mockito.never());
+        }
+    }
+
+    @Test
     void failedReplacementValidationPreservesTheSavedKeys() throws Exception {
         var accountId = UUID.randomUUID();
         var keyId = UUID.randomUUID();

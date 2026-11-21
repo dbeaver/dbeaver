@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -87,14 +88,20 @@ public final class DDProjectKeyUIManager {
         if (recovery == null || monitor.isCanceled() || !bundle.equals(access.getKeyBundle())) {
             return false;
         }
+        DDKeyBundle replacement = recovery.phrase() == null ? null : access.prepareKeyImport(recovery.phrase());
+        if (replacement != null && !bundle.accountId().equals(replacement.accountId())) {
+            throw new DBException("DataDam account changed during recovery");
+        }
+        if (monitor.isCanceled() || !bundle.equals(access.getKeyBundle())) {
+            return false;
+        }
         DDProjectManager manager = DDProjectManager.getInstance();
         prepareProjectDeletion(manager, bundle.accountId());
-        if (recovery.phrase() != null) {
-            access.importKeys(recovery.phrase());
-        }
         manager.deleteAccountProjects(bundle.accountId());
-        if (recovery.phrase() == null) {
+        if (replacement == null) {
             access.forgetKeys();
+        } else {
+            access.completeKeyImport(bundle, replacement);
         }
         // Callers may already hold project objects that were removed during recovery.
         return false;
