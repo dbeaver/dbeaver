@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IExecutionListener;
+import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
@@ -27,6 +31,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
@@ -39,6 +44,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.IMenuService;
@@ -233,6 +239,8 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<SQLEditorListener> listeners = new ArrayList<>();
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
+    private final IExecutionListener saveCommandListener = new SaveCommandListener();
+    private boolean isSaveCommandRunning;
     private boolean isResultSetAutoFocusEnabled = true;
     private boolean isShowScriptRulerOnExecution = true;
     private Boolean isDisableFetchResultSet = null;
@@ -2575,6 +2583,11 @@ public class SQLEditor extends SQLEditorBase implements
     throws PartInitException {
         super.init(site, editorInput);
 
+        ICommandService commandService = site.getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.addExecutionListener(saveCommandListener);
+        }
+
         updateResultSetOrientation();
 
         SQLScriptContext parentContext = null;
@@ -3781,6 +3794,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void dispose() {
+        ICommandService commandService = getSite().getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.removeExecutionListener(saveCommandListener);
+        }
         if (extraPresentationManager != null) {
             extraPresentationManager.dispose();
         }
@@ -3972,6 +3989,10 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
+        if (isSaveCommandRunning && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FORMAT_ON_SAVE)) {
+            formatScript();
+        }
+
         if (!EditorUtils.isInAutoSaveJob()) {
             monitor.beginTask("Save data changes...", 1);
             try {
@@ -3996,6 +4017,95 @@ public class SQLEditor extends SQLEditorBase implements
         super.doSave(monitor);
 
         updateDataSourceContainer();
+    }
+
+    /**
+     * Formats the whole script with the SQL formatter. The selection and the caret are kept
+     * and formatting is a single undo step.
+     */
+    private void formatScript() {
+        ISourceViewer viewer = getSourceViewer();
+        if (viewer == null || viewer.getDocument() == null) {
+            return;
+        }
+        ITextOperationTarget target = viewer.getTextOperationTarget();
+        if (target == null || !target.canDoOperation(ISourceViewer.FORMAT)) {
+            return;
+        }
+        Point selection = viewer.getSelectedRange();
+        StyledText textWidget = viewer.getTextWidget();
+        boolean caretAtStart = selection.y > 0 && textWidget != null
+            && textWidget.getCaretOffset() == textWidget.getSelection().x;
+
+        // The formatter replaces the text at once, so document positions do not survive it.
+        // It changes mostly whitespace, so the number of non-whitespace characters before
+        // an offset identifies the same place in the formatted text.
+        String text = viewer.getDocument().get();
+        int startCount = countNonWhitespace(text, selection.x);
+        int endCount = countNonWhitespace(text, selection.x + selection.y);
+
+        // With a selection only the selected text is formatted
+        viewer.setSelectedRange(selection.x, 0);
+        // "Format active query only" must not apply here, the whole script is formatted
+        setFormatWholeScript(true);
+        try {
+            target.doOperation(ISourceViewer.FORMAT);
+        } finally {
+            setFormatWholeScript(false);
+        }
+
+        String formatted = viewer.getDocument().get();
+        int end = offsetAfterNonWhitespace(formatted, endCount);
+        if (selection.y == 0) {
+            viewer.setSelectedRange(end, 0);
+            return;
+        }
+        int start = Math.min(offsetBeforeNonWhitespace(formatted, startCount), end);
+        if (caretAtStart) {
+            viewer.setSelectedRange(end, start - end);
+        } else {
+            viewer.setSelectedRange(start, end - start);
+        }
+    }
+
+    private static int countNonWhitespace(@NotNull String text, int offset) {
+        int count = 0;
+        int limit = Math.min(offset, text.length());
+        for (int i = 0; i < limit; i++) {
+            if (!Character.isWhitespace(text.charAt(i))) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Returns the offset right after the given number of non-whitespace characters.
+     */
+    private static int offsetAfterNonWhitespace(@NotNull String text, int count) {
+        if (count == 0) {
+            return 0;
+        }
+        int seen = 0;
+        for (int i = 0; i < text.length(); i++) {
+            if (!Character.isWhitespace(text.charAt(i)) && ++seen == count) {
+                return i + 1;
+            }
+        }
+        return text.length();
+    }
+
+    /**
+     * Returns the offset of the non-whitespace character that follows the given number of them.
+     */
+    private static int offsetBeforeNonWhitespace(@NotNull String text, int count) {
+        int seen = 0;
+        for (int i = 0; i < text.length(); i++) {
+            if (!Character.isWhitespace(text.charAt(i)) && seen++ == count) {
+                return i;
+            }
+        }
+        return text.length();
     }
 
     @Override
@@ -4919,6 +5029,44 @@ public class SQLEditor extends SQLEditorBase implements
                 viewItem.setImage(image);
             }
 */
+        }
+    }
+
+    /**
+     * Tracks Save and Save All commands, so the script is formatted only on saves started by the user.
+     * Other saves (on query execution, on editor close, on disconnect) call doSave directly.
+     */
+    private class SaveCommandListener implements IExecutionListener {
+        @Override
+        public void preExecute(@NotNull String commandId, @NotNull ExecutionEvent event) {
+            if (isSaveCommand(commandId)) {
+                isSaveCommandRunning = true;
+            }
+        }
+
+        @Override
+        public void postExecuteSuccess(@NotNull String commandId, @Nullable Object returnValue) {
+            finishCommand(commandId);
+        }
+
+        @Override
+        public void postExecuteFailure(@NotNull String commandId, @NotNull ExecutionException exception) {
+            finishCommand(commandId);
+        }
+
+        @Override
+        public void notHandled(@NotNull String commandId, @NotNull NotHandledException exception) {
+            finishCommand(commandId);
+        }
+
+        private void finishCommand(@NotNull String commandId) {
+            if (isSaveCommand(commandId)) {
+                isSaveCommandRunning = false;
+            }
+        }
+
+        private boolean isSaveCommand(@NotNull String commandId) {
+            return IWorkbenchCommandConstants.FILE_SAVE.equals(commandId) || IWorkbenchCommandConstants.FILE_SAVE_ALL.equals(commandId);
         }
     }
 
