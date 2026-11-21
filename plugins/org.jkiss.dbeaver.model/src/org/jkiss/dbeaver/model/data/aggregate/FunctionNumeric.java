@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.data.aggregate;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 /**
  * FunctionSum
  */
@@ -53,5 +56,42 @@ public abstract class FunctionNumeric implements IAggregateFunction {
             return (Comparable<?>)value;
         }
         return null;
+    }
+
+    protected static BigDecimal getBigDecimal(Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        try {
+            if (value instanceof BigDecimal) {
+                return (BigDecimal) value;
+            }
+            if (value instanceof BigInteger) {
+                return new BigDecimal((BigInteger) value);
+            }
+            if (value instanceof Byte || value instanceof Short
+                || value instanceof Integer || value instanceof Long) {
+                return BigDecimal.valueOf(((Number) value).longValue());
+            }
+
+            return new BigDecimal(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    protected static Number getNumericForAggregation(Object value) {
+        if (value instanceof Number) {
+            return (Number) value;
+        }
+
+        BigDecimal decimal = getBigDecimal(value);
+        if (decimal != null) {
+            return decimal;
+        }
+
+        // Preserve support for special numeric strings such as NaN and Infinity.
+        return getNumeric(value);
     }
 }
