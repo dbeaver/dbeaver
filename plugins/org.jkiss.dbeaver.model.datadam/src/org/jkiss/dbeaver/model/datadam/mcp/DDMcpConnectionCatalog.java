@@ -48,10 +48,16 @@ public class DDMcpConnectionCatalog {
 
     @NotNull
     public List<AvailableConnection> getAllowedConnections() throws DDMcpFunctionException {
+        return getAllowedConnections(null);
+    }
+
+    @NotNull
+    public List<AvailableConnection> getAllowedConnections(@Nullable String projectId) throws DDMcpFunctionException {
         if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
             return List.of();
         }
         return workspace.getProjects().stream()
+            .filter(project -> projectId == null || projectId.equals(project.getId()))
             .filter(this::canReadProjectConnections)
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
                 .filter(DDMcpConnectionSettings::isEnabled)
@@ -67,7 +73,7 @@ public class DDMcpConnectionCatalog {
     @NotNull
     public AvailableConnection getAllowedConnection(@NotNull String projectId, @NotNull String datasourceId)
         throws DDMcpFunctionException {
-        for (AvailableConnection available : getAllowedConnections()) {
+        for (AvailableConnection available : getAllowedConnections(projectId)) {
             if (available.project().getId().equals(projectId) && available.connection().getId().equals(datasourceId)) {
                 return available;
             }

@@ -22,7 +22,6 @@ import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionDescriptor;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionErrorCode;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionResult;
 import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
-import com.google.gson.JsonPrimitive;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -98,7 +97,7 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
             }
             AIFunctionContext context = new AIFunctionContext(monitor, databaseContext, new EmptyPromptGenerator());
             AIFunctionResult result = function.getInstance().callFunction(context, functionArguments);
-            return new DDMcpFunctionResult(new JsonPrimitive(result.getValue().toString()), false);
+            return new DDMcpFunctionResult(result.getValue().toString(), false);
         } catch (DBException e) {
             if (isMasterPasswordRequired(e)) {
                 throw masterPasswordRequired();
