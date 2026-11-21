@@ -158,6 +158,8 @@
             <driver-properties>
                 <propertyGroup label="Parameters" description="Custom driver parameters">
                     <property id="cache-meta-data" label="%parameters.all.caches" description="%parameters.all.caches.tip" type="boolean" required="false" defaultValue="true"/>
+                    <property id="connection-validator" type="string" hidden="true"
+                              defaultValue="org.jkiss.dbeaver.ext.mysql.model.MySQLConnectionValidator"/>
                 </propertyGroup>
             </driver-properties>
             <drivers managable="true">

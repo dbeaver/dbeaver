@@ -49,6 +49,7 @@
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <parameter name="meta-model" value="manticore"/>
+                    <parameter name="connection-validator" value="org.jkiss.dbeaver.ext.mysql.model.MySQLConnectionValidator"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="omit-schema" value="true"/>
                     <parameter name="supports-references" value="false"/>
