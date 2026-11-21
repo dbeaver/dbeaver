@@ -157,14 +157,15 @@ class DDDesktopTokenManager {
             }
             saveToken(rotated);
             return rotated;
+        } catch (DDDesktopSsoClient.InvalidGrantException e) {
+            token = null;
+            store.clear();
+            throw new DBException("DataDam token refresh failed. Sign in again", e);
         } catch (Exception e) {
             log.debug("DataDam desktop token refresh failed", e);
-            // Invalidate this session in memory; only an explicit SSO rejection clears saved credentials.
+            // Invalidate this session in memory, but retain saved credentials for a retry after restart.
             token = new DDDesktopUserToken(
                 current.accessToken(), current.issuer(), current.endpoints(), current.scopes());
-            if (e instanceof DDDesktopSsoClient.InvalidGrantException) {
-                store.clear();
-            }
             throw new DBException("DataDam token refresh failed. Sign in again", e);
         }
     }
