@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,10 @@ public class ACLMessages extends NLS {
 	/* Permissions */
 	public static String edit_command_grant_privilege_action_grant_privilege;
 	public static String edit_command_grant_privilege_action_revoke_privilege;
+	public static String acl_update_privilege_title;
+	public static String acl_update_privilege_no_object;
+	public static String acl_object_tree_title;
+	public static String acl_object_tree_no_root;
 
 	static {
 		// initialize resource bundle

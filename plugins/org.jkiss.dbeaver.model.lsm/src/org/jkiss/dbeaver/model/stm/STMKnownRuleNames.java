@@ -396,6 +396,7 @@ public class STMKnownRuleNames {
     public static final String functionCallExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallExpression];
     public static final String functionCallTargetName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallTargetName];
     public static final String functionCallOperand = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallOperand];
+    public static final String directSubqueryExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_directSubqueryExpression];
     public static final String trimFunctionName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_trimFunctionName];
 
     public static final String tableHintKeywords = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableHintKeywords];
@@ -419,6 +420,7 @@ public class STMKnownRuleNames {
     public static final String localVariableDeclaration = SQLStandardParser.ruleNames[SQLStandardParser.RULE_localVariableDeclaration];
     public static final String localTypedVariable = SQLStandardParser.ruleNames[SQLStandardParser.RULE_localTypedVariable];
 
+    public static final String ARRAY_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.ARRAY);
     public static final String RECURSIVE_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.RECURSIVE);
     public static final String SET_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SET);
     public static final String SELECT_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SELECT);

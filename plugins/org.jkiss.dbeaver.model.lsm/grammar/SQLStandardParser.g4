@@ -355,7 +355,8 @@ queryName: identifier;
 
 // select, subquery
 scalarSubquery: subquery;
-subquery: LeftParen queryExpression RightParen;
+subquery: LeftParen directSubqueryExpression RightParen;
+directSubqueryExpression: withClause? queryExpression;
 unionTerm: UNION (ALL)? (correspondingSpec)? queryTerm;
 exceptTerm: EXCEPT (ALL)? (correspondingSpec)? queryTerm;
 nonJoinQueryExpression: nonJoinQueryTerm|queryExpression;
@@ -590,8 +591,9 @@ topExpression: TOP anyValue PERCENT? (WITH TIES)?;
 updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;
 setClauseList: setClause (Comma setClause)*;
 setClause: ((setTarget | setTargetList) (EqualsOperator updateSource?)?)|anyUnexpected??;
-setTarget: columnName;
-setTargetList: LeftParen columnNameList? RightParen?;
+// Keep columnName for bare-target completion predictions alongside qualified value references.
+setTarget: valueReference|columnName|variableExpression;
+setTargetList: LeftParen (setTarget (Comma setTarget?)*)? RightParen?;
 updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen?);
 updateValue: valueExpression|DEFAULT;
 
@@ -629,7 +631,7 @@ anyWordsWithProperty: anyWord+ anyProperty?;
 functionCallExpression: trimFunctionName LeftParen (trimSpecification? functionCallOperand? FROM)? functionCallOperand (Comma functionCallOperand)* RightParen
     | functionCallTargetName LeftParen (functionCallOperand ((Comma|FROM|anyWord) functionCallOperand)*)? RightParen overClause?;
 functionCallTargetName: qualifiedName|IF;
-functionCallOperand: anyValue;
+functionCallOperand: anyValue|directSubqueryExpression;
 
 aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? separatorClause? RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
 aggregateExprParam: DISTINCT|ALL|LIMIT|SEPARATOR|OFFSET|Comma|rowValueConstructor;

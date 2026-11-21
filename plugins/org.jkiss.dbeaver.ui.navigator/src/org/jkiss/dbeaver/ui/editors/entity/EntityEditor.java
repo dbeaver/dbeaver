@@ -24,6 +24,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.IUndoManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -253,8 +254,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)
         ) {
             DBWorkbench.getPlatformUI().showNotification(
-                "Read-only",
-                "Object [" + DBUtils.getObjectFullName(getDatabaseObject(), DBPEvaluationContext.UI) + "] is read-only",
+                UINavigatorMessages.editors_entity_read_only_title,
+                NLS.bind(UINavigatorMessages.editors_entity_read_only_message,
+                    DBUtils.getObjectFullName(getDatabaseObject(), DBPEvaluationContext.UI)),
                 true, null);
             return;
         }
@@ -442,7 +444,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // Show error dialog
 
             UIUtils.asyncExec(() ->
-                DBWorkbench.getPlatformUI().showError("Can't save '" + getDatabaseObject().getName() + "'", null, vError));
+                DBWorkbench.getPlatformUI().showError(
+                    NLS.bind(UINavigatorMessages.editors_entity_save_error_title, getDatabaseObject().getName()), null, vError));
             return false;
         }
     }
@@ -556,7 +559,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return IDialogConstants.CANCEL_ID;
         } catch (InvocationTargetException e) {
             log.error(e);
-            DBWorkbench.getPlatformUI().showError("Script generate error", "Couldn't generate alter script", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.error_sql_generation_title, UINavigatorMessages.error_sql_generation_message, e.getTargetException());
             return IDialogConstants.CANCEL_ID;
         } finally {
             saveInProgress = false;

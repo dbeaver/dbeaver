@@ -456,8 +456,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             setFocusOnPrompt();
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
-                "Error creating conversation",
-                "Could not create new conversation: " + e.getMessage(),
+                AIChatMessagesUI.ai_chat_conversation_create_error_title,
+                NLS.bind(AIChatMessagesUI.ai_chat_conversation_create_error_message, e.getMessage()),
                 e
             );
         }
@@ -490,8 +490,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                 removeActiveConversation();
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError(
-                    "Error deleting conversation",
-                    "Could not delete conversation: " + e.getMessage(),
+                    AIChatMessagesUI.ai_chat_conversation_delete_error_title,
+                    NLS.bind(AIChatMessagesUI.ai_chat_conversation_delete_error_message, e.getMessage()),
                     e
                 );
             }

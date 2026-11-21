@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ import org.eclipse.osgi.util.NLS;
 
 public class ERDMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.erd.internal.ERDMessages"; //$NON-NLS-1$
+
+    public static String erd_cache_model_title;
+    public static String erd_cache_model_error_message;
 
     static {
         // initialize resource bundle

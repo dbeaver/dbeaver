@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,38 +17,25 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.core.runtime.IAdaptable;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
-import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.utils.CommonUtils;
 
 public class ChangeUserPasswordPropertyTester extends PropertyTester {
 
     @Override
-    public boolean test(Object element, String property, Object[] objects, Object o1) {
-        if (!(element instanceof DBNDataSource)) {
+    public boolean test(@NotNull Object element, @NotNull String property, @NotNull Object[] objects, @Nullable Object expectedValue) {
+        if (!property.equals("canChangePassword") || !(element instanceof DBNDataSource dataSource)) {
             return false;
         }
-
-        if (property.equals("canChangePassword")) {
-            DBNDataSource dsNode = (DBNDataSource) element;
-            DBPProject project = dsNode.getOwnerProject();
-            if (project == null || !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
-                return false;
-            }
-
-            DBPDataSourceContainer dataSourceContainer = dsNode.getDataSourceContainer();
-            DBPDataSource dataSource = dataSourceContainer.getDataSource();
-            String userName = dataSourceContainer.getConnectionConfiguration().getUserName();
-            if (dataSource instanceof IAdaptable) {
-                return ((IAdaptable) dataSource).getAdapter(DBAUserPasswordManager.class) != null && CommonUtils.isNotEmpty(userName);
-            }
-        }
-        return false;
+        DBPDataSourceContainer container = dataSource.getDataSourceContainer();
+        return DBAuthUtils.canChangeCurrentUserPassword(container)
+            && CommonUtils.isNotEmpty(DBAuthUtils.getCurrentUserName(container))
+            && DBUtils.getAdapter(DBAUserPasswordManager.class, container) != null;
     }
 }
