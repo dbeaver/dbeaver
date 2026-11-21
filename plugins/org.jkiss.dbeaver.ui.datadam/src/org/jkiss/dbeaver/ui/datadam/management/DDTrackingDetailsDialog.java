@@ -64,12 +64,15 @@ class DDTrackingDetailsDialog extends AbstractPopupPanel {
         Composite area = super.createDialogArea(parent);
         var request = event.request();
         Text text = new Text(area, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
-        GridData data = new GridData(SWT.FILL, request == null ? SWT.FILL : SWT.TOP, true, request == null);
+        boolean response = event.response() != null;
+        GridData data = new GridData(SWT.FILL, request == null || response ? SWT.FILL : SWT.TOP, true, request == null || response);
         data.widthHint = 600;
-        data.heightHint = request == null ? 240 : 80;
+        data.heightHint = request == null || response ? 240 : 80;
         text.setLayoutData(data);
-        text.setText(time + "\n" + type + "\n\n" + (request == null ? event.details() : request.operation()));
-        if (request != null) {
+        text.setText(time + "\n" + type
+            + (event.requestId() == 0 ? "" : "\n" + DDTrackingUIMessages.mcp_request_id + ": " + event.requestId())
+            + "\n\n" + (request == null || response ? event.details() : request.operation()));
+        if (request != null && !response) {
             createParameters(area, request.parameters());
         }
         closeOnFocusLost();

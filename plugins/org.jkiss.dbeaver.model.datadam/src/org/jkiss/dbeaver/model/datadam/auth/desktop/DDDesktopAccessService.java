@@ -199,6 +199,18 @@ public class DDDesktopAccessService {
         }
     }
 
+    /** Checks the key identity, which changes when account encryption is reset. */
+    public boolean validateProjectKeys() throws DBException {
+        DDKeyBundle bundle = getKeyBundle();
+        if (getStatus() != Status.SIGNED_IN || bundle == null) {
+            return false;
+        }
+        // Do not hold the operation lock over an Account call: token refresh may need to change access.
+        var state = accountClient.getCryptoState();
+        return bundle.equals(getKeyBundle()) && state.cryptoConfigured() && bundle.accountId().equals(state.accountId())
+            && Objects.equals(bundle.apiKeyId(), state.apiKeyId());
+    }
+
     public void signOut() throws DBException {
         operationLock.writeLock().lock();
         try {

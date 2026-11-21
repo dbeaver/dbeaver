@@ -23,6 +23,7 @@
 
     <extension point="org.jkiss.dbeaver.pluginService">
         <service class="org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionPluginService"/>
+        <service class="org.jkiss.dbeaver.model.datadam.rpc.DDDesktopDamNameService"/>
     </extension>
 
     <extension point="com.dbeaver.ai.engine">

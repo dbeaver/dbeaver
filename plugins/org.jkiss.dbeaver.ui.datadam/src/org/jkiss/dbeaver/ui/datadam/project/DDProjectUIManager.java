@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.event.DDProjectEventListener;
 import org.jkiss.dbeaver.ui.datadam.project.job.*;
@@ -224,7 +223,7 @@ public class DDProjectUIManager {
     @Nullable
     public List<ProjectListing> loadProjectListings(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (monitor.isCanceled() || !DDProductConfig.isIntegrationEnabled()
-            || !DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+            || !DDProjectKeyUIManager.getInstance().ensureKeysReady(monitor)) {
             return null;
         }
         DDProjectManager manager = getProjectManager();
@@ -232,7 +231,7 @@ public class DDProjectUIManager {
         for (DDSharedProject remote : manager.getRemoteProjects()) {
             remoteProjects.put(remote.id(), remote);
         }
-        if (monitor.isCanceled()) {
+        if (monitor.isCanceled() || accessService.getKeyBundle() == null) {
             return null;
         }
         List<ProjectListing> listings = new ArrayList<>();
@@ -373,6 +372,13 @@ public class DDProjectUIManager {
         }
         if (jobs.isEmpty()) {
             return new ProjectJobBatchResult<>(List.of(), List.of(), false);
+        }
+        try {
+            if (!DDProjectKeyUIManager.getInstance().ensureKeysReady(monitor)) {
+                return new ProjectJobBatchResult<>(List.of(), List.of(), true);
+            }
+        } catch (DBException e) {
+            return new ProjectJobBatchResult<>(List.of(), List.of(new ProjectJobFailure(title, Status.error(title, e))), false);
         }
         JobGroup group = createJobGroup(title, maxThreads, jobs.size());
         boolean canceled;

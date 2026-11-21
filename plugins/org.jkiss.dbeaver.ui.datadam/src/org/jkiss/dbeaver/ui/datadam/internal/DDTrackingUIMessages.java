@@ -38,6 +38,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_logout_confirm_message;
     public static String sync_preference_page_open_account;
     public static String sync_preference_page_dam_name_label;
+    public static String sync_preference_page_dam_id_label;
     public static String sync_preference_page_dam_name_edit;
     public static String sync_preference_page_dam_name_prompt;
     public static String sync_preference_page_dam_name_connecting;
@@ -62,6 +63,13 @@ public class DDTrackingUIMessages extends NLS {
 
     public static String desktop_relogin_title;
     public static String desktop_relogin_message;
+    public static String project_keys_mismatch_title;
+    public static String project_keys_mismatch_message;
+    public static String project_keys_reset_local;
+    public static String project_keys_enter_new;
+    public static String mcp_response;
+    public static String mcp_request_id;
+    public static String mcp_result_code;
 
     public static String project_sync_title;
     public static String project_no_projects_title;

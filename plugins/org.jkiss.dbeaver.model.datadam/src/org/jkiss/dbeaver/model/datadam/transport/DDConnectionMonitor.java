@@ -42,13 +42,23 @@ public final class DDConnectionMonitor {
 
     public enum EventType {
         CONNECTING, CONNECTED, DISCONNECTED, CLOSED, SIGNED_IN, SIGNED_OUT, INVALID_TOKEN, ERROR,
-        MCP_REQUEST
+        MCP_REQUEST, MCP_RESPONSE
     }
 
-    public record Event(@NotNull Instant time, @NotNull EventType type, @NotNull String details, @Nullable McpRequest request) {
+    public record Event(
+        @NotNull Instant time, @NotNull EventType type, @NotNull String details, @Nullable McpRequest request,
+        long requestId, @Nullable McpResponse response
+    ) {
+        public Event(@NotNull Instant time, @NotNull EventType type, @NotNull String details, @Nullable McpRequest request) {
+            this(time, type, details, request, 0, null);
+        }
+
         public Event(@NotNull Instant time, @NotNull EventType type, @NotNull String details) {
             this(time, type, details, null);
         }
+    }
+
+    public record McpResponse(@NotNull String code, @Nullable String error, @NotNull String body) {
     }
 
     public record McpRequest(
@@ -83,6 +93,7 @@ public final class DDConnectionMonitor {
     private boolean open;
     private long bytesSent;
     private long bytesReceived;
+    private long nextRequestId;
 
     synchronized void opened() {
         connectedAt = Instant.now();
@@ -168,6 +179,24 @@ public final class DDConnectionMonitor {
             argumentId(arguments, DDMcpAiFunctionCatalog.DATASOURCE_ID_PARAMETER), parameters);
         addEvent(new Event(Instant.now(), EventType.MCP_REQUEST,
             limit(operation + "\n\n" + JSONUtils.PRETTY_GSON.toJson(arguments)), request));
+    }
+
+    @NotNull
+    public synchronized Event beginMcpRequest(@NotNull String operation, @Nullable Map<String, Object> arguments) {
+        recordMcpRequest(operation, arguments);
+        Event recorded = events.removeLast();
+        Event request = new Event(recorded.time(), recorded.type(), recorded.details(), recorded.request(), ++nextRequestId, null);
+        events.addLast(request);
+        return request;
+    }
+
+    public synchronized void recordMcpResponse(
+        @NotNull Event request, @NotNull String code, @Nullable String errorMessage, @NotNull String body
+    ) {
+        String operation = request.request() == null ? request.details() : request.request().operation();
+        addEvent(new Event(Instant.now(), EventType.MCP_RESPONSE,
+            operation + "\n" + code + (errorMessage == null ? "" : "\n" + errorMessage) + "\n\n" + body,
+            request.request(), request.requestId(), new McpResponse(code, errorMessage, body)));
     }
 
     @Nullable

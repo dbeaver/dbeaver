@@ -64,7 +64,7 @@ import java.util.function.Function;
 
 public class DDTrackingView extends ViewPart {
     public static final String ID = "org.jkiss.dbeaver.ui.datadam.tracking";
-    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         .withZone(ZoneId.systemDefault());
     private TableViewer viewer;
     private String filterPattern = "";
@@ -114,10 +114,14 @@ public class DDTrackingView extends ViewPart {
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
         BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_ERROR, settings -> viewer.refresh(), table);
-        createColumn(DDTrackingUIMessages.event_time, 190, event -> TIME_FORMAT.format(event.time()));
+        createColumn(DDTrackingUIMessages.event_time, 165, event -> TIME_FORMAT.format(event.time()));
         createColumn(DDTrackingUIMessages.event_type, 170, event -> eventLabel(event.type()));
-        createColumn(DDTrackingUIMessages.event_details, 600, event -> event.type() == DDConnectionMonitor.EventType.MCP_REQUEST
-            ? event.details().lines().findFirst().orElse("") : event.details());
+        createColumn(DDTrackingUIMessages.mcp_request_id, 100, event -> event.requestId() == 0 ? "" : Long.toString(event.requestId()));
+        createColumn(DDTrackingUIMessages.mcp_result_code, 130, event -> event.response() == null ? "" : event.response().code());
+        createColumn(DDTrackingUIMessages.event_details, 600, event -> event.requestId() != 0
+            ? event.details().lines().findFirst().orElse("")
+                + (event.response() == null || event.response().error() == null ? "" : ": " + event.response().error())
+            : event.details());
         createColumn(DDTrackingUIMessages.event_database, 200, new EventLabelProvider(event -> {
             var connection = getConnection(event);
             return connection == null ? "" : connection.getName();
@@ -129,7 +133,13 @@ public class DDTrackingView extends ViewPart {
                 return connection == null ? null : DBeaverIcons.getImage(DBValueFormatting.getObjectImage(connection, false));
             }
         });
-        viewer.addOpenListener(event -> showDetails());
+        viewer.addDoubleClickListener(event -> showDetails());
+        table.addListener(SWT.KeyDown, event -> {
+            if (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR) {
+                showDetails();
+                event.doit = false;
+            }
+        });
         table.addDisposeListener(event -> table.getDisplay().timerExec(-1, refreshTask));
         Action clear = new Action(DDTrackingUIMessages.clear_events, DBeaverIcons.getImageDescriptor(UIIcon.CLEAN)) {
             @Override
@@ -230,7 +240,8 @@ public class DDTrackingView extends ViewPart {
         @Override
         @Nullable
         public Color getBackground(@NotNull Object element) {
-            return ((DDConnectionMonitor.Event) element).type() == DDConnectionMonitor.EventType.ERROR
+            var event = (DDConnectionMonitor.Event) element;
+            return event.type() == DDConnectionMonitor.EventType.ERROR || event.response() != null && event.response().error() != null
                 ? BaseThemeSettings.instance.colorError : null;
         }
 
@@ -311,6 +322,7 @@ public class DDTrackingView extends ViewPart {
             case INVALID_TOKEN -> DDTrackingUIMessages.invalid_token;
             case ERROR -> DDTrackingUIMessages.error;
             case MCP_REQUEST -> DDTrackingUIMessages.mcp_request;
+            case MCP_RESPONSE -> DDTrackingUIMessages.mcp_response;
         };
     }
 

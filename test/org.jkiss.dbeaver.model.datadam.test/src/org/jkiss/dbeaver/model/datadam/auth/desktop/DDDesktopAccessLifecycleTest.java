@@ -26,6 +26,8 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistrationRegistry;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
@@ -46,6 +48,48 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(60)
 class DDDesktopAccessLifecycleTest {
+
+    @Test
+    void detectsEncryptionResetWithoutDiscardingKeysBeforeUserRecovery() throws Exception {
+        var accountId = UUID.randomUUID();
+        var keyId = UUID.randomUUID();
+        var bundle = new DDKeyBundle(accountId, "signing", "data", 1, keyId);
+        var state = new AtomicReference<>(new DDCryptoState(accountId, true, "bundle", 1L, "salt", 1, keyId));
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) -> {
+                 Mockito.when(account.getAccountId()).thenReturn(accountId);
+                 Mockito.when(account.getCryptoState()).thenAnswer(invocation -> state.get());
+             })) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+            Assertions.assertTrue(access.validateProjectKeys());
+
+            state.set(new DDCryptoState(accountId, true, "new-bundle", 1L, "salt", 1, UUID.randomUUID()));
+            Assertions.assertFalse(access.validateProjectKeys());
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            keys.verify(DDKeyStore::clear, Mockito.never());
+
+            state.set(new DDCryptoState(accountId, false, null, null, null, null, null));
+            Assertions.assertFalse(access.validateProjectKeys());
+            state.set(new DDCryptoState(UUID.randomUUID(), true, "bundle", 1L, "salt", 1, keyId));
+            Assertions.assertFalse(access.validateProjectKeys());
+
+            Mockito.when(accounts.constructed().getLast().getCryptoState()).thenThrow(new DBException("Offline"));
+            Assertions.assertThrows(DBException.class, access::validateProjectKeys);
+            Assertions.assertSame(bundle, access.getKeyBundle());
+        }
+    }
+
+    @Test
+    void missingProjectKeysDoNotTriggerAnAccountRequest() throws Exception {
+        try (var accounts = Mockito.mockConstruction(DDAccountClient.class)) {
+            Assertions.assertFalse(access().validateProjectKeys());
+            accounts.constructed().forEach(Mockito::verifyNoInteractions);
+        }
+    }
 
     @Test
     void readsLoginIdentityLocallyWithoutAccountRequestsOrTokenRefresh() {

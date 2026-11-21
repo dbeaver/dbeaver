@@ -200,6 +200,18 @@ public class DDProjectManager {
         getOrCreate(project).unbind(project);
     }
 
+    /** Removes only local shared projects bound to the account whose keys are being discarded. */
+    public synchronized void deleteAccountProjects(@NotNull UUID accountId) throws DBException {
+        for (DBPProject project : List.copyOf(workspace.getProjects())) {
+            DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+            if (binding != null && accountId.equals(binding.accountId())) {
+                Path bindingFile = DDProjectSyncBindingStore.getBindingFile(project);
+                workspace.deleteProject(project);
+                projects.remove(bindingFile);
+            }
+        }
+    }
+
     @NotNull
     public ProjectStatus resolveConflict(
         @NotNull DBPProject project,
