@@ -656,7 +656,7 @@ public class PostgreUtils {
             if (CommonUtils.isEmpty(aclValue)) {
                 continue;
             }
-            int divPos = aclValue.indexOf('=');
+            int divPos = indexOfUnquoted(aclValue, '=');
             if (divPos == -1) {
                 log.warn("Bad ACL item: " + aclValue);
                 continue;
@@ -667,7 +667,7 @@ public class PostgreUtils {
         return grantees;
     }
 
-    // FIXME consider user/group/role name like "test test", "test=test", "test,test", "test\"test" and user name like "group" or "role"
+    // FIXME consider user names like "group" or "role"
     @NotNull
     public static List<PostgrePrivilege> extractPermissionsFromACL(
         @NotNull PostgrePrivilegeOwner owner,
@@ -679,20 +679,20 @@ public class PostgreUtils {
             if (CommonUtils.isEmpty(aclValue)) {
                 continue;
             }
-            int divPos = aclValue.indexOf('=');
+            int divPos = indexOfUnquoted(aclValue, '=');
             if (divPos == -1) {
                 log.warn("Bad ACL item: " + aclValue);
                 continue;
             }
             PostgreRoleReference grantee = extractGranteeName(owner.getDatabase(), aclValue, divPos);
             String permString = aclValue.substring(divPos + 1);
-            int divPos2 = permString.indexOf('/');
+            int divPos2 = indexOfUnquoted(permString, '/');
             if (divPos2 == -1) {
                 log.warn("Bad permissions string: " + permString);
                 continue;
             }
             String privString = permString.substring(0, divPos2);
-            String grantorName = permString.substring(divPos2 + 1);
+            String grantorName = owner.getDatabase().getDataSource().getSQLDialect().getUnquotedIdentifier(permString.substring(divPos2 + 1), true);
             PostgreRoleReference grantor = new PostgreRoleReference(owner.getDatabase(), grantorName, null);
             List<PostgrePrivilegeGrant> privileges = new ArrayList<>();
             for (int k = 0; k < privString.length(); k++) {
@@ -737,9 +737,26 @@ public class PostgreUtils {
                     grantee = grantee.substring(prefixEnd).trim();
                 }
             }
-            grantee = DBUtils.getUnQuotedIdentifier(database.getDataSource(), grantee);
+            grantee = database.getDataSource().getSQLDialect().getUnquotedIdentifier(grantee, true);
         }
         return new PostgreRoleReference(database, grantee, granteeType);
+    }
+
+    /**
+     * Position of {@code ch} outside double quotes, or -1.
+     * aclitem text quotes role names that contain characters like '=' or '/', and doubles any '"' inside them.
+     */
+    private static int indexOfUnquoted(@NotNull String aclValue, char ch) {
+        boolean quoted = false;
+        for (int i = 0; i < aclValue.length(); i++) {
+            char c = aclValue.charAt(i);
+            if (c == '"') {
+                quoted = !quoted;
+            } else if (c == ch && !quoted) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @NotNull
@@ -876,18 +893,17 @@ public class PostgreUtils {
 
             // Permissions
             Collection<PostgrePrivilege> permissions = object.getPrivileges(monitor, true);
-            if (object instanceof PostgreProcedure && !CommonUtils.isEmpty(permissions) && !hasPublicGrantee(permissions)) {
-                // Functions and procedures grant EXECUTE to PUBLIC on creation, so re-running the DDL
-                // must revoke it when the ACL no longer has it, as pg_dump does.
-                // An empty list means the ACL couldn't be read, so PUBLIC may still be there.
-                PostgreObjectPrivilege publicPrivilege = new PostgreObjectPrivilege(
-                    object,
-                    new PostgreRoleReference(object.getDatabase(), PostgreConstants.PUBLIC_ROLE_NAME, null),
-                    Collections.emptyList()
-                );
-                Collections.addAll(actions,
-                    new PostgreCommandGrantPrivilege(object, false, object, publicPrivilege, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
-                        .getPersistActions(monitor, executionContext, options));
+            if (object instanceof PostgreProcedure procedure && procedure.hasExplicitAcl()) {
+                // A new function or procedure has EXECUTE for PUBLIC and ALL for its owner, so re-running
+                // the DDL must revoke whichever of them the ACL no longer has, as pg_dump does.
+                // An empty ACL ({}) revokes both.
+                if (!hasGrantee(permissions, PostgreConstants.PUBLIC_ROLE_NAME)) {
+                    addRevokeAll(monitor, executionContext, object,
+                        new PostgreRoleReference(object.getDatabase(), PostgreConstants.PUBLIC_ROLE_NAME, null), actions, options);
+                }
+                if (owner != null && !hasGrantee(permissions, owner.getName())) {
+                    addRevokeAll(monitor, executionContext, object, owner.getRoleReference(), actions, options);
+                }
             }
             if (!CommonUtils.isEmpty(permissions)) {
 
@@ -920,11 +936,29 @@ public class PostgreUtils {
         }
     }
 
-    private static boolean hasPublicGrantee(@NotNull Collection<PostgrePrivilege> permissions) {
+    private static void addRevokeAll(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull PostgrePrivilegeOwner object,
+        @NotNull PostgreRoleReference grantee,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
+        PostgreObjectPrivilege privilege = new PostgreObjectPrivilege(object, grantee, Collections.emptyList());
+        Collections.addAll(actions,
+            new PostgreCommandGrantPrivilege(object, false, object, privilege, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
+                .getPersistActions(monitor, executionContext, options));
+    }
+
+    // Role names come from the catalog, so they are matched exactly: "PUBLIC" is a real role, not the pseudo-role
+    private static boolean hasGrantee(@Nullable Collection<PostgrePrivilege> permissions, @NotNull String roleName) {
+        if (permissions == null) {
+            return false;
+        }
         for (PostgrePrivilege permission : permissions) {
             if (permission instanceof PostgreObjectPrivilege objectPrivilege
                 && objectPrivilege.getGrantee() != null
-                && PostgreConstants.PUBLIC_ROLE_NAME.equals(objectPrivilege.getGrantee().getRoleName())
+                && roleName.equals(objectPrivilege.getGrantee().getRoleName())
             ) {
                 return true;
             }
