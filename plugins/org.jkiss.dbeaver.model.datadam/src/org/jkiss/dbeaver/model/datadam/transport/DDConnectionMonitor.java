@@ -93,17 +93,12 @@ public final class DDConnectionMonitor {
         public String valueText() {
             try {
                 var json = JsonParser.parseString(body);
-                if (!json.isJsonObject()) {
-                    return "";
-                }
-                var value = json.getAsJsonObject().get("value");
-                if (value == null) {
-                    return "";
-                }
+                var value = json.isJsonObject() && json.getAsJsonObject().has("value")
+                    ? json.getAsJsonObject().get("value") : json;
                 return value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()
                     ? value.getAsString() : JSONUtils.PRETTY_GSON.toJson(value);
             } catch (JsonParseException e) {
-                return "";
+                return body;
             }
         }
     }

@@ -84,7 +84,6 @@ public final class DDMcpTrackingFunctionService implements DDMcpFunctionService 
             var response = new LinkedHashMap<String, Object>();
             response.put("code", e.getCode());
             response.put("message", e.getMessage());
-            response.put("data", e.getData());
             target.recordMcpResponse(request, e.getCode().name(), e.getMessage(), JSONUtils.PRETTY_GSON.toJson(response));
             throw e;
         } catch (RuntimeException e) {

@@ -123,13 +123,17 @@ class DDTrackingDetailsDialog extends AbstractPopupPanel {
         errorRow.setLayoutData(errorData);
         errorText = UIUtils.createLabelText(errorRow, DDTrackingUIMessages.error, "", SWT.READ_ONLY | SWT.BORDER);
 
-        Composite parametersBar = UIUtils.createComposite(area, 2);
+        var request = event.request();
+        Map<String, String> parameters = request == null ? Map.of() : request.parameters();
+        Composite parametersBar = UIUtils.createComposite(area, parameters.isEmpty() ? 1 : 2);
         parametersBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        UIUtils.createControlLabel(parametersBar, DDTrackingUIMessages.mcp_input_parameters)
-            .setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        if (!parameters.isEmpty()) {
+            UIUtils.createControlLabel(parametersBar, DDTrackingUIMessages.mcp_input_parameters)
+                .setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        }
         showResponseButton = new Button(parametersBar, SWT.TOGGLE);
         showResponseButton.setText(DDTrackingUIMessages.mcp_show_response);
-        showResponseButton.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+        showResponseButton.setLayoutData(new GridData(SWT.END, SWT.CENTER, parameters.isEmpty(), false));
         showResponseButton.setSelection(preferenceStore.getBoolean(PREF_SHOW_RESPONSE));
         showResponseButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(change -> {
             preferenceStore.setValue(PREF_SHOW_RESPONSE, showResponseButton.getSelection());
@@ -137,8 +141,9 @@ class DDTrackingDetailsDialog extends AbstractPopupPanel {
             updateResponse();
         }));
 
-        var request = event.request();
-        createParameters(area, request == null ? Map.of() : request.parameters());
+        if (!parameters.isEmpty()) {
+            createParameters(area, parameters);
+        }
 
         responsePanel = UIUtils.createComposite(area, 1);
         responsePanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -227,15 +232,16 @@ class DDTrackingDetailsDialog extends AbstractPopupPanel {
         TableViewer viewer = new TableViewer(parent, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         var table = viewer.getTable();
-        GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+        GridData data = new GridData(SWT.FILL, SWT.TOP, true, false);
         data.widthHint = 600;
-        data.heightHint = 180;
         table.setLayoutData(data);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
         createColumn(viewer, UIMessages.properties_name, 180, Map.Entry::getKey);
         createColumn(viewer, UIMessages.properties_value, 400, Map.Entry::getValue);
         viewer.setInput(parameters.entrySet());
+        data.heightHint = table.getHeaderHeight() + table.getItemHeight() * parameters.size()
+            + table.getBorderWidth() * 2 + table.getHorizontalBar().getSize().y;
         Action copy = new Action(UIStandardLabel.COPY.getLabel(), DBeaverIcons.getImageDescriptor(UIIcon.COPY)) {
             @Override
             public void run() {
