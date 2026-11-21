@@ -74,12 +74,14 @@ class GetDatasourceInfoFunctionTest {
 
     @Test
     void returnsStructuredConnectionAndServerMetadata() throws Exception {
+        var result = result();
         Assertions.assertEquals(JsonParser.parseString("""
             {"dataSourceId":"sample-id","dataSourceName":"Sample connection","connectionURL":"jdbc:sample://localhost/example",
              "driverName":"Sample driver","driverVersion":"1.2",
              "databaseServerName":"Sample server","databaseServerVersion":"3.4",
              "sqlDialectName":"Sample SQL","supportsCatalogs":false,"supportsSchemas":false,"isConnected":true}
-            """), result());
+            """), result);
+        Assertions.assertEquals("dataSourceId", result.keySet().iterator().next());
     }
 
     @Test

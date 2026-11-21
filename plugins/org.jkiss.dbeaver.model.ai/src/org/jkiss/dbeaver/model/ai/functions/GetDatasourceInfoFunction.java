@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.ai.functions;
 
-import com.dbeaver.datadam.mcp.api.model.DDMcpDatasourceInfo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
@@ -97,5 +96,20 @@ public class GetDatasourceInfoFunction implements AIFunction {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    private record DDMcpDatasourceInfo(
+        @NotNull String dataSourceId,
+        @NotNull String dataSourceName,
+        @Nullable String connectionURL,
+        @Nullable String driverName,
+        @Nullable String driverVersion,
+        @Nullable String databaseServerName,
+        @Nullable String databaseServerVersion,
+        @NotNull String sqlDialectName,
+        boolean supportsCatalogs,
+        boolean supportsSchemas,
+        boolean isConnected
+    ) {
     }
 }
