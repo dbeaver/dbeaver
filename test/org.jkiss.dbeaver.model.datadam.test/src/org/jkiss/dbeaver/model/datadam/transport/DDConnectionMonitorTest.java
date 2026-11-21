@@ -59,10 +59,18 @@ class DDConnectionMonitorTest {
     }
 
     @Test
-    void responseEditorProjectionDoesNotFallBackToOtherResponseData() {
-        Assertions.assertEquals("", new DDConnectionMonitor.McpResponse("ERROR", "failed", "{\"message\":\"failed\"}").valueText());
-        Assertions.assertEquals("", new DDConnectionMonitor.McpResponse("OK", null, "[1,2]").valueText());
-        Assertions.assertEquals("", new DDConnectionMonitor.McpResponse("OK", null, "{invalid").valueText());
+    void responseEditorProjectionDisplaysResponsesWithoutAValueEnvelope() {
+        for (String body : new String[] {
+            "{\"code\":\"INVALID_ARGUMENTS\",\"message\":\"failed\"}",
+            "[{\"id\":\"listProjects\",\"name\":\"List projects\"}]",
+            "[]", "{\"projects\":[]}", "42", "true", "null"
+        }) {
+            var response = new DDConnectionMonitor.McpResponse("OK", null, body);
+            Assertions.assertEquals(JsonParser.parseString(body), JsonParser.parseString(response.valueText()));
+            Assertions.assertEquals(body, response.body());
+        }
+        Assertions.assertEquals("failed", new DDConnectionMonitor.McpResponse("INTERNAL_ERROR", "failed", "\"failed\"").valueText());
+        Assertions.assertEquals("{invalid", new DDConnectionMonitor.McpResponse("OK", null, "{invalid").valueText());
     }
 
     @Test

@@ -140,6 +140,7 @@ class DDMcpTrackingFunctionServiceTest {
         Assertions.assertEquals("getFunctions", details(0));
         Assertions.assertNull(monitor.getEvents().getFirst().request());
         Assertions.assertEquals("[]", monitor.getEvents().getLast().response().body());
+        Assertions.assertEquals("[]", monitor.getEvents().getLast().response().valueText());
     }
 
     @Test

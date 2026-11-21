@@ -97,7 +97,7 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
             }
             AIFunctionContext context = new AIFunctionContext(monitor, databaseContext, new EmptyPromptGenerator());
             AIFunctionResult result = function.getInstance().callFunction(context, functionArguments);
-            return new DDMcpFunctionResult(result.getValue().toString(), false);
+            return new DDMcpFunctionResult(result.getValue(), false);
         } catch (DBException e) {
             if (isMasterPasswordRequired(e)) {
                 throw masterPasswordRequired();

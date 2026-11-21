@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.ai.functions;
 
+import com.dbeaver.datadam.mcp.api.model.DDMcpDatasourceInfo;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -34,6 +37,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import java.util.Map;
 
 public class GetDatasourceInfoFunction implements AIFunction {
+    private static final Gson GSON = new GsonBuilder().serializeNulls().create();
+
     @NotNull
     @Override
     public AIFunctionResult callFunction(
@@ -42,36 +47,35 @@ public class GetDatasourceInfoFunction implements AIFunction {
     ) throws DBException {
         AIDatabaseContext aiDatabaseContext = context.getContext();
         if (aiDatabaseContext == null) {
-            return new AIFunctionResult(
-                AIFunctionType.INFORMATION,
-                ""
-            );
+            throw new DBException("No database connection");
         }
 
         DBPDataSource dataSource = aiDatabaseContext.getExecutionContext().getDataSource();
         DBPDataSourceInfo info = dataSource.getInfo();
-        DBCExecutionContextDefaults<?, ?> defaults = aiDatabaseContext.getExecutionContext().getContextDefaults();
+        boolean connected = dataSource.getContainer().isConnected();
+        DBCExecutionContextDefaults<?, ?> defaults = connected ? aiDatabaseContext.getExecutionContext().getContextDefaults() : null;
         boolean supportsCatalogs = defaults != null && (defaults.getDefaultCatalog() != null || defaults.supportsCatalogChange());
         boolean supportsSchemas = defaults != null && (defaults.getDefaultSchema() != null || defaults.supportsSchemaChange());
-        if (dataSource instanceof DBSObjectContainer container) {
+        if (connected && dataSource instanceof DBSObjectContainer container) {
             Class<? extends DBSObject> childType = container.getPrimaryChildType(context.getMonitor());
             supportsCatalogs |= DBSCatalog.class.isAssignableFrom(childType);
             supportsSchemas |= DBSSchema.class.isAssignableFrom(childType);
         }
-        String responseText = """
-            Database Driver: %s %s
-            Supports Catalogs: %s
-            Supports Schemas: %s
-            """.formatted(
-            info.getDriverName(), info.getDriverVersion(),
+        var response = new DDMcpDatasourceInfo(
+            dataSource.getContainer().getId(),
+            dataSource.getContainer().getName(),
+            dataSource.getContainer().getConnectionConfiguration().getUrl(),
+            info.getDriverName(),
+            info.getDriverVersion(),
+            connected ? info.getDatabaseProductName() : null,
+            connected ? info.getDatabaseProductVersion() : null,
+            dataSource.getSQLDialect().getDialectName(),
             supportsCatalogs,
-            supportsSchemas
-        );
-
-
+            supportsSchemas,
+            connected);
         return new AIFunctionResult(
             AIFunctionType.INFORMATION,
-            responseText
+            GSON.toJsonTree(response)
         );
     }
 }
