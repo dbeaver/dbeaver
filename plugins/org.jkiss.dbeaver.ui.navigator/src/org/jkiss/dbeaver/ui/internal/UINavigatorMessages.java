@@ -99,6 +99,7 @@ public class UINavigatorMessages extends NLS {
 
     public static String toolbar_datasource_selector_empty;
     public static String toolbar_datasource_selector_combo_datasource_tooltip;
+    public static String toolbar_datasource_selector_other;
 
     public static String dialog_filter_global_link;
     public static String dialog_filter_list_exclude;
