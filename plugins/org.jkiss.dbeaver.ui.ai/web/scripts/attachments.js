@@ -62,21 +62,21 @@ function createAttachmentCard(args) {
         files = parseAttachmentContent(args.content);
 
         if (!Array.isArray(files)) {
-            return `<div class="attachment-card"><div class="attachment-error">${escapeHtml(chatStrings.invalidAttachmentData)}</div></div>`;
+            return `<div class="attachment-card"><div class="attachment-error">%!#ai_chat_attachment_invalid_data</div></div>`;
         }
 
         items = files.map((f, index) => {
             const iconSrc = f.icon;
-            const name = f.name || (f.path ? f.path.split('/').pop() : chatStrings.unknownFile);
+            const name = f.name || (f.path ? f.path.split('/').pop() : '%#ai_chat_attachment_unknown_file');
             return `
-        <div class="attachment-item" role="button" tabindex="-1" onclick="window.openFileInExplorer(${args.id}, ${index});" style="cursor: pointer;" title="${escapeHtml(chatStrings.showInExplorer)}">
+        <div class="attachment-item" role="button" tabindex="-1" onclick="window.openFileInExplorer(${args.id}, ${index});" style="cursor: pointer;" title="%!#ai_chat_attachment_show_in_explorer">
             <img src="${iconSrc}" class="attachment-icon" alt=""/>
             <div class="attachment-name" title="${escapeHtml(f.path)}">${escapeHtml(name)}</div>
         </div>`;
         }).join('');
 
     } catch (error) {
-        return `<div class="attachment-card"><div class="attachment-error">${escapeHtml(formatChatString(chatStrings.attachmentError, error.message))}</div></div>`;
+        return `<div class="attachment-card"><div class="attachment-error">${escapeHtml(formatChatString('%#ai_chat_attachment_create_error', error.message))}</div></div>`;
     }
 
     const canCreateConnection = args.canCreateConnection === true;
@@ -100,14 +100,14 @@ function createAttachmentCard(args) {
                 const entries = window.getFileTypeHandlerExtensions();
 
                 listItems = entries.map(e => {
-                    return `<button class="attachment-btn" title="${escapeHtml(formatChatString(chatStrings.chooseTypeTip, e))}"
+                    return `<button class="attachment-btn" title="${escapeHtml(formatChatString('%#ai_chat_attachment_choose_type_tip', e))}"
                         onclick="window.onSetFileType(${args.id}, '${e}');">${e}</button>`;
                 }).join('');
             } catch (e) {
                 listItems = '';
             }
 
-            const headerText = escapeHtml(chatStrings.chooseType);
+            const headerText = '%!#ai_chat_attachment_choose_type';
 
             actionsHtml = listItems ? `
                 <div id="attachment-actions-${args.id}" class="attachment-actions-response">
@@ -117,22 +117,22 @@ function createAttachmentCard(args) {
                     </div>
                 </div>
             ` : `
-                <div class="attachment-actions-response">${escapeHtml(chatStrings.noHandlers)}</div>`;
+                <div class="attachment-actions-response">%!#ai_chat_attachment_no_handlers</div>`;
         } else {
-            actionsHtml = `<div class="attachment-actions-response">${escapeHtml(chatStrings.noActions)}</div>`;
+            actionsHtml = `<div class="attachment-actions-response">%!#ai_chat_attachment_no_actions</div>`;
         }
     }
 
     if (isCreateConnectionWasExecuted) {
         actionsHtml = `
             <div id="attachment-actions-${args.id}" class="attachment-status">
-                ${escapeHtml(chatStrings.openCompleted)}
+                %!#ai_chat_attachment_open_completed
             </div>
         `;
     } else if (isImportDataWasExecuted) {
         actionsHtml = `
             <div id="attachment-actions-${args.id}" class="attachment-status">
-                ${escapeHtml(chatStrings.importCompleted)}
+                %!#ai_chat_attachment_import_completed
             </div>
         `;
     }
@@ -166,14 +166,14 @@ function escapeHtml(str) {
 
 function getCreateButton(canCreate, messageId) {
     if (!canCreate) return '';
-    const label = escapeHtml(chatStrings.openAsTable);
+    const label = '%!#ai_chat_attachment_open_as_table';
     return `<button class="attachment-btn" title="${label}" onclick="window.attachmentCreateConnection(${messageId}); showActionCompleted(${messageId}, 'open');">${label}</button>`;
 }
 
 function getImportButton(canImport, messageId, filesCount = 1) {
     if (!canImport) return '';
 
-    const label = escapeHtml(filesCount > 1 ? chatStrings.importFiles : chatStrings.importFile);
+    const label = filesCount > 1 ? '%!#ai_chat_attachment_import_files' : '%!#ai_chat_attachment_import_file';
 
     return `<button class="attachment-btn" title="${label}" onclick="window.attachmentExportToTable(${messageId}); showActionCompleted(${messageId}, 'import');">${label}</button>`;
 }
@@ -192,7 +192,7 @@ function renderAttachmentActions(messageId, canCreate, canImport) {
     const container = document.getElementById(`attachment-actions-${messageId}`);
     if (!container) return;
     if (!canCreate && !canImport) {
-        container.innerHTML = `<div>${escapeHtml(chatStrings.noTypeActions)}</div>`;
+        container.innerHTML = `<div>%!#ai_chat_attachment_no_type_actions</div>`;
         return;
     }
 
@@ -225,7 +225,7 @@ function showActionCompleted(messageId, action) {
 
     const statusDiv = document.createElement('div');
     statusDiv.className = 'attachment-status';
-    statusDiv.textContent = action === 'open' ? chatStrings.openCompleted : chatStrings.importCompleted;
+    statusDiv.textContent = action === 'open' ? '%#ai_chat_attachment_open_completed' : '%#ai_chat_attachment_import_completed';
 
     attachmentCard.appendChild(statusDiv);
 }

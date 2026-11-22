@@ -73,7 +73,7 @@ function addFunctionConfirmation(args) {
     const allowMenuBtn = document.createElement('button');
     allowMenuBtn.className = 'confirmation-btn confirmation-btn-allow confirmation-btn-allow-menu';
     allowMenuBtn.type = 'button';
-    allowMenuBtn.setAttribute('aria-label', chatStrings.allowOptions);
+    allowMenuBtn.setAttribute('aria-label', '%#ai_chat_confirm_allow_options');
     allowMenuBtn.textContent = '\u25BE';
     allowMenuBtn.onclick = (event) => {
         event.preventDefault();
@@ -134,14 +134,14 @@ function appendConfirmationTitle(container, args) {
     const title = document.createElement('span');
     title.className = 'confirmation-title';
 
-    title.appendChild(document.createTextNode((args.titlePrefix || chatStrings.allowTitlePrefix) + ' '));
+    title.appendChild(document.createTextNode((args.titlePrefix || '%#ai_chat_confirm_title_prefix') + ' '));
 
     const agent = document.createElement('span');
     agent.className = 'confirmation-title-emphasis';
     agent.textContent = args.agentName || '';
     title.appendChild(agent);
 
-    title.appendChild(document.createTextNode(' ' + (args.titleMiddle || chatStrings.allowTitleMiddle) + ' '));
+    title.appendChild(document.createTextNode(' ' + (args.titleMiddle || '%#ai_chat_confirm_title_middle') + ' '));
 
     const tool = document.createElement('span');
     tool.className = 'confirmation-title-emphasis';
@@ -199,7 +199,7 @@ function createCollapsibleStatus(text, statusClass, data) {
         paramsDiv.className = 'fn-detail-section';
         const paramsLabel = document.createElement('div');
         paramsLabel.className = 'fn-detail-label';
-        paramsLabel.textContent = data.paramsLabel || chatStrings.parameters;
+        paramsLabel.textContent = data.paramsLabel || '%#ai_chat_confirm_params';
         paramsDiv.appendChild(paramsLabel);
         const paramsValue = document.createElement('pre');
         paramsValue.className = 'fn-detail-value';
@@ -332,7 +332,7 @@ function updateFunctionResult(args) {
             if (!resultDiv.querySelector('.fn-detail-label')) {
                 const resultLabel = document.createElement('div');
                 resultLabel.className = 'fn-detail-label';
-                resultLabel.textContent = args.resultLabel || chatStrings.result;
+                resultLabel.textContent = args.resultLabel || '%#ai_chat_confirm_result';
                 resultDiv.appendChild(resultLabel);
             }
             if (!resultDiv.querySelector('.fn-detail-value')) {
