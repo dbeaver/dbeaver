@@ -163,10 +163,8 @@ class DDDesktopTokenManager {
             throw new DBException("DataDam token refresh failed. Sign in again", e);
         } catch (Exception e) {
             log.debug("DataDam desktop token refresh failed", e);
-            // Invalidate this session in memory, but retain saved credentials for a retry after restart.
-            token = new DDDesktopUserToken(
-                current.accessToken(), current.issuer(), current.endpoints(), current.scopes());
-            throw new DBException("DataDam token refresh failed. Sign in again", e);
+            // Only an explicit invalid_grant response invalidates the refresh token.
+            throw new DBException("DataDam token refresh failed. Try again later", e);
         }
     }
 

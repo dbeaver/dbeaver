@@ -156,7 +156,7 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
         if (e instanceof JsonParseException) {
             throw new DBException("Invalid desktop SSO response", e);
         }
-        // Transport errors can include response data. A failed rotation is never retried automatically.
+        // Transport errors can include response data; expose only a generic message.
         throw new DBException("Desktop SSO request failed", e);
     }
 
