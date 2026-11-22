@@ -369,6 +369,14 @@ public class CoreMessages extends NLS {
     public static String toolbar_checkbox_connection_not_readonly_tooltip;
 
     public static String monitor_panel_transaction_monitor_tip;
+    public static String monitor_panel_transaction_monitor_not_available;
+    public static String monitor_panel_transaction_monitor_auto;
+    public static String monitor_panel_transaction_monitor_none;
+    public static String monitor_panel_transaction_monitor_total_statements;
+    public static String monitor_panel_transaction_monitor_modifying_statements;
+    public static String monitor_panel_transaction_monitor_uptime;
+    public static String monitor_panel_transaction_monitor_refresh;
+    public static String monitor_panel_transaction_monitor_extract;
 
     public static String dialog_data_source_synchronize_title;
     public static String dialog_data_source_synchronize_message;
