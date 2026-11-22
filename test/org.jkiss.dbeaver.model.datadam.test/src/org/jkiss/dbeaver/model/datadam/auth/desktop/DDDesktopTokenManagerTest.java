@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
+import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoClient;
@@ -26,6 +27,7 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpConnectTimeoutException;
 import java.util.Set;
 
 class DDDesktopTokenManagerTest {
@@ -37,6 +39,42 @@ class DDDesktopTokenManagerTest {
     @Test
     void explicitInvalidGrantDeletesSavedCredentials() throws Exception {
         verifyRefreshFailure(new DDDesktopSsoClient.InvalidGrantException(), true);
+    }
+
+    @Test
+    void connectTimeoutCanRecoverWithoutRestartOrSignIn() throws Exception {
+        var resource = URI.create("https://storage.example.test");
+        var saved = new DDDesktopUserToken("access", "https://sso.example.test",
+            Set.of(resource.toString()), Set.of("mcp:connect"), "refresh");
+        var store = Mockito.mock(DDDesktopTokenStore.class);
+        Mockito.when(store.hasSavedToken()).thenReturn(true);
+        Mockito.when(store.load()).thenReturn(saved);
+        var validator = Mockito.mock(DDDesktopTokenValidator.class);
+        Mockito.when(validator.matchesResource(Mockito.any(), Mockito.eq(resource))).thenReturn(true);
+        Mockito.when(validator.matchesIssuer(Mockito.any())).thenReturn(true);
+        Mockito.when(validator.getIssuer("rotated-access")).thenReturn(saved.issuer());
+        Mockito.when(validator.isExpired(saved)).thenReturn(true);
+        var failure = new DBException("Offline", new HttpConnectTimeoutException("HTTP connect timed out"));
+        var response = Mockito.mock(DDSsoTokenResponse.class);
+        Mockito.when(response.accessToken()).thenReturn("rotated-access");
+        Mockito.when(response.refreshToken()).thenReturn("rotated-refresh");
+        try (var clients = Mockito.mockConstruction(DDDesktopSsoClient.class, (client, context) -> {
+            if (context.getCount() == 1) {
+                Mockito.when(client.refresh("refresh", "mcp:connect")).thenThrow(failure);
+            } else {
+                Mockito.when(client.refresh("refresh", "mcp:connect")).thenReturn(response);
+            }
+        })) {
+            var manager = new DDDesktopTokenManager(store, validator, Mockito.mock(DDDesktopSsoLogin.class));
+
+            Assertions.assertThrows(DBException.class, () -> manager.load(resource));
+            Assertions.assertEquals(DDDesktopTokenManager.Status.SIGNED_IN, manager.getStatus());
+            Assertions.assertEquals("rotated-access", manager.getAccessTokenForResource(resource));
+            Assertions.assertEquals(2, clients.constructed().size());
+            Mockito.verify(store).save(new DDDesktopUserToken("rotated-access", saved.issuer(),
+                saved.endpoints(), saved.scopes(), "rotated-refresh"));
+            Mockito.verify(store, Mockito.never()).clear();
+        }
     }
 
     private void verifyRefreshFailure(@NotNull DBException failure, boolean clearExpected) throws Exception {
@@ -56,7 +94,8 @@ class DDDesktopTokenManagerTest {
 
             Assertions.assertSame(failure, Assertions.assertThrows(DBException.class, () -> manager.load(resource)).getCause());
 
-            Assertions.assertEquals(DDDesktopTokenManager.Status.INVALID_TOKEN, manager.getStatus());
+            Assertions.assertEquals(clearExpected ? DDDesktopTokenManager.Status.INVALID_TOKEN
+                : DDDesktopTokenManager.Status.SIGNED_IN, manager.getStatus());
             Mockito.verify(store, Mockito.never()).save(Mockito.any());
             Mockito.verify(store, Mockito.times(clearExpected ? 1 : 0)).clear();
         }

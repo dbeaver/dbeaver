@@ -42,6 +42,7 @@ public class DDDesktopAccessService {
     public enum Status { SIGNED_IN, SIGNED_OUT, INVALID_TOKEN, UNLOADED }
 
     private static final Log log = Log.getLog(DDDesktopAccessService.class);
+    private static final Duration REFRESH_RETRY_DELAY = Duration.ofSeconds(30);
     private static final DDDesktopAccessService INSTANCE = new DDDesktopAccessService(DDDesktopTokenManager.getInstance());
 
     private final DDDesktopTokenManager tokenManager;
@@ -323,7 +324,9 @@ public class DDDesktopAccessService {
                 expireAccess(version, expiresAt);
             });
             expiryJob = job;
-            job.schedule(Math.max(1, Duration.between(Instant.now(), expiresAt).toMillis()));
+            long delay = Duration.between(Instant.now(), expiresAt).toMillis();
+            // An expired token may still be refreshable after a temporary network failure.
+            job.schedule(delay > 0 ? delay : REFRESH_RETRY_DELAY.toMillis());
         }
     }
 
@@ -340,7 +343,8 @@ public class DDDesktopAccessService {
         try {
             getAccessTokenForResource(storageUrl);
         } catch (DBException e) {
-            log.debug("DataDam authorization requires sign-in", e);
+            log.debug(tokenManager.getStatus() == DDDesktopTokenManager.Status.INVALID_TOKEN
+                ? "DataDam authorization requires sign-in" : "DataDam token refresh will be retried", e);
         }
         operationLock.writeLock().lock();
         try {

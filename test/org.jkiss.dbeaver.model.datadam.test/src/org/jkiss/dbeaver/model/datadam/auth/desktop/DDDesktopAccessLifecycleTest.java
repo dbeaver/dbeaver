@@ -339,6 +339,48 @@ class DDDesktopAccessLifecycleTest {
     }
 
     @Test
+    void transientRefreshRetainsKeysAndRetriesUntilRecovery() throws Exception {
+        var bundle = new DDKeyBundle(UUID.randomUUID(), "signing", "data", 1, UUID.randomUUID());
+        var expiresAt = new AtomicReference<>(Instant.now().minusSeconds(60));
+        var manager = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(manager.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        Mockito.when(manager.getExpiresAt()).thenAnswer(invocation -> expiresAt.get());
+        Mockito.when(manager.getAccessTokenForResource(Mockito.any()))
+            .thenThrow(new DBException("Offline"))
+            .thenAnswer(invocation -> {
+                expiresAt.set(Instant.now().plusSeconds(3600));
+                return "rotated-access";
+            });
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenReturn(bundle.accountId()));
+             var jobs = new ExpiryJobs()) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            var access = new DDDesktopAccessService(manager);
+            List<String> events = new CopyOnWriteArrayList<>();
+            access.addAccessListener(listener(events));
+
+            access.signIn(Mockito.mock(DBRProgressMonitor.class));
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            Assertions.assertEquals(DDDesktopAccessService.Status.SIGNED_IN, access.getStatus());
+            Assertions.assertEquals(30_000L, jobs.latestDelay());
+
+            wake(jobs.latest());
+            Assertions.assertEquals(2, jobs.count());
+            Assertions.assertEquals(30_000L, jobs.latestDelay());
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            Assertions.assertEquals(List.of("changing", "changed"), events);
+
+            wake(jobs.latest());
+            Assertions.assertEquals(3, jobs.count());
+            Assertions.assertTrue(jobs.latestDelay() > 30_000L);
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            Assertions.assertEquals(List.of("changing", "changed", "changing", "changed"), events);
+            keys.verify(DDKeyStore::clear, Mockito.never());
+        }
+    }
+
+    @Test
     void failedRefreshClosesRpcAndPausesTheChannelWithoutAnotherAccessOperation() throws Exception {
         var status = new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_IN);
         DDDesktopAccessService access = access(status);
@@ -502,6 +544,7 @@ class DDDesktopAccessLifecycleTest {
 
     private static final class ExpiryJobs extends JobChangeAdapter implements AutoCloseable {
         private final List<Job> scheduled = new CopyOnWriteArrayList<>();
+        private final List<Long> delays = new CopyOnWriteArrayList<>();
 
         private ExpiryJobs() {
             Job.getJobManager().addJobChangeListener(this);
@@ -510,6 +553,7 @@ class DDDesktopAccessLifecycleTest {
         @Override
         public void scheduled(@NotNull IJobChangeEvent event) {
             if ("Expire DataDam desktop access".equals(event.getJob().getName())) {
+                delays.add(event.getDelay());
                 scheduled.add(event.getJob());
             }
         }
@@ -522,6 +566,10 @@ class DDDesktopAccessLifecycleTest {
 
         private int count() {
             return scheduled.size();
+        }
+
+        private long latestDelay() {
+            return delays.getLast();
         }
 
         @Override
