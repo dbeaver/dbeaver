@@ -20,6 +20,8 @@ import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
 import com.google.gson.JsonObject;
+import org.eclipse.core.runtime.ICoreRunnable;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -336,6 +338,52 @@ class DDDesktopAccessLifecycleTest {
         }
 
         Assertions.assertEquals(List.of("changing", "changed"), events);
+    }
+
+    @Test
+    void startupRefreshRecoveryLoadsSavedKeysAndRetriesAccountValidation() throws Exception {
+        var bundle = new DDKeyBundle(UUID.randomUUID(), "signing", "data", 1, UUID.randomUUID());
+        var expiresAt = new AtomicReference<>(Instant.now().minusSeconds(60));
+        var manager = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(manager.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        Mockito.when(manager.getExpiresAt()).thenAnswer(invocation -> expiresAt.get());
+        Mockito.doThrow(new DBException("Offline")).when(manager).load(Mockito.any());
+        Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenAnswer(invocation -> {
+            expiresAt.set(Instant.now().plusSeconds(3600));
+            return "rotated-access";
+        });
+        List<ICoreRunnable> retries = new ArrayList<>();
+        List<Long> delays = new ArrayList<>();
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenThrow(new DBException("Account unavailable")).thenReturn(bundle.accountId()));
+             var jobs = Mockito.mockStatic(Job.class)) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            jobs.when(() -> Job.createSystem(Mockito.eq("Expire DataDam desktop access"), Mockito.any(ICoreRunnable.class)))
+                .thenAnswer(invocation -> {
+                    retries.add(invocation.getArgument(1));
+                    var job = Mockito.mock(Job.class);
+                    Mockito.doAnswer(schedule -> {
+                        delays.add(schedule.getArgument(0));
+                        return null;
+                    }).when(job).schedule(Mockito.anyLong());
+                    return job;
+                });
+            var access = new DDDesktopAccessService(manager);
+
+            Assertions.assertThrows(DBException.class, access::load);
+            Assertions.assertNull(access.getKeyBundle());
+            Assertions.assertEquals(30_000L, delays.getLast());
+
+            retries.getLast().run(new NullProgressMonitor());
+            Assertions.assertNull(access.getKeyBundle());
+            Assertions.assertEquals(30_000L, delays.getLast());
+
+            retries.getLast().run(new NullProgressMonitor());
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            Assertions.assertTrue(delays.getLast() > 30_000L);
+            Assertions.assertEquals(DDDesktopAccessService.Status.SIGNED_IN, access.getStatus());
+        }
     }
 
     @Test

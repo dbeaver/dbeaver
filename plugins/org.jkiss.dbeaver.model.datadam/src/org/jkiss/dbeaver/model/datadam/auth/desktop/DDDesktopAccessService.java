@@ -54,6 +54,7 @@ public class DDDesktopAccessService {
     private final DDAccountClient accountClient = new DDAccountClient(accountUrl, this);
     private final DDDesktopUserService userService;
     private volatile boolean loaded;
+    private boolean keyBundleLoadPending;
     @Nullable
     private volatile DDKeyBundle keyBundle;
     @Nullable
@@ -151,8 +152,10 @@ public class DDDesktopAccessService {
         try {
             log.debug("Loading DataDam desktop access");
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
+            keyBundleLoadPending = true;
             tokenManager.load(storageUrl);
             updateKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
+            keyBundleLoadPending = false;
         } finally {
             loaded = true;
             finishAccessChange();
@@ -166,7 +169,9 @@ public class DDDesktopAccessService {
             tokenManager.signIn(accountUrl, storageUrl, monitor);
             loaded = true;
             setKeyBundle(null);
+            keyBundleLoadPending = true;
             updateKeyBundle(DDKeyStore.load());
+            keyBundleLoadPending = false;
             log.debug("Signed in to DataDam desktop access");
         } finally {
             finishAccessChange();
@@ -240,6 +245,7 @@ public class DDDesktopAccessService {
 
     private void saveImportedKeys(@NotNull DDKeyBundle bundle) throws DBException {
         DDKeyStore.save(bundle);
+        keyBundleLoadPending = false;
         setKeyBundle(bundle);
         log.debug("Imported DataDam encryption keys");
     }
@@ -248,6 +254,7 @@ public class DDDesktopAccessService {
         operationLock.writeLock().lock();
         try {
             DDKeyStore.clear();
+            keyBundleLoadPending = false;
             setKeyBundle(null);
             log.debug("Forgot DataDam encryption keys");
         } finally {
@@ -273,6 +280,7 @@ public class DDDesktopAccessService {
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.signOut();
             loaded = true;
+            keyBundleLoadPending = false;
             setKeyBundle(null);
             DDKeyStore.clear();
             log.debug("Signed out of DataDam desktop access");
@@ -325,6 +333,9 @@ public class DDDesktopAccessService {
             });
             expiryJob = job;
             long delay = Duration.between(Instant.now(), expiresAt).toMillis();
+            if (keyBundleLoadPending) {
+                delay = Math.min(delay, REFRESH_RETRY_DELAY.toMillis());
+            }
             // An expired token may still be refreshable after a temporary network failure.
             job.schedule(delay > 0 ? delay : REFRESH_RETRY_DELAY.toMillis());
         }
@@ -340,8 +351,10 @@ public class DDDesktopAccessService {
         } finally {
             operationLock.writeLock().unlock();
         }
+        boolean tokenAvailable = false;
         try {
             getAccessTokenForResource(storageUrl);
+            tokenAvailable = true;
         } catch (DBException e) {
             log.debug(tokenManager.getStatus() == DDDesktopTokenManager.Status.INVALID_TOKEN
                 ? "DataDam authorization requires sign-in" : "DataDam token refresh will be retried", e);
@@ -355,6 +368,14 @@ public class DDDesktopAccessService {
             boolean refreshed = !Objects.equals(expiresAt, tokenManager.getExpiresAt());
             if (refreshed) {
                 notifyAccessListeners(DDDesktopAccessListener::accessChanging);
+            }
+            if (tokenAvailable && keyBundleLoadPending) {
+                try {
+                    updateKeyBundle(DDKeyStore.load());
+                    keyBundleLoadPending = false;
+                } catch (DBException e) {
+                    log.debug("DataDam encryption key loading will be retried", e);
+                }
             }
             scheduleExpiry();
             if (refreshed || tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
