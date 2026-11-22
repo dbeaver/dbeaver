@@ -41,8 +41,9 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.management.DDManagementActions;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
@@ -294,9 +295,17 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         accountActionButton.setText(signedIn
             ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
             : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);
-        accountActionButton.setForeground(signedIn
-            ? accountActionButton.getDisplay().getSystemColor(UIStyles.isDarkTheme() ? SWT.COLOR_RED : SWT.COLOR_DARK_RED)
-            : null);
+        // Apply after the dialog's initial CSS pass, which otherwise resets the background.
+        UIUtils.asyncExec(() -> {
+            if (!accountActionButton.isDisposed()) {
+                if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                    accountActionButton.setBackground(BaseThemeSettings.instance.colorError);
+                } else {
+                    accountActionButton.setBackground(null);
+                    CSSUtils.applyStyles(accountActionButton);
+                }
+            }
+        });
         accountActionButton.setEnabled(enabled);
         mcpVisible.set(enabled && signedIn);
         damNameRow.setVisible(enabled && signedIn);
