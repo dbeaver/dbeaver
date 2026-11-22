@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -206,6 +207,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
             })
         );
+        BaseThemeSettings.instance.addPropertyListener(
+            BaseEditorColors.COLOR_ERROR,
+            id -> UIUtils.asyncExec(this::updateAccountActionBackground),
+            accountActionButton
+        );
         Link accountLink = UIUtils.createLink(accountActions,
             "<a>" + DDTrackingUIMessages.sync_preference_page_open_account + "</a>",
             SelectionListener.widgetSelectedAdapter(e -> UIUtils.openWebBrowser(
@@ -296,16 +302,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
             : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);
         // Apply after the dialog's initial CSS pass, which otherwise resets the background.
-        UIUtils.asyncExec(() -> {
-            if (!accountActionButton.isDisposed()) {
-                if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
-                    accountActionButton.setBackground(BaseThemeSettings.instance.colorError);
-                } else {
-                    accountActionButton.setBackground(null);
-                    CSSUtils.applyStyles(accountActionButton);
-                }
-            }
-        });
+        UIUtils.asyncExec(this::updateAccountActionBackground);
         accountActionButton.setEnabled(enabled);
         mcpVisible.set(enabled && signedIn);
         damNameRow.setVisible(enabled && signedIn);
@@ -328,6 +325,17 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             loadLoggedUserView();
         } else if (userViewJob != null) {
             userViewJob.cancel();
+        }
+    }
+
+    private void updateAccountActionBackground() {
+        if (!accountActionButton.isDisposed()) {
+            if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                accountActionButton.setBackground(BaseThemeSettings.instance.colorError);
+            } else {
+                accountActionButton.setBackground(null);
+                CSSUtils.applyStyles(accountActionButton);
+            }
         }
     }
 
