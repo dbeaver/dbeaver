@@ -49,6 +49,9 @@ public class AIFunctionCallConsumer implements Consumer<List<AIFunctionCall>> {
 
     @Override
     public void accept(@NotNull List<AIFunctionCall> aiFunctionCalls) {
+        if (!conversation.isActive()) {
+            return;
+        }
         // we need to extract valid functions and add warning for invalid functions
         List<AIFunctionCall> validFunctionCalls = new ArrayList<>();
         List<AIFunctionCall> invalidFunctionCalls = new ArrayList<>();

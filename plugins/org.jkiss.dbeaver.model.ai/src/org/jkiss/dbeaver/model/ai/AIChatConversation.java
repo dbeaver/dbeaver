@@ -74,7 +74,9 @@ public class AIChatConversation {
      * Sequence number of the next message.
      */
     private int nextMessageId;
-    private State state = State.NONE;
+    private volatile State state = State.NONE;
+    // Late stream callbacks and queued saves must not recreate a deleted conversation.
+    private volatile boolean removed;
     private volatile boolean imagesLoaded = true;
     private CompletableFuture<AIChatConversation> finishFuture;
 
@@ -312,7 +314,10 @@ public class AIChatConversation {
     }
 
     @NotNull
-    public CompletableFuture<AIChatConversation> startConversation() {
+    public synchronized CompletableFuture<AIChatConversation> startConversation() {
+        if (removed) {
+            return CompletableFuture.completedFuture(this);
+        }
         if (this.finishFuture == null) {
             this.finishFuture = new CompletableFuture<>();
         }
@@ -320,7 +325,10 @@ public class AIChatConversation {
         return finishFuture;
     }
 
-    public void promptProcessed(boolean finishConversation) {
+    public synchronized void promptProcessed(boolean finishConversation) {
+        if (state == State.CANCELED) {
+            return;
+        }
         this.state = finishConversation ? State.FINISHED : State.IDLE;
         if (finishConversation && finishFuture != null) {
             this.finishFuture.complete(this);
@@ -328,12 +336,20 @@ public class AIChatConversation {
         }
     }
 
-    public void cancelConversation() {
+    public synchronized void cancelConversation() {
         this.state = State.CANCELED;
         if (finishFuture != null) {
             this.finishFuture.cancel(true);
             this.finishFuture = null;
         }
+    }
+
+    boolean isRemoved() {
+        return removed;
+    }
+
+    void markRemoved() {
+        removed = true;
     }
 
     @Override
