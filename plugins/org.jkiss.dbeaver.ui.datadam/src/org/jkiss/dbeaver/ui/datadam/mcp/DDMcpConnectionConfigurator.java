@@ -33,16 +33,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
 import org.jkiss.dbeaver.ui.controls.CInfoLabel;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
+import org.jkiss.dbeaver.ui.datadam.DBDamService;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.management.DDManagementActions;
@@ -124,7 +124,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
                 monitor.beginTask(DDMcpMessages.mcp_connection_status_loading, 1);
                 try {
                     if (!monitor.isCanceled()) {
-                        result.set(DDDesktopDamService.getInstance().getDamSettings());
+                        result.set(DBDamService.getInstance().getDamSettings());
                     }
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
@@ -164,18 +164,18 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
     @Override
     public void loadSettings(@NotNull PrefPageDataSourceAI page) {
         resetPending = false;
-        DBPDataSourceContainer connection = page.getConnection();
-        if (connection != null && enableCheck != null) {
-            enableCheck.setSelection(DDMcpConnectionSettings.isEnabled(connection));
+        AIContextSettingsDataSource settings = page.getAISettings();
+        if (settings != null && enableCheck != null) {
+            enableCheck.setSelection(settings.isDatadamMcpEnabled());
             updatePreferencesVisibility();
         }
     }
 
     @Override
     public void saveSettings(@NotNull PrefPageDataSourceAI page) {
-        DBPDataSourceContainer connection = page.getConnection();
-        if (connection != null && (enableCheck != null || resetPending)) {
-            DDMcpConnectionSettings.setEnabled(connection, enableCheck != null && enableCheck.getSelection());
+        AIContextSettingsDataSource settings = page.getAISettings();
+        if (settings != null && (enableCheck != null || resetPending)) {
+            settings.setDatadamMcpEnabled(enableCheck != null && enableCheck.getSelection());
             resetPending = false;
         }
     }

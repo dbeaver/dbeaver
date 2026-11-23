@@ -25,7 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.utils.GsonUtils;
 
 import java.net.URI;
@@ -102,10 +102,10 @@ public class DDAccountClient extends DDClient {
         """.formatted(DAM_FIELDS);
 
     public DDAccountClient(@NotNull URI accountUrl) {
-        this(accountUrl, DDDesktopAccessService.getInstance());
+        this(accountUrl, DBDamAccessService.getInstance());
     }
 
-    public DDAccountClient(@NotNull URI accountUrl, @NotNull DDDesktopAccessService accessService) {
+    public DDAccountClient(@NotNull URI accountUrl, @NotNull DBDamAccessService accessService) {
         super(accountUrl.resolve("/").toString(), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER,
             accessService);
         gson = GsonUtils.gsonBuilder()

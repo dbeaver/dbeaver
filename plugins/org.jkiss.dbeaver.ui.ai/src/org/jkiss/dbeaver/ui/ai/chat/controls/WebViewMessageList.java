@@ -801,7 +801,11 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             }
         }
 
-        submission.whenComplete((ignored, error) -> chat.getChatSession().setBusy(false));
+        submission.whenComplete((ignored, error) -> UIUtils.asyncExec(() -> {
+            if (!chat.isDisposed() && chat.getActiveConversation() == conversation) {
+                chat.getChatSession().setBusy(false);
+            }
+        }));
     }
 
     @NotNull

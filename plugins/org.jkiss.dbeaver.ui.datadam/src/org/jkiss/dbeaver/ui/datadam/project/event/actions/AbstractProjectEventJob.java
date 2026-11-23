@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 import java.util.UUID;
@@ -55,6 +56,9 @@ public abstract class AbstractProjectEventJob extends AbstractJob {
     @Override
     protected final IStatus run(@NotNull DBRProgressMonitor monitor) {
         try {
+            if (!DDProjectKeyUIManager.getInstance().ensureKeysReady(monitor)) {
+                return Status.CANCEL_STATUS;
+            }
             return perform(monitor);
         } catch (DBException e) {
             showError(e);

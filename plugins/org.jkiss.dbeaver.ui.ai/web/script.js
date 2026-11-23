@@ -6,8 +6,9 @@ const aiNotice = document.getElementById('ai-notice');
 const statusBar = document.createElement('div');
 statusBar.className = 'status-bar';
 statusBar.setAttribute('aria-hidden', 'true');
-statusBar.innerHTML = '<span class="loader"></span><span class="status-bar-text">Waiting for response...</span>';
+statusBar.innerHTML = '<span class="loader"></span><span class="status-bar-text"></span>';
 let isBusy = false;
+let chatStrings = {};
 
 let copyIcon, executeIcon, editorIcon, infoIcon, cleanIcon, closeIcon;
 let copyTooltip, executeTooltip, editorTooltip, cleanTooltip, closeTooltip;
@@ -82,10 +83,15 @@ function initChat(args) {
     closeTooltip = args.close.tooltip;
     settingKeys = args.settings || {};
     aiNotice.textContent = args.notice;
+    chatStrings = args.strings;
+    statusBar.querySelector('.status-bar-text').textContent = args.a11y.waitingForResponse + '...';
 
     initA11y(args.a11y || {});
     settingsChanged();
     updateAiNoticeVisibility();
+}
+function formatChatString(template, ...values) {
+    return template.replace(/\{(\d+)\}/g, (match, index) => values[index] ?? match);
 }
 function setThemeStylesheet({href}) {
     document.getElementById('theme-stylesheet').href = href;
