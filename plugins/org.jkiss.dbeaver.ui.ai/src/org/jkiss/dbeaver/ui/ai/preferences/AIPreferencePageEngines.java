@@ -445,11 +445,20 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             return;
         }
         if (AIUserProfileCredentials.isUserProfile(selectedProfile)) {
+            AIConfigurationProfile profile = selectedProfile;
             try {
                 // keep the profile on failure, a new profile with the same id would get these credentials
-                AIUserProfileCredentials.delete(selectedProfile);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_delete_error_title, null, e);
+                UIUtils.getDialogRunnableContext().run(true, false, monitor -> {
+                    try {
+                        AIUserProfileCredentials.delete(profile);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_delete_error_title, null, e.getTargetException());
+                return;
+            } catch (InterruptedException e) {
                 return;
             }
         }
