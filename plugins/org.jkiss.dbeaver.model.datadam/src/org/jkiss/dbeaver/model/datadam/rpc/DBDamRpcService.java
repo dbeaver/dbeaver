@@ -141,6 +141,8 @@ final class DBDamRpcService implements AutoCloseable {
                 endpoint.close();
             } catch (RuntimeException e) {
                 log.warn("Cannot close DataDam RPC endpoint", e);
+            } finally {
+                registrations.unregisterEndpoint(endpoint);
             }
         }
     }

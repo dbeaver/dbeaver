@@ -35,6 +35,7 @@ import java.util.Map;
 
 public class DDMcpDesktopRpcRegistration implements DBDamRpcRegistration {
     private static final Log log = Log.getLog(DDMcpDesktopRpcRegistration.class);
+    private final Object subscriptionLock = new Object();
 
     @Nullable
     private MessagingRpcEndpoint endpoint;
@@ -49,20 +50,24 @@ public class DDMcpDesktopRpcRegistration implements DBDamRpcRegistration {
 
     @Override
     public synchronized void register(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) {
-        if (endpoint.isClosed()) {
-            throw new MessagingRpcException(MessagingRpcException.Reason.CLOSED);
-        }
-        if (this.endpoint != endpoint) {
-            unregister();
-            this.endpoint = endpoint;
-        }
-        if (settings.isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false)) {
-            if (subscription == null) {
-                registerService(endpoint);
+        synchronized (subscriptionLock) {
+            if (endpoint.isClosed()) {
+                throw new MessagingRpcException(MessagingRpcException.Reason.CLOSED);
             }
-        } else {
-            unregister();
+            if (this.endpoint != endpoint) {
+                unregister();
+                this.endpoint = endpoint;
+            }
+            if (!settings.isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false)) {
+                unregister();
+                return;
+            }
+            if (subscription != null) {
+                return;
+            }
         }
+        // endpoint closure must not wait for a pending service registration
+        registerService(endpoint);
     }
 
     private void registerService(@NotNull MessagingRpcEndpoint endpoint) {
@@ -70,10 +75,27 @@ public class DDMcpDesktopRpcRegistration implements DBDamRpcRegistration {
             .serializeNulls()
             .setObjectToNumberStrategy(ToNumberPolicy.BIG_DECIMAL)
             .create());
-        subscription = endpoint.register(
+        var registered = endpoint.register(
             DDMcpFunctionService.SERVICE_ID, DDMcpFunctionService.class,
             new DDMcpTrackingFunctionService(new DDMcpDesktopFunctionService()), codec);
-        AIBaseFeatures.MCP_SERVER.use(Map.of("accessPath", "datadam", "action", "start"));
+        synchronized (subscriptionLock) {
+            if (this.endpoint != endpoint || endpoint.isClosed()) {
+                registered.close();
+                return;
+            }
+            subscription = registered;
+            AIBaseFeatures.MCP_SERVER.use(Map.of("accessPath", "datadam", "action", "start"));
+        }
+    }
+
+    @Override
+    public void unregister(@NotNull MessagingRpcEndpoint endpoint) {
+        synchronized (subscriptionLock) {
+            if (this.endpoint == endpoint) {
+                unregister();
+                this.endpoint = null;
+            }
+        }
     }
 
     private void unregister() {
