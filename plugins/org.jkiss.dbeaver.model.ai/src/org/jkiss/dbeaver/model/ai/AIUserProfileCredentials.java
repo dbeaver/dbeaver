@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIAccountProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.engine.openai.AIAccountAuthenticator;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.auth.AuthProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -125,13 +126,34 @@ public final class AIUserProfileCredentials {
         }
         setCredentials(properties, credentials);
         if (properties instanceof AIAccountProperties account) {
-            account.setAccountTokenPersistence((previousRefreshToken, tokens) -> save(profile));
+            account.setAccountTokenPersistence((previousRefreshToken, tokens) -> saveAccountTokens(profile));
+            account.setAccountTokenRefreshHandler((authenticator, refreshToken) -> {
+                // another client may have already rotated the refresh token
+                String storedRefreshToken = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(
+                    getSecretId(profile, AIAccountProperties.ACCOUNT_REFRESH_TOKEN_PROPERTY));
+                AIAccountAuthenticator.Tokens tokens = authenticator.refresh(
+                    CommonUtils.isEmpty(storedRefreshToken) ? refreshToken : storedRefreshToken);
+                account.setAccountTokens(tokens);
+                saveAccountTokens(profile);
+                return tokens;
+            });
         }
     }
 
     public static void save(@NotNull AIConfigurationProfile profile) throws DBException {
+        write(profile, getCredentials(profile.getConfiguration()));
+    }
+
+    // other credentials may have been changed in another client meanwhile
+    private static void saveAccountTokens(@NotNull AIConfigurationProfile profile) throws DBException {
+        Map<String, String> credentials = getCredentials(profile.getConfiguration());
+        credentials.keySet().retainAll(AIAccountProperties.ACCOUNT_CREDENTIAL_PROPERTY_IDS);
+        write(profile, credentials);
+    }
+
+    private static void write(@NotNull AIConfigurationProfile profile, @NotNull Map<String, String> credentials) throws DBException {
         DBSSecretController controller = DBSSecretController.getGlobalSecretController();
-        for (var credential : getCredentials(profile.getConfiguration()).entrySet()) {
+        for (var credential : credentials.entrySet()) {
             controller.setPrivateSecretValue(
                 new ProfileSecretObject(profile.getProfileId()),
                 new DBSSecretValue(

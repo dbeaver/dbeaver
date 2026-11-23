@@ -156,10 +156,39 @@ class AIUserProfileCredentialsTest {
     }
 
     @Test
-    void removingProfileDeletesCredentialsOfAllUsers() throws Exception {
-        AISettings settings = loadSettings();
+    void refreshUsesTokenRotatedByAnotherClient() throws Exception {
+        secrets.put("ai.profile.openai.refreshToken", "desktop-refresh");
+        AIConfigurationProfile profile = loadSettings().getConfiguration("openai");
+        AIUserProfileCredentials.load(profile);
+        secrets.put("ai.profile.openai.refreshToken", "web-refresh");
+        secrets.put("ai.profile.openai.token", "web-token");
+        AIAccountAuthenticator authenticator = Mockito.mock(AIAccountAuthenticator.class);
+        Mockito.when(authenticator.refresh("web-refresh"))
+            .thenReturn(new AIAccountAuthenticator.Tokens("new-access", "new-refresh", 3600, null, null));
 
-        settings.removeConfiguration(settings.getConfiguration("openai"));
+        String accessToken = ((OpenAIProperties) profile.getConfiguration()).getValidAccessToken(authenticator);
+
+        Assertions.assertEquals("new-access", accessToken);
+        Assertions.assertEquals("new-refresh", secrets.get("ai.profile.openai.refreshToken"));
+        Assertions.assertEquals("web-token", secrets.get("ai.profile.openai.token"));
+    }
+
+    @Test
+    void signOutRemovesStoredAccountTokens() throws Exception {
+        secrets.put("ai.profile.openai.refreshToken", "refresh");
+        AIConfigurationProfile profile = loadSettings().getConfiguration("openai");
+        AIUserProfileCredentials.load(profile);
+        OpenAIProperties properties = (OpenAIProperties) profile.getConfiguration();
+
+        properties.clearAccountTokens();
+        properties.saveAccountTokens();
+
+        Assertions.assertNull(secrets.get("ai.profile.openai.refreshToken"));
+    }
+
+    @Test
+    void deleteRemovesCredentialsOfAllUsers() throws Exception {
+        AIUserProfileCredentials.delete(loadSettings().getConfiguration("openai"));
 
         Mockito.verify(controller).deleteObjectSecrets(ArgumentMatchers.argThat(object ->
             object.getSecretObjectType().equals("aiProfile") && object.getSecretObjectId().equals("openai")));

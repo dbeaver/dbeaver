@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.AIUserProfileCredentials;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
@@ -259,16 +260,16 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             profilesViewer.addSelectionChangedListener(event -> {
                 Object selItem = profilesViewer.getStructuredSelection().getFirstElement();
                 AIConfigurationProfile profile = selItem instanceof AIConfigurationProfile p ? p : null;
+                if (duplicateProfileButton != null) {
+                    duplicateProfileButton.setEnabled(profile != null && profile.isAvailable());
+                    deleteProfileButton.setEnabled(profile != null);
+                }
                 if (profile == selectedProfile) {
                     return;
                 }
                 if (!flushSelectedProfile()) {
                     profilesViewer.setSelection(new StructuredSelection(selectedProfile));
                     return;
-                }
-                if (duplicateProfileButton != null) {
-                    duplicateProfileButton.setEnabled(profile != null && profile.isAvailable());
-                    deleteProfileButton.setEnabled(profile != null);
                 }
                 selectedProfile = profile;
                 showProfileSettings();
@@ -451,6 +452,15 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             NLS.bind(AIUIMessages.ai_engines_page_delete_confirm_message, selectedProfile.getProfileName())
         )) {
             return;
+        }
+        if (AIUserProfileCredentials.isUserProfile(selectedProfile)) {
+            try {
+                // keep the profile on failure, a new profile with the same id would get these credentials
+                AIUserProfileCredentials.delete(selectedProfile);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_delete_error_title, null, e);
+                return;
+            }
         }
         settings.removeConfiguration(selectedProfile);
         selectedProfile = null;

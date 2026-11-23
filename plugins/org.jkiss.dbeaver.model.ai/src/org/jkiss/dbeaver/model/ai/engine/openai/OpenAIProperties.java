@@ -497,9 +497,10 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
             long expiresInSeconds = Math.max(0, (credentials.expiresAt - System.currentTimeMillis()) / 1000);
+            // empty tokens still reach the persistence, so a sign-out is saved too
             credentials.saveAccountTokensInternal(credentials.refreshToken, new AIAccountAuthenticator.Tokens(
-                credentials.accessToken,
-                credentials.refreshToken,
+                CommonUtils.notEmpty(credentials.accessToken),
+                CommonUtils.notEmpty(credentials.refreshToken),
                 expiresInSeconds,
                 credentials.accountId,
                 credentials.accountEmail

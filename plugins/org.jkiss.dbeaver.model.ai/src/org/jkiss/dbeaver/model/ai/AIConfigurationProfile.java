@@ -168,14 +168,6 @@ public class AIConfigurationProfile {
         }
     }
 
-    public void deleteSecrets() throws DBException {
-        if (AIUserProfileCredentials.isUserProfile(this)) {
-            AIUserProfileCredentials.delete(this);
-        } else {
-            getConfiguration().deleteSecrets(this);
-        }
-    }
-
     @Override
     public String toString() {
         return profileId + "(" + engineId + ")";

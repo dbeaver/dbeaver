@@ -221,7 +221,7 @@ public class AISettings implements DBPAdaptable {
             return;
         }
         try {
-            profile.deleteSecrets();
+            profile.getConfiguration().deleteSecrets(profile);
         } catch (DBException e) {
             log.error(e);
         }

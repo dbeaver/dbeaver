@@ -106,18 +106,18 @@ final class AIProfileCredentialsEditor {
             if (!profile.isAvailable() || loadErrors.containsKey(profile) || !AIUserProfileCredentials.isUserProfile(target)) {
                 continue;
             }
-            Map<String, String> edited = editedCredentials.remove(profile);
+            Map<String, String> edited = editedCredentials.get(profile);
             if (edited != null) {
                 AIUserProfileCredentials.setCredentials(target.getConfiguration(), edited);
             }
             Map<String, String> credentials = AIUserProfileCredentials.getCredentials(target.getConfiguration());
-            if (credentials.equals(loadedCredentials.get(profile))) {
-                continue;
+            if (!credentials.equals(loadedCredentials.get(profile))) {
+                AIUserProfileCredentials.save(target);
+                loadedCredentials.put(profile, credentials);
             }
-            AIUserProfileCredentials.save(target);
-            loadedCredentials.put(profile, credentials);
             if (target != profile) {
-                AIUserProfileCredentials.load(profile);
+                // the chat uses the settings profile, it may still keep older values
+                AIUserProfileCredentials.setCredentials(profile.getConfiguration(), credentials);
             }
         }
     }
