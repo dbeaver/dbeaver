@@ -710,14 +710,17 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         if (selectedProfile == null || !selectedProfile.isAvailable() || resolvedProfiles.contains(selectedProfile)) {
             return;
         }
+        AIConfigurationProfile profile = selectedProfile;
         try {
             if (DBWorkbench.isDistributed()) {
-                credentialsEditor.loadProfile(selectedProfile, canManageConfiguration());
+                // credentials are requested from the server, keep the UI responsive
+                boolean canManage = canManageConfiguration();
+                UIUtils.getDialogRunnableContext().run(true, false, monitor -> credentialsEditor.loadProfile(profile, canManage));
             } else {
-                selectedProfile.resolveSecrets();
+                profile.resolveSecrets();
             }
-            resolvedProfiles.add(selectedProfile);
-        } catch (DBException e) {
+            resolvedProfiles.add(profile);
+        } catch (DBException | InvocationTargetException | InterruptedException e) {
             log.error("Error resolving profile secrets", e);
         }
     }
