@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.AIAccountAuthenticator;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.auth.AuthProperty;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretObject;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
@@ -62,10 +63,18 @@ public final class AIUserProfileCredentials {
         boolean localizedNames
     ) {
         return ObjectAttributeDescriptor.extractAnnotations(null, properties.getClass(), null, null, localizedNames).stream()
-            .filter(property -> property.isPassword() || property.getAnnotation(AuthProperty.class) != null)
             .filter(property -> !AIAccountProperties.ACCOUNT_CREDENTIAL_PROPERTY_IDS.contains(property.getId()))
-            .filter(property -> properties.isUserCredentialProperty(property.getId()))
+            .filter(property -> isApplicableCredential(properties, property))
             .toList();
+    }
+
+    private static boolean isApplicableCredential(@NotNull AIEngineProperties properties, @NotNull ObjectPropertyDescriptor property) {
+        AuthProperty annotation = property.getAnnotation(AuthProperty.class);
+        if (annotation == null) {
+            return property.isPassword();
+        }
+        String condition = annotation.unavailableIf();
+        return condition.isEmpty() || Boolean.FALSE.equals(AbstractDescriptor.evalExpression(condition, properties, property));
     }
 
     @NotNull

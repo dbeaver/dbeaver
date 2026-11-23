@@ -94,10 +94,6 @@ public interface AIEngineProperties {
 
     void setTimeout(int timeout);
 
-    default boolean isUserCredentialProperty(@NotNull String propertyId) {
-        return true;
-    }
-
     default void clearUserCredentials() {
     }
 
