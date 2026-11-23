@@ -28,7 +28,10 @@ import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIBaseFeatures;
 import org.jkiss.dbeaver.model.datadam.rpc.DBDamRpcRegistration;
+
+import java.util.Map;
 
 public class DDMcpDesktopRpcRegistration implements DBDamRpcRegistration {
     private static final Log log = Log.getLog(DDMcpDesktopRpcRegistration.class);
@@ -70,12 +73,14 @@ public class DDMcpDesktopRpcRegistration implements DBDamRpcRegistration {
         subscription = endpoint.register(
             DDMcpFunctionService.SERVICE_ID, DDMcpFunctionService.class,
             new DDMcpTrackingFunctionService(new DDMcpDesktopFunctionService()), codec);
+        AIBaseFeatures.MCP_SERVER.use(Map.of("accessPath", "datadam", "action", "start"));
     }
 
     private void unregister() {
         if (subscription != null) {
             subscription.close();
             subscription = null;
+            AIBaseFeatures.MCP_SERVER.use(Map.of("accessPath", "datadam", "action", "stop"));
             log.debug("Unregistered DataDam desktop MCP RPC service");
         }
     }
