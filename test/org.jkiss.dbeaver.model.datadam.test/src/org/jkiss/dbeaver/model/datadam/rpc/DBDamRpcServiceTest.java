@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.model.datadam.rpc;
 
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamMessage;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamRpcTransport;
 import com.dbeaver.datadam.dam.remote.api.transport.*;
@@ -34,11 +36,15 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIBaseFeatures;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDLoggedUserView;
+import org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopFunctionService;
+import org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopRpcRegistration;
 import org.jkiss.dbeaver.model.datadam.transport.DBDamChannel;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -50,6 +56,7 @@ import org.mockito.Mockito;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -522,6 +529,58 @@ class DBDamRpcServiceTest {
             Assertions.assertTrue(channel.closed);
             Assertions.assertEquals(MessagingRpcException.Reason.CLOSED,
                 Assertions.assertThrows(MessagingRpcException.class, () -> endpoint.proxy(TOPIC, Echo.class, codec())).reason());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void suspendingOrClosingStopsMcpWithoutWaitingForReconnect(boolean close) throws Exception {
+        try (var statistics = Mockito.mockStatic(DBRFeatureRegistry.class);
+            var functions = Mockito.mockConstruction(DDMcpDesktopFunctionService.class)) {
+            var channel = new MemoryChannel();
+            channel.ready("first");
+            var registration = new DDMcpDesktopRpcRegistration();
+            var registry = Mockito.mock(DBDamRpcRegistrationRegistry.class);
+            var enabled = new DDRemoteDamSettings(Map.of(), Map.of(DDRemoteDamSettingKeys.MCP_ENABLED, "true"));
+            Mockito.doAnswer(call -> {
+                registration.register(call.getArgument(0), enabled);
+                return null;
+            }).when(registry).registerEndpoint(Mockito.any(), Mockito.any());
+            Mockito.doAnswer(call -> {
+                registration.unregister(call.getArgument(0));
+                return null;
+            }).when(registry).unregisterEndpoint(Mockito.any());
+            try (var rpc = new DBDamRpcService(channel, registry)) {
+                rpc.resume(false);
+                var first = rpc.getRpc();
+                if (close) {
+                    rpc.close();
+                    rpc.close();
+                } else {
+                    rpc.suspend(false);
+                    rpc.suspend(false);
+                }
+                Assertions.assertTrue(first.isCloseComplete());
+                statistics.verify(() -> DBRFeatureRegistry.useFeature(AIBaseFeatures.MCP_SERVER,
+                    Map.of("accessPath", "datadam", "action", "start")));
+                statistics.verify(() -> DBRFeatureRegistry.useFeature(AIBaseFeatures.MCP_SERVER,
+                    Map.of("accessPath", "datadam", "action", "stop")));
+                statistics.verifyNoMoreInteractions();
+                if (!close) {
+                    rpc.resume(false);
+                    var second = rpc.getRpc();
+                    Assertions.assertNotSame(first, second);
+                    registration.unregister(first);
+                    statistics.verify(() -> DBRFeatureRegistry.useFeature(AIBaseFeatures.MCP_SERVER,
+                        Map.of("accessPath", "datadam", "action", "stop")));
+                }
+            }
+            int expected = close ? 1 : 2;
+            statistics.verify(() -> DBRFeatureRegistry.useFeature(AIBaseFeatures.MCP_SERVER,
+                Map.of("accessPath", "datadam", "action", "start")), Mockito.times(expected));
+            statistics.verify(() -> DBRFeatureRegistry.useFeature(AIBaseFeatures.MCP_SERVER,
+                Map.of("accessPath", "datadam", "action", "stop")), Mockito.times(expected));
+            statistics.verifyNoMoreInteractions();
         }
     }
 
