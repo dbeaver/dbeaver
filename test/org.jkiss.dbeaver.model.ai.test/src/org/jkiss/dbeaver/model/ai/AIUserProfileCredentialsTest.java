@@ -50,7 +50,7 @@ class AIUserProfileCredentialsTest {
         DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
         workbench = Mockito.mockStatic(DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
         workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
-        workbench.when(DBWorkbench::isDistributed).thenReturn(true);
+        workbench.when(DBWorkbench::isDistributed).thenCallRealMethod();
         Mockito.when(platform.getApplication().isDistributed()).thenReturn(true);
 
         AIEngineRegistry registry = Mockito.mock(AIEngineRegistry.class);
@@ -130,13 +130,18 @@ class AIUserProfileCredentialsTest {
         properties.setAccountTokens(new AIAccountAuthenticator.Tokens("user-access", "user-refresh", 3600, "id", "user@example.com"));
 
         settings.prepareSettingsSaving();
-        String json = AISettingsManager.SAVE_PROPS_GSON.toJson(settings);
+        String json = AISettingsManager.getSavePropertiesGson().toJson(settings);
 
         Assertions.assertFalse(json.contains("user-token"));
         Assertions.assertFalse(json.contains("user-access"));
         Assertions.assertFalse(json.contains("user-refresh"));
         Assertions.assertFalse(json.contains("user@example.com"));
         Assertions.assertTrue(json.contains("gpt-4"));
+        Assertions.assertTrue(json.contains("admin-header-value"));
+        Mockito.when(DBWorkbench.getPlatform().getApplication().isDistributed()).thenReturn(false);
+        String standaloneJson = AISettingsManager.getSavePropertiesGson().toJson(settings);
+        Assertions.assertFalse(standaloneJson.contains("admin-header-value"));
+        Assertions.assertTrue(standaloneJson.contains("gpt-4"));
         OpenAIProperties copy = (OpenAIProperties) AIUserProfileCredentials.copyWithoutCredentials(properties);
         Assertions.assertEquals(properties.getCustomHeaders(), copy.getCustomHeaders());
         Assertions.assertEquals("user-token", properties.getToken());
@@ -151,7 +156,7 @@ class AIUserProfileCredentialsTest {
         AIUserProfileCredentials.load(profile);
 
         Assertions.assertTrue(((OpenAIProperties) profile.getConfiguration()).isAccountAuthentication());
-        String json = AISettingsManager.SAVE_PROPS_GSON.toJson(settings);
+        String json = AISettingsManager.getSavePropertiesGson().toJson(settings);
         Assertions.assertFalse(json.contains(OpenAIProperties.AUTHENTICATION_CHATGPT_ACCOUNT));
     }
 

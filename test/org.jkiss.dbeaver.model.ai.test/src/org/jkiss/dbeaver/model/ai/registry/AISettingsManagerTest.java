@@ -236,7 +236,7 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
         Assertions.assertTrue(settings.getProperty(AIConstants.AI_CHAT_SHOW_PROFILE_AND_MODEL, true));
         settings.setProperty(AIConstants.AI_CHAT_SHOW_PROFILE_AND_MODEL, false);
         AISettings restored = AISettingsManager.READ_PROPS_GSON.fromJson(
-            AISettingsManager.SAVE_PROPS_GSON.toJson(settings), AISettings.class);
+            AISettingsManager.getSavePropertiesGson().toJson(settings), AISettings.class);
         restored.finishSettingsLoading();
 
         Assertions.assertEquals("gpt-4.1", restored.getConfiguration("test-work").getConfiguration().getModel());
@@ -279,7 +279,7 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
         );
         Assertions.assertEquals(
             OpenAIConstants.LEGACY_DEFAULT_MODEL,
-            JsonParser.parseString(AISettingsManager.SAVE_PROPS_GSON.toJson(settings))
+            JsonParser.parseString(AISettingsManager.getSavePropertiesGson().toJson(settings))
                 .getAsJsonObject()
                 .getAsJsonObject("configurations")
                 .getAsJsonObject(OpenAIConstants.OPENAI_ENGINE)
@@ -343,7 +343,7 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
         );
 
         Assertions.assertFalse(profile.isGlobal());
-        String serialized = AISettingsManager.SAVE_PROPS_GSON.toJson(profile);
+        String serialized = AISettingsManager.getSavePropertiesGson().toJson(profile);
         Assertions.assertFalse(JsonParser.parseString(serialized)
             .getAsJsonObject()
             .getAsJsonObject("configuration")
@@ -415,7 +415,7 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             settings.resolveSecrets();
             settings.setProperty("test.chat.setting", iteration);
             settings.prepareSettingsSaving();
-            serialized = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+            serialized = AISettingsManager.getSavePropertiesGson().toJsonTree(settings).getAsJsonObject();
             Assertions.assertEquals(source.getAsJsonObject("configurations").get("unavailable"),
                 serialized.getAsJsonObject("configurations").get("unavailable"));
             Assertions.assertEquals("unavailable", serialized.get("defaultConfiguration").getAsString());
@@ -442,7 +442,7 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
         Assertions.assertEquals("missing-test-engine", settings.getDefaultConfigurationOrNull().getProfileId());
         settings.setDefaultConfiguration(settings.getConfiguration("openai"));
         settings.prepareSettingsSaving();
-        JsonObject serialized = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+        JsonObject serialized = AISettingsManager.getSavePropertiesGson().toJsonTree(settings).getAsJsonObject();
         Assertions.assertEquals(source.getAsJsonObject("engineConfigurations").get("missing-test-engine"),
             serialized.getAsJsonObject("engineConfigurations").get("missing-test-engine"));
         Assertions.assertEquals(source.getAsJsonObject("engineConfigurations").getAsJsonObject("missing-test-engine").get("properties"),
@@ -467,7 +467,7 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             settings.setUserDefaultConfiguration(settings.getConfiguration("personal"));
             settings.setProperty("test.chat.setting", iteration);
             settings.prepareSettingsSaving();
-            JsonObject saved = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+            JsonObject saved = AISettingsManager.getSavePropertiesGson().toJsonTree(settings).getAsJsonObject();
             Assertions.assertEquals("gpt-4o", saved.getAsJsonObject("engineConfigurations")
                 .getAsJsonObject("openai").getAsJsonObject("properties").get("gpt.model").getAsString());
             JsonObject legacy = saved.deepCopy();
@@ -494,7 +494,7 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
         settings.finishSettingsLoading();
         settings.setUserDefaultConfiguration(settings.getConfiguration("work"));
         settings.prepareSettingsSaving();
-        JsonObject saved = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+        JsonObject saved = AISettingsManager.getSavePropertiesGson().toJsonTree(settings).getAsJsonObject();
         Assertions.assertEquals("gpt-4.1", saved.getAsJsonObject("engineConfigurations")
             .getAsJsonObject("openai").getAsJsonObject("properties").get("gpt.model").getAsString());
     }
@@ -514,7 +514,7 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             """, AISettings.class);
         settings.finishSettingsLoading();
         settings.prepareSettingsSaving();
-        JsonObject saved = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+        JsonObject saved = AISettingsManager.getSavePropertiesGson().toJsonTree(settings).getAsJsonObject();
         Assertions.assertEquals("gpt-4o", saved.getAsJsonObject("engineConfigurations")
             .getAsJsonObject("openai").getAsJsonObject("properties").get("gpt.model").getAsString());
     }
@@ -532,11 +532,11 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             """, AISettings.class);
         settings.finishSettingsLoading();
         settings.prepareSettingsSaving();
-        settings = AISettingsManager.READ_PROPS_GSON.fromJson(AISettingsManager.SAVE_PROPS_GSON.toJson(settings), AISettings.class);
+        settings = AISettingsManager.READ_PROPS_GSON.fromJson(AISettingsManager.getSavePropertiesGson().toJson(settings), AISettings.class);
         settings.finishSettingsLoading();
         settings.getConfiguration("openai").getConfiguration().setModel("gpt-4.1");
         settings.prepareSettingsSaving();
-        JsonObject saved = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+        JsonObject saved = AISettingsManager.getSavePropertiesGson().toJsonTree(settings).getAsJsonObject();
         Assertions.assertEquals("gpt-4.1", saved.getAsJsonObject("engineConfigurations")
             .getAsJsonObject("openai").getAsJsonObject("properties").get("gpt.model").getAsString());
     }
@@ -547,7 +547,7 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             {"engine": "missing-test-engine", "name": "Restored profile", "configuration": {"gpt.model": "gpt-4o"}}
             """;
         AIConfigurationProfile unavailable = AISettingsManager.READ_PROPS_GSON.fromJson(source, AIConfigurationProfile.class);
-        String preserved = AISettingsManager.SAVE_PROPS_GSON.toJson(unavailable);
+        String preserved = AISettingsManager.getSavePropertiesGson().toJson(unavailable);
         AIEngineRegistry registry = Mockito.mock(AIEngineRegistry.class);
         AIEngineDescriptor descriptor = Mockito.mock(AIEngineDescriptor.class);
         Mockito.when(registry.getEngineDescriptor("missing-test-engine")).thenReturn(descriptor);
@@ -609,7 +609,7 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             """, AISettings.class);
         settings.finishSettingsLoading();
         settings.removeConfiguration(settings.getConfiguration("missing-test-engine"));
-        JsonObject serialized = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+        JsonObject serialized = AISettingsManager.getSavePropertiesGson().toJsonTree(settings).getAsJsonObject();
         Assertions.assertTrue(serialized.getAsJsonObject("configurations").isEmpty());
         Assertions.assertTrue(serialized.getAsJsonObject("engineConfigurations").isEmpty());
     }

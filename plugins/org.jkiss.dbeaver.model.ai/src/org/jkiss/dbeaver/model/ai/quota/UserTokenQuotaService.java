@@ -203,7 +203,7 @@ public class UserTokenQuotaService implements AIChatListener {
         AISettings settings = AISettingsManager.getInstance().getSettings();
         Object props = settings.getProperty(AIConstants.USER_QUOTA_PROPERTY);
         return AISettingsManager.READ_PROPS_GSON.fromJson(
-            AISettingsManager.SAVE_PROPS_GSON.toJson(props),
+            AISettingsManager.getSavePropertiesGson().toJson(props),
             UserQuotaSettings.class
         );
     }

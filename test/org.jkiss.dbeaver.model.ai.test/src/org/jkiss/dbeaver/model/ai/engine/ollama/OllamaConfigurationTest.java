@@ -84,7 +84,8 @@ public class OllamaConfigurationTest extends DBeaverUnitTest {
             Assertions.assertEquals(120, properties.getTimeout());
             Assertions.assertTrue(properties.isLoggingEnabled());
             Assertions.assertTrue(properties.isUseEnvVariables());
-            settings = AISettingsManager.READ_PROPS_GSON.fromJson(AISettingsManager.SAVE_PROPS_GSON.toJson(settings), AISettings.class);
+            settings = AISettingsManager.READ_PROPS_GSON.fromJson(
+                AISettingsManager.getSavePropertiesGson().toJson(settings), AISettings.class);
             settings.finishSettingsLoading();
         }
     }
