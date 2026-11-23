@@ -2,6 +2,11 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension point="org.jkiss.dbeaver.service">
+        <service name="org.jkiss.dbeaver.model.app.DBPProjectVisibilityPolicy"
+                 class="org.jkiss.dbeaver.model.datadam.DDProjectVisibilityService"/>
+    </extension>
+
     <extension-point id="dbeaver.datadam.damService" name="DataDam RPC services" schema="schema/dbeaver.datadam.damService.exsd"/>
 
     <extension point="com.dbeaver.ai.function">

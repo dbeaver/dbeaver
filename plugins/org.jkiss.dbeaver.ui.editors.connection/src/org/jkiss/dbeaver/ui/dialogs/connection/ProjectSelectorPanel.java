@@ -70,7 +70,7 @@ public class ProjectSelectorPanel {
         boolean alignRight
     ) {
         final List<? extends DBPProject> projects = new ArrayList<>(
-            DBWorkbench.getPlatform().getWorkspace().getProjects());
+            DBWorkbench.getPlatform().getWorkspace().getVisibleProjects());
         projects.sort((o1, o2) ->
             o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName()));
 
