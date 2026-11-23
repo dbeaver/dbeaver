@@ -26,12 +26,12 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
+import org.jkiss.dbeaver.ui.datadam.DBDamTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive;
@@ -51,8 +51,8 @@ public final class DDProjectKeyUIManager {
     }
 
     public synchronized boolean ensureKeysReady(@NotNull DBRProgressMonitor monitor) throws DBException {
-        var access = DDDesktopAccessService.getInstance();
-        if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+        var access = DBDamAccessService.getInstance();
+        if (!DBDamTokenUIManager.getInstance().ensureTokenReady(monitor)) {
             return false;
         }
         var bundle = access.getKeyBundle();

@@ -26,9 +26,9 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
-import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor.EventType;
+import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -224,8 +224,8 @@ class DDMcpTrackingFunctionServiceTest {
 
     @Test
     void monitoringUnavailableDoesNotPreventTheRequest() throws Exception {
-        try (var sessions = Mockito.mockStatic(DDRemoteDamDesktopSessionService.class)) {
-            sessions.when(DDRemoteDamDesktopSessionService::getInstance).thenThrow(new DBException("Unavailable"));
+        try (var sessions = Mockito.mockStatic(DBDamSessionService.class)) {
+            sessions.when(DBDamSessionService::getInstance).thenThrow(new DBException("Unavailable"));
             Mockito.when(delegate.getFunctions()).thenReturn(List.of());
             Assertions.assertTrue(new DDMcpTrackingFunctionService(delegate).getFunctions().isEmpty());
             Mockito.verify(delegate).getFunctions();

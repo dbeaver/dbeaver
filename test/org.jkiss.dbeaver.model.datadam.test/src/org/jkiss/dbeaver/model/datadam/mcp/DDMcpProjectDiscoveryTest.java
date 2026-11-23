@@ -20,6 +20,7 @@ import com.dbeaver.datadam.mcp.api.model.DDMcpListDatasourcesResult;
 import com.dbeaver.datadam.mcp.api.model.DDMcpListProjectsResult;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.AIFunctionContext;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListDatasourcesFunction;
@@ -40,9 +41,10 @@ class DDMcpProjectDiscoveryTest {
             var first = connection("first");
             var second = connection("second");
             Mockito.when(catalog.getAllowedConnections()).thenReturn(List.of(first, first, second));
+            var context = Mockito.mock(AIFunctionContext.class);
 
             var projects = Assertions.assertInstanceOf(DDMcpListProjectsResult.class,
-                new DDMcpListProjectsFunction().call(Map.of()).value()).projects();
+                new DDMcpListProjectsFunction().callFunction(context, Map.of()).getValue()).projects();
 
             Assertions.assertEquals(2, projects.size());
             Assertions.assertEquals("first", projects.get(0).id());
@@ -52,7 +54,7 @@ class DDMcpProjectDiscoveryTest {
 
             Mockito.when(catalog.getAllowedConnections()).thenReturn(List.of());
             Assertions.assertTrue(Assertions.assertInstanceOf(DDMcpListProjectsResult.class,
-                new DDMcpListProjectsFunction().call(Map.of()).value()).projects().isEmpty());
+                new DDMcpListProjectsFunction().callFunction(context, Map.of()).getValue()).projects().isEmpty());
         }
     }
 
@@ -67,16 +69,16 @@ class DDMcpProjectDiscoveryTest {
             Mockito.when(catalog.getAllowedConnections("second")).thenReturn(List.of(second));
             Mockito.when(catalog.getAllowedConnections("unknown")).thenReturn(List.of());
             var function = new DDMcpListDatasourcesFunction();
+            var context = Mockito.mock(AIFunctionContext.class);
 
             Assertions.assertEquals(2, Assertions.assertInstanceOf(DDMcpListDatasourcesResult.class,
-                function.call().value()).datasources().size());
-            Assertions.assertEquals(function.call(), function.call(Map.of()));
+                function.callFunction(context, Map.of()).getValue()).datasources().size());
             var filtered = Assertions.assertInstanceOf(DDMcpListDatasourcesResult.class,
-                function.call(Map.of("projectId", "second")).value()).datasources();
+                function.callFunction(context, Map.of("projectId", "second")).getValue()).datasources();
             Assertions.assertEquals(1, filtered.size());
             Assertions.assertEquals("second", filtered.get(0).projectId());
             Assertions.assertTrue(Assertions.assertInstanceOf(DDMcpListDatasourcesResult.class,
-                function.call(Map.of("projectId", "unknown")).value()).datasources().isEmpty());
+                function.callFunction(context, Map.of("projectId", "unknown")).getValue()).datasources().isEmpty());
             Mockito.verify(catalog).getAllowedConnections("second");
             Mockito.verify(catalog).getAllowedConnections("unknown");
         }

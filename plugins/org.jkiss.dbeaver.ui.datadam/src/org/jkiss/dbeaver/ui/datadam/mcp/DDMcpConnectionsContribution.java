@@ -27,9 +27,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessListener;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSettingsStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -47,9 +47,9 @@ public class DDMcpConnectionsContribution implements McpConnectionsPageContribut
 
     @Override
     public boolean isVisible() {
-        DDRemoteDamSettings settings = DDRemoteDamSettingsStore.getInstance().getSettings();
+        DDRemoteDamSettings settings = DBDamSettingsStore.getInstance().getSettings();
         return DDProductConfig.isIntegrationEnabled()
-            && DDDesktopAccessService.getInstance().getStatus() == DDDesktopAccessService.Status.SIGNED_IN
+            && DBDamAccessService.getInstance().getStatus() == DBDamAccessService.Status.SIGNED_IN
             && settings != null && settings.isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false);
     }
 
@@ -58,8 +58,8 @@ public class DDMcpConnectionsContribution implements McpConnectionsPageContribut
         if (visibilityListeners.containsKey(listener)) {
             return;
         }
-        DDRemoteDamSettingsStore.Listener settingsListener = settings -> listener.run();
-        DDDesktopAccessListener accessListener = new DDDesktopAccessListener() {
+        DBDamSettingsStore.Listener settingsListener = settings -> listener.run();
+        DBDamAccessListener accessListener = new DBDamAccessListener() {
             @Override
             public void accessChanging() {
             }
@@ -75,8 +75,8 @@ public class DDMcpConnectionsContribution implements McpConnectionsPageContribut
             }
         };
         visibilityListeners.put(listener, new VisibilityListeners(settingsListener, accessListener, preferenceListener));
-        DDRemoteDamSettingsStore.getInstance().addListener(settingsListener);
-        DDDesktopAccessService.getInstance().addAccessListener(accessListener);
+        DBDamSettingsStore.getInstance().addListener(settingsListener);
+        DBDamAccessService.getInstance().addAccessListener(accessListener);
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(preferenceListener);
     }
 
@@ -84,8 +84,8 @@ public class DDMcpConnectionsContribution implements McpConnectionsPageContribut
     public synchronized void removeVisibilityListener(@NotNull Runnable listener) {
         VisibilityListeners listeners = visibilityListeners.remove(listener);
         if (listeners != null) {
-            DDRemoteDamSettingsStore.getInstance().removeListener(listeners.settings());
-            DDDesktopAccessService.getInstance().removeAccessListener(listeners.access());
+            DBDamSettingsStore.getInstance().removeListener(listeners.settings());
+            DBDamAccessService.getInstance().removeAccessListener(listeners.access());
             DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(listeners.preferences());
         }
     }
@@ -123,8 +123,8 @@ public class DDMcpConnectionsContribution implements McpConnectionsPageContribut
     }
 
     private record VisibilityListeners(
-        @NotNull DDRemoteDamSettingsStore.Listener settings,
-        @NotNull DDDesktopAccessListener access,
+        @NotNull DBDamSettingsStore.Listener settings,
+        @NotNull DBDamAccessListener access,
         @NotNull DBPPreferenceListener preferences
     ) {
     }

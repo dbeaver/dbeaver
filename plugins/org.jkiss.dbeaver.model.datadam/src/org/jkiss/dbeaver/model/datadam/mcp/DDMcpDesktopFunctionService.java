@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretPromptContext;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,32 +48,19 @@ import java.util.concurrent.TimeUnit;
 public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
     private static final Log log = Log.getLog(DDMcpDesktopFunctionService.class);
 
-    private final DDMcpFunctionRegistry registry = DDMcpFunctionRegistry.getInstance();
     private final DDMcpConnectionCatalog connections = DDMcpConnectionCatalog.getInstance();
-    private final DDMcpAiFunctionCatalog catalog = new DDMcpAiFunctionCatalog(connections);
+    private final DDMcpAiFunctionCatalog catalog = new DDMcpAiFunctionCatalog();
 
     @NotNull
     @Override
     public List<DDMcpFunctionDescriptor> getFunctions() throws DDMcpFunctionException {
-        List<DDMcpFunctionDescriptor> functions = new ArrayList<>(registry.getDescriptors());
-        for (DDMcpFunctionDescriptor function : catalog.getFunctions()) {
-            if (registry.getDescriptor(function.id()) == null) {
-                functions.add(function);
-            } else {
-                log.warn("Skipping DBeaver MCP function with duplicate ID: " + function.id());
-            }
-        }
-        return functions;
+        return catalog.getFunctions();
     }
 
     @NotNull
     @Override
     public DDMcpFunctionResult callFunction(@NotNull DDMcpFunctionCall call) throws DDMcpFunctionException {
         log.debug("Calling DataDam MCP function " + call.functionId());
-        DDMcpFunctionExtensionDescriptor descriptor = registry.getDescriptor(call.functionId());
-        if (descriptor != null) {
-            return descriptor.getInstance().call(call.arguments());
-        }
         AIFunctionDescriptor aiFunction = catalog.getFunction(call.functionId());
         if (aiFunction != null) {
             return callAiFunction(aiFunction, call.arguments());
@@ -88,11 +74,12 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
         @NotNull Map<String, Object> arguments
     ) throws DDMcpFunctionException {
         Map<String, Object> functionArguments = new LinkedHashMap<>(arguments);
-        String projectId = requiredString(functionArguments, DDMcpAiFunctionCatalog.PROJECT_ID_PARAMETER);
-        String datasourceId = requiredString(functionArguments, DDMcpAiFunctionCatalog.DATASOURCE_ID_PARAMETER);
         var monitor = new VoidProgressMonitor();
         try (DBSSecretPromptContext.Scope ignored = DBSSecretPromptContext.disablePrompts()) {
-            AIDatabaseContext databaseContext = createDatabaseContext(projectId, datasourceId, monitor);
+            AIDatabaseContext databaseContext = function.getPurpose() == AIFunctionPurpose.DAM ? null : createDatabaseContext(
+                requiredString(functionArguments, DDMcpAiFunctionCatalog.PROJECT_ID_PARAMETER),
+                requiredString(functionArguments, DDMcpAiFunctionCatalog.DATASOURCE_ID_PARAMETER),
+                monitor);
             if (databaseContext == null) {
                 log.debug("No database context available for DataDam MCP function " + function.getFullId());
             }
@@ -100,6 +87,9 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
             AIFunctionResult result = function.getInstance().callFunction(context, functionArguments);
             return new DDMcpFunctionResult(result.getValue(), false);
         } catch (DBException e) {
+            if (e.getCause() instanceof DDMcpFunctionException functionError) {
+                throw functionError;
+            }
             log.debug("Cannot call DBeaver function through DataDam MCP", e);
             throw new DDMcpFunctionException(DDMcpFunctionErrorCode.FUNCTION_ERROR, CommonUtils.getAllExceptionMessages(e));
         }
