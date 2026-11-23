@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -367,6 +368,11 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         });
         column.setEditingSupport(new EditingSupport(viewer) {
             private final ComboBoxCellEditor editor = new ComboBoxCellEditor(viewer.getTree(), titles, SWT.READ_ONLY);
+
+            {
+                ((CCombo) editor.getControl()).addSelectionListener(
+                    SelectionListener.widgetSelectedAdapter(event -> viewer.applyEditorValue()));
+            }
 
             @Override
             protected ComboBoxCellEditor getCellEditor(Object element) {
