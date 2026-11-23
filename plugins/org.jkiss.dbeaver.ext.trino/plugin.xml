@@ -7,4 +7,17 @@
         <meta id="trino" class="org.jkiss.dbeaver.ext.trino.model.TrinoMetaModel" driverClass="io.trino.jdbc.TrinoDriver" dialect="generic"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.trino.model.data.TrinoValueHandlerProvider"
+                description="Trino data types provider"
+                id="TrinoValueHandlerProvider"
+                parent="GenericValueHandlerProvider"
+                label="Trino data types provider">
+            <datasource class="org.jkiss.dbeaver.ext.trino.model.TrinoDataSource"/>
+            <type name="Geometry"/>
+            <type name="SphericalGeography"/>
+        </provider>
+    </extension>
+
 </plugin>
