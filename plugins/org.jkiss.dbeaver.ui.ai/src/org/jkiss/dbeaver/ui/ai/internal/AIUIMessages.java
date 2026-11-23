@@ -21,6 +21,7 @@ import org.eclipse.osgi.util.NLS;
 public class AIUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.internal.AIUIMessages"; //$NON-NLS-1$
 
+    public static String ai_mcp_connections_info;
     public static String ai_mcp_connections_connection;
     public static String ai_mcp_connections_driver;
     public static String ai_mcp_connections_save_error_message;

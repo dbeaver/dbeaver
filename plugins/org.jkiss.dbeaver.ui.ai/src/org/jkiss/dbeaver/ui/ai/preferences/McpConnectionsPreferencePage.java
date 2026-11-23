@@ -52,6 +52,8 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.controls.CInfoLabel;
+import org.jkiss.dbeaver.ui.forms.HintLabel;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
@@ -92,6 +94,8 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         Composite content = UIUtils.createComposite(parent, 1);
         content.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        new CInfoLabel(content, AIUIMessages.ai_mcp_connections_info, DBIcon.SMALL_INFO,
+            UIUtils.getFontHeight(content) * HintLabel.PREFERRED_WIDTH_IN_LINE_HEIGHTS);
         createGroupingControls(content);
         snapshot.reload();
         createConnectionsList(content);
