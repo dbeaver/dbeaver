@@ -26,70 +26,68 @@ import org.jkiss.dbeaver.model.ai.AIUserProfileCredentials;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 final class AIProfileCredentialsEditor {
+    // users edit copies, so cancelled changes do not reach the profiles used by the chat
     private final Map<AIConfigurationProfile, AIConfigurationProfile> personalProfiles = new LinkedHashMap<>();
-    private final Map<AIConfigurationProfile, Map<String, String>> changes = new LinkedHashMap<>();
+    private final Map<AIConfigurationProfile, Map<String, String>> loadedCredentials = new LinkedHashMap<>();
+    private final Map<AIConfigurationProfile, Map<String, String>> editedCredentials = new LinkedHashMap<>();
     private final Map<AIConfigurationProfile, DBException> loadErrors = new LinkedHashMap<>();
     private boolean profilesLoaded;
 
     void loadProfiles(@NotNull AIConfigurationProfile[] profiles, boolean canManageConfiguration)
         throws InvocationTargetException, InterruptedException {
-        Map<AIConfigurationProfile, DBException> errors = new LinkedHashMap<>();
         UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
             for (AIConfigurationProfile profile : profiles) {
                 if (!profile.isAvailable()) {
                     continue;
                 }
                 try {
-                    if (canManageConfiguration) {
-                        profile.resolveSecrets();
+                    AIConfigurationProfile target = canManageConfiguration ? profile : copyProfile(profile);
+                    if (AIUserProfileCredentials.isUserProfile(target)) {
+                        AIUserProfileCredentials.load(target);
+                        loadedCredentials.put(profile, AIUserProfileCredentials.getCredentials(target.getConfiguration()));
                     } else {
-                        AIConfigurationProfile personalProfile = new AIConfigurationProfile();
-                        personalProfile.setProfileId(profile.getProfileId());
-                        personalProfile.setProfileName(profile.getProfileName());
-                        personalProfile.setEngineId(profile.getEngineId());
-                        AIEngineProperties configuration = profile.getConfiguration();
-                        personalProfile.setConfiguration(AISettingsManager.READ_PROPS_GSON.fromJson(
-                            AISettingsManager.READ_PROPS_GSON.toJson(configuration), configuration.getClass()));
-                        personalProfile.useUserCredentialScope(profile);
-                        AIUserProfileCredentials.resolve(personalProfile);
-                        personalProfiles.put(profile, personalProfile);
+                        target.resolveSecrets();
+                    }
+                    if (target != profile) {
+                        personalProfiles.put(profile, target);
                     }
                 } catch (DBException e) {
-                    errors.put(profile, e);
+                    loadErrors.put(profile, e);
                 }
             }
         });
-        loadErrors.clear();
-        loadErrors.putAll(errors);
         profilesLoaded = true;
     }
 
     void createControl(@NotNull Composite parent, @NotNull AIConfigurationProfile profile) throws DBException {
         checkLoaded(profile);
-        AIConfigurationProfile personal = personalProfiles.get(profile);
-        if (personal == null) {
-            return;
-        }
-        Map<String, String> saved = personal.getResolvedUserCredentials();
-        if (saved == null) {
-            return;
-        }
-        Map<String, String> edits = changes.getOrDefault(profile, Map.of());
-        for (var property : AIUserProfileCredentials.getCredentialProperties(personal.getConfiguration(), true)) {
+        AIEngineProperties properties = getConfiguration(profile);
+        Map<String, String> credentials = getEditedCredentials(profile, properties);
+        for (var property : AIUserProfileCredentials.getCredentialProperties(properties, true)) {
             String id = property.getId();
-            Text editor = UIUtils.createLabelText(parent, property.getDisplayName(),
-                CommonUtils.notEmpty(edits.getOrDefault(id, saved.get(id))),
+            Text editor = UIUtils.createLabelText(parent, property.getDisplayName(), credentials.get(id),
                 SWT.BORDER | (property.isPassword() ? SWT.PASSWORD : SWT.NONE));
-            editor.addModifyListener(event -> changes.computeIfAbsent(profile, key -> new LinkedHashMap<>())
-                .put(id, editor.getText()));
+            editor.addModifyListener(event -> credentials.put(id, editor.getText()));
         }
+    }
+
+    @NotNull
+    private Map<String, String> getEditedCredentials(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull AIEngineProperties properties
+    ) throws DBException {
+        Map<String, String> credentials = editedCredentials.get(profile);
+        if (credentials == null) {
+            credentials = AIUserProfileCredentials.getCredentials(properties);
+            editedCredentials.put(profile, credentials);
+        }
+        return credentials;
     }
 
     @NotNull
@@ -102,19 +100,26 @@ final class AIProfileCredentialsEditor {
         return personal.getConfiguration();
     }
 
-    void saveChanges() throws DBException {
-        for (var entry : personalProfiles.entrySet()) {
-            AIConfigurationProfile profile = entry.getKey();
-            AIConfigurationProfile personal = entry.getValue();
-            if (changes.containsKey(profile)) {
-                AIUserProfileCredentials.save(profile, changes.get(profile));
-                personal.resolveSecrets();
-            } else {
-                AIUserProfileCredentials.saveChanges(personal);
+    void saveChanges(@NotNull AIConfigurationProfile[] profiles) throws DBException {
+        for (AIConfigurationProfile profile : profiles) {
+            AIConfigurationProfile target = personalProfiles.getOrDefault(profile, profile);
+            if (!profile.isAvailable() || loadErrors.containsKey(profile) || !AIUserProfileCredentials.isUserProfile(target)) {
+                continue;
             }
-            profile.resolveSecrets();
+            Map<String, String> edited = editedCredentials.remove(profile);
+            if (edited != null) {
+                AIUserProfileCredentials.setCredentials(target.getConfiguration(), edited);
+            }
+            Map<String, String> credentials = AIUserProfileCredentials.getCredentials(target.getConfiguration());
+            if (credentials.equals(loadedCredentials.get(profile))) {
+                continue;
+            }
+            AIUserProfileCredentials.save(target);
+            loadedCredentials.put(profile, credentials);
+            if (target != profile) {
+                AIUserProfileCredentials.load(profile);
+            }
         }
-        changes.clear();
     }
 
     boolean isLoaded() {
@@ -126,5 +131,17 @@ final class AIProfileCredentialsEditor {
         if (error != null) {
             throw error;
         }
+    }
+
+    @NotNull
+    private static AIConfigurationProfile copyProfile(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIConfigurationProfile copy = new AIConfigurationProfile();
+        copy.setProfileId(profile.getProfileId());
+        copy.setProfileName(profile.getProfileName());
+        copy.setEngineId(profile.getEngineId());
+        AIEngineProperties configuration = profile.getConfiguration();
+        copy.setConfiguration(AISettingsManager.READ_PROPS_GSON.fromJson(
+            AISettingsManager.READ_PROPS_GSON.toJson(configuration), configuration.getClass()));
+        return copy;
     }
 }

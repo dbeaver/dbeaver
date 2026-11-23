@@ -135,26 +135,20 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         if (!hasAccessToPage() || !isValid()) {
             return false;
         }
-        try {
-            settings.validateCurrentSettings();
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_save_error_title, null, e);
-            return false;
-        }
-        if (!canManageConfiguration()) {
-            return savePersonalSettings();
-        }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (!flushSelectedProfile()) {
             return false;
         }
-        saveSelectedDefault();
-        reloadEngines();
-        try {
-            AISettingsManager.getInstance().saveSettingsOrThrow(this.settings);
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_save_error_title, null, e);
+        if (DBWorkbench.isDistributed() && !saveUserCredentials()) {
             return false;
+        }
+        if (selectedProfile != null && selectedProfile.isAvailable()
+            && selectedProfile != settings.getDefaultConfigurationOrNull()) {
+            AISettingsManager.getInstance().setDefaultConfiguration(selectedProfile);
+        }
+        reloadEngines();
+        if (canManageConfiguration()) {
+            AISettingsManager.getInstance().saveSettings(this.settings);
         }
         AISettingsManager.getInstance().notifyProfilesChanged();
         try {
@@ -344,27 +338,16 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         return composite;
     }
 
-    private void saveSelectedDefault() {
-        if (selectedProfile != null && selectedProfile.isAvailable() && selectedProfile != settings.getDefaultConfigurationOrNull()) {
-            AISettingsManager.getInstance().setDefaultConfiguration(selectedProfile);
-        }
-    }
-
-    private boolean savePersonalSettings() {
-        if (!flushSelectedProfile()) {
-            return false;
-        }
+    private boolean saveUserCredentials() {
+        AIConfigurationProfile[] profiles = getVisibleProfiles();
         try {
             UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
                 try {
-                    credentialsEditor.saveChanges();
-                    saveSelectedDefault();
-                    AISettingsManager.getInstance().notifyProfilesChanged();
+                    credentialsEditor.saveChanges(profiles);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
             });
-            profilesViewer.refresh();
             return true;
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_settings_user_save_error_title, null, e.getCause());
@@ -403,27 +386,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         }
         selectedProfile.setProfileName(profileNameText.getText());
         try {
-            AIEngineProperties properties = selectedProfile.getConfiguration();
-            boolean wasGlobal = properties.isGlobal();
-            activeEngineConfiguratorPage.saveSettings(properties);
-            if (DBWorkbench.isDistributed() && wasGlobal && !properties.isGlobal()) {
-                // initialize the private baseline without losing pending editor values
-                try {
-                    UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
-                        try {
-                            selectedProfile.resolveSecrets();
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    });
-                } catch (InvocationTargetException | InterruptedException e) {
-                    properties.setGlobal(true);
-                    throw e;
-                }
-                activeEngineConfiguratorPage.saveSettings(properties);
-            }
+            activeEngineConfiguratorPage.saveSettings(selectedProfile.getConfiguration());
             return true;
-        } catch (DBException | InvocationTargetException e) {
+        } catch (DBException e) {
             log.error("Error saving engine settings", e);
 
             DBWorkbench.getPlatformUI().showError(
@@ -431,8 +396,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 NLS.bind(AIUIMessages.ai_engines_page_save_error_message, selectedProfile.getEngineId()),
                 e
             );
-            return false;
-        } catch (InterruptedException e) {
             return false;
         }
     }
@@ -489,42 +452,20 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         )) {
             return;
         }
-        AIConfigurationProfile profile = selectedProfile;
-        int selectionIndex = profilesViewer.getTable().getSelectionIndex();
-        Throwable deletionError = null;
-        try {
-            UIUtils.getDialogRunnableContext().run(true, false, monitor -> {
-                try {
-                    AISettingsManager.getInstance().removeConfiguration(settings, profile);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            deletionError = e.getCause();
-        } catch (InterruptedException e) {
-            deletionError = e;
-        }
-        if (deletionError != null && settings.getConfigurationOrNull(profile.getProfileId()) == profile) {
-            DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_delete_error_title, null, deletionError);
-            return;
-        }
+        settings.removeConfiguration(selectedProfile);
         selectedProfile = null;
         showProfileSettings();
+        int selectionIndex = profilesViewer.getTable().getSelectionIndex();
 
         reloadEngines();
-        AIConfigurationProfile remaining = settings.getConfigurationOrNull(profile.getProfileId());
-        if (remaining != null) {
-            profilesViewer.setSelection(new StructuredSelection(remaining));
-        } else {
-            selectionIndex = Math.min(selectionIndex, profilesViewer.getTable().getItemCount() - 1);
-            if (selectionIndex >= 0) {
-                profilesViewer.setSelection(new StructuredSelection(settings.getConfigurations()[selectionIndex]));
-            }
+        if (selectionIndex >= profilesViewer.getTable().getItemCount()) {
+            selectionIndex--;
         }
-        if (deletionError != null) {
-            DBWorkbench.getPlatformUI().showError(AIUIMessages.ai_engines_page_delete_error_title, null, deletionError);
+        if (selectionIndex >= 0) {
+            profilesViewer.setSelection(new StructuredSelection(settings.getConfigurations()[selectionIndex]));
         }
+
+        AISettingsManager.getInstance().saveSettings(this.settings);
     }
 
     private void createProfilesColumns() {

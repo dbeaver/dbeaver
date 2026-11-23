@@ -43,7 +43,6 @@ public class AISettings implements DBPAdaptable {
     private boolean aiDisabled;
 
     private final Map<String, AIConfigurationProfile> configurations = new LinkedHashMap<>();
-    private transient volatile boolean stale;
     private String defaultConfiguration;
     private transient String userDefaultConfiguration;
 
@@ -148,7 +147,6 @@ public class AISettings implements DBPAdaptable {
         profile.setProfileId(id);
         profile.setEngineId(engine.getId());
         profile.setConfiguration(engine.createPropertiesInstance());
-        profile.setUserCredentialSettings(this);
         profile.resolveSecrets();
         configurations.put(id, profile);
 
@@ -213,37 +211,20 @@ public class AISettings implements DBPAdaptable {
     }
 
     public void removeConfiguration(@NotNull AIConfigurationProfile profile) {
-        removeProfile(profile);
-        if (profile.isAvailable()) {
-            try {
-                profile.getConfiguration().deleteSecrets(profile);
-            } catch (DBException e) {
-                log.error(e);
-            }
-        }
-    }
-
-    public void removeProfile(@NotNull AIConfigurationProfile profile) {
         configurations.remove(profile.getProfileId());
         if (CommonUtils.equalObjects(defaultConfiguration, profile.getProfileId())) {
             defaultConfiguration = configurations.isEmpty() ? null : configurations.keySet().iterator().next();
         }
         // Remove in legacy config too
         engineConfigurations.remove(profile.getEngineId());
-    }
-
-    public void markStale() {
-        stale = true;
-    }
-
-    public void validateCurrentSettings() throws DBException {
-        if (AIUserProfileCredentials.isAvailable() && stale) {
-            throw new DBException("AI settings have changed. Reopen the settings before saving.");
+        if (!profile.isAvailable()) {
+            return;
         }
-    }
-
-    boolean isStale() {
-        return stale;
+        try {
+            profile.deleteSecrets();
+        } catch (DBException e) {
+            log.error(e);
+        }
     }
 
     /**
@@ -338,7 +319,6 @@ public class AISettings implements DBPAdaptable {
                 ep.getValue().setProfileId(ep.getKey());
             }
         }
-        configurations.values().forEach(profile -> profile.setUserCredentialSettings(this));
     }
 
     public void prepareSettingsSaving() throws DBException {

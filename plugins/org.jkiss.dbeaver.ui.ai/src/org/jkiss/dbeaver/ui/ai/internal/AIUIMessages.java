@@ -159,7 +159,6 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_duplicate_error_title;
     public static String ai_engines_page_duplicate_error_message;
     public static String ai_engines_page_delete_confirm_title;
-    public static String ai_engines_page_delete_error_title;
     public static String ai_profiles_no_personal_profiles;
     public static String ai_profiles_select_personal_profile;
     public static String ai_engines_page_delete_confirm_message;
