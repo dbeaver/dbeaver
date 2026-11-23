@@ -53,9 +53,7 @@ public class AISettingsManager {
     private static AISettingsManager instance = null;
 
     public static final Gson READ_PROPS_GSON = createPropertiesLoadGson();
-    private static final Gson NON_SECURE_PROPS_GSON = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
-        .registerTypeAdapter(AICredentialsProvider.class, new DBAAuthProviderAdapter())
-        .create();
+    public static final Gson SAVE_PROPS_GSON = createPropertiesSaveGson();
 
     private final Set<AISettingsEventListener> settingsChangedListeners = Collections.synchronizedSet(new HashSet<>());
 
@@ -201,7 +199,7 @@ public class AISettingsManager {
             }
 
             settings.prepareSettingsSaving();
-            String content = getSavePropertiesGson().toJson(settings);
+            String content = SAVE_PROPS_GSON.toJson(settings);
 
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
 
@@ -243,8 +241,13 @@ public class AISettingsManager {
     }
 
     @NotNull
-    public static Gson getSavePropertiesGson() {
-        return saveSecretsAsPlainText() ? READ_PROPS_GSON : NON_SECURE_PROPS_GSON;
+    private static Gson createPropertiesSaveGson() {
+        if (saveSecretsAsPlainText()) {
+            return createPropertiesLoadGson();
+        } else {
+            return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
+                .registerTypeAdapter(AICredentialsProvider.class, new DBAAuthProviderAdapter()).create();
+        }
     }
 
     @NotNull
@@ -336,7 +339,7 @@ public class AISettingsManager {
         boolean serializeNulls = out.getSerializeNulls();
         out.setSerializeNulls(true);
         try {
-            READ_PROPS_GSON.getAdapter(JsonElement.class).write(out, json);
+            SAVE_PROPS_GSON.getAdapter(JsonElement.class).write(out, json);
         } finally {
             out.setSerializeNulls(serializeNulls);
         }
@@ -355,7 +358,7 @@ public class AISettingsManager {
                     out.name("properties");
                     try {
                         AIEngineProperties propertiesForSave = getPropertiesForSave(properties);
-                        getSavePropertiesGson().toJson(propertiesForSave, propertiesForSave.getClass(), out);
+                        SAVE_PROPS_GSON.toJson(propertiesForSave, propertiesForSave.getClass(), out);
                     } catch (DBException e) {
                         throw new IOException("Error saving AI engine '" + entry.getKey() + "'", e);
                     }
@@ -426,7 +429,7 @@ public class AISettingsManager {
             out.name("configuration");
             try {
                 AIEngineProperties configuration = getPropertiesForSave(value.getConfiguration());
-                getSavePropertiesGson().toJson(configuration, configuration.getClass(), out);
+                SAVE_PROPS_GSON.toJson(configuration, configuration.getClass(), out);
             } catch (DBException e) {
                 throw new IOException("Error saving AI profile '" + value.getProfileId() + "'", e);
             }
