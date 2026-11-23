@@ -145,4 +145,14 @@ public class DBDamRpcRegistrationRegistry {
             registration.register(endpoint, settings);
         }
     }
+
+    public void unregisterEndpoint(@NotNull MessagingRpcEndpoint endpoint) {
+        for (DBDamRpcRegistration registration : registrations) {
+            try {
+                registration.unregister(endpoint);
+            } catch (RuntimeException e) {
+                log.warn("Cannot unregister desktop RPC service " + registration.getId(), e);
+            }
+        }
+    }
 }
