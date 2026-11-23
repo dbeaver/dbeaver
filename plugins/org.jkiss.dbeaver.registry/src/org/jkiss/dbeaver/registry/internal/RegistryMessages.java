@@ -21,6 +21,14 @@ import org.eclipse.osgi.util.NLS;
 public class RegistryMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.registry.internal.RegistryMessages"; //$NON-NLS-1$
 
+    public static String data_source_update_error_title;
+    public static String data_source_update_error_message;
+    public static String data_source_save_error_title;
+    public static String data_source_save_error_message;
+    public static String data_source_save_error;
+    public static String auth_profile_secrets_remove_error_title;
+    public static String auth_profile_secrets_remove_error_message;
+
     public static String dialog_connection_auth_title;
     public static String dialog_connection_auth_title_for_handler;
 

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.erd.internal.ERDMessages;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -177,7 +178,7 @@ public class ERDUtils {
                             | DBSObjectContainer.STRUCT_ASSOCIATIONS
                             | DBSObjectContainer.STRUCT_ATTRIBUTES));
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Cache database model", "Error caching database model", e);
+                DBWorkbench.getPlatformUI().showError(ERDMessages.erd_cache_model_title, ERDMessages.erd_cache_model_error_message, e);
             }
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
             if (entities != null) {

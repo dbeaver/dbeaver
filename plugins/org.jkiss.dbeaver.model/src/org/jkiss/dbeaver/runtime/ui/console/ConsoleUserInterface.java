@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
@@ -218,7 +219,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         try {
             processDescriptor.execute();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Execute process", processDescriptor.getName(), e);
+            DBWorkbench.getPlatformUI().showError(ModelMessages.process_execute_error_title, processDescriptor.getName(), e);
         }
     }
 

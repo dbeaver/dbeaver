@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class SQLEditorHandlerRenameFile extends AbstractDataSourceHandler {
@@ -50,7 +52,7 @@ public class SQLEditorHandlerRenameFile extends AbstractDataSourceHandler {
 
         IFile file = EditorUtils.getFileFromInput(editor.getEditorInput());
         if (file == null) {
-            DBWorkbench.getPlatformUI().showError("Rename", "Can't rename - no source file");
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_file_rename_title, SQLEditorMessages.sql_file_rename_no_source);
             return null;
         }
         DBPProject resourceProject = EditorUtils.getFileProject(editor.getEditorInput());
@@ -84,7 +86,8 @@ public class SQLEditorHandlerRenameFile extends AbstractDataSourceHandler {
                 file.move(newFilePath, true, monitor);
                 file = file.getWorkspace().getRoot().getFile(newFilePath);
             } catch (CoreException e) {
-                DBWorkbench.getPlatformUI().showError("Rename", "Error renaming file '" + file.getName() + "'", e);
+                DBWorkbench.getPlatformUI().showError(
+                    SQLEditorMessages.sql_file_rename_title, NLS.bind(SQLEditorMessages.sql_file_rename_error, file.getName()), e);
             }
             IFile newFile = file;
             String newExtension = file.getFileExtension();

@@ -20,26 +20,30 @@ Imported project encryption keys are not prerequisites for the remote DAM sessio
   A new access operation replaces the scheduled task, and stale tasks cannot invalidate a newer session.
 - Release the session and subscriptions when the platform deactivates plugin services.
 
-`DDRemoteDamDesktopSessionPluginService` owns activation and shutdown without Workbench, SWT or UI listeners. Repeated
-activation and deactivation are harmless, and shutdown never creates a new session service. `DDDesktopInitializer`
+`DBDamSessionPluginService` owns activation and shutdown without Workbench, SWT or UI listeners. Repeated
+activation and deactivation are harmless, and shutdown never creates a new session service. `DBDamInitializer`
 restores saved authorization and initializes project synchronization; the session lifecycle contribution does not load tokens.
 
 Messages use the shared contracts from the `com.dbeaver.datadam.dam.remote.api` bundle. Topic subscriptions survive reconnects,
 but outgoing messages are rejected while disconnected rather than buffered for later delivery.
-Service consumers obtain the channel from `DDRemoteDamDesktopSessionService` and release their subscriptions when no longer needed.
+Service consumers obtain the channel from `DBDamSessionService` and release their subscriptions when no longer needed.
 The shared WebSocket client's 90-second idle timeout detects missing server traffic; Remote DAM must send its
 heartbeat more frequently than this timeout (the server default is 30 seconds). Desktop does not add another heartbeat protocol.
 
-## DAM identity
+## Dam identity
 
-The `hello` message includes `clientDamId`: unpadded URL-safe Base64 of the UTF-8 string `workspaceId + ':' + localHostId`.
-The workspace ID comes from the active workspace. The local host ID comes from `BaseWorkspaceImpl.getLocalHostId()`,
-reusing the existing MAC-derived host identity and its fallback values rather than selecting a network interface separately.
-The raw MAC address is not sent.
+The `hello` message includes `clientDamId`: unpadded URL-safe Base64 of the UTF-8 string `workspaceId + ':' + macHash`.
+The workspace ID comes from the active workspace. `RuntimeUtils.selectMacAddress()` prefers regular adapters over known
+virtual adapters, bridges, and tunnels, with peer interfaces such as `awdl` and `llw` as a last resort. It breaks ties by
+interface name, without relying on the active route or the operating system's enumeration order.
 
-`clientDamId` stays the same across reconnects and Desktop restarts while the workspace ID and local host ID remain unchanged.
+`RuntimeUtils.hashMacAddress()` preserves the previous hash for the same MAC. When no usable MAC is found, Desktop uses
+`NOMACADDR`; if interface enumeration or hashing fails, it uses `XXXXXXXXXX`. The raw MAC address is not sent.
+
+Desktop reuses `clientDamId` across reconnects. Across restarts it stays the same as long as the workspace ID and MAC-derived
+value stay the same. If the new selector picks a different MAC after an upgrade, the server may register a new Dam.
 `appInstanceId` identifies the current Desktop process, and the server assigns a new `damSessionId` to each WebSocket connection.
-Neither replaces the stable DAM identity.
+Neither replaces the Dam identity.
 
 ## Channel state
 
@@ -63,7 +67,7 @@ The session service owns one bidirectional RPC endpoint for the current Desktop 
 their topics and can use the default Gson codec or supply their own codec per proxy or implementation:
 
 ```java
-MessagingRpcEndpoint endpoint = DDRemoteDamDesktopSessionService.getInstance().getRpc();
+MessagingRpcEndpoint endpoint = DBDamSessionService.getInstance().getRpc();
 StorageService ordinaryFiles = endpoint.proxy("files", StorageService.class);
 DDRemoteDamGsonRpcCodec codec = new DDRemoteDamGsonRpcCodec(
     new GsonBuilder().registerTypeAdapter(FileInfo.class, fileInfoAdapter).create());

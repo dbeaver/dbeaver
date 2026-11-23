@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.ui.datadam.project.handler;
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
@@ -34,16 +34,18 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectJobBatchResult;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectListing;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
@@ -56,64 +58,81 @@ public class DDProjectImportHandler extends AbstractHandler {
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
         Shell shell = HandlerUtil.getActiveShell(event);
-        List<DDSharedProject> projects = loadProjects();
-        if (projects == null) {
-            return null;
-        }
-        ImportProjectsDialog dialog = new ImportProjectsDialog(shell, projects);
-        if (dialog.open() == Window.OK) {
-            var result = uiManager.importProjects(dialog.getSelectedProjects());
-            if (!result.failures().isEmpty()) {
-                String errors = String.join(
-                    "\n", result.failures().stream()
-                        .map(failure -> failure.projectName() + ": " + failure.error().getMessage()).toList()
-                );
-                MessageDialog.openError(
-                    shell, DDTrackingUIMessages.project_sync_title,
-                    NLS.bind(DDTrackingUIMessages.projects_errors, errors)
-                );
+        AbstractJob job = new AbstractJob(DDTrackingUIMessages.project_sync_import_job) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    List<DDSharedProject> projects = loadProjects(monitor);
+                    if (projects == null) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    List<DDSharedProject> selected = UIUtils.syncExec(new RunnableWithResult<>() {
+                        @Nullable
+                        @Override
+                        public List<DDSharedProject> runWithResult() {
+                            return showImportDialog(shell, projects);
+                        }
+                    });
+                    if (selected == null || monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    return importProjects(selected, monitor);
+                } catch (DBException e) {
+                    UIUtils.asyncExec(() -> showError(DDTrackingUIMessages.project_sync_import_list_failed, e));
+                    return Status.error(DDTrackingUIMessages.project_sync_import_list_failed, e);
+                }
             }
-        }
+        };
+        job.setUser(true);
+        job.schedule();
         return null;
     }
 
     @Nullable
-    private List<DDSharedProject> loadProjects() {
-        DBRRunnableWithResult<List<DDSharedProject>> loader = new DBRRunnableWithResult<>() {
-            @Override
-            public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
-                monitor.beginTask(DDTrackingUIMessages.project_sync_import_list_job, IProgressMonitor.UNKNOWN);
-                try {
-                    List<ProjectListing> listings = uiManager.loadProjectListings(monitor);
-                    if (listings != null && !monitor.isCanceled()) {
-                        List<DDSharedProject> available = new ArrayList<>();
-                        for (ProjectListing listing : listings) {
-                            if (monitor.isCanceled()) {
-                                return;
-                            }
-                            if (listing.localProject() == null && listing.remoteProject() != null) {
-                                available.add(listing.remoteProject());
-                            }
-                        }
-                        result = available;
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                } finally {
-                    monitor.done();
-                }
-            }
-        };
-        try {
-            UIUtils.runInProgressDialog(loader);
-            return loader.getResult();
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(
-                DDTrackingUIMessages.project_sync_title,
-                DDTrackingUIMessages.project_sync_import_list_failed, e.getTargetException()
-            );
+    private List<DDSharedProject> loadProjects(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<ProjectListing> listings = uiManager.loadProjectListings(monitor);
+        if (listings == null || monitor.isCanceled()) {
             return null;
         }
+        return listings.stream()
+            .filter(listing -> listing.localProject() == null && listing.remoteProject() != null)
+            .map(ProjectListing::remoteProject).toList();
+    }
+
+    @Nullable
+    private List<DDSharedProject> showImportDialog(@NotNull Shell shell, @NotNull List<DDSharedProject> projects) {
+        if (shell.isDisposed()) {
+            return null;
+        }
+        ImportProjectsDialog dialog = new ImportProjectsDialog(shell, projects);
+        return dialog.open() == Window.OK ? dialog.getSelectedProjects() : null;
+    }
+
+    @NotNull
+    public IStatus importProjects(@NotNull List<DDSharedProject> selected, @NotNull DBRProgressMonitor monitor) {
+        ProjectJobBatchResult<?> result = uiManager.importProjects(selected, monitor);
+        UIUtils.asyncExec(() -> {
+            if (!result.canceled()) {
+                if (!result.results().isEmpty()) {
+                    DDUIUtils.showNotification(DDTrackingUIMessages.project_sync_title,
+                        NLS.bind(DDTrackingUIMessages.project_sync_import_success, result.results().size()),
+                        DBPMessageType.INFORMATION, null);
+                }
+                if (!result.failures().isEmpty()) {
+                    String errors = String.join("\n", result.failures().stream()
+                        .map(failure -> failure.projectName() + ": " + failure.error().getMessage()).toList());
+                    DDUIUtils.showNotification(DDTrackingUIMessages.project_sync_title,
+                        NLS.bind(DDTrackingUIMessages.projects_errors, errors), DBPMessageType.ERROR, null);
+                }
+            }
+        });
+        return result.canceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+    }
+
+    private void showError(@NotNull String message, @NotNull Throwable error) {
+        DDUIUtils.showNotification(DDTrackingUIMessages.project_sync_title, message, DBPMessageType.ERROR,
+            () -> DDUIUtils.showError(DDTrackingUIMessages.project_sync_title, message, error));
     }
 
     private static class ImportProjectsDialog extends BaseDialog {

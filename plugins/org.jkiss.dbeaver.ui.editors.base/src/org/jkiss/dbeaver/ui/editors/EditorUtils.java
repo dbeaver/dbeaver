@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Control;
@@ -734,7 +735,9 @@ public class EditorUtils {
                 filesByHandler.computeIfAbsent(handler, d -> new ArrayList<>()).add(path);
                 openedFiles.add(path);
             } else {
-                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
+                DBWorkbench.getPlatformUI().showError(
+                    EditorsMessages.editor_open_file_title,
+                    NLS.bind(EditorsMessages.editor_open_file_not_found, path));
             }
         }
         return filesByHandler;
@@ -763,7 +766,9 @@ public class EditorUtils {
                     filesByExtension.computeIfAbsent(extension, d -> new ArrayList<>()).add(path);
                 }
             } else {
-                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
+                DBWorkbench.getPlatformUI().showError(
+                    EditorsMessages.editor_open_file_title,
+                    NLS.bind(EditorsMessages.editor_open_file_not_found, path));
             }
         }
         return filesByExtension;
@@ -808,7 +813,9 @@ public class EditorUtils {
                     fileOpenHandler.openFiles(pathList, currentContainer, selectedAction);
                 }
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
+                DBWorkbench.getPlatformUI().showError(
+                    EditorsMessages.editor_open_file_error_title,
+                    NLS.bind(EditorsMessages.editor_open_file_error_message, pathList), e);
             }
         }
         return true;

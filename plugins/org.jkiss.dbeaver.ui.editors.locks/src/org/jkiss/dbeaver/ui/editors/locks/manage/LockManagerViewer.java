@@ -21,7 +21,6 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
@@ -233,8 +232,8 @@ public class LockManagerViewer {
     public void alterSession() {
         DBAServerLock selectedLock = curLock;
         if (selectedLock != null && UIUtils.confirmAction(
-                "Terminate",
-                NLS.bind("Terminate session?", "Terminate"))) {
+                LocksUIMessages.session_terminate_confirm_title,
+                LocksUIMessages.session_terminate_confirm_message)) {
 
             lockTable.createAlterService(selectedLock, null).schedule();
         }

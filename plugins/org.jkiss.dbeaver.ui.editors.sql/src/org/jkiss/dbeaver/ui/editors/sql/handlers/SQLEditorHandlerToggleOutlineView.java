@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
 import java.util.Map;
 
@@ -54,7 +55,7 @@ public class SQLEditorHandlerToggleOutlineView extends AbstractHandler implement
                 }
             }
         } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Toggle outline", "Can't open outline view", e);
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_outline_toggle_title, SQLEditorMessages.sql_outline_open_error, e);
         }
         return null;
     }

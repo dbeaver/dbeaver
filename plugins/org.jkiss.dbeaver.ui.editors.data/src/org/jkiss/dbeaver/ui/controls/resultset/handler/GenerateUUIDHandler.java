@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectBase;
 
@@ -80,7 +81,7 @@ public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
                             length, uuid);
                         textViewer.getSelectionProvider().setSelection(new TextSelection(offset + uuid.length(), 0));
                     } catch (BadLocationException e) {
-                        DBWorkbench.getPlatformUI().showError("Insert UUID", "Error inserting UUID in text editor", e);
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_insert_uuid_title, ResultSetMessages.error_insert_uuid_message, e);
                     }
                 }
             } else {

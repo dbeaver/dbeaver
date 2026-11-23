@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,16 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures.ArraySubquerySemantics;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryConnectionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -40,7 +44,7 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
     private final SQLQueryComplexName procName;
     @NotNull
     private final List<SQLQueryValueExpression> operands;
-
+    private final boolean arraySubqueryConstructor;
     @Nullable
     private DBSProcedure procedure = null;
 
@@ -50,12 +54,14 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryComplexName procName,
         @NotNull List<SQLQueryValueExpression> operands,
-        boolean forRows
+        boolean forRows,
+        boolean arraySubqueryConstructor
     ) {
         super(syntaxNode, operands.toArray(SQLQueryValueExpression[]::new));
         this.procName =  procName;
         this.operands = operands;
         this.forRows = forRows;
+        this.arraySubqueryConstructor = arraySubqueryConstructor;
     }
 
     @Nullable
@@ -80,6 +86,44 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
     @NotNull
     public List<SQLQueryValueExpression> getOperands() {
         return this.operands;
+    }
+
+    /** Whether this call constructs an array from the rows of its query operand. */
+    public boolean isArraySubqueryConstructor() {
+        return this.arraySubqueryConstructor;
+    }
+
+    @NotNull
+    private SQLQueryExprType resolveArraySubqueryType(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull SQLQuerySymbolOrigin origin
+    ) {
+        SQLQuerySymbolEntry name = this.procName.parts.getFirst();
+        name.getSymbol().setSymbolClass(SQLQuerySymbolClass.FUNCTION);
+        name.setOrigin(origin);
+        SQLQueryRowsSourceModel source = ((SQLQueryValueSubqueryExpression) this.operands.getFirst()).getSource();
+        if (!source.isResolved() && !source.tryResolveValueRelations(context, statistics)) {
+            return SQLQueryExprType.UNKNOWN;
+        }
+        List<SQLQueryResultColumn> columns = source.getRowsDataContext().getColumnsList();
+        if (columns.size() != 1) {
+            statistics.appendError(this.getSyntaxNode(), "ARRAY subquery must return exactly one column");
+            return SQLQueryExprType.UNKNOWN;
+        }
+        SQLQueryExprType elementType = columns.getFirst().type;
+        ArraySubquerySemantics semantics = context.getConnection().dialect.getDialectFeatures().getArraySubquerySemantics();
+        if (elementType.getDataKind() == DBPDataKind.ARRAY &&
+            semantics == ArraySubquerySemantics.NO_NESTED_ARRAY) {
+            statistics.appendError(this.getSyntaxNode(), "ARRAY subquery cannot contain array elements in this dialect");
+            return SQLQueryExprType.UNKNOWN;
+        }
+        // PostgreSQL promotes the array's dimension, not its SQL element type.
+        if (elementType.getDataKind() == DBPDataKind.ARRAY &&
+            semantics == ArraySubquerySemantics.MULTIDIMENSIONAL) {
+            return elementType;
+        }
+        return SQLQueryExprType.forSynthesizedArray(STMKnownRuleNames.ARRAY_TERM, name, elementType);
     }
 
     @Override
@@ -117,6 +161,10 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
             return SQLQueryExprType.UNKNOWN;
         }
 
+        if (this.isArraySubqueryConstructor()) {
+            return this.resolveArraySubqueryType(context, statistics, origin);
+        }
+
         if (context.getConnection().isDummy()) {
             this.procName.parts.forEach(p -> p.getSymbol().setSymbolClass(SQLQuerySymbolClass.FUNCTION));
             return SQLQueryExprType.UNKNOWN;
@@ -136,7 +184,10 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
 
         if (this.procName.parts.size() == 1) {
             SQLQuerySymbolEntry name = this.procName.parts.getFirst();
-            if (context.getConnection().dialect.getFunctions().contains(name.getName())) {
+            // Canonical names may be quoted for keywords even when the call itself is unquoted.
+            String rawName = name.getRawName();
+            if (!context.getConnection().dialect.isQuotedIdentifier(rawName)
+                && context.getConnection().dialect.isFunction(rawName)) {
                 name.getSymbol().setSymbolClass(SQLQuerySymbolClass.FUNCTION);
                 name.setOrigin(origin);
                 return SQLQueryExprType.UNKNOWN;

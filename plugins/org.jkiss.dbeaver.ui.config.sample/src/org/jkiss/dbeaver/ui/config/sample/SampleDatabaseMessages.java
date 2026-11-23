@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import org.eclipse.osgi.util.NLS;
 
 public class SampleDatabaseMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.config.sample.SampleDatabaseResources"; //$NON-NLS-1$
+
+    public static String connection_create_error_title;
 
     public static String dialog_create_title;
     public static String dialog_create_description;

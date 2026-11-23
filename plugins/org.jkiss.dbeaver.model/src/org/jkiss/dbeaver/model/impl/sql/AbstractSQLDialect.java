@@ -229,6 +229,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return functions.values();
     }
 
+    @Override
+    public boolean isFunction(@NotNull String name) {
+        return functions.containsKey(name.toUpperCase(DEF_LOCALE));
+    }
+
     @NotNull
     @Override
     public Collection<String> getDataTypes(@Nullable DBPDataSource dataSource) {

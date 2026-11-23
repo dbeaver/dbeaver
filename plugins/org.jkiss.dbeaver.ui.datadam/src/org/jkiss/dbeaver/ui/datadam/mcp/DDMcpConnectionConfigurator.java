@@ -17,31 +17,46 @@
 package org.jkiss.dbeaver.ui.datadam.mcp;
 
 import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
-import org.eclipse.swt.SWT;
+import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.IWizardContainer;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
+import org.jkiss.dbeaver.ui.controls.CInfoLabel;
+import org.jkiss.dbeaver.ui.datadam.DBDamService;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
+import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.management.DDManagementActions;
+import org.jkiss.dbeaver.ui.forms.HintLabel;
+import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<PrefPageDataSourceAI, PrefPageDataSourceAI> {
     private static final Log log = Log.getLog(DDMcpConnectionConfigurator.class);
     private Button enableCheck;
+    private Composite settingsControls;
     private boolean resetPending;
-    @Nullable
-    private AbstractJob statusJob;
 
     @Override
     public void createControl(
@@ -50,53 +65,100 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         @NotNull Runnable propertyChangeListener
     ) {
         DBPDataSourceContainer connection = page.getConnection();
-        if (connection == null) {
+        if (connection == null || !DDProductConfig.isIntegrationEnabled()) {
             return;
         }
-        Label loading = new Label(parent, SWT.NONE);
-        loading.setText(DDMcpMessages.mcp_connection_status_loading);
-        loading.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        parent.addDisposeListener(e -> {
-            if (statusJob != null) {
-                statusJob.cancel();
-            }
-        });
-        statusJob = DDDesktopDamService.getInstance().createJob(
-            "Check DataDam MCP availability",
-            account -> account.getDamSettings(
-                DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
-            status -> showStatus(parent, loading, page, status),
-            error -> {
-                log.debug("Cannot read DataDam MCP status", error);
-                showStatus(parent, loading, page, null);
+        DDAccountClient.DamSettingsState status = readStatus(page);
+        Composite section = UIUtils.createComposite(page.getMcpSettingsGroup(), 1);
+        section.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
+        section.moveAbove(null);
+        Control enableControl = UIPanelBuilder.build(section, panel -> panel
+            .margins(0, 0)
+            .row(row -> row.withHint(DDMcpMessages.mcp_connection_settings_enabled_tip, checkRow -> checkRow
+                .control(checkParent -> enableCheck = UIUtils.createCheckbox(
+                    checkParent,
+                    DDMcpMessages.mcp_connection_settings_group,
+                    false
+                )))));
+        enableControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        settingsControls = UIUtils.createComposite(section, 1);
+        GridData settingsData = new GridData(GridData.FILL_HORIZONTAL);
+        settingsData.horizontalIndent = UIUtils.getFontHeight(enableCheck);
+        settingsControls.setLayoutData(settingsData);
+        new CInfoLabel(
+            settingsControls,
+            DDMcpMessages.mcp_connection_settings_global_tip,
+            DBIcon.SMALL_INFO,
+            UIUtils.getFontHeight(enableCheck) * HintLabel.PREFERRED_WIDTH_IN_LINE_HEIGHTS
+        );
+        Link preferencesLink = UIUtils.createLink(
+            settingsControls,
+            "<a>" + DDTrackingUIMessages.configuration + "</a>",
+            SelectionListener.widgetSelectedAdapter(event -> {
+                PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
+                    settingsControls.getShell(),
+                    DDManagementActions.PREFERENCE_PAGE,
+                    new String[] {DDManagementActions.PREFERENCE_PAGE},
+                    null,
+                    PreferencesUtil.OPTION_NONE
+                );
+                if (dialog != null && dialog.open() == Window.OK) {
+                    showStatus(section, page, readStatus(page));
+                }
+            })
+        );
+        preferencesLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        enableCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> updatePreferencesVisibility()));
+        updatePreferencesVisibility();
+        showStatus(section, page, status);
+    }
+
+    @Nullable
+    private DDAccountClient.DamSettingsState readStatus(@NotNull PrefPageDataSourceAI page) {
+        DBRRunnableContext context = page.getContainer() instanceof IWizardContainer wizardContainer
+            ? new RunnableContextDelegate(wizardContainer)
+            : UIUtils.getDefaultRunnableContext();
+        AtomicReference<DDAccountClient.DamSettingsState> result = new AtomicReference<>();
+        try {
+            context.run(true, true, monitor -> {
+                monitor.beginTask(DDMcpMessages.mcp_connection_status_loading, 1);
+                try {
+                    if (!monitor.isCanceled()) {
+                        result.set(DBDamService.getInstance().getDamSettings());
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                } finally {
+                    monitor.done();
+                }
             });
+        } catch (InvocationTargetException e) {
+            log.debug("Cannot read DataDam MCP status", e.getTargetException());
+        } catch (InterruptedException e) {
+            return null;
+        }
+        return result.get();
     }
 
     private void showStatus(
         @NotNull Composite parent,
-        @NotNull Label loading,
         @NotNull PrefPageDataSourceAI page,
         @Nullable DDAccountClient.DamSettingsState status
     ) {
         if (parent.isDisposed()) {
             return;
         }
-        loading.dispose();
-        if (status != null && status.settings().isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false)) {
-            Composite group = UIUtils.createTitledComposite(
-                parent, DDMcpMessages.mcp_connection_settings_group, 1, GridData.FILL_HORIZONTAL);
-            enableCheck = UIUtils.createCheckbox(
-                group,
-                DDMcpMessages.mcp_connection_settings_enabled,
-                DDMcpMessages.mcp_connection_settings_enabled_tip,
-                false,
-                1
-            );
-            if (!resetPending) {
-                loadSettings(page);
-            }
-        }
-        parent.layout(true, true);
+        boolean enabled = status != null && status.settings().isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false);
+        enableCheck.setEnabled(enabled);
+        // With local MCP present, keep the DataDam option visible even when globally disabled.
+        UIUtils.setControlVisible(parent,
+            DDProductConfig.isIntegrationEnabled() && (enabled || page.getMcpSettingsGroup().getChildren().length > 1));
+        page.updateMcpSettingsLayout();
+    }
+
+    private void updatePreferencesVisibility() {
+        UIUtils.setControlVisible(settingsControls, enableCheck.getSelection());
+        settingsControls.getShell().layout(new Control[] {settingsControls});
     }
 
     @Override
@@ -105,6 +167,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         DBPDataSourceContainer connection = page.getConnection();
         if (connection != null && enableCheck != null) {
             enableCheck.setSelection(DDMcpConnectionSettings.isEnabled(connection));
+            updatePreferencesVisibility();
         }
     }
 
@@ -122,6 +185,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         resetPending = true;
         if (enableCheck != null) {
             enableCheck.setSelection(false);
+            updatePreferencesVisibility();
         }
     }
 

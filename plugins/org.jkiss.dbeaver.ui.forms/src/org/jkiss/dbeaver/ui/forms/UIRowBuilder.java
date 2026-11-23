@@ -55,8 +55,12 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
         return panel(pb -> pb
             .margins(0, 0)
             .spacing(0, 2)
+            .align(UIAlignX.FILL)
+            .grow(UIGrowX.ALWAYS)
             .row(handler)
-            .indent(p -> p.row(rb -> rb.control(parent -> new HintLabel(parent, hint)))));
+            .indent(p -> p.row(rb -> rb.control(parent -> new HintLabel(parent, hint), cb -> cb
+                .align(UIAlignX.FILL)
+                .grow(UIGrowX.ALWAYS)))));
     }
 
     @NotNull

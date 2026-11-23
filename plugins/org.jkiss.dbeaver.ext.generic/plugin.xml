@@ -1301,7 +1301,7 @@
                         defaultPort="31010"
                         description="Dremio JDBC driver"
                         supportedConfigurationTypes="MANUAL,URL"
-                        webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
+                        webURL="https://docs.dremio.com/current/client-applications/drivers/jdbc/"
                         categories="analytic,hadoop,sql">
                     <file type="jar" path="https://download.dremio.com/jdbc-driver/dremio-jdbc-driver-LATEST.jar" bundle="!drivers.dremio"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
@@ -1512,7 +1512,7 @@
                     defaultPort="443"
                     description="Apache Kylin JDBC driver"
                     supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://kylin.apache.org/docs23/howto/howto_jdbc.html"
+                    webURL="https://kylin.apache.org/docs/integration/jdbc/"
                     categories="sql">
                     <file type="jar" path="maven:/org.apache.kylin:kylin-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/javax.xml.bind:jaxb-api:RELEASE"/>
@@ -1928,6 +1928,12 @@
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="apache_arrow_flight_sql" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel"/>
         <meta id="gizmosql" class="org.jkiss.dbeaver.ext.generic.model.meta.gizmosql.GizmoSQLMetaModel" driverClass="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"/>
+        <meta id="kyuubi" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel" driverClass="org.apache.kyuubi.jdbc.KyuubiHiveDriver">
+            <object type="procedure">
+                <!-- Kyuubi returns the implementation class as SPECIFIC_NAME, which is shared by function aliases. -->
+                <column id="SPECIFIC_NAME" name="FUNCTION_NAME"/>
+            </object>
+        </meta>
         <meta id="indexed" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel">
             <object type="catalog">
                 <column id="TABLE_CAT" index="1"/>
