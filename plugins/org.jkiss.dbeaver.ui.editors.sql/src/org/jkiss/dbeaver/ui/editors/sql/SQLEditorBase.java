@@ -53,6 +53,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.editors.text.IStorageDocumentProvider;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
@@ -102,6 +103,7 @@ import org.jkiss.utils.Pair;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -117,6 +119,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     public static final long MAX_FILE_LENGTH_FOR_RULES = 1024 * 1000 * 2; // 2MB
     private static final int SCROLL_ON_RESIZE_THRESHOLD_PX = 10;
+    private static final int UTF_16_BOM_LENGTH = 2;
 
     static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
@@ -178,8 +181,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                     bigDocumentByteLength = -1;
                     return;
                 }
+                if (event.getLength() > 0 && event.getLength() == event.getDocument().getLength()
+                    && isBomCharset(bigDocumentCharset)) {
+                    // Removing all current content invalidates the cache: the document's
+                    // single BOM may appear or disappear with the replacement.
+                    bigDocumentByteLength = -1;
+                    return;
+                }
                 try {
-                    bigDocumentByteLength -= getEncodedLength(
+                    bigDocumentByteLength -= getEncodedFragmentLength(
                         event.getDocument().get(event.getOffset(), event.getLength()),
                         bigDocumentCharset
                     );
@@ -196,8 +206,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                     // The character count already exceeds the threshold; the cache is rebuilt
                     // if the document shrinks back into the ambiguous range.
                     bigDocumentByteLength = -1;
+                } else if (event.getLength() == 0
+                    && event.getText() != null
+                    && event.getDocument().getLength() == event.getText().length()
+                    && isBomCharset(bigDocumentCharset)) {
+                    // The first content adds the document's single BOM, which cannot be
+                    // represented by an incremental fragment measurement.
+                    bigDocumentByteLength = -1;
                 } else {
-                    bigDocumentByteLength += getEncodedLength(event.getText(), bigDocumentCharset);
+                    bigDocumentByteLength += getEncodedFragmentLength(event.getText(), bigDocumentCharset);
                 }
             }
             checkBigDocumentTransition();
@@ -378,6 +395,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                 }
             }
         }
+        // External files have no IFile; use the encoding the installed document provider
+        // loaded the document with before falling back to the default.
+        if (getDocumentProvider() instanceof IStorageDocumentProvider storageProvider) {
+            try {
+                String encoding = storageProvider.getEncoding(editorInput);
+                if (encoding != null) {
+                    return Charset.forName(encoding);
+                }
+            } catch (Exception e) {
+                log.debug("Error detecting document provider charset", e);
+            }
+        }
         return Charset.forName(GeneralUtils.getDefaultFileEncoding());
     }
 
@@ -386,6 +415,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             return 0;
         }
         return text.toString().getBytes(charset).length;
+    }
+
+    private static long getEncodedFragmentLength(@Nullable CharSequence text, @Nullable Charset charset) {
+        long length = getEncodedLength(text, charset);
+        if (length > 0 && isBomCharset(charset)) {
+            // A standalone UTF-16 fragment carries its own BOM, while the cache already
+            // includes the single BOM of the whole document.
+            length -= UTF_16_BOM_LENGTH;
+        }
+        return length;
+    }
+
+    private static boolean isBomCharset(@Nullable Charset charset) {
+        return charset != null && StandardCharsets.UTF_16.name().equals(charset.name());
     }
 
     private void attachBigDocumentListener() {
