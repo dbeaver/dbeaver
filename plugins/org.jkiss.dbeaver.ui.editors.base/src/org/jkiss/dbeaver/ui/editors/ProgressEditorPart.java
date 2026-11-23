@@ -152,7 +152,7 @@ public class ProgressEditorPart extends EditorPart {
             ownerEditor.init(ownerEditor.getEditorSite(), result);
             ownerEditor.recreateEditorControl();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Editor init", "Can't initialize editor", e);
+            DBWorkbench.getPlatformUI().showError(EditorsMessages.editor_init_error_title, EditorsMessages.editor_init_error_message, e);
         }
     }
 

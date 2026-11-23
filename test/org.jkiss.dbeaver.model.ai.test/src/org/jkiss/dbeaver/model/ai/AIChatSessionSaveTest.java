@@ -48,6 +48,50 @@ import java.util.concurrent.TimeoutException;
 
 public class AIChatSessionSaveTest extends DBeaverUnitTest {
     @Test
+    public void deletionWaitsForInFlightSaveAndRejectsLaterSaves() throws Exception {
+        AIChatStorage storage = Mockito.mock(AIChatStorage.class);
+        AIChatSession session = session(storage);
+        session.init(new VoidProgressMonitor());
+        AIChatConversation conversation = conversation();
+        session.addConversation(conversation);
+        CountDownLatch saveEntered = new CountDownLatch(1);
+        CountDownLatch releaseSave = new CountDownLatch(1);
+        Mockito.doAnswer(invocation -> {
+            saveEntered.countDown();
+            Assertions.assertTrue(releaseSave.await(2, TimeUnit.SECONDS));
+            return null;
+        }).when(storage).saveConversation(Mockito.eq("session"), Mockito.any());
+        FutureTask<Void> save = saveTask(session, conversation);
+        FutureTask<Void> removal = new FutureTask<>(() -> {
+            conversation.cancelConversation();
+            session.removeConversation(conversation);
+            return null;
+        });
+        Thread saveThread = new Thread(save);
+        Thread removalThread = new Thread(removal);
+        saveThread.start();
+        try {
+            Assertions.assertTrue(saveEntered.await(2, TimeUnit.SECONDS));
+            removalThread.start();
+            awaitBlockedOrCompleted(removalThread, removal);
+            Assertions.assertFalse(removal.isDone());
+        } finally {
+            releaseSave.countDown();
+            saveThread.join(2000);
+            removalThread.join(2000);
+        }
+        save.get(2, TimeUnit.SECONDS);
+        removal.get(2, TimeUnit.SECONDS);
+        session.saveConversationSettings(new VoidProgressMonitor(), conversation);
+
+        var order = Mockito.inOrder(storage);
+        order.verify(storage).saveConversation(Mockito.eq("session"), Mockito.any());
+        order.verify(storage).deleteConversation(conversation.getId().toString());
+        Mockito.verify(storage, Mockito.times(1)).saveConversation(Mockito.eq("session"), Mockito.any());
+        Assertions.assertFalse(session.hasConversation(conversation.getId()));
+    }
+
+    @Test
     public void serializesSavesAndTakesTheLatestMessageSnapshot() throws Exception {
         AIChatStorage storage = Mockito.mock(AIChatStorage.class);
         AIChatSession session = session(storage);

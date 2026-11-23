@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.task;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.JobGroup;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -432,8 +433,8 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                     }
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(
-                        "Transfer event processor",
-                        "Error executing data transfer event processor '" + descriptor.getLabel() + "'",
+                        DTMessages.data_transfer_event_processor_error_title,
+                        NLS.bind(DTMessages.data_transfer_event_processor_error_message, descriptor.getLabel()),
                         e
                     );
                     log.error("Error executing event processor '" + descriptor.getLabel() + "'", e);

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
+import org.jkiss.dbeaver.ext.cubrid.internal.CubridMessages;
 import org.jkiss.dbeaver.ext.cubrid.model.meta.CubridMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
@@ -296,8 +297,8 @@ public class CubridDataSource extends GenericDataSource
             }
         } else {
             DBWorkbench.getPlatformUI().showMessageBox(
-                "Connected CUBRID Info",
-                "The connected CUBRID is an EOL version. Limited features are available.",
+                CubridMessages.connection_eol_title,
+                CubridMessages.connection_eol_message,
                 false);
         }
         try {

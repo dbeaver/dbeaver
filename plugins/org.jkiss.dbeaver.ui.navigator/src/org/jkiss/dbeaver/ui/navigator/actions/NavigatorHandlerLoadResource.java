@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
@@ -79,7 +81,7 @@ public class NavigatorHandlerLoadResource extends AbstractHandler implements IEl
                 }
             });
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("File save IO error", null, e);
+            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_file_save_title, null, e);
         }
 
         return null;
@@ -131,7 +133,7 @@ public class NavigatorHandlerLoadResource extends AbstractHandler implements IEl
                     }
                 }
             } catch (IOException e) {
-                DBWorkbench.getPlatformUI().showError("Error copying file " + srcFile, null, e);
+                DBWorkbench.getPlatformUI().showError(NLS.bind(UINavigatorMessages.error_copy_file_message, srcFile), null, e);
             }
         }
         monitor.done();

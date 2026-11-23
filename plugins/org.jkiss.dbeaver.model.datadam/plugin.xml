@@ -2,27 +2,39 @@
 <?eclipse version="3.2"?>
 
 <plugin>
-    <extension-point id="desktopRpcService" name="Desktop DataDam RPC service"/>
-    <extension-point id="desktopMcpFunction" name="Desktop DataDam MCP function"/>
+    <extension-point id="dbeaver.datadam.damService" name="DataDam RPC services" schema="schema/dbeaver.datadam.damService.exsd"/>
 
-    <extension point="org.jkiss.dbeaver.model.datadam.desktopMcpFunction">
+    <extension point="com.dbeaver.ai.function">
         <function
             id="listDatasources"
+            purpose="DAM"
             readOnlyHint="true"
             destructiveHint="false"
             idempotentHint="true"
             name="List datasources"
-            description="Lists database connections allowed for DataDam MCP calls. requires_manual_connection is an advisory hint that authentication may be needed if a database call fails; calls can still be attempted."
-            class="org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListDatasourcesFunction"/>
+            description="Lists database connections allowed for DataDam MCP calls. requires_manual_connection means the connection is currently disconnected. Its tools can still try to connect; if they fail, connect in DBeaver and retry."
+            class="org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListDatasourcesFunction">
+            <parameter name="projectId" type="string" required="false" description="Project ID returned by listProjects"/>
+        </function>
+        <function
+            id="listProjects"
+            purpose="DAM"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
+            name="List projects"
+            description="Lists projects with at least one database connection allowed for DataDam MCP calls."
+            class="org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListProjectsFunction"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.model.datadam.desktopRpcService">
+    <extension point="dbeaver.datadam.damService">
         <service id="mcp" class="org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopRpcRegistration"/>
         <service id="sharedProjects" class="org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectDesktopRpcRegistration"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.pluginService">
-        <service class="org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionPluginService"/>
+        <service class="org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionPluginService"/>
+        <service class="org.jkiss.dbeaver.model.datadam.rpc.DBDamNameService"/>
     </extension>
 
     <extension point="com.dbeaver.ai.engine">
