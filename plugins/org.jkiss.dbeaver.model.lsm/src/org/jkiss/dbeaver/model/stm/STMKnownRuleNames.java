@@ -24,6 +24,7 @@ public class STMKnownRuleNames {
     public static final String sqlQueries = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlQueries]; // EOF - don't stop early. must match all input
     public static final String sqlQuery = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlQuery];
     public static final String sqlQueryBody = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlQueryBody];
+    public static final String explainableSqlQueryBody = SQLStandardParser.ruleNames[SQLStandardParser.RULE_explainableSqlQueryBody];
     public static final String variableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableStatement];
     public static final String variableDeclarationStatement =
         SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableDeclarationStatement];
@@ -35,6 +36,7 @@ public class STMKnownRuleNames {
     public static final String variableInitializer = SQLStandardParser.ruleNames[SQLStandardParser.RULE_variableInitializer];
 
     public static final String directSqlDataStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_directSqlDataStatement];
+    public static final String explainStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_explainStatement];
     public static final String selectStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectStatement];
 
     // data type literals
@@ -394,6 +396,7 @@ public class STMKnownRuleNames {
     public static final String functionCallExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallExpression];
     public static final String functionCallTargetName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallTargetName];
     public static final String functionCallOperand = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallOperand];
+    public static final String directSubqueryExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_directSubqueryExpression];
 
     public static final String tableHintKeywords = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableHintKeywords];
 
@@ -416,6 +419,7 @@ public class STMKnownRuleNames {
     public static final String localVariableDeclaration = SQLStandardParser.ruleNames[SQLStandardParser.RULE_localVariableDeclaration];
     public static final String localTypedVariable = SQLStandardParser.ruleNames[SQLStandardParser.RULE_localTypedVariable];
 
+    public static final String ARRAY_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.ARRAY);
     public static final String RECURSIVE_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.RECURSIVE);
     public static final String SET_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SET);
     public static final String SELECT_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SELECT);

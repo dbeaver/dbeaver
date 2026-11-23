@@ -59,6 +59,7 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
             final String description = CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_DESCRIPTION), null);
             boolean commentSet = SQLServerUtils.isCommentSet(
                 monitor,
+                executionContext,
                 table.getDatabase(),
                 SQLServerObjectClass.OBJECT_OR_COLUMN,
                 table.getObjectId(),

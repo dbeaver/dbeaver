@@ -20,7 +20,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -32,14 +34,32 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.UIServiceFilterConfig;
 
 import java.util.Collections;
+import java.util.Map;
 
-public class NavigatorHandlerFilterClear extends AbstractHandler {
+public class NavigatorHandlerFilterClear extends AbstractHandler implements IElementUpdater {
 
     private static final Log log = Log.getLog(NavigatorHandlerFilterClear.class);
+
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+        if (DBWorkbench.findService(UIServiceFilterConfig.class) == null) {
+            return;
+        }
+        DBNNode node = NavigatorUtils.getSelectedNode(element);
+        if (node instanceof DBNDatabaseItem) {
+            node = node.getParentNode();
+        }
+        if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
+            element.setText(isUserObjectFilter(dbNode, dbNode.getItemsMeta())
+                ? UINavigatorMessages.actions_navigator_clear_user_filter
+                : UINavigatorMessages.actions_navigator_clear_all_users_filter);
+        }
+    }
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,10 @@ import org.eclipse.osgi.util.NLS;
 public class MySQLMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mysql.MySQLMessages";
 
+    public static String create_foreign_key_title;
+    public static String create_foreign_key_myisam_error;
+
     public static String exception_direct_database_rename;
-    public static String table_column_length_tooltip;
-    public static String table_column_length;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, MySQLMessages.class);

@@ -27,8 +27,12 @@ import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIImageDimensions;
 import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageMeta;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponse;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
@@ -36,8 +40,11 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -91,6 +98,55 @@ public class OpenAiUtils {
     }
 
 
+    @NotNull
+    public static AIEngineResponse toEngineResponse(
+        @NotNull OAIResponsesResponse result,
+        @NotNull String reasoningSource
+    ) throws DBException {
+        result.validateCompletion();
+        List<AIFunctionCall> calls = new ArrayList<>();
+        for (OAIMessage item : result.output) {
+            if (OAIMessage.TYPE_FUNCTION_CALL.equals(item.type)) {
+                calls.add(createFunctionCall(item));
+            }
+        }
+        Map<String, String> metadata = completeResponse(calls, result.output, reasoningSource, false);
+        AIEngineResponse response;
+        if (calls.isEmpty()) {
+            List<String> choices = result.output.stream().filter(item -> OAIMessage.TYPE_MESSAGE.equals(item.type))
+                .map(OAIMessage::getFullText).toList();
+            response = new AIEngineResponse(AIMessageType.ASSISTANT,
+                choices.isEmpty() ? List.of(AIMessages.ai_empty_engine_response) : choices, result.getAIUsage());
+        } else {
+            response = new AIEngineResponse(calls, result.getAIUsage());
+        }
+        response.setMessageMetadata(metadata);
+        return response;
+    }
+
+    @NotNull
+    static Map<String, String> completeResponse(
+        @NotNull List<AIFunctionCall> calls,
+        @NotNull List<OAIMessage> output,
+        @Nullable String reasoningSource,
+        boolean messageExpected
+    ) {
+        if (reasoningSource == null || output.stream().noneMatch(item -> OAIMessage.TYPE_FUNCTION_REASONING.equals(item.type))) {
+            return Map.of();
+        }
+        // preserve the native order even if the user approves tool calls in a different order
+        Map<String, String> metadata = Map.of(OpenAIConstants.RESPONSE_OUTPUT, JSONUtils.GSON.toJson(output),
+            OpenAIConstants.REASONING_SOURCE, reasoningSource,
+            OpenAIConstants.RESPONSE_REQUIRES_MESSAGE, Boolean.toString(messageExpected));
+        for (AIFunctionCall call : calls) {
+            Map<String, String> callMetadata = new HashMap<>(metadata);
+            if (call.getMessageMetadata() != null) {
+                callMetadata.putAll(call.getMessageMetadata());
+            }
+            call.setMessageMetadata(callMetadata);
+        }
+        return metadata;
+    }
 
     @NotNull
     public static OAIResponsesRequest createOpenAiRequest(
@@ -98,10 +154,25 @@ public class OpenAiUtils {
         @Nullable String modelName,
         @Nullable Double temperature
     ) {
+        return createOpenAiRequest(request, modelName, temperature, null, false);
+    }
+
+    @NotNull
+    public static OAIResponsesRequest createOpenAiRequest(
+        @NotNull AIEngineRequest request,
+        @Nullable String modelName,
+        @Nullable Double temperature,
+        @Nullable String reasoningSource,
+        boolean reasoningHistoryRequired
+    ) {
         OAIResponsesRequest oaiRequest = new OAIResponsesRequest();
         List<AIMessage> messages = request.getMessages();
-        oaiRequest.input = fromMessages(messages);
+        oaiRequest.input = fromMessages(messages, reasoningSource, reasoningHistoryRequired && !request.getFunctions().isEmpty());
+        oaiRequest.reasoningSource = reasoningSource;
         oaiRequest.store = false;
+        if (reasoningSource != null) {
+            oaiRequest.include = new String[] {"reasoning.encrypted_content"};
+        }
         oaiRequest.model = modelName;
         if (temperature != null) {
             oaiRequest.temperature = temperature;
@@ -155,22 +226,111 @@ public class OpenAiUtils {
     }
 
     @NotNull
-    private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
+    private static List<OAIMessage> fromMessages(
+        @NotNull List<AIMessage> messages,
+        @Nullable String reasoningSource,
+        boolean reasoningRequired
+    ) {
         List<OAIMessage> result = new ArrayList<>(messages.size());
-        for (AIMessage message : messages) {
-            if (message.getFunctionCall() != null) {
-                OAIMessage functionCallMessage = OAIMessageFactory.fromAIMessage(message);
-                if (!CommonUtils.isEmpty(functionCallMessage.callId)) {
-                    result.add(functionCallMessage);
-                    // OpenAI Responses API requires matching function_call_output for each function_call.
-                    // Keep orphan function calls in history as regular assistant messages.
-                    result.add(OAIMessageFactory.fromAIMessage(message, functionCallMessage.callId));
+        Set<String> replayed = new HashSet<>();
+        int turnStart = 0;
+        for (int index = 0; index < messages.size(); index++) {
+            AIMessage message = messages.get(index);
+            if (message.getRole() == AIMessageType.USER) {
+                replayed.clear();
+                turnStart = index;
+            }
+            String output = getResponseMetadata(message).get(OpenAIConstants.RESPONSE_OUTPUT);
+            if (output != null && reasoningSource != null) {
+                if (replayed.contains(output)) {
+                    continue;
+                }
+                List<OAIMessage> restored = restoreResponseOutput(messages, turnStart, output, reasoningSource);
+                if (restored == null) {
+                    result.add(importResponse(message));
+                } else {
+                    replayed.add(output);
+                    result.addAll(restored);
+                }
+            } else if (reasoningRequired && (message.getRole() == AIMessageType.ASSISTANT
+                || message.getRole() == AIMessageType.FUNCTION || message.getFunctionCall() != null)
+            ) {
+                // deepseek requires original reasoning for assistant/tool history when tools are enabled
+                result.add(importResponse(message));
+            } else if (message.getFunctionCall() != null) {
+                OAIMessage call = OAIMessageFactory.fromAIMessage(message);
+                if (!CommonUtils.isEmpty(call.callId)) {
+                    result.add(call);
+                    result.add(OAIMessageFactory.fromAIMessage(message, call.callId));
                 }
             } else {
                 result.add(OAIMessageFactory.fromAIMessage(message));
             }
         }
         return result;
+    }
+
+    @NotNull
+    private static Map<String, String> getResponseMetadata(@NotNull AIMessage message) {
+        if (message.getFunctionCall() != null) {
+            Map<String, String> metadata = message.getFunctionCall().getMessageMetadata();
+            return metadata == null ? Map.of() : metadata;
+        }
+        return message.getMeta() == null ? Map.of() : message.getMeta().stream()
+            .map(AIMessageMeta::responseMetadata)
+            .filter(metadata -> metadata.containsKey(OpenAIConstants.RESPONSE_OUTPUT))
+            .findFirst().orElse(Map.of());
+    }
+
+    @Nullable
+    private static List<OAIMessage> restoreResponseOutput(
+        @NotNull List<AIMessage> messages,
+        int turnStart,
+        @NotNull String output,
+        @Nullable String reasoningSource
+    ) {
+        Map<String, AIMessage> results = new HashMap<>();
+        boolean messageRequired = false;
+        boolean messagePresent = false;
+        for (int index = turnStart; index < messages.size(); index++) {
+            AIMessage message = messages.get(index);
+            if (index > turnStart && message.getRole() == AIMessageType.USER) {
+                break;
+            }
+            Map<String, String> metadata = getResponseMetadata(message);
+            if (output.equals(metadata.get(OpenAIConstants.RESPONSE_OUTPUT))) {
+                if (Boolean.parseBoolean(metadata.get(AIMessage.RESPONSE_CONTENT_MODIFIED))
+                    || reasoningSource != null && !reasoningSource.equals(metadata.get(OpenAIConstants.REASONING_SOURCE))
+                ) {
+                    return null;
+                }
+                messageRequired |= Boolean.parseBoolean(metadata.get(OpenAIConstants.RESPONSE_REQUIRES_MESSAGE));
+                messagePresent |= message.getRole() == AIMessageType.ASSISTANT;
+                if (message.getFunctionCall() != null) {
+                    results.put(metadata.get(OpenAIConstants.TOOL_RESULT_CALL_ID), message);
+                }
+            }
+        }
+        if (messageRequired && !messagePresent) {
+            return null;
+        }
+        List<OAIMessage> nativeOutput = List.of(JSONUtils.GSON.fromJson(output, OAIMessage[].class));
+        List<OAIMessage> restored = new ArrayList<>(nativeOutput);
+        for (OAIMessage item : nativeOutput) {
+            if (OAIMessage.TYPE_FUNCTION_CALL.equals(item.type)) {
+                AIMessage result = results.get(item.callId);
+                if (result == null || CommonUtils.isEmpty(item.callId)) {
+                    return null;
+                }
+                restored.add(OAIMessageFactory.fromAIMessage(result, item.callId));
+            }
+        }
+        return restored;
+    }
+
+    @NotNull
+    private static OAIMessage importResponse(@NotNull AIMessage message) {
+        return OAIMessageFactory.fromAIMessage(AIMessage.userMessage("Previous assistant response:\n" + message.getContent()));
     }
 
     public static boolean shouldFallbackToLegacyChat(@Nullable String message) {

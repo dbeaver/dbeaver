@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.navigator.itemlist;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -417,7 +418,8 @@ public class ItemListControl extends NodeListControl
                     getItemsViewer().update(object, null);
                 }
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + property.getId() + "' value", e);
+                DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_set_property_title,
+                    NLS.bind(UINavigatorMessages.error_set_property_message, property.getId()), e);
             }
         }
 

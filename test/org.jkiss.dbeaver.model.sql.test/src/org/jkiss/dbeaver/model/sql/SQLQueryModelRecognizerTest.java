@@ -41,6 +41,9 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryVariableClause;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryVariableStatementModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableAlterModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableCreateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueReferenceExpression;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTargetReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsLocalTableModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
@@ -551,6 +554,169 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
     private static final String STMT_SELECT =
         "SELECT t.id, t.amount FROM test_table t JOIN parent_table p ON p.id = t.parent_id " +
             "WHERE t.amount > 0 GROUP BY t.id, t.amount HAVING COUNT(*) > 0 ORDER BY t.id";
+
+    @Test
+    public void recognizesExplainedSelectAndItsTableReference() {
+        for (String sql : List.of(
+            "EXPLAIN QUERY PLAN SELECT * FROM Album",
+            "EXPLAIN SELECT * FROM Album",
+            "EXPLAIN (ANALYZE, FORMAT JSON) SELECT * FROM Album",
+            "EXPLAIN PLAN SET STATEMENT_ID = 'album' INTO plan_table FOR SELECT * FROM Album",
+            "EXPLAIN FORMAT=JSON SELECT * FROM Album",
+            "EXPLAIN USING TEXT SELECT * FROM Album",
+            "EXPLAIN PLAN json=1 SELECT * FROM Album"
+        )) {
+            SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()), sql);
+            Assertions.assertNotNull(model);
+            STMTreeNode explain = model.getSyntaxNode().findFirstChildOfName(STMKnownRuleNames.sqlQueryBody)
+                .findFirstNonErrorChild();
+            Assertions.assertEquals(STMKnownRuleNames.explainStatement, explain.getNodeName());
+            STMTreeNode explainedBody = explain.findFirstChildOfName(STMKnownRuleNames.explainableSqlQueryBody);
+            Assertions.assertNotNull(explainedBody);
+            Assertions.assertEquals(STMKnownRuleNames.directSqlDataStatement, explainedBody.findFirstNonErrorChild().getNodeName());
+            Assertions.assertInstanceOf(SQLQueryRowsSourceModel.class, model.getQueryModel());
+            Assertions.assertTrue(model.getAllSymbols().stream()
+                .anyMatch(symbol -> symbol.getRawName().equals("Album")));
+            Assertions.assertNotSame(model, model.findNodeContaining(sql.indexOf("Album") + 1));
+        }
+    }
+
+    @Test
+    public void recognizesSelectThroughExplainableBodyWithoutExplain() {
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()),
+            "SELECT * FROM Album");
+        Assertions.assertNotNull(model);
+        STMTreeNode body = model.getSyntaxNode().findFirstChildOfName(STMKnownRuleNames.sqlQueryBody);
+        Assertions.assertNotNull(body);
+        Assertions.assertEquals(STMKnownRuleNames.explainableSqlQueryBody, body.findFirstNonErrorChild().getNodeName());
+        Assertions.assertInstanceOf(SQLQueryRowsSourceModel.class, model.getQueryModel());
+        Assertions.assertTrue(model.getAllSymbols().stream().anyMatch(symbol -> symbol.getRawName().equals("Album")));
+    }
+
+    @Test
+    public void recognizesExplainedDmlAndDdl() {
+        SQLQueryModel update = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()),
+            "EXPLAIN QUERY PLAN UPDATE Album SET title = 'new'");
+        Assertions.assertNotNull(update);
+        Assertions.assertInstanceOf(SQLQueryUpdateModel.class, update.getQueryModel());
+
+        SQLQueryModel create = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()),
+            "EXPLAIN PLAN FOR CREATE TABLE Album (id integer)");
+        Assertions.assertNotNull(create);
+        Assertions.assertInstanceOf(SQLQueryTableCreateModel.class, create.getQueryModel());
+    }
+
+    @Test
+    public void recognizesQualifiedUpdateTargets() {
+        String sql = "UPDATE app.foo a \rSET a.BAT=789   \r\nWHERE a.ROWID='rowid_value'";
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()), sql);
+        Assertions.assertNotNull(model);
+        SQLQueryUpdateModel update = Assertions.assertInstanceOf(SQLQueryUpdateModel.class, model.getQueryModel());
+        Assertions.assertEquals(1, update.getSetClauseList().size());
+        Assertions.assertEquals(1, update.getSetClauseList().getFirst().sources.size());
+        SQLQueryValueReferenceExpression target = Assertions.assertInstanceOf(SQLQueryValueReferenceExpression.class,
+            update.getSetClauseList().getFirst().targets.getFirst());
+        Assertions.assertEquals(List.of("a", "BAT"), target.getName().parts.stream()
+            .map(SQLQuerySymbolEntry::getRawName).toList());
+        Assertions.assertNotNull(update.getWhereClause());
+    }
+
+    @Test
+    public void recognizesUpdateTargetLists() {
+        String sql = "UPDATE tab SET (id, t.value) = (1, 2)";
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()), sql);
+        Assertions.assertNotNull(model);
+        SQLQueryUpdateModel update = Assertions.assertInstanceOf(SQLQueryUpdateModel.class, model.getQueryModel());
+        Assertions.assertEquals(2, update.getSetClauseList().getFirst().targets.size());
+        Assertions.assertInstanceOf(SQLQueryValueTargetReferenceExpression.class,
+            update.getSetClauseList().getFirst().targets.getFirst());
+        SQLQueryValueReferenceExpression qualified = Assertions.assertInstanceOf(SQLQueryValueReferenceExpression.class,
+            update.getSetClauseList().getFirst().targets.get(1));
+        Assertions.assertEquals(List.of("t", "value"), qualified.getName().parts.stream()
+            .map(SQLQuerySymbolEntry::getRawName).toList());
+        Assertions.assertEquals(2, update.getSetClauseList().getFirst().sources.size());
+    }
+
+    @Test
+    public void updateAssignmentGapsHaveSeparateTargetAndSourceOrigins() {
+        for (String sql : List.of("UPDATE tab SET ", "UPDATE tab SET a = 1, ", "UPDATE tab SET a=1,")) {
+            SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()), sql);
+            Assertions.assertNotNull(model);
+            Assertions.assertInstanceOf(SQLQuerySymbolOrigin.UpdateTarget.class,
+                model.findLexicalContext(sql.length()).symbolsOrigin(), sql);
+        }
+        String withFrom = "UPDATE tab SET a = 1,  FROM other_table";
+        SQLQueryModel fromModel = SQLQueryModelRecognizer.recognizeQuery(
+            createContext(new VoidProgressMonitor()), withFrom);
+        Assertions.assertNotNull(fromModel);
+        Assertions.assertInstanceOf(SQLQuerySymbolOrigin.UpdateTarget.class,
+            fromModel.findLexicalContext(withFrom.indexOf("FROM") - 2).symbolsOrigin());
+        Assertions.assertInstanceOf(SQLQuerySymbolOrigin.UpdateTarget.class,
+            fromModel.findLexicalContext(withFrom.indexOf("FROM") - 1).symbolsOrigin());
+        Assertions.assertFalse(fromModel.findLexicalContext(withFrom.indexOf("FROM")).symbolsOrigin()
+            instanceof SQLQuerySymbolOrigin.UpdateTarget);
+        String withNextTarget = "UPDATE tab SET a=1,  b=2";
+        SQLQueryModel nextModel = SQLQueryModelRecognizer.recognizeQuery(
+            createContext(new VoidProgressMonitor()), withNextTarget);
+        Assertions.assertNotNull(nextModel);
+        Assertions.assertNull(nextModel.findLexicalContext(withNextTarget.indexOf("b=2") - 1).symbolsOrigin());
+        for (String sql : List.of("UPDATE tab SET a = ", "UPDATE tab SET a=", "UPDATE tab SET a = 1, b = ")) {
+            SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()), sql);
+            Assertions.assertNotNull(model);
+            SQLQuerySymbolOrigin origin = model.findLexicalContext(sql.length()).symbolsOrigin();
+            Assertions.assertInstanceOf(SQLQuerySymbolOrigin.RowsDataRef.class, origin, sql);
+            Assertions.assertFalse(origin instanceof SQLQuerySymbolOrigin.UpdateTarget, sql);
+        }
+    }
+
+    @Test
+    public void updateAssignmentsShareTargetAndSourceOrigins() {
+        String sql = "UPDATE tab SET a=1, b=2 WHERE ";
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()), sql);
+        Assertions.assertNotNull(model);
+        SQLQueryUpdateModel update = Assertions.assertInstanceOf(SQLQueryUpdateModel.class, model.getQueryModel());
+        Assertions.assertEquals(2, update.getSetClauseList().size());
+        var first = update.getSetClauseList().getFirst();
+        var second = update.getSetClauseList().getLast();
+        Assertions.assertSame(first.getTargetScope().getSymbolsOrigin(), second.getTargetScope().getSymbolsOrigin());
+        Assertions.assertSame(first.getSourceScope().getSymbolsOrigin(), second.getSourceScope().getSymbolsOrigin());
+        Assertions.assertSame(first.getSourceScope().getSymbolsOrigin(), model.findLexicalContext(sql.length()).symbolsOrigin());
+    }
+
+    @Test
+    public void updateClausesKeepTheirOriginThroughTheFollowingComma() {
+        String sourceSql = "UPDATE tab SET a=   , b=2";
+        SQLQueryModel sourceModel = SQLQueryModelRecognizer.recognizeQuery(
+            createContext(new VoidProgressMonitor()), sourceSql);
+        Assertions.assertNotNull(sourceModel);
+        SQLQuerySymbolOrigin sourceOrigin = sourceModel.findLexicalContext(sourceSql.indexOf(", b")).symbolsOrigin();
+        Assertions.assertInstanceOf(SQLQuerySymbolOrigin.RowsDataRef.class, sourceOrigin);
+        Assertions.assertFalse(sourceOrigin instanceof SQLQuerySymbolOrigin.UpdateTarget);
+
+        for (String sql : List.of("UPDATE tab SET a=1, b  , c=3", "UPDATE tab SET a=1,  , c=3")) {
+            SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()), sql);
+            Assertions.assertNotNull(model);
+            SQLQueryUpdateModel update = Assertions.assertInstanceOf(SQLQueryUpdateModel.class, model.getQueryModel());
+            Assertions.assertNull(update.getSetClauseList().get(1).getSourceScope());
+            int secondComma = sql.lastIndexOf(',');
+            Assertions.assertInstanceOf(SQLQuerySymbolOrigin.UpdateTarget.class,
+                model.findLexicalContext(secondComma).symbolsOrigin(), sql);
+            Assertions.assertFalse(model.findLexicalContext(secondComma + 1).symbolsOrigin()
+                instanceof SQLQuerySymbolOrigin.RowsDataRef, sql);
+        }
+    }
+
+    @Test
+    public void recognizesDeclarationFollowedByExplainedQueryWithoutSeparator() {
+        String sql = "DECLARE @id INT = 1\nEXPLAIN SELECT * FROM Album WHERE id = @id";
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(createContext(new VoidProgressMonitor()), sql);
+        Assertions.assertNotNull(model);
+        SQLQueryVariableStatementModel variables = Assertions.assertInstanceOf(
+            SQLQueryVariableStatementModel.class, model.getQueryModel());
+        Assertions.assertEquals(1, variables.getVariableClauses().size());
+        Assertions.assertInstanceOf(SQLQueryRowsSourceModel.class, variables.getBody());
+        Assertions.assertTrue(model.getAllSymbols().stream().anyMatch(symbol -> symbol.getRawName().equals("Album")));
+    }
 
     private static final String STMT_RECURSIVE_CTE =
         "WITH RECURSIVE hierarchy (id, parent_id, depth, total_amount) AS (" +

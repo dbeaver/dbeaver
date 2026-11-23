@@ -61,6 +61,8 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
@@ -158,6 +160,16 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         setTabList(tabList.toArray(new Control[0]));
 
         WidgetElement.applyStyles(this, true);
+
+        UIUtils.installAndUpdateMainFont(this);
+        if (promptComposite != null) {
+            promptComposite.updatePromptEditorSize();
+            BaseThemeSettings.instance.addPropertyListener(
+                UIFonts.DBeaver.MAIN_FONT,
+                s -> promptComposite.updatePromptEditorSize(),
+                this
+            );
+        }
 
         addDisposeListener(e -> chatSession.closeSession());
     }
@@ -376,15 +388,21 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                         submittedConversation,
                         null
                     );
-                    future.whenComplete((conversation, throwable) -> {
-                        waitingForResponse = false;
-                        chatSession.setBusy(false);
-                    });
+                    future.whenComplete((conversation, throwable) -> UIUtils.asyncExec(() -> {
+                        if (!isDisposed() && activeConversation == submittedConversation) {
+                            waitingForResponse = false;
+                            chatSession.setBusy(false);
+                        }
+                    }));
                     return Status.OK_STATUS;
                 } catch (Exception e) {
                     submittedConversation.promptProcessed(true);
-                    waitingForResponse = false;
-                    chatSession.setBusy(false);
+                    UIUtils.asyncExec(() -> {
+                        if (!isDisposed() && activeConversation == submittedConversation) {
+                            waitingForResponse = false;
+                            chatSession.setBusy(false);
+                        }
+                    });
                     return GeneralUtils.makeExceptionStatus(e);
                 }
             }
@@ -444,8 +462,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             setFocusOnPrompt();
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
-                "Error creating conversation",
-                "Could not create new conversation: " + e.getMessage(),
+                AIChatMessagesUI.ai_chat_conversation_create_error_title,
+                NLS.bind(AIChatMessagesUI.ai_chat_conversation_create_error_message, e.getMessage()),
                 e
             );
         }
@@ -478,8 +496,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                 removeActiveConversation();
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError(
-                    "Error deleting conversation",
-                    "Could not delete conversation: " + e.getMessage(),
+                    AIChatMessagesUI.ai_chat_conversation_delete_error_title,
+                    NLS.bind(AIChatMessagesUI.ai_chat_conversation_delete_error_message, e.getMessage()),
                     e
                 );
             }
@@ -548,6 +566,31 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
 
     public boolean isInitializing() {
         return dataSourceInitializationPending;
+    }
+
+    /**
+     * Starts an action in a fresh conversation, discarding an unfinished request first.
+     * Completed conversations remain in history.
+     */
+    public void executeReplacingCommand(@NotNull DBRRunnable command) {
+        if (isDisposed()) {
+            return;
+        }
+        if (!isDataSourceInitialized) {
+            executeCommand(() -> executeReplacingCommand(command));
+            return;
+        }
+        if (activeConversation != null && activeConversation.isActive()) {
+            cancelPrompt();
+            waitingForResponse = false;
+            chatSession.setBusy(false);
+            executeCommand(() -> {
+                removeActiveConversation();
+                command.run();
+            });
+        } else {
+            executeCommand(command);
+        }
     }
 
     public void executeCommand(@NotNull DBRRunnable command) {
@@ -766,6 +809,32 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             new Position(query.getOffset(), query.getLength())
         );
         return newConversation;
+    }
+
+    public void associateConversation(
+        @NotNull SQLEditor editor,
+        @NotNull SQLScriptElement query,
+        @NotNull AIChatConversation conversation
+    ) {
+        IAnnotationModel annotationModel = editor.getAnnotationModel();
+        if (annotationModel == null) {
+            return;
+        }
+        List<Annotation> previous = new ArrayList<>();
+        Iterator<Annotation> iterator = annotationModel.getAnnotationIterator();
+        while (iterator.hasNext()) {
+            Annotation annotation = iterator.next();
+            Position position = annotationModel.getPosition(annotation);
+            if (annotation instanceof AIChatAnnotation && position != null
+                && position.getOffset() == query.getOffset() && position.getLength() == query.getLength()) {
+                previous.add(annotation);
+            }
+        }
+        previous.forEach(annotationModel::removeAnnotation);
+        annotationModel.addAnnotation(
+            new AIChatAnnotation(conversation.getId()),
+            new Position(query.getOffset(), query.getLength())
+        );
     }
 
     /**

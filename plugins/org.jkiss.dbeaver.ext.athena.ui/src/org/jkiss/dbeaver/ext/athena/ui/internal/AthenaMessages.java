@@ -21,6 +21,13 @@ import org.eclipse.osgi.util.NLS;
 public class AthenaMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages"; //$NON-NLS-1$
 
+    public static String cloud_support_required;
+    public static String project_file_system_not_found;
+    public static String bad_uri_title;
+    public static String bad_uri_message;
+    public static String file_system_error_title;
+    public static String file_system_error_message;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, AthenaMessages.class);

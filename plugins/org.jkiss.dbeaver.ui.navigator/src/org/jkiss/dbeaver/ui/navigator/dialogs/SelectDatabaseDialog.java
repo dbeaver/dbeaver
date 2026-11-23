@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
@@ -106,9 +107,10 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.supportsSchemaChange()) {
             DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
             if (instanceContainer == null) {
-                UIUtils.showMessageBox(getShell(), "No database objects were found", "No database objects were found. Please set active datasource (" +
-                    ActionUtils.findCommandDescription(ConnectionCommands.CMD_SELECT_CONNECTION, UIUtils.getActiveWorkbenchWindow(), true) +
-                    ") for this editor.", SWT.ICON_ERROR);
+                UIUtils.showMessageBox(getShell(), UINavigatorMessages.dialog_select_database_not_found_title,
+                    NLS.bind(UINavigatorMessages.dialog_select_database_not_found_message,
+                        ActionUtils.findCommandDescription(ConnectionCommands.CMD_SELECT_CONNECTION,
+                            UIUtils.getActiveWorkbenchWindow(), true)), SWT.ICON_ERROR);
                 return;
             }
             createInstanceSelector(dialogArea, instanceContainer);
@@ -215,7 +217,6 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
 
 
         instanceList.loadData();
-        closeOnFocusLost(instanceList.getItemsViewer().getControl());
     }
 
     @Override

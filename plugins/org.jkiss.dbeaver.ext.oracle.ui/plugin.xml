@@ -3,10 +3,10 @@
 <plugin>
 
     <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.ext.oracle" name="Oracle" description="Oracle Commands"/>
-        <command id="org.jkiss.dbeaver.ext.oracle.code.compile" name="Compile" description="Compile" categoryId="org.jkiss.dbeaver.ext.oracle"/>
-        <command id="org.jkiss.dbeaver.ext.oracle.code.package.navigate" name="Go to source code" description="Navigate to object source code" categoryId="org.jkiss.dbeaver.ext.oracle"/>
-        <command id="org.jkiss.dbeaver.ext.oracle.job.run" name="Run" description="Run Job" categoryId="org.jkiss.dbeaver.ext.oracle"/>
+        <category id="org.jkiss.dbeaver.ext.oracle" name="%category.org.jkiss.dbeaver.ext.oracle.name" description="%category.org.jkiss.dbeaver.ext.oracle.description"/>
+        <command id="org.jkiss.dbeaver.ext.oracle.code.compile" name="%command.org.jkiss.dbeaver.ext.oracle.code.compile.name" description="%command.org.jkiss.dbeaver.ext.oracle.code.compile.description" categoryId="org.jkiss.dbeaver.ext.oracle"/>
+        <command id="org.jkiss.dbeaver.ext.oracle.code.package.navigate" name="%command.org.jkiss.dbeaver.ext.oracle.code.package.navigate.name" description="%command.org.jkiss.dbeaver.ext.oracle.code.package.navigate.description" categoryId="org.jkiss.dbeaver.ext.oracle"/>
+        <command id="org.jkiss.dbeaver.ext.oracle.job.run" name="%command.org.jkiss.dbeaver.ext.oracle.job.run.name" description="%command.org.jkiss.dbeaver.ext.oracle.job.run.description" categoryId="org.jkiss.dbeaver.ext.oracle"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">

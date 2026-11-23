@@ -23,5 +23,7 @@ package org.jkiss.dbeaver.model.ai;
 public enum AIFunctionPurpose {
     TOOL,
     MCP,
+    /** Functions available only through DataDam MCP. */
+    DAM,
     ALL
 }

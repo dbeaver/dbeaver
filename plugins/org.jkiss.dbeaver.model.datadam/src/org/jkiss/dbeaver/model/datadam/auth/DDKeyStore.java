@@ -26,6 +26,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Objects;
 import javax.crypto.SecretKey;
 
 public class DDKeyStore {
@@ -71,7 +72,7 @@ public class DDKeyStore {
         @NotNull DDCryptoState state,
         @NotNull String recoveryPhrase
     ) throws DBException {
-        if (!state.cryptoConfigured() || CommonUtils.isEmpty(state.encryptedBundle())) {
+        if (!state.cryptoConfigured() || state.apiKeyId() == null || CommonUtils.isEmpty(state.encryptedBundle())) {
             throw new DBException("Encryption is not configured for this account");
         }
         if (CommonUtils.isEmpty(state.salt()) || state.iterations() == null) {
@@ -101,7 +102,7 @@ public class DDKeyStore {
             state.accountId(),
             parts[0],
             parts[1],
-            state.generation() == null ? 0 : state.generation());
+            state.generation() == null ? 0 : state.generation(), state.apiKeyId());
     }
 
     public static void save(@NotNull DDKeyBundle bundle) throws DBException {
@@ -117,6 +118,7 @@ public class DDKeyStore {
         }
         if (current != null
             && current.accountId().equals(bundle.accountId())
+            && Objects.equals(current.apiKeyId(), bundle.apiKeyId())
             && bundle.generation() < current.generation()) {
             throw new DBException("The keys are older than the stored ones");
         }

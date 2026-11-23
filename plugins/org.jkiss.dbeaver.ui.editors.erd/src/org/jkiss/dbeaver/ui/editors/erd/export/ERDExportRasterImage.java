@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
+import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
 
@@ -99,7 +100,7 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                 fos.flush();
             }
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Save ERD as image", null, e);
+            DBWorkbench.getPlatformUI().showError(ERDUIMessages.erd_save_image_title, null, e);
         }
 
     }

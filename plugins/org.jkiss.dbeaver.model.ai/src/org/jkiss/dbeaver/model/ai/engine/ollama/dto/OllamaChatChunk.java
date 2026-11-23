@@ -16,17 +16,23 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.ollama.dto;
 
+import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 public record OllamaChatChunk(
     @NotNull String model,
+    @SerializedName("created_at")
     @NotNull String createdAt,
     @Nullable OllamaChatMessage message,
     boolean done,
+    @SerializedName("prompt_eval_count")
     int promptEvalCount,
+    @SerializedName("prompt_eval_duration")
     long promptEvalDuration,
+    @SerializedName("eval_count")
     int evalCount,
+    @SerializedName("eval_duration")
     long evalDuration
 ) {
 }

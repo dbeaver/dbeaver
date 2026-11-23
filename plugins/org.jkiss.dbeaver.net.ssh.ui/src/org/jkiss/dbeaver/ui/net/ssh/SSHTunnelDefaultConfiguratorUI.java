@@ -22,6 +22,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionListener;
@@ -138,7 +139,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 }
             });
 
-            final Composite client = new Composite(hostsComposite, SWT.BORDER);
+            final Composite client = new Composite(hostsComposite, SWT.NONE);
             client.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
             client.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             hostsComposite.setClient(client);
@@ -154,8 +155,8 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             final ToolItem deleteItem = UIUtils.createToolItem(toolBar, "Delete jump host", UIIcon.ROW_DELETE, SelectionListener.widgetSelectedAdapter(e -> {
                 final ConfigurationWrapper host = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
                 if (DBWorkbench.getPlatformUI().confirmAction(
-                    "Confirm host deletion",
-                    "Are you sure you want to delete host '" + host.configuration.toDisplayString() + "'?"
+                    SSHUIMessages.ssh_host_delete_title,
+                    NLS.bind(SSHUIMessages.ssh_host_delete_message, host.configuration.toDisplayString())
                 )) {
                     credentialsPanel.lastConfiguration = null;
                     final int index = configurations.indexOf(host);
@@ -449,7 +450,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             );
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
-                "SSH error",
+                SSHUIMessages.ssh_error_title,
                 e.getMessage(),
                 e
             );
@@ -520,7 +521,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         } catch (InvocationTargetException ex) {
             if (ex.getTargetException() != null) {
                 DBWorkbench.getPlatformUI().showError(
-                    "SSH error",
+                    SSHUIMessages.ssh_error_title,
                     null,
                     GeneralUtils.makeExceptionStatus(ex.getTargetException())
                 );
@@ -536,7 +537,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 configurations.add(new ConfigurationWrapper(host));
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("SSH configuration", "Unable to load SSH configuration due to an error", e);
+            DBWorkbench.getPlatformUI().showError(SSHUIMessages.ssh_configuration_title, SSHUIMessages.ssh_configuration_load_error, e);
             return;
         }
 

@@ -50,6 +50,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class AIChatUtils {
@@ -74,14 +75,31 @@ public class AIChatUtils {
         @Nullable AIChatConversation conversation,
         @Nullable DBRRunnableContext runnableContext
     ) {
+        selectCustomScope(shell, settings, container, contextProvider, runnableContext, ids -> {
+            settings.setScope(AIDatabaseScope.CUSTOM);
+            settings.setCustomObjectIds(ids.toArray(String[]::new));
+            saveContextSettings(conversation, settings);
+        });
+    }
+
+    /** Opens the custom scope picker without saving; invokes the callback only if the user confirms. */
+    public static void selectCustomScope(
+        @NotNull Shell shell,
+        @NotNull AIContextSettings settings,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull AIChatContextProvider contextProvider,
+        @Nullable DBRRunnableContext runnableContext,
+        @NotNull Consumer<List<String>> onSelection
+    ) {
         DBRRunnableContext context = runnableContext != null ? runnableContext : UIUtils.getDefaultRunnableContext();
         if (container.isConnected() && container.getDataSource() != null) {
-            chooseContextCustomScope(shell, settings, container, contextProvider, conversation, context);
+            chooseContextCustomScope(shell, settings, container, contextProvider, context, onSelection);
             return;
         }
         UIServiceConnections service = DBWorkbench.getService(UIServiceConnections.class);
         if (service == null) {
-            DBWorkbench.getPlatformUI().showError("Can't connect to data source", "Try establishing the connection manually");
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_connect_error_title, AIChatMessagesUI.ai_chat_connect_error_message);
             return;
         }
         try {
@@ -94,14 +112,15 @@ public class AIChatUtils {
                                 null,
                                 e
                             );
-                        } else {
-                            chooseContextCustomScope(shell, settings, container, contextProvider, conversation, context);
                         }
                     });
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
             });
+            if (container.isConnected() && !shell.isDisposed()) {
+                chooseContextCustomScope(shell, settings, container, contextProvider, context, onSelection);
+            }
         } catch (InvocationTargetException e) {
             log.error(e.getTargetException());
         } catch (InterruptedException ignored) {
@@ -113,8 +132,8 @@ public class AIChatUtils {
         @NotNull AIContextSettings settings,
         @NotNull DBPDataSourceContainer dataSourceContainer,
         @NotNull AIChatContextProvider contextProvider,
-        @Nullable AIChatConversation conversation,
-        @NotNull DBRRunnableContext runnableContext
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull Consumer<List<String>> onSelection
     ) {
         DBCExecutionContext executionContext = contextProvider.getExecutionContext(dataSourceContainer);
         if (executionContext != null) {
@@ -123,8 +142,8 @@ public class AIChatUtils {
                     shell,
                     settings,
                     executionContext,
-                    conversation,
-                    runnableContext
+                    runnableContext,
+                    onSelection
                 ));
         } else {
             DBWorkbench.getPlatformUI().showError(
@@ -138,8 +157,8 @@ public class AIChatUtils {
         @NotNull Shell shell,
         @NotNull AIContextSettings settings,
         @NotNull DBCExecutionContext executionContext,
-        @Nullable AIChatConversation conversation,
-        @NotNull DBRRunnableContext runnableContext
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull Consumer<List<String>> onSelection
     ) {
         Set<String> passedObjects = ArrayUtils.isEmpty(settings.getCustomObjectIds()) ?
             Set.of() : Set.of(settings.getCustomObjectIds());
@@ -150,9 +169,7 @@ public class AIChatUtils {
             passedObjects
         );
         if (ids != null) {
-            settings.setScope(AIDatabaseScope.CUSTOM);
-            settings.setCustomObjectIds(ids.toArray(String[]::new));
-            saveContextSettings(conversation, settings);
+            onSelection.accept(ids);
         }
     }
 
@@ -170,7 +187,8 @@ public class AIChatUtils {
             }
             settings.saveSettings();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Settings save", "Settings save failed", e);
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_settings_save_title, AIChatMessagesUI.ai_chat_settings_save_error, e);
         }
     }
 

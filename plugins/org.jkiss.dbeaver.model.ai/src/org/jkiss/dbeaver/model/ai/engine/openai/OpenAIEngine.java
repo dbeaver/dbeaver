@@ -19,16 +19,11 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
-import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -88,30 +83,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        OAIResponsesResponse completionResult = complete(monitor, request);
-        // Filter reasoning messages from the response for OpenAI reasoning models (e.g., gpt-5, gpt-5-mini, gpt-5-nano)
-        List<OAIMessage> messages = completionResult.output.stream()
-            .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
-            .toList();
-        AIUsage usage = completionResult.getAIUsage();
-        if (messages.isEmpty()) {
-            return new AIEngineResponse(
-                AIMessageType.ASSISTANT,
-                List.of(AIMessages.ai_empty_engine_response),
-                usage
-            );
-        }
-        OAIMessage message = messages.getFirst();
-        if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
-            AIFunctionCall fc = OpenAiUtils.createFunctionCall(message);
-            return new AIEngineResponse(fc, usage);
-        } else {
-            List<String> choices = messages.stream()
-                .map(OAIMessage::getFullText)
-                .toList();
-
-            return new AIEngineResponse(AIMessageType.ASSISTANT, choices, usage);
-        }
+        return OpenAiUtils.toEngineResponse(complete(monitor, request), reasoningSource());
     }
 
     @Override
@@ -142,7 +114,8 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private OAIResponsesRequest createRequest(@NotNull AIEngineRequest request) throws DBException {
-        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), getRequestTemperature());
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(
+            request, model(), getRequestTemperature(), reasoningSource(), properties.isReasoningHistoryRequired());
         if (properties instanceof OpenAIProperties openAIProperties
             && openAIProperties.isChatGptAccountAuthentication()
         ) {
@@ -168,6 +141,12 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     ) {
         return OpenAIModels.CATALOG_PROVIDER_ID.equals(getCatalogProviderId())
             ? OpenAIModels.findCatalogEntry(catalog, modelName) : super.findCatalogEntry(catalog, modelName);
+    }
+
+    @NotNull
+    private String reasoningSource() throws DBException {
+        return properties.getClass().getName() + "\n" + properties.getEffectiveBaseUrl() + "\n" + model() + "\n"
+            + (properties instanceof OpenAIProperties openAIProperties ? openAIProperties.getAuthentication() : "");
     }
 
     @NotNull

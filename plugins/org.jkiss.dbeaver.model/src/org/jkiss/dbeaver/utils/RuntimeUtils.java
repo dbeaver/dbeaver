@@ -45,6 +45,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.*;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
@@ -53,6 +55,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
 
 /**
  * RuntimeUtils
@@ -61,6 +64,8 @@ public final class RuntimeUtils {
 
     public static final String ENV_WORKSPACE_PATH = "DBEAVER_WORKSPACE";
     public static final String ENV_DATA_PATH = "DBEAVER_DATA";
+    public static final String NO_MAC_HASH = "NOMACADDR";
+    public static final String MAC_HASH_ERROR = "XXXXXXXXXX";
 
     private static final Log log = Log.getLog(RuntimeUtils.class);
 
@@ -71,6 +76,14 @@ public final class RuntimeUtils {
     private static final boolean IS_WINDOWS;
 
     private static final byte[] NULL_MAC_ADDRESS = new byte[] {0, 0, 0, 0, 0, 0};
+    private static final byte[] PLACEHOLDER_MAC_ADDRESS = {2, 0, 0, 0, 0, 0};
+    private static final Pattern PEER_INTERFACE = Pattern.compile("(?:awdl|llw)\\d+");
+    private static final Pattern VIRTUAL_INTERFACE = Pattern.compile(
+        "(?:bridge|docker|virbr|vboxnet|vmnet|vmenet|tun|tap|utun)\\d+|veth\\w+|br-[0-9a-f]{12}"
+    );
+    private static final Pattern WINDOWS_VIRTUAL_INTERFACE = Pattern.compile(
+        "\\b(?:virtual|vmware|hyper-v|vethernet|virtualbox)\\b", Pattern.CASE_INSENSITIVE
+    );
 
     static {
         String arch = Platform.getOSArch();
@@ -537,6 +550,71 @@ public final class RuntimeUtils {
             }
         }
         return ni == null || ni.getHardwareAddress() == null ? NULL_MAC_ADDRESS : ni.getHardwareAddress();
+    }
+
+    @NotNull
+    public static String hashMacAddress(@NotNull byte[] macAddress) throws NoSuchAlgorithmException {
+        byte[] digest = MessageDigest.getInstance("MD5").digest(macAddress);
+        long value = 0;
+        for (int i = 0; i < digest.length; i++) {
+            value += (long) digest[i] << (i * Byte.SIZE);
+        }
+        return Long.toString(Math.abs(value), Character.MAX_RADIX).toUpperCase();
+    }
+
+    @Nullable
+    public static byte[] selectMacAddress() throws SocketException {
+        List<MacCandidate> candidates = new ArrayList<>();
+        for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+            try {
+                byte[] address = networkInterface.getHardwareAddress();
+                if (address == null) {
+                    continue;
+                }
+                String displayName = IS_WINDOWS ? networkInterface.getDisplayName() : null;
+                boolean fallback = networkInterface.isVirtual() || networkInterface.isPointToPoint() || networkInterface.isLoopback();
+                candidates.add(new MacCandidate(networkInterface.getName(), displayName, fallback, address));
+            } catch (SocketException e) {
+                log.debug("Cannot read network interface " + networkInterface.getName(), e);
+            }
+        }
+        return selectMacAddress(candidates);
+    }
+
+    @Nullable
+    public static byte[] selectMacAddress(@NotNull List<MacCandidate> candidates) {
+        return candidates.stream()
+            .filter(candidate -> isUsableMacAddress(candidate.address()))
+            .min(Comparator.comparingInt(RuntimeUtils::macInterfacePriority).thenComparing(MacCandidate::name))
+            .map(MacCandidate::address)
+            .orElse(null);
+    }
+
+    private static boolean isUsableMacAddress(@NotNull byte[] address) {
+        boolean allZero = true;
+        boolean allOnes = true;
+        for (byte octet : address) {
+            allZero &= octet == 0;
+            allOnes &= octet == (byte) 0xff;
+        }
+        return !allZero && !allOnes && !Arrays.equals(address, PLACEHOLDER_MAC_ADDRESS);
+    }
+
+    private static int macInterfacePriority(@NotNull MacCandidate candidate) {
+        if (PEER_INTERFACE.matcher(candidate.name()).matches()) {
+            return 2;
+        }
+        String displayName = candidate.windowsDisplayName();
+        boolean windowsVirtual = displayName != null && WINDOWS_VIRTUAL_INTERFACE.matcher(displayName).find();
+        return candidate.fallback() || VIRTUAL_INTERFACE.matcher(candidate.name()).matches() || windowsVirtual ? 1 : 0;
+    }
+
+    public record MacCandidate(
+        @NotNull String name,
+        @Nullable String windowsDisplayName,
+        boolean fallback,
+        @NotNull byte[] address
+    ) {
     }
 
     @NotNull

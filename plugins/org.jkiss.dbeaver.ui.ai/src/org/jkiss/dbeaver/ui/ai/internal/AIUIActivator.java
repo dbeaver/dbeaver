@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.ai.internal;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIProjectConnectionCount;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -39,13 +40,15 @@ public class AIUIActivator extends AbstractUIPlugin {
         // Trigger pref defaults
         new BundlePreferenceStore(getBundle());
 
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+        if (!DBWorkbench.isDistributed()
+            && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             WorkbenchUtils.removePreferencePages(PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + AIPreferencePageMain.PAGE_ID);
         }
     }
 
     @Override
     public void stop(@NotNull BundleContext context) throws Exception {
+        AIProjectConnectionCount.getInstance().stop();
         plugin = null;
         super.stop(context);
     }
