@@ -61,13 +61,15 @@ public class DDMcpConnectionCatalog {
             .filter(project -> projectId == null || projectId.equals(project.getId()))
             .filter(this::canReadProjectConnections)
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
-                .filter(connection -> {
-                    AIContextSettingsDataSource settings = new AIContextSettingsDataSource(connection);
-                    return settings.isMetaTransferConfirmed() && settings.isDatadamMcpEnabled();
-                })
+                .filter(this::isAllowedConnection)
                 .map(connection -> new AvailableConnection(project, connection,
                     !connection.isConnected())))
             .toList();
+    }
+
+    private boolean isAllowedConnection(@NotNull DBPDataSourceContainer connection) {
+        AIContextSettingsDataSource settings = new AIContextSettingsDataSource(connection);
+        return settings.isMetaTransferConfirmed() && settings.isDatadamMcpEnabled();
     }
 
     private boolean canReadProjectConnections(@NotNull DBPProject project) {
