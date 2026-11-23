@@ -17,7 +17,7 @@
     <extension point="org.jkiss.dbeaver.sqlFormatter">
         <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" label="%sql.formatter.default.name" description="%sql.formatter.default.tip"/>
         <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" label="%sql.formatter.compact.name" description="%sql.formatter.compact.tip"/>
-        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" label="%sql.formatter.external.name" description="%sql.formatter.external.tip"/>
+        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" label="%sql.formatter.external.name" description="%sql.formatter.external.tip" supportsMultiuserMode="false"/>
     </extension>
 
     <!-- SQL Generators -->
@@ -100,11 +100,11 @@
 
     <extension point="org.jkiss.dbeaver.resourceType">
         <type id="sql-script"
-              name="SQL script"
+              name="%resource.root.scripts"
               icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
               folderIcon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script_folder.svg"
               managable="true">
-            <root folder="Scripts"/>
+            <root folder="Scripts" label="%resource.root.scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </type>
     </extension>

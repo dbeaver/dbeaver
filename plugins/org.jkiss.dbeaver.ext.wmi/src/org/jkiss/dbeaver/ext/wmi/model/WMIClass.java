@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.*;
 
@@ -47,7 +48,7 @@ public class WMIClass extends WMIContainer
     implements DBSEntity, DBPCloseableObject, DBPQualifiedObject, DBPSystemObject, DBSDataContainer, DBPImageProvider {
     private static final Log log = Log.getLog(WMIClass.class);
 
-    static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + WMIPluginConstants.PLUGIN_ID + "/icons/";
+    static final String ICON_LOCATION_PREFIX = RuntimeUtils.makePlatformResourceUrl(WMIPluginConstants.PLUGIN_ID, "icons/");
 
     private static final DBPImage IMG_CLASS;
     private static final DBPImage IMG_CLASS_ABSTRACT;

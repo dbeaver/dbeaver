@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ public class SQLEditorQueryCompletionAnalyzer extends SQLQueryCompletionAnalyzer
     @Override
     protected DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
         return switch (item.getKind()) {
-            case SCRIPT_VARIABLE -> UIIcon.SQL_VARIABLE2;
+            case SCRIPT_VARIABLE, LOCAL_VARIABLE -> UIIcon.SQL_VARIABLE2;
             default -> super.prepareProposalImage(item);
         };
     }

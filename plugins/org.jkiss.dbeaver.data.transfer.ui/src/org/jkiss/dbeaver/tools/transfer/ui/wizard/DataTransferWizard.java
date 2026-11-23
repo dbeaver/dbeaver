@@ -34,10 +34,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskExecutionLog;
 import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
@@ -45,7 +47,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskProcessorUI;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -129,8 +131,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             List<Throwable> loadErrors = settings.getState().getLoadErrors();
             if (loadErrors.size() == 1) {
                 DBWorkbench.getPlatformUI().showError(
-                    "Error loading configuration",
-                    "Error loading data transfer configuration", loadErrors.get(0));
+                    DTUIMessages.data_transfer_configuration_load_error_title,
+                    DTUIMessages.data_transfer_configuration_load_error_message, loadErrors.get(0));
             } else {
                 List<IStatus> childStatuses = new ArrayList<>();
                 for (Throwable error : loadErrors) {
@@ -139,8 +141,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 MultiStatus status = new MultiStatus(
                     DTConstants.PLUGIN_ID, 0, childStatuses.toArray(new IStatus[0]), "Multiple configuration errors", null);
                 DBWorkbench.getPlatformUI().showError(
-                    "Error loading configuration",
-                    status.getMessage(), status);
+                    DTUIMessages.data_transfer_configuration_load_error_title,
+                    DTUIMessages.data_transfer_configuration_multiple_errors_message, status);
             }
         }
     }
@@ -371,7 +373,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 // We need it because some data producers cannot be serialized properly (e.g. ResultSetDatacontainer - see #7342)
                 DataTransferWizardExecutor executor = new DataTransferWizardExecutor(
                     getRunnableContext(),
-                    DTMessages.data_transfer_wizard_job_name,
+                    DTUIMessages.data_transfer_wizard_job_name,
                     getSettings());
                 executor.executeTask();
                 if (executor.getError() instanceof DBException dbe) {
@@ -490,7 +492,9 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 getSettings().loadNodeSettings(monitor);
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Error loading settings", "Error loading data transfer settings", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                DTUIMessages.data_transfer_settings_load_error_title,
+                DTUIMessages.data_transfer_settings_load_error_message, e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
@@ -664,14 +668,20 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         @Override
         protected void runTask() throws DBException {
             DTTaskHandlerTransfer handlerTransfer = new DTTaskHandlerTransfer();
-            executeTaskWithHistory(() -> handlerTransfer.executeWithSettings(
-                this,
-                getCurrentTask(),
-                Locale.getDefault(),
-                log,
-                null,
-                this,
-                settings));
+            boolean captureLogs = DTActivator.getDefault().getPreferences().getBoolean(DTConstants.PREF_CAPTURE_UNSAVED_TASK_LOGS);
+            try (TaskExecutionLog executionLog = captureLogs ? TaskExecutionLog.open(getTask(), this) : null) {
+                DBRRunnable operation = () -> handlerTransfer.executeWithSettings(
+                    executionLog == null ? this : executionLog,
+                    getCurrentTask(),
+                    Locale.getDefault(),
+                    log,
+                    executionLog == null ? null : executionLog.getLogStream(),
+                    this,
+                    settings);
+                executeTaskWithHistory(
+                    executionLog == null ? null : executionLog.getRun(),
+                    executionLog == null ? operation : () -> executionLog.execute(operation));
+            }
         }
 
     }
@@ -730,7 +740,9 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
             return new DataTransferWizard(task, settings, false);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Data transfer error", "Can not open data transfer wizard", e);
+            DBWorkbench.getPlatformUI().showError(
+                DTUIMessages.data_transfer_handler_title_data_transfer_error,
+                DTUIMessages.data_transfer_handler_message_data_transfer_error, e);
             return null;
         }
     }

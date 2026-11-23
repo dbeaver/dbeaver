@@ -18,14 +18,29 @@ package org.jkiss.dbeaver.model.sql.analyzer;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
+import org.jkiss.dbeaver.model.sql.analyzer.builder.TableAttributeContainerBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryWordEntry;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSNamespace;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
@@ -101,6 +116,133 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
         );
 
         Assertions.assertTrue(proposals.contains("@value"));
+    }
+
+    @Test
+    public void testDataTypeCompletionFromNamespace() throws DBException {
+        DBSNamespace namespace = Mockito.mock(DBSNamespace.class);
+        DBSDataType type = Mockito.mock(DBSDataType.class);
+        Mockito.when(type.getName()).thenReturn("custom_type");
+        Mockito.when(type.getDataKind()).thenReturn(DBPDataKind.STRUCT);
+        Mockito.doReturn(List.of(type)).when(namespace)
+            .getObjectsByType(Mockito.any(), Mockito.eq(RelationalObjectType.TYPE_DATA_TYPE));
+        BasicSQLDialect dialect = new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public Collection<String> getDataTypes(@Nullable DBPDataSource dataSource) {
+                return List.of("custom_type");
+            }
+        };
+        RequestBuilder builder = RequestBuilder.empty().typeNamespace(namespace).dialect(dialect);
+        Mockito.when(type.getDataSource()).thenReturn(builder.getDataSource());
+
+        RequestResult request = builder.prepare();
+        var model = request.prepareQuery("CREATE TABLE t (col custom_ty)").model();
+        Assertions.assertNotNull(model.getQueryModel());
+        Assertions.assertTrue(model.getAllSymbols().stream().anyMatch(entry ->
+            entry.getRawName().equals("custom_ty") && entry.getOrigin() != null), model.getAllSymbols().toString());
+        var proposals = request.requestNewProposals("CREATE TABLE t (col custom_ty|)");
+        Assertions.assertTrue(proposals.stream().anyMatch(p ->
+            p.getItemKind() == SQLQueryCompletionItemKind.TYPE
+                && p.getReplacementString().equalsIgnoreCase("custom_type")), proposals.toString());
+        Assertions.assertEquals(1, proposals.stream().filter(p ->
+            p.getItemKind() == SQLQueryCompletionItemKind.TYPE
+                && p.getReplacementString().equalsIgnoreCase("custom_type")).count());
+        Mockito.verify(namespace).getObjectsByType(Mockito.any(), Mockito.eq(RelationalObjectType.TYPE_DATA_TYPE));
+    }
+
+    @Test
+    public void testDialectTypeNameCompletionWithoutDatabaseObject() throws DBException {
+        BasicSQLDialect dialect = new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public Collection<String> getDataTypes(@Nullable DBPDataSource dataSource) {
+                return List.of("builtin_alias");
+            }
+        };
+        var proposals = RequestBuilder.empty().dialect(dialect).prepare()
+            .requestNewProposals("CREATE TABLE t (col builtin_ali|)");
+        var typeProposal = proposals.stream()
+            .filter(p -> p.getItemKind() == SQLQueryCompletionItemKind.TYPE)
+            .findFirst().orElseThrow(() -> new AssertionError(proposals.toString()));
+        Assertions.assertEquals("builtin_alias", typeProposal.getReplacementString());
+        Assertions.assertFalse(typeProposal.getAdditionalProposalInfo().isBlank());
+        Assertions.assertNotNull(typeProposal.getObjectImage());
+
+        SQLQueryCompletionItem special = SQLQueryCompletionItem.forSpecialText(
+            1, new SQLQueryWordEntry(0, "replacement"), "replacement", "Tuple columns expansion"
+        );
+        Assertions.assertEquals(SQLQueryCompletionItemKind.UNKNOWN, special.getKind());
+    }
+
+    @Test
+    public void testQualifiedTypeCompletionDoesNotOfferDialectWideNames() throws DBException {
+        BasicSQLDialect dialect = new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public Collection<String> getDataTypes(@Nullable DBPDataSource dataSource) {
+                return List.of("builtin_alias");
+            }
+        };
+        RequestResult request = RequestBuilder.schemas(schemas -> schemas.schema("APP", empty()))
+            .dialect(dialect).prepare();
+        var model = request.prepareQuery("CREATE TABLE t (col app.builtin_ali)").model();
+        var typeName = model.getAllSymbols().stream()
+            .filter(entry -> entry.getRawName().equals("builtin_ali"))
+            .findFirst().orElseThrow();
+        var origin = Assertions.assertInstanceOf(SQLQuerySymbolOrigin.DbObjectFromDbObject.class, typeName.getOrigin(),
+            () -> model.getAllSymbols().stream().map(entry -> entry.getRawName() + ": " + entry.getOrigin()).toList().toString());
+        Assertions.assertEquals(SQLQuerySymbolOrigin.DbObjectFilterMode.TYPE, origin.getFilterMode());
+
+        var proposals = request.requestNewProposals("CREATE TABLE t (col app.builtin_ali|)");
+        Assertions.assertTrue(proposals.stream().noneMatch(p -> p.getItemKind() == SQLQueryCompletionItemKind.TYPE
+            && p.getReplacementString().contains("builtin_alias")), proposals.toString());
+    }
+
+    @Test
+    public void testTemporaryTableCompletionAfterNestedBlock() throws DBException {
+        String sql = """
+            CREATE PROCEDURE qa_temps AS BEGIN
+                CREATE TEMP TABLE removed (id INT);
+                CREATE TEMP TABLE replaced (id INT);
+                CREATE TEMP TABLE retained (id INT);
+                BEGIN
+                    DROP TABLE removed, replaced;
+                    CREATE TEMP TABLE replaced (id TEXT);
+                END;
+                SELECT id FROM removed;
+                SELECT id FROM repl|;
+                SELECT id FROM retained;
+            END;
+            """;
+        RequestResult request = RequestBuilder.empty().dialect(BasicSQLDialect.INSTANCE).prepare();
+        Set<String> proposals = request.requestNewStrings(sql);
+        Assertions.assertTrue(proposals.stream().anyMatch(s -> s.equalsIgnoreCase("replaced")), proposals.toString());
+        Set<String> retained = request.requestNewStrings(sql.replace("repl|", "reta|"));
+        Assertions.assertTrue(retained.stream().anyMatch(s -> s.equalsIgnoreCase("retained")), retained.toString());
+        Set<String> removed = request.requestNewStrings(sql.replace("repl|", "rem|"));
+        Assertions.assertTrue(removed.stream().noneMatch(s -> s.equalsIgnoreCase("removed")), removed.toString());
+        Set<String> columns = request.requestNewStrings(sql.replace("SELECT id FROM repl|", "SELECT | FROM replaced"));
+        Assertions.assertTrue(columns.stream().anyMatch(s -> s.equalsIgnoreCase("id")), columns.toString());
+    }
+
+    @Test
+    public void testParenthesizedTableFunctionBodyCompletion() throws DBException {
+        RequestResult request = RequestBuilder.tables(tables -> tables.table("rects3rects", table -> {
+            table.attribute("x");
+            table.attribute("other_column");
+        })).prepare();
+        Set<String> tables = request.requestNewStrings(
+            "CREATE TABLE FUNCTION dataset.qa_table_fn(x INT64) AS (SELECT x FROM rects3r|)"
+        );
+        Assertions.assertTrue(tables.stream().anyMatch(s -> s.replace("\"", "").startsWith("rects3rects")), tables.toString());
+
+        Set<String> columns = request.requestNewStrings(
+            "CREATE TABLE FUNCTION dataset.qa_table_fn(x INT64) AS (SELECT | FROM rects3rects)"
+        );
+        Set<String> standaloneColumns = request.requestNewStrings("SELECT | FROM rects3rects");
+        Assertions.assertTrue(standaloneColumns.stream().anyMatch(s -> s.equalsIgnoreCase("other_column")), standaloneColumns.toString());
+        Assertions.assertTrue(columns.stream().anyMatch(s -> s.equalsIgnoreCase("other_column")), columns.toString());
     }
 
     @Test
@@ -477,6 +619,117 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
             Assertions.assertTrue(proposals.contains("col2"));
             Assertions.assertTrue(proposals.contains("col3"));
         }
+        {
+            final Set<String> proposals = request.requestNewStrings("UPDATE db.sch.tbl t SET t.|");
+            Assertions.assertTrue(proposals.contains("col1"));
+            Assertions.assertTrue(proposals.contains("col2"));
+            Assertions.assertTrue(proposals.contains("col3"));
+        }
+        {
+            final Set<String> sources = request.requestNewStrings("UPDATE db.sch.tbl t SET col1 = |");
+            Assertions.assertTrue(sources.contains("t.col2"), sources.toString());
+            final Set<String> nextTargets = request.requestNewStrings("UPDATE db.sch.tbl t SET col1 = 1, |");
+            Assertions.assertTrue(nextTargets.contains("col2"), nextTargets.toString());
+            Assertions.assertFalse(nextTargets.contains("t.col2"), nextTargets.toString());
+        }
+    }
+
+    @Test
+    public void testColumnsCompletionInMultiTableUpdate() throws DBException {
+        RequestResult request = RequestBuilder.tables(tables -> {
+            tables.table("first_table", table -> {
+                table.attribute("id");
+                table.attribute("first_only");
+            });
+            tables.table("second_table", table -> {
+                table.attribute("id");
+                table.attribute("second_only");
+            });
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings(
+            "UPDATE first_table a JOIN second_table b ON a.id = b.id SET |");
+        Assertions.assertTrue(proposals.contains("a.first_only"), proposals.toString());
+        Assertions.assertTrue(proposals.contains("b.second_only"), proposals.toString());
+        Assertions.assertTrue(proposals.contains("a.id"), proposals.toString());
+        Assertions.assertTrue(proposals.contains("b.id"), proposals.toString());
+        Assertions.assertFalse(proposals.contains("id"), proposals.toString());
+        Assertions.assertFalse(proposals.contains("first_only"), proposals.toString());
+        Assertions.assertFalse(proposals.contains("second_only"), proposals.toString());
+
+        Set<String> sources = request.requestNewStrings(
+            "UPDATE first_table a SET first_only = | FROM second_table b");
+        Assertions.assertTrue(sources.contains("a.first_only"), sources.toString());
+
+        Set<String> nextTargets = request.requestNewStrings(
+            "UPDATE first_table a SET first_only = 1,|  FROM second_table b");
+        Assertions.assertTrue(nextTargets.contains("a.first_only"), nextTargets.toString());
+        Assertions.assertFalse(nextTargets.contains("second_only"), nextTargets.toString());
+
+        String trailingComma = "UPDATE first_table a JOIN second_table b ON a.id = b.id "
+            + "SET a.id = 1, b.id = 2,";
+        Set<String> targetProposals = request.requestNewStrings(trailingComma + "|   WHERE a.id = 3");
+        Assertions.assertTrue(targetProposals.contains("a.first_only"), targetProposals.toString());
+        Assertions.assertTrue(targetProposals.contains("b.second_only"), targetProposals.toString());
+        Assertions.assertEquals(targetProposals, request.requestNewStrings(trailingComma + " |  WHERE a.id = 3"));
+        Set<String> keywordProposals = request.requestNewStrings(trailingComma + " | WHERE a.id = 3");
+        Assertions.assertTrue(keywordProposals.contains("WHERE"), keywordProposals.toString());
+        Assertions.assertTrue(keywordProposals.contains("a.first_only"), keywordProposals.toString());
+        Set<String> atWhere = request.requestNewStrings(trailingComma + "  |WHERE a.id = 3");
+        Assertions.assertTrue(atWhere.contains("WHERE"), atWhere.toString());
+        Assertions.assertFalse(atWhere.contains("a.first_only"), atWhere.toString());
+
+        Set<String> beforeComma = request.requestNewStrings(
+            "UPDATE first_table a JOIN second_table b ON a.id = b.id SET a.id =   |, b.id = 3");
+        Assertions.assertTrue(beforeComma.contains("a.first_only"), beforeComma.toString());
+        Assertions.assertTrue(beforeComma.contains("b.second_only"), beforeComma.toString());
+
+        Set<String> emptyTarget = request.requestNewStrings(
+            "UPDATE first_table a JOIN second_table b ON a.id = b.id SET a.id = 1, |, b.id = 3");
+        Assertions.assertTrue(emptyTarget.stream().anyMatch(s -> s.endsWith("first_only")), emptyTarget.toString());
+        Assertions.assertTrue(emptyTarget.stream().anyMatch(s -> s.endsWith("second_only")), emptyTarget.toString());
+    }
+
+    @Test
+    public void testSeparatorBoundaryCompletion() throws DBException {
+        RequestResult request = RequestBuilder.tables(tables -> tables.table("tbl", table -> {
+            table.attribute("id");
+            table.attribute("amount");
+        })).prepare();
+
+        Set<String> updateEquals = request.requestNewStrings("UPDATE tbl SET id=|");
+        Set<String> updateEqualsSpace = request.requestNewStrings("UPDATE tbl SET id= |");
+        Assertions.assertEquals(updateEqualsSpace, updateEquals);
+        Assertions.assertTrue(updateEquals.contains("amount"));
+        Assertions.assertTrue(updateEquals.contains("CAST"));
+        Set<String> updateBeforeWhere = request.requestNewStrings("UPDATE tbl SET id=|  WHERE id=1");
+        Set<String> updateBeforeWhereSpace = request.requestNewStrings("UPDATE tbl SET id= | WHERE id=1");
+        Assertions.assertEquals(updateBeforeWhereSpace, updateBeforeWhere);
+        Assertions.assertTrue(updateBeforeWhereSpace.contains("amount"));
+        Set<String> selectComma = request.requestNewStrings("SELECT id,| FROM tbl");
+        Set<String> selectCommaSpace = request.requestNewStrings("SELECT id, | FROM tbl");
+        Assertions.assertEquals(selectCommaSpace, selectComma);
+        Assertions.assertTrue(selectComma.contains("CAST"));
+        Assertions.assertTrue(selectComma.contains("amount"));
+
+        Assertions.assertEquals(request.requestNewStrings("SELECT COALESCE(id,|amount) FROM tbl"),
+            request.requestNewStrings("SELECT COALESCE(id, |amount) FROM tbl"));
+
+        Set<String> predicateEquals = request.requestNewStrings("SELECT id FROM tbl WHERE id=|");
+        Set<String> predicateEqualsSpace = request.requestNewStrings("SELECT id FROM tbl WHERE id= |");
+        Assertions.assertEquals(predicateEqualsSpace, predicateEquals);
+        Assertions.assertTrue(predicateEquals.contains("CAST"));
+        Assertions.assertTrue(predicateEquals.contains("DEFAULT"));
+
+        Set<String> plus = request.requestNewStrings("SELECT id +| amount FROM tbl");
+        Set<String> plusSpace = request.requestNewStrings("SELECT id + | amount FROM tbl");
+        Assertions.assertEquals(plusSpace, plus);
+        Assertions.assertTrue(plus.contains("CAST"));
+
+        Set<String> semicolon = request.requestNewStrings("SELECT id FROM tbl;|");
+        Assertions.assertEquals(semicolon, request.requestNewStrings("SELECT id FROM tbl; |"));
+        Assertions.assertTrue(semicolon.contains("GROUP"));
+        Assertions.assertFalse(semicolon.contains("SELECT"));
     }
     
     @Test
@@ -773,6 +1026,58 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
         Set<String> proposals = request.requestNewStrings("select * FROM Artist art join Album al ON |");
         assertContains(proposals, "art.ArtistId", "art.Name", "al.AlbumId", "al.Title", "al.ArtistId");
         assertNotContains(proposals, "Artist a", "Album a");
+    }
+
+    @Test
+    public void testJoinConditionBeforeFollowingClause() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            TableAttributeContainerBuilder artist = s.tableBuilder("Artist", t -> {
+                t.attribute("ArtistId");
+                t.attribute("Name");
+            });
+            s.tableBuilder("Album", t -> {
+                t.attribute("AlbumId");
+                t.attribute("ArtistId");
+            }).foreignKey("ArtistId", artist, "ArtistId");
+        }).prepare();
+
+        Set<String> tail = request.requestNewStrings("select * from Artist art join Album al on |");
+        assertContains(tail, "art.ArtistId = al.ArtistId");
+
+        for (String clause : List.of("where art.ArtistId = 5", "group by art.ArtistId")) {
+            Set<String> proposals = request.requestNewStrings(
+                "select *\nfrom Artist art\njoin Album al on | \n" + clause + "\n;"
+            );
+            assertContains(proposals, "art.ArtistId = al.ArtistId", "art.ArtistId", "art.Name", "al.AlbumId", "al.ArtistId");
+            assertNotContains(proposals, "Artist a", "Album a");
+        }
+
+        assertContains(request.requestNewStrings("select * from Artist art join |"), "Album a", "Artist a");
+    }
+
+    @Test
+    public void testJoinConditionBeforeAnotherJoin() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            TableAttributeContainerBuilder artist = s.tableBuilder("Artist", t -> t.attribute("ArtistId"));
+            TableAttributeContainerBuilder album = s.tableBuilder("Album", t -> {
+                t.attribute("AlbumId");
+                t.attribute("ArtistId");
+            }).foreignKey("ArtistId", artist, "ArtistId");
+            s.tableBuilder("Track", t -> t.attribute("AlbumId"))
+                .foreignKey("AlbumId", album, "AlbumId");
+        }).prepare();
+
+        Set<String> first = request.requestNewStrings(
+            "select * from Artist art join Album al on | \njoin Track tr on tr.AlbumId = al.AlbumId\nwhere art.ArtistId = 5;"
+        );
+        assertContains(first, "art.ArtistId = al.ArtistId");
+        assertNotContains(first, "al.AlbumId = tr.AlbumId", "tr.AlbumId");
+
+        Set<String> second = request.requestNewStrings(
+            "select * from Artist art join Album al on art.ArtistId = al.ArtistId\njoin Track tr on | \nwhere art.ArtistId = 5;"
+        );
+        assertContains(second, "al.AlbumId = tr.AlbumId", "tr.AlbumId");
+        assertNotContains(second, "art.ArtistId = al.ArtistId");
     }
 
     @Test

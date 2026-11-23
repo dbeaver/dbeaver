@@ -79,7 +79,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
     private DBPProject project;
     private DBPDataSourceContainer dataSourceContainer;
 
-    public DatabaseLazyEditorInput(IMemento memento) {
+    public DatabaseLazyEditorInput(@NotNull IMemento memento) {
         inputClass = memento.getString(DatabaseEditorInputFactory.TAG_CLASS);
         nodePath = memento.getString(DatabaseEditorInputFactory.TAG_NODE);
         String nodeName = memento.getString(DatabaseEditorInputFactory.TAG_NODE_NAME);
@@ -87,7 +87,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
         dataSourceId = memento.getString(DatabaseEditorInputFactory.TAG_DATA_SOURCE);
         if (nodePath == null || inputClass == null || dataSourceId == null) {
-            log.error("Corrupted memento"); //$NON-NLS-2$
+            log.debug("Corrupted memento"); //$NON-NLS-2$
         }
         activePageId = memento.getString(DatabaseEditorInputFactory.TAG_ACTIVE_PAGE);
         activeFolderId = memento.getString(DatabaseEditorInputFactory.TAG_ACTIVE_FOLDER);
@@ -263,8 +263,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return project;
     }
 
-    public IDatabaseEditorInput initializeRealInput(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public IDatabaseEditorInput initializeRealInput(@NotNull DBRProgressMonitor monitor) {
         if (dataSourceId == null) {
             return null;
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 public abstract class UITask<RESULT> extends RunnableWithResult<RESULT> {
 
@@ -44,7 +46,8 @@ public abstract class UITask<RESULT> extends RunnableWithResult<RESULT> {
                 try {
                     return runnable.run();
                 } catch (Exception e) {
-                    DBWorkbench.getPlatformUI().showError("Task error", "Internal error: task " + runnable + "' failed", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        UIMessages.task_error_title, NLS.bind(UIMessages.task_error_message, runnable), e);
                     return null;
                 }
             }

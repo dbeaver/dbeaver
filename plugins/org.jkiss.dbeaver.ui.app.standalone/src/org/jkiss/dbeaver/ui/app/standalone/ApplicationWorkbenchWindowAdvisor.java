@@ -165,7 +165,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         configurer.setInitialSize(new Point(displaySize.width * 3 / 4, displaySize.height * 3 / 4));
         configurer.setShowCoolBar(true);
         configurer.setShowStatusLine(true);
-        configurer.setShowPerspectiveBar(true);
+        configurer.setShowPerspectiveBar(false);
         configurer.setShowProgressIndicator(true);
         configurer.configureEditorAreaDropListener(new EditorAreaDropAdapter());
 
@@ -193,13 +193,31 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         }
 
         WorkbenchPlugin.unsetSplashShell(Display.getCurrent());
-        var dialog = new ProductConfigWizardDialog(
-            getWindowConfigurer().getWindow(),
-            ProductConfigWizard.Origin.AUTOMATIC
-        );
-        if (dialog.open() == IDialogConstants.CANCEL_ID) {
-            DBRFeatureRegistry.getInstance().endTracking();
-            System.exit(0);
+        Shell workbenchShell = getWindowConfigurer().getWindow().getShell();
+        boolean hideWorkbench = Platform.OS_MACOSX.equals(Platform.getOS()) && workbenchShell != null;
+        boolean restoreVisibility = hideWorkbench && workbenchShell.isVisible();
+        int originalAlpha = hideWorkbench ? workbenchShell.getAlpha() : 255;
+        if (hideWorkbench) {
+            // Cocoa may show the unfinished workbench during the wizard's nested event loop.
+            workbenchShell.setAlpha(0);
+            workbenchShell.setVisible(false);
+        }
+        try {
+            var dialog = new ProductConfigWizardDialog(
+                getWindowConfigurer().getWindow(),
+                ProductConfigWizard.Origin.AUTOMATIC
+            );
+            if (dialog.open() == IDialogConstants.CANCEL_ID) {
+                DBRFeatureRegistry.getInstance().endTracking();
+                System.exit(0);
+            }
+        } finally {
+            if (hideWorkbench && !workbenchShell.isDisposed()) {
+                workbenchShell.setAlpha(originalAlpha);
+                if (restoreVisibility) {
+                    workbenchShell.setVisible(true);
+                }
+            }
         }
     }
 

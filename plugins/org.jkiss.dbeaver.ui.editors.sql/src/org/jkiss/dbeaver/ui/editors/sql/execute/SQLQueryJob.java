@@ -269,7 +269,7 @@ public class SQLQueryJob extends DataSourceJob {
                         log.error(lastError);
                         boolean isQueue = isQueue();
                         DBPPlatformUI.UserResponse response = ExecutionQueueErrorJob.showError(
-                            (isQueue ? "SQL script execution" : "SQL query execution") +
+                            (isQueue ? SQLEditorMessages.sql_script_execution_error_title : SQLEditorMessages.sql_query_execution_error_title) +
                                 "\n" +  GeneralUtils.getFirstMessage(lastError),
                             lastError,
                             isQueue);
@@ -779,6 +779,9 @@ public class SQLQueryJob extends DataSourceJob {
                                         statistics.setError(e);
                                     }
                                 }
+                            } else {
+                                // The result is skipped without reading any rows, so the max rows check must not use a count left from the previous fetch
+                                rowsFetched = 0;
                             }
                         }
                     }

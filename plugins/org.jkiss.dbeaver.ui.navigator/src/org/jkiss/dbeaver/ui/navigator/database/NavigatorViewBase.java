@@ -356,6 +356,7 @@ public abstract class NavigatorViewBase extends ViewPart
         }
         switch (property) {
             case ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS:
+            case ModelPreferences.NAVIGATOR_LOCALIZE_FOLDER_NAMES:
             case ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY:
             case ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE:
             case ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST:

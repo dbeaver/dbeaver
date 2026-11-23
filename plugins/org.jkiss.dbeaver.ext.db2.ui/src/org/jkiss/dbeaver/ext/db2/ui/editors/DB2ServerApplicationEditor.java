@@ -89,7 +89,7 @@ public class DB2ServerApplicationEditor extends AbstractSessionEditor {
         {
             final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
             final String action = DB2Messages.editors_db2_application_editor_action_force;
-            if (UIUtils.confirmAction(getSite().getShell(), "Confirm force application",
+            if (UIUtils.confirmAction(getSite().getShell(), DB2Messages.editors_db2_application_editor_confirm_title,
                 NLS.bind(DB2Messages.editors_db2_application_editor_confirm_action, action.toLowerCase(), sessions))) {
                 Map<String, Object> options = new HashMap<>();
                 getSessionsViewer().alterSessions(sessions, options);

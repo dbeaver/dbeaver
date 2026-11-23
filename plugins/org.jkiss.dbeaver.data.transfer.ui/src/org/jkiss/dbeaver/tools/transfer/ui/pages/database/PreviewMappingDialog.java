@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -62,7 +61,7 @@ class PreviewMappingDialog extends BaseProgressDialog {
         DataTransferPipe pipe,
         DatabaseMappingContainer mappingContainer,
         DataTransferSettings dtSettings) {
-        super(parentShell, DTMessages.data_transfer_wizard_page_preview_title + " - " + mappingContainer.getTargetName(), null);
+        super(parentShell, DTUIMessages.data_transfer_wizard_page_preview_title + " - " + mappingContainer.getTargetName(), null);
 
         this.pipe = pipe;
         this.mappingContainer = mappingContainer;
@@ -89,7 +88,7 @@ class PreviewMappingDialog extends BaseProgressDialog {
             Composite previewGroup = new Composite(main, SWT.NONE);
             previewGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             previewGroup.setLayout(new GridLayout(1, false));
-            UIUtils.createControlLabel(previewGroup, DTMessages.data_transfer_wizard_settings_group_preview);
+            UIUtils.createControlLabel(previewGroup, DTUIMessages.data_transfer_wizard_settings_group_preview);
 
             previewTable = new Table(previewGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             GridData gd = new GridData(GridData.FILL_BOTH);

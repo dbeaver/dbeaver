@@ -78,6 +78,11 @@ public interface AIEngineProperties {
 
     double getTemperature();
 
+    @Nullable
+    default Double getRequestTemperature() {
+        return getTemperature();
+    }
+
     // Checks that properties have all required values
     boolean isValidConfiguration();
 

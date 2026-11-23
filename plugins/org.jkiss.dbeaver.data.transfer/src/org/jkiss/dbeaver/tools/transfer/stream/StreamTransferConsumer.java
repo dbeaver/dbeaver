@@ -693,8 +693,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 }
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
-                    "Transfer event processor",
-                    "Error executing data transfer event processor '" + descriptor.getLabel() + "'",
+                    DTMessages.data_transfer_event_processor_error_title,
+                    NLS.bind(DTMessages.data_transfer_event_processor_error_message, descriptor.getLabel()),
                     e
                 );
                 log.error("Error executing event processor '" + descriptor.getLabel() + "'", e);

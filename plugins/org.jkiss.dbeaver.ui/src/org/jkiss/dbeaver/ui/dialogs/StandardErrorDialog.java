@@ -20,11 +20,13 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.IErrorAction;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -36,6 +38,8 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
 
     private static final String DIALOG_ID = "DBeaver.StandardErrorDialog";//$NON-NLS-1$
 
+    private final IErrorAction errorAction;
+
     public StandardErrorDialog(
         @Nullable Shell parentShell,
         @NotNull String dialogTitle,
@@ -45,6 +49,7 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
     {
         super(parentShell, dialogTitle, message, status, displayMask);
         setStatus(status);
+        errorAction = findErrorAction(status);
         if (message == null) {
             IStatus rootStatus = GeneralUtils.getRootStatus(status);
             if (rootStatus.getException() != null) {
@@ -76,8 +81,40 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
         } else {
             this.message = CommonUtils.cutExtraLines(message, 20); //$NON-NLS-1$
         }
+        if (errorAction != null) {
+            this.message = errorAction.getDescription();
+        }
         // Truncate message to 64kb
         this.message = CommonUtils.truncateString(this.message, 64000);
+    }
+
+    @Nullable
+    private static IErrorAction findErrorAction(@NotNull IStatus status) {
+        for (Throwable error = status.getException(); error != null; error = error.getCause()) {
+            IErrorAction action = GeneralUtils.adapt(error, IErrorAction.class);
+            if (action != null) {
+                return action;
+            }
+        }
+        for (IStatus child : status.getChildren()) {
+            IErrorAction action = findErrorAction(child);
+            if (action != null) {
+                return action;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        if (errorAction != null) {
+            Button actionButton = createButton(parent, IDialogConstants.CLIENT_ID, errorAction.getLabel(), false);
+            actionButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+                close();
+                errorAction.perform();
+            }));
+        }
+        super.createButtonsForButtonBar(parent);
     }
 
     @Override

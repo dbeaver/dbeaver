@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,10 +76,30 @@ public class JDBCFactoryDefault implements JDBCFactory {
         return new JDBCResultSetImpl(session, statement, original, disableLogging);
     }
 
+    @NotNull
     @Override
     public JDBCResultSetMetaData createResultSetMetaData(
         @NotNull JDBCResultSet resultSet
     ) throws SQLException {
         return new JDBCResultSetMetaDataImpl(resultSet);
+    }
+
+    @NotNull
+    @Override
+    public JDBCResultSetMetaData createResultSetMetaData(
+        @NotNull JDBCResultSet resultSet,
+        @NotNull ResultSetMetaData original
+    ) throws SQLException {
+        return new JDBCResultSetMetaDataImpl(resultSet, original);
+    }
+
+    @NotNull
+    @Override
+    public JDBCResultSetMetaData createResultSetMetaData(
+        @NotNull JDBCSession session,
+        @NotNull JDBCStatement statement,
+        @NotNull ResultSetMetaData original
+    ) throws SQLException {
+        return new JDBCResultSetMetaDataImpl(session, statement, original);
     }
 }

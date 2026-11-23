@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
@@ -113,7 +114,6 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.editors.text.DynamicFindReplaceTarget;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -181,6 +181,8 @@ public class ResultSetViewer extends Viewer
     private Composite filtersPanelComposite;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
+    @Nullable
+    private FilterSettingsDialog filterSettingsDialog;
     private final CustomSashForm viewerSash;
 
     private final VerticalFolder panelSwitchFolder;
@@ -255,6 +257,8 @@ public class ResultSetViewer extends Viewer
     private volatile boolean isWindowVisible = true;
     private volatile boolean needToRetryTaskOnWindowDeiconified = false;
     private Runnable onSuccess;
+    // Accessed only on the UI thread.
+    private boolean refreshAfterSavePending;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container) {
         super();
@@ -346,7 +350,7 @@ public class ResultSetViewer extends Viewer
             this.viewerSash = UIUtils.createPartDivider(
                 getSite().getPart(),
                 this.viewerPanel,
-                UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH)
+                SWT.HORIZONTAL | SWT.SMOOTH
             );
             this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
             CSSUtils.markConnectionTypeColor(this.viewerSash);
@@ -427,7 +431,18 @@ public class ResultSetViewer extends Viewer
                 composite.setLayoutData(gd);
             }
 
-            this.viewerPanel.addDisposeListener(e -> dispose());
+            // Keep the registration registry: the container's project can change before disposal.
+            DBPProject project = container.getProject();
+            DBPDataSourceRegistry registry = project == null ? null : project.getDataSourceRegistry();
+            if (registry != null) {
+                registry.addDataSourceListener(this);
+            }
+            this.viewerPanel.addDisposeListener(e -> {
+                if (registry != null) {
+                    registry.removeDataSourceListener(this);
+                }
+                dispose();
+            });
 
             changeMode(false);
         } finally {
@@ -437,12 +452,6 @@ public class ResultSetViewer extends Viewer
         updateFiltersText();
 
         addListener(new ResultSetStatListener(this));
-
-        // Listen datasource events (like connect/disconnect/update)
-        DBPProject project = container.getProject();
-        if (project != null) {
-            project.getDataSourceRegistry().addDataSourceListener(this);
-        }
 
         themeUpdateJob = new AbstractJob("Update theme") {
             @NotNull
@@ -468,7 +477,8 @@ public class ResultSetViewer extends Viewer
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(dataPropertyListener);
         DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().addPropertyChangeListener(dataPropertyListener);
-        mainPanel.getShell().addShellListener(new ShellAdapter() {
+        Shell shell = mainPanel.getShell();
+        ShellAdapter shellListener = new ShellAdapter() {
             @Override
             public void shellIconified(ShellEvent e) {
                 isWindowVisible = false;
@@ -480,6 +490,31 @@ public class ResultSetViewer extends Viewer
                 if (needToRetryTaskOnWindowDeiconified) {
                     refreshData(onSuccess);
                 }
+                scheduleRefreshAfterSave();
+            }
+        };
+        shell.addShellListener(shellListener);
+
+        // Showing a tab/editor changes an ancestor's visibility, not necessarily mainPanel's.
+        // SWT.Show can arrive before the control is visible, so retry on the next UI turn.
+        Listener visibilityListener = event -> scheduleRefreshAfterSave();
+        List<Control> visibilityControls = new ArrayList<>();
+        for (Control control = mainPanel; control != null; control = control.getParent()) {
+            control.addListener(SWT.Show, visibilityListener);
+            visibilityControls.add(control);
+        }
+        mainPanel.addListener(SWT.Activate, visibilityListener);
+        viewerPanel.addDisposeListener(event -> {
+            for (Control control : visibilityControls) {
+                if (!control.isDisposed()) {
+                    control.removeListener(SWT.Show, visibilityListener);
+                }
+            }
+            if (!mainPanel.isDisposed()) {
+                mainPanel.removeListener(SWT.Activate, visibilityListener);
+            }
+            if (!shell.isDisposed()) {
+                shell.removeShellListener(shellListener);
             }
         });
     }
@@ -642,7 +677,22 @@ public class ResultSetViewer extends Viewer
     }
 
     public void showFilterSettingsDialog() {
-        new FilterSettingsDialog(ResultSetViewer.this).open();
+        if (filterSettingsDialog != null) {
+            Shell shell = filterSettingsDialog.getShell();
+            if (shell != null && !shell.isDisposed()) {
+                shell.forceActive();
+            }
+            return;
+        }
+        FilterSettingsDialog dialog = new FilterSettingsDialog(this);
+        filterSettingsDialog = dialog;
+        try {
+            dialog.open();
+        } finally {
+            if (filterSettingsDialog == dialog) {
+                filterSettingsDialog = null;
+            }
+        }
     }
 
     public void saveDataFilter() {
@@ -657,7 +707,7 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel != null) {
             DBeaverNotifications.showNotification(
                 DBeaverNotifications.NT_GENERIC,
-                "Data filter was saved",
+                ResultSetMessages.controls_resultset_filter_saved_message,
                 filtersPanel.getFilterText(),
                 DBPMessageType.INFORMATION, null);
         }
@@ -757,7 +807,7 @@ public class ResultSetViewer extends Viewer
         return model.getDataFilter();
     }
 
-    public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
+    public void setDataFilter(@NotNull final DBDDataFilter dataFilter, boolean refreshData)
     {
         //if (!model.getDataFilter().equals(dataFilter))
         {
@@ -765,6 +815,7 @@ public class ResultSetViewer extends Viewer
             if (refreshData) {
                 refreshWithFilter(dataFilter);
             } else {
+                fireResultSetRefresh();
                 model.setDataFilter(dataFilter);
                 activePresentation.refreshData(true, false, true);
                 updateFiltersText();
@@ -910,7 +961,8 @@ public class ResultSetViewer extends Viewer
                         activePresentationDescriptor = newPresentation;
                         setActivePresentation(instance);
                     } catch (Throwable e) {
-                        DBWorkbench.getPlatformUI().showError("Presentation activate", "Can't instantiate data view '" + newPresentation.getLabel() + "'", e);
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_activate_presentation_title,
+                            NLS.bind(ResultSetMessages.error_instantiate_presentation, newPresentation.getLabel()), e);
                     }
                 } else {
                     log.debug("No presentations for result set [" + resultSet.getClass().getSimpleName() + "]");
@@ -1206,8 +1258,8 @@ public class ResultSetViewer extends Viewer
             return true;
         } catch (Throwable e1) {
             DBWorkbench.getPlatformUI().showError(
-                    "Presentation switch",
-                "Can't switch presentation",
+                ResultSetMessages.error_switch_presentation_title,
+                ResultSetMessages.error_switch_presentation_message,
                 e1);
             return false;
         }
@@ -1321,7 +1373,8 @@ public class ResultSetViewer extends Viewer
         try {
             panel = panelDescriptor.createInstance();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't show panel", "Can't create panel '" + id + "'", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_show_panel_title,
+                NLS.bind(ResultSetMessages.error_create_panel, id), e);
             return false;
         }
         panelInfo = new PanelInfo(panelDescriptor, panel);
@@ -1381,6 +1434,7 @@ public class ResultSetViewer extends Viewer
                 ToolBar toolBar = panelToolBar.createControl(trControl);
                 toolBar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
+            UIUtils.installAndUpdateMainFont(trControl);
         } finally {
             panelFolder.setRedraw(true);
         }
@@ -1833,9 +1887,11 @@ public class ResultSetViewer extends Viewer
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         @Nullable Object value,
-        boolean refreshHints) throws DBException {
-        boolean updated = undoRedoManager.updateCellValue(attr, row, rowIndexes, value);
+        boolean refreshHints
+    ) throws DBException {
+        boolean updated = undoRedoManager.updateCellValue(attr, row, rowIndexes, valuePath, value);
         if (updated && refreshHints) {
             refreshHintCache(
                 Collections.singletonList(attr),
@@ -1849,9 +1905,10 @@ public class ResultSetViewer extends Viewer
     public void resetCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes
+        @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath
     ) {
-        if (!undoRedoManager.resetCellValue(attr, row, rowIndexes)) {
+        if (!undoRedoManager.resetCellValue(attr, row, rowIndexes, valuePath)) {
             return;
         }
         refreshHintCache(
@@ -2205,7 +2262,8 @@ public class ResultSetViewer extends Viewer
         return curState != null ? curState.dataContainer : container.getDataContainer();
     }
 
-    public void setDataContainer(DBSDataContainer targetEntity, DBDDataFilter newFilter) {
+    public void setDataContainer(@NotNull DBSDataContainer targetEntity, @NotNull DBDDataFilter newFilter) {
+        fireResultSetRefresh();
         // Workaround for script results
         // In script mode history state isn't updated so we check for it here
         if (curState == null) {
@@ -2311,6 +2369,7 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        refreshAfterSavePending = false;
         ActionUtils.removePropertyEvaluationRequestListener(propertyEvaluationRequestListener);
 
         if (!themeUpdateJob.isCanceled()) {
@@ -2327,11 +2386,6 @@ public class ResultSetViewer extends Viewer
         if (activePresentation != null) {
             activePresentation.dispose();
         }
-        DBPProject project = container.getProject();
-        if (project != null) {
-            project.getDataSourceRegistry().removeDataSourceListener(this);
-        }
-
         savePresentationSettings();
         clearData(true);
 
@@ -2386,7 +2440,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         if (DATA_EDIT_DISABLED) {
-            return UIMessages.dialog_policy_data_edit_msg;
+            return ResultSetMessages.dialog_policy_data_edit_msg;
         }
         return null;
     }
@@ -2755,6 +2809,7 @@ public class ResultSetViewer extends Viewer
      */
     void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] attributes)
     {
+        fireResultSetRefresh();
         UIUtils.syncExec(undoRedoManager::clear);
         model.setMetaData(resultSet, attributes);
         activePresentation.clearMetaData();
@@ -3018,6 +3073,7 @@ public class ResultSetViewer extends Viewer
                     viewerPanel.getShell(),
                     ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
                     ConfirmationDialog.CONFIRM,
+                    null,
                     curAttribute.getName()) != IDialogConstants.OK_ID)
                 {
                     return;
@@ -3805,7 +3861,7 @@ public class ResultSetViewer extends Viewer
                                 }
                             }
                         } catch (Exception e) {
-                            DBWorkbench.getPlatformUI().showError("Transform error", "Error transforming column", e);
+                            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_transform_title, ResultSetMessages.error_transform_message, e);
                         }
                     }
                 };
@@ -3900,14 +3956,12 @@ public class ResultSetViewer extends Viewer
                 }
                 filtersMenu.add(new Separator());
 
-/*
                 // Operators with multiple inputs
                 for (DBCLogicalOperator operator : operators) {
                     if (operator.getArgumentCount() < 0) {
-                        filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.INPUT, attribute));
+                        filtersMenu.add(new FilterByAttributeAction(this, operator, FilterByAttributeType.INPUT, attribute));
                     }
                 }
-*/
 
                 // Operators with no inputs
                 for (DBCLogicalOperator operator : operators) {
@@ -4032,7 +4086,8 @@ public class ResultSetViewer extends Viewer
         if (targetEntity instanceof DBSDataContainer) {
             getContainer().openNewContainer(monitor, (DBSDataContainer) targetEntity, newFilter);
         } else {
-            UIUtils.showMessageBox(null, "Open link", "Target entity '" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "' - is not a data container", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(null, ResultSetMessages.error_open_link_title,
+                NLS.bind(ResultSetMessages.error_target_not_data_container, DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI)), SWT.ICON_ERROR);
         }
     }
 
@@ -4233,7 +4288,7 @@ public class ResultSetViewer extends Viewer
             // Trick - in fact it is not a refresh but "execute" action
             runDataPump(dataContainer, dataFilter, 0, segmentSize, 0, true, false, false, finalizer);
         } else {
-            DBWorkbench.getPlatformUI().showError("Error executing query", "Viewer detached from data source");
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_execute_query_title, ResultSetMessages.error_viewer_detached);
         }
     }
 
@@ -4290,6 +4345,11 @@ public class ResultSetViewer extends Viewer
 
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null) {
+            if (curState == null && hasData()) {
+                // A result loaded outside this viewer's data pump (e.g. by a whole SQL script execution) has no history state yet.
+                // Save its current filter before the first filtered read so Back can restore the original result.
+                setNewState(dataContainer, model.getDataFilter());
+            }
             dataReceiver.setNextSegmentRead(false);
             runDataPump(
                 dataContainer,
@@ -4326,6 +4386,22 @@ public class ResultSetViewer extends Viewer
         } else {
             return false;
         }
+    }
+
+    private void scheduleRefreshAfterSave() {
+        if (refreshAfterSavePending) {
+            UIUtils.asyncExec(this::refreshAfterSaveIfVisible);
+        }
+    }
+
+    private void refreshAfterSaveIfVisible() {
+        if (!refreshAfterSavePending || viewerPanel.isDisposed() || !isWindowVisible || !mainPanel.isVisible()) {
+            return;
+        }
+        // Consume before refreshData: its confirmation dialogs may dispatch more visibility events.
+        // A declined confirmation or failed reload must not retry the completed save.
+        refreshAfterSavePending = false;
+        refreshData(null);
     }
 
     private boolean isVisible() {
@@ -4552,6 +4628,9 @@ public class ResultSetViewer extends Viewer
         final boolean refresh, // Refresh. Nothing was changed but refresh from server or scroll happened
         @Nullable final Runnable finalizer)
     {
+        if (!scroll) {
+            fireResultSetRefresh();
+        }
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null || dataContainer.getDataSource() != executionContext.getDataSource()) {
             // This may happen during cross-database entity navigation
@@ -4560,7 +4639,8 @@ public class ResultSetViewer extends Viewer
         if (executionContext == null) {
             if (finalizer != null) finalizer.run();
             UIUtils.syncExec(() ->
-                UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Can't read data - no active connection", SWT.ICON_WARNING));
+                UIUtils.showMessageBox(viewerPanel.getShell(), ResultSetMessages.error_read_data_title,
+                    ResultSetMessages.error_no_active_connection, SWT.ICON_WARNING));
             return false;
         }
         // Cancel any refresh jobs
@@ -4668,6 +4748,7 @@ public class ResultSetViewer extends Viewer
 
     public void clearData(boolean clearMetaData)
     {
+        fireResultSetRefresh();
         undoRedoManager.clear();
         this.model.releaseAllData();
         this.model.clearData();
@@ -4733,7 +4814,17 @@ public class ResultSetViewer extends Viewer
                 }
                 //fire selection change to update selection statistics in ResultSetStatListener
                 fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
-                if (success && getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
+                boolean refreshAll = model.getSingleSource() instanceof DBSDataManipulator manipulator
+                    && manipulator.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_REFRESH_AFTER_UPDATE);
+                if (success && refreshAll) {
+                    // The save has already completed. A failed refresh must not reapply its mutations.
+                    UIUtils.asyncExec(() -> {
+                        if (!viewerPanel.isDisposed()) {
+                            refreshAfterSavePending = true;
+                            refreshAfterSaveIfVisible();
+                        }
+                    });
+                } else if (success && getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
                     // Refresh updated rows
                     try {
                         persister.refreshInsertedRows();
@@ -4750,7 +4841,7 @@ public class ResultSetViewer extends Viewer
 
             return executeChanges(monitor, settings, persister, applyListener, false);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_apply_changes_title, ResultSetMessages.error_save_changes_message, e);
             return false;
         }
     }
@@ -4809,7 +4900,7 @@ public class ResultSetViewer extends Viewer
         try {
             return createDataPersister(false).generateReport();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Report error", "Error generating changes report", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_report_title, ResultSetMessages.error_report_message, e);
             return null;
         }
     }
@@ -4822,7 +4913,7 @@ public class ResultSetViewer extends Viewer
             executeChanges(monitor, settings, persister, null, true);
             return persister.getActions();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("SQL script generate error", "Error saving changes in database", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_generate_script_title, ResultSetMessages.error_save_changes_message, e);
             return Collections.emptyList();
         }
     }
@@ -5274,6 +5365,14 @@ public class ResultSetViewer extends Viewer
         return listenersCopy;
     }
 
+    private void fireResultSetRefresh() {
+        UIUtils.syncExec(() -> {
+            for (IResultSetListener listener : getListenersCopy()) {
+                listener.onResultSetRefresh();
+            }
+        });
+    }
+
     void fireResultSetChange() {
         undoRedoManager.updateActions();
         for (IResultSetListener listener : getListenersCopy()) {
@@ -5620,7 +5719,7 @@ public class ResultSetViewer extends Viewer
                     }
 
                     if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {
-                        DBWorkbench.getPlatformUI().showError("Error executing query", "Query execution failed", error);
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_execute_query_title, ResultSetMessages.error_execute_query_message, error);
                     } else {
                         if (CommonUtils.isEmpty(errorMessage)) {
                             if (error.getCause() instanceof InterruptedException) {

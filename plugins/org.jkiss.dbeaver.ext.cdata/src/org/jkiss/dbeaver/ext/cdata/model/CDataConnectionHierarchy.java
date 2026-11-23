@@ -74,6 +74,11 @@ public final class CDataConnectionHierarchy {
     }
 
     @NotNull
+    public CDataConnectionHierarchy newConfiguration() {
+        return new CDataConnectionHierarchy(basic, advanced);
+    }
+
+    @NotNull
     public static CDataConnectionHierarchy parse(@NotNull String definition) throws DBException {
         try {
             JsonObject root = JsonParser.parseString(definition).getAsJsonObject();

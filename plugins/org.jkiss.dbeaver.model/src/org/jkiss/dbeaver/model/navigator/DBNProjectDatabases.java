@@ -44,15 +44,20 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     private volatile DBNNode[] children;
     private final IdentityHashMap<DBPDataSourceFolder, DBNLocalFolder> folderNodes = new IdentityHashMap<>();
 
-    public DBNProjectDatabases(DBNProject parentNode, DBPDataSourceRegistry dataSourceRegistry)
+    public DBNProjectDatabases(@NotNull DBNProject parentNode, @NotNull DBPDataSourceRegistry dataSourceRegistry)
     {
         super(parentNode);
         this.dataSourceRegistry = dataSourceRegistry;
         this.dataSourceRegistry.addDataSourceListener(this);
 
-        List<? extends DBPDataSourceContainer> projectDataSources = this.dataSourceRegistry.getDataSources();
-        for (DBPDataSourceContainer ds : projectDataSources) {
-            addDataSource(ds, false, false);
+        try {
+            List<? extends DBPDataSourceContainer> projectDataSources = this.dataSourceRegistry.getDataSources();
+            for (DBPDataSourceContainer ds : projectDataSources) {
+                addDataSource(ds, false, false);
+            }
+        } catch (RuntimeException | Error e) {
+            dispose(false);
+            throw e;
         }
     }
 
@@ -63,6 +68,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     @Override
     protected void dispose(boolean reflect) {
+        if (dataSourceRegistry != null) {
+            dataSourceRegistry.removeDataSourceListener(this);
+            dataSourceRegistry = null;
+        }
         synchronized (dataSources) {
             for (DBNDataSource dataSource : dataSources) {
                 DBNUtils.disposeNode(dataSource, reflect);
@@ -71,10 +80,6 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
         folderNodes.clear();
         children = null;
-        if (dataSourceRegistry != null) {
-            dataSourceRegistry.removeDataSourceListener(this);
-            dataSourceRegistry = null;
-        }
         super.dispose(reflect);
     }
 

@@ -48,7 +48,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreFeatures;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -294,6 +293,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     public void preStartup() {
         super.preStartup();
 
+        WorkbenchPatcher.patchViewIcons(Workbench.getInstance());
+        WorkbenchPatcher.patchSoftwareMenuIcons(Workbench.getInstance());
         WorkbenchPatcher.hideUnavailableView(Workbench.getInstance(), IActionConstants.CHAT_VIEW_ID);
 
         // Activate proxy
@@ -326,6 +327,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
             platformDesktop.setWorkbenchStarted(true);
+            UIExecutionQueue.onWorkbenchStarted();
         }
     }
 
@@ -361,7 +363,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WorkbenchUtils.movePreferencePage(
             PrefPageConstants.WORKBENCH_PREF_PAGE_ID,
             PrefPageGeneral.PAGE_ID,
-            CoreMessages.pref_page_general_workbench
+            CoreApplicationMessages.pref_page_general_workbench
         );
         WorkbenchUtils.movePreferencePages(
             WORKBENCH_PREF_PAGES,

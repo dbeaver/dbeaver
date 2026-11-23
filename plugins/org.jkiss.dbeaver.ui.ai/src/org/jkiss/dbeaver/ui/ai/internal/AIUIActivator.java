@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.ui.ai.internal;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIProjectConnectionCount;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConstants;
@@ -28,13 +30,13 @@ import org.osgi.framework.BundleContext;
 
 public class AIUIActivator extends AbstractUIPlugin {
 
+    @Nullable
     private static AIUIActivator plugin;
 
     @Override
-    public void start(BundleContext context) throws Exception {
+    public void start(@NotNull BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        DBRFeatureRegistry.getInstance().registerFeatures(AIUIFeatures.class);
         // Trigger pref defaults
         new BundlePreferenceStore(getBundle());
 
@@ -44,11 +46,13 @@ public class AIUIActivator extends AbstractUIPlugin {
     }
 
     @Override
-    public void stop(BundleContext context) throws Exception {
+    public void stop(@NotNull BundleContext context) throws Exception {
+        AIProjectConnectionCount.getInstance().stop();
         plugin = null;
         super.stop(context);
     }
 
+    @Nullable
     public static AIUIActivator getInstance() {
         return plugin;
     }

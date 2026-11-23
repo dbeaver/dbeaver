@@ -27,6 +27,11 @@ import java.util.*;
  * initialized categories tracking.
  */
 public final class AIFunctionSettings {
+    private static final Map<String, String> LEGACY_FUNCTION_NAMES = Map.of(
+        "readTableSampleRows", "readTableData",
+        "executeSQL", "executeDQL"
+    );
+
     @SerializedName("enabled")
     private boolean functionsEnabled = true;
     @SerializedName("mcpEncrypted")
@@ -191,6 +196,24 @@ public final class AIFunctionSettings {
 
     public void setMcpConfigEncrypted(boolean mcpConfigEncrypted) {
         this.mcpConfigEncrypted = mcpConfigEncrypted;
+    }
+
+    public void finishSettingsLoading() {
+        ToolboxSettings internalSettings = functions.get(AIConstants.INTERNAL_TOOLBOX_ID);
+        if (internalSettings != null) {
+            migrateFunctionNames(internalSettings.getEnabledFunctions());
+            migrateFunctionNames(internalSettings.getDisabledFunctions());
+            migrateFunctionNames(internalSettings.getAlwaysAllowedFunctions());
+            migrateFunctionNames(internalSettings.getAskFunctions());
+        }
+    }
+
+    private static void migrateFunctionNames(@NotNull Set<String> functionNames) {
+        for (Map.Entry<String, String> entry : LEGACY_FUNCTION_NAMES.entrySet()) {
+            if (functionNames.remove(entry.getKey())) {
+                functionNames.add(entry.getValue());
+            }
+        }
     }
 
     @NotNull

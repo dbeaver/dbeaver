@@ -23,8 +23,10 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIFunction;
 import org.jkiss.dbeaver.model.ai.AIFunctionContext;
+import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIFunctionType;
+import org.jkiss.dbeaver.model.ai.AIFunctionVerifier;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -40,7 +42,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ListTableNamesFunction implements AIFunction {
+public class ListTableNamesFunction implements AIFunction, AIFunctionVerifier {
+
+    @NotNull
+    @Override
+    public FunctionState getFunctionState(
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionDescriptor function
+    ) {
+        return context.getContext() == null ? FunctionState.NOT_APPLICABLE : FunctionState.APPLICABLE;
+    }
 
     @NotNull
     @Override

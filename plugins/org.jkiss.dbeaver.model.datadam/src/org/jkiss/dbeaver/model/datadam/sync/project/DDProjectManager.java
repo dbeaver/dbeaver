@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
-import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDShareClient;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProject;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProjectSyncBindingStore;
@@ -39,45 +39,48 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class DDProjectManager {
+    public enum BindingStatus { UNBOUND, CURRENT_ACCOUNT, OTHER_ACCOUNT, ACCOUNT_UNKNOWN, PROJECT_REMOVED }
+
     @Nullable
     private static DDProjectManager instance;
 
-    @NotNull
-    private final DDKeyBundle keyBundle;
     @NotNull
     private final DBPWorkspace workspace;
     @NotNull
     private final DDShareClient client;
     @NotNull
     private final DDProjectSyncService syncService;
+    @NotNull
+    private final DBDamAccessService accessService;
     private final ConcurrentMap<Path, DDProject> projects = new ConcurrentHashMap<>();
+    private final Set<UUID> creatingProjects = ConcurrentHashMap.newKeySet();
 
     DDProjectManager(
-        @NotNull DDKeyBundle keyBundle,
         @NotNull DBPWorkspace workspace,
         @NotNull DDShareClient client,
-        @NotNull DDProjectSyncService syncService
+        @NotNull DDProjectSyncService syncService,
+        @NotNull DBDamAccessService accessService
     ) {
-        this.keyBundle = keyBundle;
         this.workspace = workspace;
         this.client = client;
         this.syncService = syncService;
+        this.accessService = accessService;
     }
 
     @NotNull
-    public static synchronized DDProjectManager getInstance(@NotNull DDKeyBundle keyBundle) {
-        Objects.requireNonNull(keyBundle);
-        if (instance == null || !instance.keyBundle.equals(keyBundle)) {
+    public static synchronized DDProjectManager getInstance() {
+        if (instance == null) {
             DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
-            DDShareClient client = new DDShareClient(DDEndpoints.getStorageBaseUrl(), new DDBundleCredentials(keyBundle));
-            DDProjectSyncService syncService = new DDProjectSyncService(client, keyBundle.accountId());
-            instance = new DDProjectManager(keyBundle, workspace, client, syncService);
+            DBDamAccessService accessService = DBDamAccessService.getInstance();
+            DDShareClient client = new DDShareClient(DDEndpoints.getStorageBaseUrl(), accessService);
+            DDProjectSyncService syncService = new DDProjectSyncService(client);
+            instance = new DDProjectManager(workspace, client, syncService, accessService);
             instance.loadProjects();
         }
         return instance;
@@ -87,7 +90,18 @@ public class DDProjectManager {
     public DDSharedProject shareProject(
         @NotNull DBPProject project, @NotNull String name, @Nullable String description
     ) throws DBException {
-        return getOrCreate(project).share(project, name, description);
+        requireAccountId();
+        UUID remoteProjectId = UUID.randomUUID();
+        creatingProjects.add(remoteProjectId);
+        try {
+            return getOrCreate(project).share(project, remoteProjectId, name, description);
+        } finally {
+            creatingProjects.remove(remoteProjectId);
+        }
+    }
+
+    public boolean isCreatingProject(@NotNull UUID remoteProjectId) {
+        return creatingProjects.contains(remoteProjectId);
     }
 
     @NotNull
@@ -110,15 +124,15 @@ public class DDProjectManager {
     @NotNull
     public List<LocalProjectInfo> getLocalProjects() throws DBException {
         List<LocalProjectInfo> result = new ArrayList<>();
-        for (DBPProject project : workspace.getProjects()) {
+        for (DBPProject project : workspace.getVisibleProjects()) {
             result.add(getLocalProject(project));
         }
-        return List.copyOf(result);
+        return result;
     }
 
     @NotNull
     public LocalProjectInfo getLocalProject(@NotNull DBPProject project) throws DBException {
-        DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+        DDProjectSyncLocalBinding binding = getAccountBinding(project);
         return new LocalProjectInfo(
             project,
             binding == null ? null : binding.remoteProjectId(),
@@ -126,8 +140,32 @@ public class DDProjectManager {
         );
     }
 
-    public boolean isBound(@NotNull DBPProject project) throws DBException {
-        return getOrCreate(project).getBinding(project) != null;
+    @NotNull
+    public BindingStatus getBindingStatus(@NotNull DBPProject project) throws DBException {
+        if (project.getWorkspace().getProject(project.getName()) != project) {
+            return BindingStatus.PROJECT_REMOVED;
+        }
+        DDProjectSyncLocalBinding binding;
+        try {
+            binding = getOrCreate(project).getBinding(project);
+        } catch (IllegalStateException e) {
+            if (project.getWorkspace().getProject(project.getName()) != project) {
+                return BindingStatus.PROJECT_REMOVED;
+            }
+            throw e;
+        }
+        if (binding == null) {
+            return BindingStatus.UNBOUND;
+        }
+        if (accessService.getStatus() != DBDamAccessService.Status.SIGNED_IN) {
+            return BindingStatus.ACCOUNT_UNKNOWN;
+        }
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        if (bundle == null) {
+            return BindingStatus.ACCOUNT_UNKNOWN;
+        }
+        return binding.accountId().equals(bundle.accountId())
+            ? BindingStatus.CURRENT_ACCOUNT : BindingStatus.OTHER_ACCOUNT;
     }
 
     /**
@@ -140,16 +178,49 @@ public class DDProjectManager {
      */
     @NotNull
     public ProjectStatus calculateSyncStatus(@NotNull DBPProject project) throws DBException {
-        return getOrCreate(project).calculateSyncStatus(project);
+        DDProjectSyncLocalBinding binding = getAccountBinding(project);
+        return binding == null ? ProjectStatus.NOT_SYNC : getOrCreate(project).calculateSyncStatus(project);
     }
 
     @NotNull
     public SyncResult synchronizeProject(@NotNull DBPProject project) throws DBException {
-        return new SyncResult(project, getOrCreate(project).synchronize(project));
+        DDProjectSyncLocalBinding binding = getAccountBinding(project);
+        return new SyncResult(project, binding == null ? ProjectStatus.NOT_SYNC : getOrCreate(project).synchronize(project));
     }
 
     public void unbindProject(@NotNull DBPProject project) throws DBException {
+        UUID accountId = requireAccountId();
+        DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+        if (binding != null && !binding.accountId().equals(accountId)) {
+            throw new DBException("Project is bound to another DataDam account: " + project.getName());
+        }
         getOrCreate(project).unbind(project);
+    }
+
+    /** Removes only local shared projects bound to the account whose keys are being discarded. */
+    public synchronized void deleteAccountProjects(@NotNull UUID accountId) throws DBException {
+        List<DBPProject> accountProjects = getAccountProjects(accountId);
+        DBPProject activeProject = workspace.getActiveProject();
+        if (activeProject != null && accountProjects.contains(activeProject)) {
+            throw new DBException("Select an unshared local project before deleting DataDam projects");
+        }
+        for (DBPProject project : accountProjects) {
+            Path bindingFile = DDProjectSyncBindingStore.getBindingFile(project);
+            workspace.deleteProject(project);
+            projects.remove(bindingFile);
+        }
+    }
+
+    @NotNull
+    public synchronized List<DBPProject> getAccountProjects(@NotNull UUID accountId) throws DBException {
+        List<DBPProject> accountProjects = new ArrayList<>();
+        for (DBPProject project : List.copyOf(workspace.getProjects())) {
+            DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+            if (binding != null && accountId.equals(binding.accountId())) {
+                accountProjects.add(project);
+            }
+        }
+        return List.copyOf(accountProjects);
     }
 
     @NotNull
@@ -157,7 +228,8 @@ public class DDProjectManager {
         @NotNull DBPProject project,
         @NotNull ConflictResolution resolution
     ) throws DBException {
-        return getOrCreate(project).resolveConflict(project, resolution);
+        DDProjectSyncLocalBinding binding = getAccountBinding(project);
+        return binding == null ? ProjectStatus.NOT_SYNC : getOrCreate(project).resolveConflict(project, resolution);
     }
 
     @NotNull
@@ -173,7 +245,7 @@ public class DDProjectManager {
     public ProjectRevisions getProjectRevisions(
         @NotNull DBPProject project, @Nullable LocalDateTime startTime, @Nullable LocalDateTime endTime
     ) throws DBException {
-        DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+        DDProjectSyncLocalBinding binding = getAccountBinding(project);
         if (binding == null) {
             throw new DBException("Project is not bound to DataDam: " + project.getName());
         }
@@ -188,11 +260,11 @@ public class DDProjectManager {
 
     @NotNull
     public synchronized DBPProject importProject(@NotNull DDSharedProject remote) throws DBException {
-        if (!keyBundle.accountId().equals(remote.projectOwner())) {
+        if (!requireAccountId().equals(remote.projectOwner())) {
             throw new DBException("DataDam project belongs to another account: " + remote.id());
         }
         for (DBPProject project : workspace.getProjects()) {
-            DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+            DDProjectSyncLocalBinding binding = getAccountBinding(project);
             if (binding != null && binding.remoteProjectId().equals(remote.id())) {
                 throw new DBException("DataDam project is already in the workspace: " + remote.name());
             }
@@ -203,6 +275,9 @@ public class DDProjectManager {
         try {
             getOrCreate(project).importProject(project, remote);
             return project;
+        } catch (DBException e) {
+            rollbackImport(project, e);
+            throw e;
         } catch (Exception e) {
             rollbackImport(project, e);
             throw new DBException("Error importing DataDam project '" + remote.name() + "'", e);
@@ -213,6 +288,22 @@ public class DDProjectManager {
     private DDProject getOrCreate(@NotNull DBPProject project) {
         Path bindingFile = DDProjectSyncBindingStore.getBindingFile(project);
         return projects.computeIfAbsent(bindingFile, path -> new DDProject(path, syncService));
+    }
+
+    @Nullable
+    private DDProjectSyncLocalBinding getAccountBinding(@NotNull DBPProject project) throws DBException {
+        UUID accountId = requireAccountId();
+        DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+        return binding != null && binding.accountId().equals(accountId) ? binding : null;
+    }
+
+    @NotNull
+    private UUID requireAccountId() throws DBException {
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        if (bundle == null) {
+            throw new DBException("Import encryption keys for the current DataDam account in Preferences > DataDam > Projects");
+        }
+        return bundle.accountId();
     }
 
     private void rollbackImport(@NotNull DBPProject project, @NotNull Exception cause) {

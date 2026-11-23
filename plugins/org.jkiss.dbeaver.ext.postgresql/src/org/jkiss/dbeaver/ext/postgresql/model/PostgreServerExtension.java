@@ -57,6 +57,10 @@ public interface PostgreServerExtension {
 
     boolean supportsEventTriggers();
 
+    default boolean supportsLogicalReplication() {
+        return false;
+    }
+
     /** True if supports objects dependencies metadata reading */
     boolean supportsDependencies();
 
@@ -135,6 +139,11 @@ public interface PostgreServerExtension {
 
     // Stored procedures support (workarounds for Redshift mostly)
     boolean supportsStoredProcedures();
+
+    default boolean supportsProcedureReturnValue() {
+        return false;
+    }
+
     @NotNull
     String getProceduresSystemTable();
     @NotNull

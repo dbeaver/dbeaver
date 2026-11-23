@@ -126,12 +126,13 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         token = CommonUtils.toString(configuration.getToken());
         apiToken = token;
         modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel()));
-        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        temperature = configuration.getRequestTemperature() == null ? "" : String.valueOf(configuration.getTemperature());
 
         applySettings();
         loadAdvancedSettings(configuration);
 
-        contextWindowSizeField.setValue(configuration.getContextWindowSize());
+        contextWindowSizeField.setValue(configuration.getConfiguredContextWindowSize());
+        contextWindowSizeField.setDefaultValue(configuration.getContextWindowSize());
 
         boolean useAccountAuthentication = isAccountAuthenticationSupported()
             && configuration.isAccountAuthentication();
@@ -160,7 +161,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         }
         configuration.setModel(modelSelectorField.getSelectedModelName());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
-        configuration.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(configuration, temperature);
         saveAdvancedSettings(configuration);
     }
 
@@ -209,26 +210,16 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .filter(it -> it.features().contains(AIModelFeature.CHAT))
                     .toList()
             )
-            .withModifyListener(() -> {
-                OpenAIModels.getModelByName(modelSelectorField.getSelectedModelName())
-                    .ifPresentOrElse(
-                        model -> {
-                            contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
-                            temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
-                        }, () -> {
-                            contextWindowSizeField.setValue(null);
-                            temperatureText.setText("0.0");
-                            temperatureText.setEnabled(true);
-                        }
-                    );
-
+            .withModelChangeListener(modelChanged -> {
                 AIModel selectedModel = modelSelectorField.getSelectedModel();
-                    if (selectedModel != null && selectedModel.contextWindowSize() != null) {
-                        contextWindowSizeField.setValue(selectedModel.contextWindowSize());
-                    }
-                })
-                .build();
+                if (selectedModel == null && (OpenAIModels.isOpenAIEndpoint(createConnectionProperties().getEffectiveBaseUrl())
+                    || isAccountAuthentication() && accountAuthenticator instanceof OpenAIAccountAuthenticator)
+                ) {
+                    selectedModel = OpenAIModels.getModelByName(modelSelectorField.getSelectedModelName()).orElse(null);
+                }
+                updateModelParameters(selectedModel, temperatureText, contextWindowSizeField, modelChanged);
+            })
+            .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
             .withParent(parent)
@@ -239,6 +230,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
         temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
+        temperatureText.setMessage(AIUIMessages.ai_engine_configurator_temperature_default);
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 
@@ -250,13 +242,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         String currentToken = useAccountAuthentication ? apiToken : token;
         String currentBaseUrl = baseUrl;
         if (currentProperties != null && useAccountAuthentication) {
-            return fetchAccountModels(currentProperties, currentAuthenticator).stream()
-                .map(model -> new AIModel(
-                    model,
-                    OpenAIProperties.DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE,
-                    OpenAIModels.detectModelFeatures(model)
-                ))
-                .toList();
+            return fetchAccountModelDetails(monitor, currentProperties, currentAuthenticator);
         }
         OpenAIProperties properties = new OpenAIProperties();
         saveAdvancedSettings(properties);
@@ -275,11 +261,12 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     @NotNull
-    protected List<String> fetchAccountModels(
+    protected List<AIModel> fetchAccountModelDetails(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull PROPERTIES properties,
         @NotNull AIAccountAuthenticator authenticator
     ) throws DBException {
-        return ((OpenAIAccountAuthenticator) authenticator).listModels(properties);
+        return ((OpenAIAccountAuthenticator) authenticator).listModelDetails(monitor, properties);
     }
 
     @NotNull
@@ -428,7 +415,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         }
         propertiesCopy.setModel(modelSelectorField.getSelectedModelName());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
-        propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(propertiesCopy, temperature);
         saveAdvancedSettings(propertiesCopy);
         return Optional.of(propertiesCopy);
     }

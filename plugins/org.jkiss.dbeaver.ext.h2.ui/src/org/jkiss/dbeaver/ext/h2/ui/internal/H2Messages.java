@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.h2.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public final class H2Messages extends NLS {
+    private static final String BUNDLE_NAME = H2Messages.class.getName();
+
     public static String pref_security_title;
     public static String pref_security_allowed_classes_label;
     public static String pref_security_allowed_classes_hint;
@@ -27,6 +29,6 @@ public final class H2Messages extends NLS {
     public static String pref_restart_message;
 
     static {
-        NLS.initializeMessages(H2Messages.class.getName(), H2Messages.class);
+        NLS.initializeMessages(BUNDLE_NAME, H2Messages.class);
     }
 }

@@ -20,22 +20,32 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.registry.updater.VersionDescriptor.PatchSeverity;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.osgi.framework.Version;
 
 import java.util.Map;
 
 public class VersionUpdateHandler extends AbstractHandler implements IElementUpdater {
+    public static class ReleaseNotes extends VersionUpdateHandler {
+        @Override
+        public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
+            element.setIcon(DBeaverIcons.getImageDescriptor(UIIcon.FILE));
+        }
+    }
+
     private static final int ANIMATION_DELAY = 100;
 
     public static final String COMMAND_UPDATE = "org.jkiss.dbeaver.ui.versionUpdate";
@@ -43,6 +53,7 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
     public static final String PROPERTY_AVAILABLE = "org.jkiss.dbeaver.ui.versionUpdate.available";
 
     private static Version currentVersion;
+    private static int currentPatch;
     private static VersionDescriptor newVersion;
     private static boolean updateStarted;
     private static boolean downloading;
@@ -50,6 +61,7 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
 
     static void showNotification(@NotNull Version current, @NotNull VersionDescriptor available) {
         currentVersion = current;
+        currentPatch = DBeaverVersionChecker.getProductPatchNumber();
         newVersion = available;
         ActionUtils.evaluatePropertyState(PROPERTY_AVAILABLE);
         ActionUtils.fireCommandRefresh(COMMAND_UPDATE);
@@ -59,10 +71,15 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
         return currentVersion != null && newVersion != null;
     }
 
+    static boolean isMajorUpdate() {
+        return newVersion != null && newVersion.isMajorUpdate();
+    }
+
     static void startUpdate(@NotNull Version current, @NotNull VersionDescriptor available) {
         UIUtils.runInUIThread(() -> {
             if (!updateStarted) {
                 currentVersion = current;
+                currentPatch = DBeaverVersionChecker.getProductPatchNumber();
                 newVersion = available;
                 ActionUtils.runCommand(COMMAND_UPDATE, PlatformUI.getWorkbench());
             }
@@ -107,8 +124,24 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
 
     @Override
     public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
-        var icon = downloading ? UIIcon.LOADING.get(animationFrame % UIIcon.LOADING.size()) : UIIcon.DOWNLOAD;
+        var severity = currentVersion == null || newVersion == null
+            ? PatchSeverity.NONE
+            : newVersion.getMaxSeverity(currentVersion, currentPatch);
+        var icon = downloading
+            ? UIIcon.LOADING.get(animationFrame % UIIcon.LOADING.size())
+            : VersionUpdatePresentation.getSeverityIcon(severity);
         element.setIcon(DBeaverIcons.getImageDescriptor(icon));
+        String tooltip = CoreApplicationMessages.dialog_version_update_title;
+        if (isUpdateAvailable() && isMajorUpdate()) {
+            tooltip += "\n" + CoreApplicationMessages.dialog_version_update_major_version;
+        }
+        if (severity != PatchSeverity.NONE) {
+            tooltip += "\n" + NLS.bind(
+                CoreApplicationMessages.dialog_version_update_severity,
+                VersionUpdatePresentation.getSeverityLabel(severity)
+            );
+        }
+        element.setTooltip(tooltip);
     }
 
     private void downloadFinished(@NotNull IStatus status) {

@@ -2,7 +2,7 @@
 <feature
     id="org.jkiss.dbeaver.ext.cdata.feature"
     label="DBeaver CData Support"
-    version="1.0.0.qualifier"
+    version="1.0.1.qualifier"
     provider-name="DBeaver Corp">
 
     <copyright>DBeaver Corp and others</copyright>

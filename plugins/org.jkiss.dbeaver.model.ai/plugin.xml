@@ -27,6 +27,13 @@
             promoted="true"
             supportsFunctions="false"
             fallbacks="copilot-pro"/>
+        <completionEngine
+            id="ollama"
+            label="Ollama"
+            icon="icons/engine_ollama.svg"
+            class="org.jkiss.dbeaver.model.ai.engine.ollama.OllamaCompletionEngine"
+            properties="org.jkiss.dbeaver.model.ai.engine.ollama.OllamaProperties"
+            supportsFunctions="true"/>
     </extension>
 
     <extension point="com.dbeaver.ai.assistant">
@@ -37,7 +44,7 @@
 
     <extension point="com.dbeaver.ai.prompt">
         <prompt id="sql" label="SQL query generation" icon="icons/sql-generate.svg" class="org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql" description="Generates SQL query by user description in a natural language." uiFunctions="ALL">
-            <uses function="getCurrentScript" instructions="Use getCurrentScript function to get the current script text"/>
+<!--            <uses function="getCurrentScript" instructions="Use getCurrentScript function to get the current script text"/>-->
         </prompt>
     </extension>
 
@@ -71,8 +78,8 @@
     <extension point="org.jkiss.dbeaver.app.config">
         <feature
             id="ai"
-            label="AI integration"
-            description="Use AI to create and edit queries, answer questions, troubleshoot errors, or explore database objects."
+            label="%feature.ai.label"
+            description="%feature.ai.description"
             enabledByDefault="true"
             enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"
             availabilityTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
@@ -84,8 +91,28 @@
             name="Database schema discovery"
             description="Functions for database schema discovery"/>
 
+        <!-- Catalogs are provided in the database snapshot for AI prompts. -->
+        <function
+            id="listCatalogNames"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
+            name="List catalog names"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            system="true"
+            class="org.jkiss.dbeaver.model.ai.functions.ListCatalogNamesFunction"
+            categoryId="schema.discovery"
+            description="Lists catalogs/databases available in the current datasource. 'Catalog' is the same as 'database' in many database servers."
+            userDescription="Lists catalog/database names available in the current datasource">
+        </function>
+
         <function
             id="listSchemaNames"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
             name="List schema names"
             enabledByDefault="true"
             type="INFORMATION"
@@ -99,6 +126,9 @@
 
         <function
             id="listTableNames"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
             name="List table names"
             enabledByDefault="true"
             type="INFORMATION"
@@ -113,6 +143,9 @@
 
         <function
             id="getTableDetails"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
             name="Get table details"
             enabledByDefault="true"
             type="INFORMATION"
@@ -127,6 +160,102 @@
             <parameter name="ddlComments" required="false" type="boolean" description="Adds table and column comments in the DDL. Default: false."/>
             <parameter name="ddlReferences" required="false" type="boolean" description="Adds foreign keys from other referencing tables in the DDL. Default: false."/>
         </function>
+
+        <category
+            id="advanced.mcp"
+            name="MCP Functions"
+            description="Functions for MCP integration"/>
+
+        <function
+            id="getDatasourceInfo"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
+            name="Get Datasource Info"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            class="org.jkiss.dbeaver.model.ai.functions.GetDatasourceInfoFunction"
+            categoryId="advanced.mcp"
+            description="Returns information about the current datasource: its type, version, and other relevant details.">
+        </function>
+
+        <category
+            id="execute.sql"
+            name="Execute SQL query"
+            description="Executes various SQL queries"/>
+
+        <!-- SELECT statements may invoke routines with side effects. -->
+        <function
+            id="executeDQL"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="false"
+            name="Execute DQL"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            class="org.jkiss.dbeaver.model.ai.functions.ExecuteDQLFunction"
+            categoryId="execute.sql"
+            defaultAllowMode="ASK"
+            description="Executes read-only SELECT-like SQL queries and returns the results in the specified format. Use executeDML for data changes and executeDDL for schema changes.">
+            <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the query in. Must be specified if the database supports multiple catalogs."/>
+            <parameter name="sqlQuery" required="true" type="string" description="Read-only SELECT-like SQL query. Use fully qualified table names."/>
+            <parameter name="maxRows" required="false" type="integer" defaultValue="10" description="Maximum number of rows to return"/>
+            <parameter name="format" type="string" defaultValue="csv" validValuesProvider="org.jkiss.dbeaver.model.ai.functions.AITextExportFormatValueProvider" description="Output text format ID"/>
+        </function>
+
+        <function
+            id="executeDML"
+            readOnlyHint="false"
+            destructiveHint="true"
+            idempotentHint="false"
+            name="Execute DML"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            class="org.jkiss.dbeaver.model.ai.functions.ExecuteDMLFunction"
+            categoryId="execute.sql"
+            defaultAllowMode="ASK"
+            description="Executes data manipulation statements, including INSERT, UPDATE, DELETE, MERGE, and CALL. Returns the number of modified rows reported by the driver, or -1 if unavailable. All referenced database objects must be in the allowed scope.">
+            <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the statements in. Must be specified if the database supports multiple catalogs."/>
+            <parameter name="sqlQuery" required="true" type="string" description="DML statements to execute. Use fully qualified table names."/>
+        </function>
+
+        <function
+            id="executeDDL"
+            readOnlyHint="false"
+            destructiveHint="true"
+            idempotentHint="false"
+            name="Execute DDL"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            class="org.jkiss.dbeaver.model.ai.functions.ExecuteDDLFunction"
+            categoryId="execute.sql"
+            defaultAllowMode="ASK"
+            description="Executes data definition statements, including CREATE, ALTER, DROP, TRUNCATE, RENAME, and COMMENT. Existing objects and the parent namespace of new objects must be in the allowed scope. Routine and trigger definitions with opaque bodies require datasource-wide scope.">
+            <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the statements in. Must be specified if the database supports multiple catalogs."/>
+            <parameter name="sqlQuery" required="true" type="string" description="DDL statements to execute. Use fully qualified object names."/>
+        </function>
+
+        <function
+            id="executeDCL"
+            readOnlyHint="false"
+            destructiveHint="true"
+            idempotentHint="false"
+            name="Execute DCL"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            class="org.jkiss.dbeaver.model.ai.functions.ExecuteDCLFunction"
+            categoryId="execute.sql"
+            defaultAllowMode="ASK"
+            description="Executes data control statements, including GRANT and REVOKE. Object privileges must be in the allowed scope; global privilege and role changes require datasource-wide scope.">
+            <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the statements in. Must be specified if the database supports multiple catalogs."/>
+            <parameter name="sqlQuery" required="true" type="string" description="DCL statements to execute. Use fully qualified object names."/>
+        </function>
+
     </extension>
 
     <!-- AISyncUnit sync is disabled for now, see pro#9577. Class kept, just not registered. -->

@@ -51,6 +51,23 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
     String FEATURE_DOCUMENT_DATA_SOURCE = "datasource.document-data-source";
     /** False if this data source does not support data transfer imports. */
     String FEATURE_DATA_IMPORT = "datasource.data-import";
+    /**
+     * The driver needs result-column metadata resolved before opening a cursor-backed table read.
+     * This works around drivers for which the normal
+     * {@code JDBCFactory.createResultSetMetaData(JDBCResultSet)} path performs metadata lookups
+     * while the cursor is active, potentially interfering with the fetch.
+     * For streaming exports with a positive fetch size, when the data source advertises this feature,
+     * the transfer producer passes this request through
+     * {@link org.jkiss.dbeaver.model.struct.DBSDataContainer} to
+     * {@code JDBCTable.readData(..., prepareColumnMetadata)}. That method calls
+     * {@code JDBCResultSetMetaDataSnapshot.prepare(...)} before execution, using
+     * {@code JDBCFactory.createResultSetMetaData(JDBCSession, JDBCStatement, ResultSetMetaData)} to
+     * resolve driver-specific columns. When the result set opens, the snapshot supplies the prepared
+     * descriptions to {@code JDBCFactory.createResultSetMetaData(JDBCResultSet, ResultSetMetaData)}.
+     * Other reads and result-set operations are unchanged unless the caller requests this behavior.
+     */
+    String FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA =
+        "datasource.jdbc-table-read-requires-prepared-column-metadata";
 
 
 

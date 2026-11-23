@@ -160,14 +160,17 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     public void selectModel(@NotNull AIModel model) {
         setModel(model.name());
-        setContextWindowSize(model.contextWindowSize() != null ? model.contextWindowSize() :
-            OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE));
+        Integer contextSize = model.contextWindowSize();
+        if (contextSize == null && (isChatGptAccountAuthentication() || OpenAIModels.isOpenAIEndpoint(getEffectiveBaseUrl()))) {
+            contextSize = OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(null);
+        }
+        setContextWindowSize(contextSize != null ? contextSize : AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE);
     }
 
     @Override
     @Property(order = 4)
     public double getTemperature() {
-        if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
+        if (Double.isFinite(temperature) && (hasExplicitTemperature() || temperature != AIUtils.DEFAULT_TEMPERATURE)) {
             return temperature;
         }
 
@@ -195,6 +198,9 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         if (contextWindowSize != null) {
             return contextWindowSize;
         }
+        if (!isChatGptAccountAuthentication() && !OpenAIModels.isOpenAIEndpoint(getEffectiveBaseUrl())) {
+            return null;
+        }
 
         return OpenAIModels.getModelByName(getModel())
             .map(AIModel::contextWindowSize)
@@ -205,13 +211,19 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     public Integer getEffectiveContextWindowSize() {
         String environmentModel = getEnvironmentModel();
-        return environmentModel == null ? getContextWindowSize() : OpenAIModels.getModelByName(environmentModel)
+        return environmentModel == null || !isChatGptAccountAuthentication() && !OpenAIModels.isOpenAIEndpoint(getEffectiveBaseUrl())
+            ? getContextWindowSize() : OpenAIModels.getModelByName(environmentModel)
             .map(AIModel::contextWindowSize)
             .orElseGet(this::getContextWindowSize);
     }
 
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {
         this.contextWindowSize = contextWindowSize;
+    }
+
+    @Nullable
+    public Integer getConfiguredContextWindowSize() {
+        return contextWindowSize;
     }
 
     @NotNull
@@ -493,10 +505,10 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         }
         this.profile = profile;
         if (accessToken == null) {
-            accessToken = AIUtils.getSecretValueOrDefault(profile, getAccessTokenSecretId(), null);
+            accessToken = AIUtils.getAccountTokenOrDefault(profile, getAccessTokenSecretId(), null);
         }
         if (refreshToken == null) {
-            refreshToken = AIUtils.getSecretValueOrDefault(profile, getRefreshTokenSecretId(), null);
+            refreshToken = AIUtils.getAccountTokenOrDefault(profile, getRefreshTokenSecretId(), null);
         }
         String resolvedAccountId = OpenAIAccountAuthenticator.extractAccountId(null, accessToken);
         if (resolvedAccountId != null) {
@@ -517,16 +529,16 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         AIUtils.setSecretValue(profile, getApiTokenSecretId(), token);
         saveCustomHeaderSecrets(profile);
         this.profile = profile;
-        AIUtils.setSecretValue(profile, getRefreshTokenSecretId(), refreshToken);
-        AIUtils.setSecretValue(profile, getAccessTokenSecretId(), accessToken);
+        AIUtils.setAccountToken(profile, getRefreshTokenSecretId(), refreshToken);
+        AIUtils.setAccountToken(profile, getAccessTokenSecretId(), accessToken);
     }
 
     @Override
     public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
         AIUtils.deleteSecretValue(profile, getApiTokenSecretId());
         AIUtils.deleteSecretValue(profile, CUSTOM_HEADERS);
-        AIUtils.deleteSecretValue(profile, getAccessTokenSecretId());
-        AIUtils.deleteSecretValue(profile, getRefreshTokenSecretId());
+        AIUtils.deleteAccountToken(profile, getAccessTokenSecretId());
+        AIUtils.deleteAccountToken(profile, getRefreshTokenSecretId());
     }
 
     public void saveCustomHeaderSecrets(@NotNull AIConfigurationProfile profile) throws DBException {

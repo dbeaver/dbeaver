@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.*;
 
-import java.lang.invoke.TypeDescriptor;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,38 +53,47 @@ public abstract class SQLQueryExprType {
     public static final SQLQueryExprType DUMMY = new SQLQueryExprDummyType(null);
     private static final SQLQueryExprType DUMMY_FIELD = new SQLQueryExprDummyType(() -> SQLQuerySymbolClass.COMPOSITE_FIELD);
 
-    protected final SQLQuerySymbolDefinition declaratorDefinition;
-    protected final DBPDataKind dataKind;
-    protected final DBSTypedObject typedObject;
-    
-    private SQLQueryExprType(@Nullable SQLQuerySymbolDefinition declaratorDefinition, @NotNull DBPDataKind dataKind) {
-        this.declaratorDefinition = declaratorDefinition;
-        this.dataKind = dataKind;
-        this.typedObject = null;
-    }
-
-    private SQLQueryExprType(@Nullable SQLQuerySymbolDefinition declaratorDefinition, @NotNull DBSTypedObject typedObject) {
-        this.declaratorDefinition = declaratorDefinition;
-        this.dataKind = typedObject.getDataKind();
-        this.typedObject = typedObject;
-    }
-
     @Nullable
     public abstract String getDisplayName();
 
     @Nullable
-    public final SQLQuerySymbolDefinition getDeclaratorDefinition() {
-        return this.declaratorDefinition;
-    }
+    public abstract SQLQuerySymbolDefinition getDeclaratorDefinition();
 
     @NotNull
-    public final DBPDataKind getDataKind() {
-        return this.dataKind;
-    }
+    public abstract DBPDataKind getDataKind();
 
     @Nullable
-    public final DBSTypedObject getTypedDbObject() {
-        return this.typedObject;
+    public abstract DBSTypedObject getTypedDbObject();
+
+    @NotNull
+    public List<String> getModifiers() {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Decorate a type with an immutable snapshot of its modifiers, replacing any previous decoration.
+     * Modifier order and duplicates are preserved. An empty list leaves the supplied type unchanged.
+     */
+    @NotNull
+    public static SQLQueryExprType withModifiers(@NotNull SQLQueryExprType base, @NotNull List<String> modifiers) {
+        if (modifiers.isEmpty() || base.getModifiers().equals(modifiers)) {
+            return base;
+        }
+        return new SQLQueryExprModifiedType(base instanceof SQLQueryExprModifiedType modified ? modified.base : base, modifiers);
+    }
+
+    /** Retain the parsed placement of modifiers before type arguments. */
+    @NotNull
+    public static SQLQueryExprType withModifiers(
+        @NotNull SQLQueryExprType base, @NotNull List<String> modifiers, @NotNull String fullDisplayName
+    ) {
+        if (modifiers.isEmpty()) {
+            return base;
+        }
+        SQLQueryExprType undecorated = base instanceof SQLQueryExprModifiedType modified ? modified.base : base;
+        String metadataName = undecorated.getDisplayName();
+        return new SQLQueryExprModifiedType(undecorated, modifiers,
+            metadataName != null && metadataName.equalsIgnoreCase(fullDisplayName) ? metadataName : fullDisplayName);
     }
 
     /**
@@ -286,6 +294,14 @@ public abstract class SQLQueryExprType {
 
     @Nullable
     public static SQLQueryExprType tryCombineIfMatches(@NotNull SQLQueryExprType a, @NotNull SQLQueryExprType b) {
+        if (a instanceof SQLQueryExprModifiedType || b instanceof SQLQueryExprModifiedType) {
+            SQLQueryExprType baseA = a instanceof SQLQueryExprModifiedType modified ? modified.base : a;
+            SQLQueryExprType baseB = b instanceof SQLQueryExprModifiedType modified ? modified.base : b;
+            SQLQueryExprType commonBase = baseA == baseB ? baseA : tryCombineIfMatches(baseA, baseB);
+            // Only identical modifier sequences are known to describe both alternatives.
+            return commonBase != null && a.getModifiers().equals(b.getModifiers())
+                ? withModifiers(commonBase, a.getModifiers()) : commonBase;
+        }
         if (a.getDataKind().equals(DBPDataKind.ANY)) {
             return a;
         }
@@ -331,7 +347,133 @@ public abstract class SQLQueryExprType {
             );
     }
 
-    private static class SQLQueryExprRowType extends SQLQueryExprType {
+    private static abstract class SQLQueryExprTypeBase extends SQLQueryExprType {
+        protected final SQLQuerySymbolDefinition declaratorDefinition;
+        protected final DBPDataKind dataKind;
+        protected final DBSTypedObject typedObject;
+
+        private SQLQueryExprTypeBase(@Nullable SQLQuerySymbolDefinition declaratorDefinition, @NotNull DBPDataKind dataKind) {
+            this.declaratorDefinition = declaratorDefinition;
+            this.dataKind = dataKind;
+            this.typedObject = null;
+        }
+
+        private SQLQueryExprTypeBase(@Nullable SQLQuerySymbolDefinition declaratorDefinition, @NotNull DBSTypedObject typedObject) {
+            this.declaratorDefinition = declaratorDefinition;
+            this.dataKind = typedObject.getDataKind();
+            this.typedObject = typedObject;
+        }
+
+        @Nullable
+        @Override
+        public final SQLQuerySymbolDefinition getDeclaratorDefinition() {
+            return this.declaratorDefinition;
+        }
+
+        @NotNull
+        @Override
+        public final DBPDataKind getDataKind() {
+            return this.dataKind;
+        }
+
+        @Nullable
+        @Override
+        public final DBSTypedObject getTypedDbObject() {
+            return this.typedObject;
+        }
+    }
+
+    private static final class SQLQueryExprModifiedType extends SQLQueryExprType {
+        @NotNull
+        private final SQLQueryExprType base;
+        @NotNull
+        private final List<String> modifiers;
+
+        @Nullable
+        private final String fullDisplayName;
+
+        private SQLQueryExprModifiedType(@NotNull SQLQueryExprType base, @NotNull List<String> modifiers) {
+            this(base, modifiers, null);
+        }
+
+        private SQLQueryExprModifiedType(
+            @NotNull SQLQueryExprType base, @NotNull List<String> modifiers, @Nullable String fullDisplayName
+        ) {
+            this.base = base;
+            this.modifiers = List.copyOf(modifiers);
+            this.fullDisplayName = fullDisplayName;
+        }
+
+        @NotNull
+        @Override
+        public List<String> getModifiers() {
+            return this.modifiers;
+        }
+
+        @NotNull
+        @Override
+        public String getDisplayName() {
+            if (this.fullDisplayName != null) {
+                return this.fullDisplayName;
+            }
+            String displayName = this.base.getDisplayName();
+            String modifierDisplay = String.join(" ", this.modifiers);
+            if (displayName == null) {
+                return modifierDisplay;
+            }
+            String suffix = " " + modifierDisplay;
+            return displayName.toUpperCase(Locale.ROOT).endsWith(suffix.toUpperCase(Locale.ROOT))
+                ? displayName : displayName + suffix;
+        }
+
+        @NotNull
+        @Override
+        public DBPDataKind getDataKind() {
+            return this.base.getDataKind();
+        }
+
+        @Nullable
+        @Override
+        public DBSTypedObject getTypedDbObject() {
+            return this.base.getTypedDbObject();
+        }
+
+        @Nullable
+        @Override
+        public SQLQuerySymbolDefinition getDeclaratorDefinition() {
+            return this.base.getDeclaratorDefinition();
+        }
+
+        @Nullable
+        @Override
+        public SQLQueryExprType findNamedMemberType(@NotNull DBRProgressMonitor monitor, @NotNull String memberName) throws DBException {
+            return this.base.findNamedMemberType(monitor, memberName);
+        }
+
+        @NotNull
+        @Override
+        public List<SQLQueryExprTypeMemberInfo> getNamedMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
+            return this.base.getNamedMembers(monitor);
+        }
+
+        @Nullable
+        @Override
+        public SQLQueryExprType findIndexedItemType(
+            @NotNull DBRProgressMonitor monitor,
+            int depth,
+            @Nullable boolean[] slicingSpec
+        ) throws DBException {
+            return this.base.findIndexedItemType(monitor, depth, slicingSpec);
+        }
+
+        @NotNull
+        @Override
+        public String toString() {
+            return "ModifiedType[" + this.getDisplayName() + "]";
+        }
+    }
+
+    private static class SQLQueryExprRowType extends SQLQueryExprTypeBase {
         @NotNull
         private final SQLQueryComplexName reference;
         @NotNull
@@ -377,7 +519,7 @@ public abstract class SQLQueryExprType {
     /**
      * The composite type covered by the type descriptor
      */
-    private static class SQLQueryExprDescribedCompositeType extends SQLQueryExprType {
+    private static class SQLQueryExprDescribedCompositeType extends SQLQueryExprTypeBase {
         private final DBSTypeDescriptor typeDesc;
 
         public SQLQueryExprDescribedCompositeType(
@@ -444,7 +586,7 @@ public abstract class SQLQueryExprType {
         }
     }
 
-    private static class SQLQueryExprSynthesizedComplexType extends SQLQueryExprType {
+    private static class SQLQueryExprSynthesizedComplexType extends SQLQueryExprTypeBase {
         @NotNull
         private final String displayName;
         @NotNull
@@ -508,7 +650,7 @@ public abstract class SQLQueryExprType {
         }
     }
 
-    private static class SQLQueryExprComplexType<T extends DBSEntity & DBSTypedObject> extends SQLQueryExprType {
+    private static class SQLQueryExprComplexType<T extends DBSEntity & DBSTypedObject> extends SQLQueryExprTypeBase {
         private final T complexType;
         private final Map<String, DBSEntityAttribute> attrs;
 
@@ -570,7 +712,7 @@ public abstract class SQLQueryExprType {
         }
     }
     
-    private static class SQLQueryExprIndexableType extends SQLQueryExprType {
+    private static class SQLQueryExprIndexableType extends SQLQueryExprTypeBase {
         private final DBSDataType elementType;
         
         public SQLQueryExprIndexableType(
@@ -612,7 +754,7 @@ public abstract class SQLQueryExprType {
         }
     }
     
-    private static class SQLQueryExprDescribedIndexableType extends SQLQueryExprType {
+    private static class SQLQueryExprDescribedIndexableType extends SQLQueryExprTypeBase {
         private final DBSTypeDescriptor typeDesc;
 
         public SQLQueryExprDescribedIndexableType(
@@ -660,7 +802,7 @@ public abstract class SQLQueryExprType {
         }
     }
 
-    private static class SQLQueryExprSynthesizedIndexableType extends SQLQueryExprType {
+    private static class SQLQueryExprSynthesizedIndexableType extends SQLQueryExprTypeBase {
         @NotNull
         private final String displayName;
         @NotNull
@@ -698,7 +840,7 @@ public abstract class SQLQueryExprType {
         }
     }
 
-    private static class SQLQueryExprSimpleType extends SQLQueryExprType {
+    private static class SQLQueryExprSimpleType extends SQLQueryExprTypeBase {
         
         public SQLQueryExprSimpleType(@Nullable SQLQuerySymbolDefinition declaratorDefinition, @NotNull DBSTypedObject typedObject) {
             super(declaratorDefinition, typedObject);
@@ -720,7 +862,7 @@ public abstract class SQLQueryExprType {
     /**
      * The type based on the type descriptor and treated as atomic
      */
-    private static class SQLQueryExprSimpleDescribedType extends SQLQueryExprType {
+    private static class SQLQueryExprSimpleDescribedType extends SQLQueryExprTypeBase {
 
         @NotNull
         private final DBSTypeDescriptor typeDesc;
@@ -746,7 +888,7 @@ public abstract class SQLQueryExprType {
         }
     }
     
-    private static class SQLQueryExprPredefinedType extends SQLQueryExprType {
+    private static class SQLQueryExprPredefinedType extends SQLQueryExprTypeBase {
         private final String name;
         
         public SQLQueryExprPredefinedType(@NotNull String name, @NotNull DBPDataKind kind) {
@@ -767,7 +909,7 @@ public abstract class SQLQueryExprType {
         }
     }
 
-    private static class SQLQueryExprDummyType extends SQLQueryExprType {
+    private static class SQLQueryExprDummyType extends SQLQueryExprTypeBase {
 
         public SQLQueryExprDummyType(@Nullable SQLQuerySymbolDefinition declaratorDefinition) {
             super(declaratorDefinition, DBPDataKind.ANY);

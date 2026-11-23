@@ -35,6 +35,8 @@ import java.util.Set;
 
 public class CoreApplicationActivator extends AbstractUIPlugin {
 
+    private static final Log log = Log.getLog(CoreApplicationActivator.class);
+
     // The shared instance
     private static CoreApplicationActivator plugin;
 
@@ -87,7 +89,7 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                 Bundle bundle = event.getBundle();
                 if (event.getType() == BundleEvent.STARTED) {
                     if (bundle.getState() == Bundle.ACTIVE) {
-                        message = "> Start [" + bundle.getSymbolicName() + "]";
+                        message = "Start [" + bundle.getSymbolicName() + "]";
                         /* + " " + bundle.getVersion() + " " + OsgiUtils.getBundleName(bundle)*/
                         activatedBundles.add(bundle.getSymbolicName());
                     }
@@ -97,7 +99,7 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                     // " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
                 }
                 if (message != null) {
-                    System.err.println(message);
+                    log.debug(message);
                 }
             }, null);
         }

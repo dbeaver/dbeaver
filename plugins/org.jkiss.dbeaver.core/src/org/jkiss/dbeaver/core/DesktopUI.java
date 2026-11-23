@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBCDriverLicenseException;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
@@ -113,7 +114,7 @@ public class DesktopUI extends ConsoleUserInterface {
         }
     }
 
-    // This method is called during startup thru @ComponentReference in workbench
+    // Called when the application initializes its platform UI.
     public void initialize() {
         new AbstractJob("Workbench listener") {
             @NotNull
@@ -173,7 +174,7 @@ public class DesktopUI extends ConsoleUserInterface {
             // Display the dialog
             StandardErrorDialog dialog = new StandardErrorDialog(
                 UIUtils.getActiveWorkbenchShell(),
-                CommonUtils.notNull(title, "Error"),
+                CommonUtils.notNull(title, CoreMessages.dialog_error_title),
                 message,
                 status,
                 IStatus.ERROR);
@@ -580,7 +581,7 @@ public class DesktopUI extends ConsoleUserInterface {
         try {
             processDescriptor.execute();
         } catch (DBException e) {
-            showError("Execute process", processDescriptor.getName(), e);
+            showError(ModelMessages.process_execute_error_title, processDescriptor.getName(), e);
         }
         if (processDescriptor.getCommand().isShowProcessPanel()) {
             UIUtils.asyncExec(() -> {
@@ -769,7 +770,8 @@ public class DesktopUI extends ConsoleUserInterface {
         String[] filterExt,
         String defaultValue
     ) {
-        showMessageBox("Not supported", "External file system are not supported", true);
+            showMessageBox(CoreMessages.external_file_system_not_supported_title,
+                CoreMessages.external_file_system_not_supported_message, true);
         return null;
     }
 

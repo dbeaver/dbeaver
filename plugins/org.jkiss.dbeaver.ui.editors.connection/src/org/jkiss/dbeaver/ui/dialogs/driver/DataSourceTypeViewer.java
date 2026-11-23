@@ -56,6 +56,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
+import java.util.stream.Stream;
 
 /** Data source type gallery used by the new connection wizard. */
 public class DataSourceTypeViewer extends Viewer {
@@ -156,13 +157,24 @@ public class DataSourceTypeViewer extends Viewer {
             if (!category.isPromoted()) {
                 continue;
             }
-            List<DBPDataSourceType> categoryTypes = types.stream()
-                .filter(type -> type.getEnabledDrivers().stream()
-                    .filter(DataSourceTypeViewer::isDriverAvailable)
-                    .anyMatch(driver -> driver.getCategories().contains(category.getId())))
-                .toList();
+            List<DBPDataSourceType> categoryTypes;
+            if (category.isCommercial()) {
+                categoryTypes = types.stream()
+                    .flatMap(type -> type.getEnabledDrivers().stream())
+                    .filter(driver -> availableProviders.contains(driver.getProviderDescriptor()) && isDriverAvailable(driver))
+                    .filter(driver -> driver.getCategories().contains(category.getId()))
+                    .distinct()
+                    .<DBPDataSourceType>map(CustomDriverType::new)
+                    .toList();
+            } else {
+                categoryTypes = types.stream()
+                    .filter(type -> type.getEnabledDrivers().stream()
+                        .filter(DataSourceTypeViewer::isDriverAvailable)
+                        .anyMatch(driver -> driver.getCategories().contains(category.getId())))
+                    .toList();
+            }
             if (!categoryTypes.isEmpty()) {
-                TypeListFolder folder = new TypeListFolder(categoryTypes, category.getId());
+                TypeListFolder folder = new TypeListFolder(categoryTypes, category);
                 folders.add(folder);
                 folderInfos.add(new TabbedFolderInfo(category.getId(), category.getName(), category.getIcon(),
                     category.getDescription(), false, folder));
@@ -183,7 +195,10 @@ public class DataSourceTypeViewer extends Viewer {
 
         filterText.addModifyListener(e -> {
             filter = filterText.getText();
-            if (!filter.isEmpty() && folderComposite.getActiveFolder() != folders.getFirst()) {
+            ITabbedFolder active = folderComposite.getActiveFolder();
+            String pattern = normalizeSearchText(filter);
+            if (!pattern.isEmpty() && active instanceof TypeListFolder current && current != folders.getFirst()
+                && !current.hasMatches(pattern) && folders.getFirst().hasMatches(pattern)) {
                 folderComposite.switchFolder("all", false);
             }
             applyFilter();
@@ -256,7 +271,13 @@ public class DataSourceTypeViewer extends Viewer {
     private void updateFolderVisibility() {
         boolean showCommercialDrivers = isShowCommercialDrivers();
         folderComposite.setFolderFilter(folder ->
-            !(folder.getContents() instanceof TypeListFolder typeFolder) || !typeFolder.commercialDriversOnly || showCommercialDrivers);
+            !(folder.getContents() instanceof TypeListFolder typeFolder) || !typeFolder.commercialDriversOnly ||
+                showCommercialDrivers || typeFolder.commercialCategory);
+    }
+
+    public boolean isDriverVisibleInActiveFolder(@NotNull DBPDriver driver) {
+        ITabbedFolder folder = folderComposite.getActiveFolder(false);
+        return folder instanceof TypeListFolder typeFolder ? typeFolder.isDriverVisible(driver) : isDriverVisible(driver);
     }
 
     @NotNull
@@ -288,22 +309,24 @@ public class DataSourceTypeViewer extends Viewer {
                 ) {
                     DBPDataSourceType type = (DBPDataSourceType) element;
                     String pattern = normalizeSearchText(filter);
-                    return CommonUtils.isEmpty(pattern) || matchesSearch(type.getName(), pattern) ||
-                        matchesSearch(type.getDescription(), pattern) ||
-                        matchesSearch(type.getDataSourceInformation(), pattern) ||
-                        type.getEnabledDrivers().stream()
-                            .filter(DataSourceTypeViewer::isDriverVisible)
-                            .anyMatch(driver ->
-                                matchesSearch(driver.getName(), pattern) ||
-                                matchesSearch(driver.getFullName(), pattern) ||
-                                matchesSearch(driver.getId(), pattern) ||
-                                matchesSearch(driver.getDescription(), pattern) ||
-                                matchesSearch(driver.getCategory(), pattern) ||
-                                driver.getCategories().stream().anyMatch(category ->
-                                    matchesSearch(category, pattern)));
+                    return matchesSearch(type, pattern, typeFolder);
                 }
             });
         }
+    }
+
+    private static boolean matchesSearch(
+        @NotNull DBPDataSourceType type,
+        @NotNull String pattern,
+        @NotNull TypeListFolder folder
+    ) {
+        return pattern.isEmpty() || matchesSearch(type.getName(), pattern) ||
+            matchesSearch(type.getDescription(), pattern) || matchesSearch(type.getDataSourceInformation(), pattern) ||
+            type.getEnabledDrivers().stream().filter(folder::isDriverVisible).anyMatch(driver ->
+                matchesSearch(driver.getName(), pattern) || matchesSearch(driver.getFullName(), pattern) ||
+                matchesSearch(driver.getId(), pattern) || matchesSearch(driver.getDescription(), pattern) ||
+                matchesSearch(driver.getCategory(), pattern) ||
+                driver.getCategories().stream().anyMatch(category -> matchesSearch(category, pattern)));
     }
 
     private static boolean matchesSearch(@Nullable String value, @NotNull String pattern) {
@@ -367,6 +390,8 @@ public class DataSourceTypeViewer extends Viewer {
     private class TypeListFolder implements ITabbedFolder {
         private final List<DBPDataSourceType> types;
         private final boolean commercialDriversOnly;
+        private final boolean commercialCategory;
+        private final String categoryId;
         private int maxTypes = Integer.MAX_VALUE;
         private AdvancedListViewer viewer;
 
@@ -374,8 +399,10 @@ public class DataSourceTypeViewer extends Viewer {
             this(types, null);
         }
 
-        private TypeListFolder(@NotNull List<DBPDataSourceType> types, @Nullable String categoryId) {
+        private TypeListFolder(@NotNull List<DBPDataSourceType> types, @Nullable DriverCategoryDescriptor category) {
             this.types = new ArrayList<>(types);
+            categoryId = category == null ? null : category.getId();
+            commercialCategory = category != null && category.isCommercial();
             commercialDriversOnly = categoryId != null && types.stream()
                 .flatMap(type -> type.getEnabledDrivers().stream())
                 .filter(DataSourceTypeViewer::isDriverAvailable)
@@ -383,11 +410,16 @@ public class DataSourceTypeViewer extends Viewer {
                 .allMatch(DBPDriverWithLicense.class::isInstance);
         }
 
+        private boolean isDriverVisible(@NotNull DBPDriver driver) {
+            return commercialCategory ? driver.getCategories().contains(categoryId) && isDriverAvailable(driver) :
+                DataSourceTypeViewer.isDriverVisible(driver);
+        }
+
         @Override
         public void createControl(@NotNull Composite parent) {
             viewer = new AdvancedListViewer(parent, SWT.NONE);
             viewer.setContentProvider(new ListContentProvider());
-            viewer.setLabelProvider(new TypeLabelProvider(viewer));
+            viewer.setLabelProvider(new TypeLabelProvider(viewer, this));
             viewer.addSelectionChangedListener(event -> {
                 if (site instanceof ISelectionChangedListener listener) {
                     listener.selectionChanged(event);
@@ -404,13 +436,20 @@ public class DataSourceTypeViewer extends Viewer {
 
         private void refresh() {
             if (viewer != null) {
-                var visibleTypes = types.stream()
-                    .filter(type -> type.getEnabledDrivers().stream().anyMatch(DataSourceTypeViewer::isDriverVisible));
-                if (maxTypes != Integer.MAX_VALUE) {
-                    visibleTypes = visibleTypes.sorted(createComparator(OrderBy.score)).limit(maxTypes);
-                }
-                viewer.setInput(visibleTypes.sorted(comparator).toList());
+                viewer.setInput(getVisibleTypes().sorted(comparator).toList());
             }
+        }
+
+        @NotNull
+        private Stream<DBPDataSourceType> getVisibleTypes() {
+            var visibleTypes = types.stream()
+                .filter(type -> type.getEnabledDrivers().stream().anyMatch(this::isDriverVisible));
+            return maxTypes == Integer.MAX_VALUE ? visibleTypes :
+                visibleTypes.sorted(createComparator(OrderBy.score)).limit(maxTypes);
+        }
+
+        private boolean hasMatches(@NotNull String pattern) {
+            return getVisibleTypes().anyMatch(type -> matchesSearch(type, pattern, this));
         }
 
         @Override
@@ -434,18 +473,27 @@ public class DataSourceTypeViewer extends Viewer {
 
     private static class TypeLabelProvider extends LabelProvider implements IToolTipProvider {
         private final AdvancedListViewer viewer;
+        private final TypeListFolder folder;
 
-        private TypeLabelProvider(@NotNull AdvancedListViewer viewer) {
+        private TypeLabelProvider(@NotNull AdvancedListViewer viewer, @NotNull TypeListFolder folder) {
             this.viewer = viewer;
+            this.folder = folder;
         }
 
         @Override
         public @NotNull Image getImage(@NotNull Object element) {
             DBPDataSourceType type = (DBPDataSourceType) element;
-            type.getEnabledDrivers().stream()
-                .filter(DataSourceTypeViewer::isDriverVisible)
-                .forEach(driver -> DriverIconLoader.load(driver, viewer));
-            return DBeaverIcons.getImage(type.getIconBig());
+            List<? extends DBPDriver> drivers = type.getEnabledDrivers().stream()
+                .filter(folder::isDriverVisible)
+                .toList();
+            drivers.forEach(driver -> DriverIconLoader.load(driver, viewer));
+            boolean hasNativeDriver = drivers.stream()
+                .anyMatch(driver -> driver.getDriverStub() == null && !(driver instanceof DBPDriverWithLicense));
+            DBPImage icon = hasNativeDriver ? type.getIconBig() : drivers.stream()
+                .filter(driver -> driver.getDriverStub() == null)
+                .map(DBPDriver::getIconBig)
+                .findFirst().orElse(type.getIconBig());
+            return DBeaverIcons.getImage(icon);
         }
 
         @Override
@@ -457,7 +505,7 @@ public class DataSourceTypeViewer extends Viewer {
         public @Nullable String getToolTipText(@NotNull Object element) {
             DBPDataSourceType type = (DBPDataSourceType) element;
             List<? extends DBPDriver> drivers = type.getEnabledDrivers().stream()
-                .filter(DataSourceTypeViewer::isDriverVisible)
+                .filter(folder::isDriverVisible)
                 .toList();
             if (drivers.size() == 1 && !CommonUtils.isEmpty(drivers.getFirst().getDescription())) {
                 return drivers.getFirst().getDescription();

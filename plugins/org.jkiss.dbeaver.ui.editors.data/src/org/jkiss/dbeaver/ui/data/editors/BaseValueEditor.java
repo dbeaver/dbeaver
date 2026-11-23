@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetThemeSettings;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -253,7 +254,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                 ((IMultiController) valueController).closeInlineEditor();
             }
             if (showError) {
-                DBWorkbench.getPlatformUI().showError("Value save", "Can't save edited value", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_save_value_title, ResultSetMessages.error_save_value_message, e);
             } else {
                 log.debug("Error saving value: " + e.getMessage());
             }

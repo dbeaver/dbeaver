@@ -74,6 +74,13 @@
             iconBig="icons/apache_icon_big.png"
             logoImage="icons/apache_logo.png"/>
         <dataSourceType
+            id="apache_arrow_flight_sql"
+            label="Apache Arrow Flight SQL"
+            description="%driver.apache_arrow_flight_sql.description"
+            dataSourceInformation="%driver.apache_arrow_flight_sql.information"
+            icon="icons/apache_icon.png"
+            iconBig="icons/apache_icon_big.png"/>
+        <dataSourceType
             id="apache_calcite_avatica"
             label="Apache Calcite Avatica"
             description="Apache Calcite SQL query engine"
@@ -370,7 +377,7 @@
             <tree path="generic" label="Generic data source" supportsEntityMerge="true">
                 <items label="#catalog" path="catalog" property="catalogList" icon="#database" optional="true">
                     <items label="#schema" path="schema" property="schemaList" icon="#schema" optional="true">
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" labelTerm="table" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
                                 <icon if="object.externalTable" icon="#table_external"/>
                                 <icon if="object.abstractTable" icon="#table_alias"/>
@@ -454,7 +461,7 @@
                         <folder id="tableTrigger" type="org.jkiss.dbeaver.ext.generic.model.GenericTableTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="%tree.tableTriggers.node.tip" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
                             <items label="%tree.trigger.node.name" path="tableTrigger" property="tableTriggers" icon="#trigger"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
+                        <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip" visibleIf="object.dataSource.dataTypesVisible">
                             <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                         </folder>
                     </items>
@@ -1294,7 +1301,7 @@
                         defaultPort="31010"
                         description="Dremio JDBC driver"
                         supportedConfigurationTypes="MANUAL,URL"
-                        webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
+                        webURL="https://docs.dremio.com/current/client-applications/drivers/jdbc/"
                         categories="analytic,hadoop,sql">
                     <file type="jar" path="https://download.dremio.com/jdbc-driver/dremio-jdbc-driver-LATEST.jar" bundle="!drivers.dremio"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
@@ -1351,6 +1358,26 @@
                     webURL="https://crate.io/docs/clients/jdbc/en/latest/"
                     categories="sql">
                     <file type="jar" path="maven:/io.crate:crate-jdbc:RELEASE"/>
+                </driver>
+
+                <!-- Apache Arrow Flight SQL -->
+                <driver
+                    id="apache_arrow_flight_sql"
+                    dataSourceType="apache_arrow_flight_sql"
+                    label="Apache Arrow Flight SQL"
+                    class="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"
+                    sampleURL="jdbc:arrow-flight-sql://{host}:{port}/"
+                    description="%driver.apache_arrow_flight_sql.description"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://arrow.apache.org/java/current/flight_sql_jdbc_driver.html"
+                    allowsEmptyPassword="true"
+                    categories="sql,analytic">
+                    <file type="jar" path="maven:/org.apache.arrow:flight-sql-jdbc-driver:19.0.0"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <!-- GizmoSQL uses the same driver class but has vendor-specific metadata queries. -->
+                    <parameter name="meta-model" value="apache_arrow_flight_sql"/>
+                    <property name="useEncryption" value="true"/>
+                    <property name="disableCertificateVerification" value="false"/>
                 </driver>
 
                 <!-- GizmoSQL -->
@@ -1485,7 +1512,7 @@
                     defaultPort="443"
                     description="Apache Kylin JDBC driver"
                     supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://kylin.apache.org/docs23/howto/howto_jdbc.html"
+                    webURL="https://kylin.apache.org/docs/integration/jdbc/"
                     categories="sql">
                     <file type="jar" path="maven:/org.apache.kylin:kylin-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/javax.xml.bind:jaxb-api:RELEASE"/>
@@ -1558,7 +1585,7 @@
                         webURL="https://jdbc.postgresql.org/"
                         description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.13]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.14]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
 
@@ -1899,7 +1926,14 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="apache_arrow_flight_sql" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel"/>
         <meta id="gizmosql" class="org.jkiss.dbeaver.ext.generic.model.meta.gizmosql.GizmoSQLMetaModel" driverClass="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"/>
+        <meta id="kyuubi" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel" driverClass="org.apache.kyuubi.jdbc.KyuubiHiveDriver">
+            <object type="procedure">
+                <!-- Kyuubi returns the implementation class as SPECIFIC_NAME, which is shared by function aliases. -->
+                <column id="SPECIFIC_NAME" name="FUNCTION_NAME"/>
+            </object>
+        </meta>
         <meta id="indexed" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel">
             <object type="catalog">
                 <column id="TABLE_CAT" index="1"/>

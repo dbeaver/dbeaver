@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.conversion.text.NumberToStringConverter;
-import org.eclipse.core.databinding.conversion.text.StringToNumberConverter;
-import org.eclipse.core.internal.databinding.validation.StringToIntegerValidator;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -58,8 +55,12 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
         return panel(pb -> pb
             .margins(0, 0)
             .spacing(0, 2)
+            .align(UIAlignX.FILL)
+            .grow(UIGrowX.ALWAYS)
             .row(handler)
-            .indent(p -> p.row(rb -> rb.control(parent -> new HintLabel(parent, hint)))));
+            .indent(p -> p.row(rb -> rb.control(parent -> new HintLabel(parent, hint), cb -> cb
+                .align(UIAlignX.FILL)
+                .grow(UIGrowX.ALWAYS)))));
     }
 
     @NotNull
@@ -242,13 +243,10 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
         var format = NumberFormat.getIntegerInstance();
         format.setGroupingUsed(false);
 
-        var toModelConverter = StringToNumberConverter.toInteger(true);
-        var toModelValidator = new StringToIntegerValidator(toModelConverter);
-        var fromModelConverter = NumberToStringConverter.fromInteger(format, true);
         return textField(binding, tb -> {
             handler.accept(tb);
-            tb.toModel(toModelValidator::validate, toModelConverter::convert);
-            tb.fromModel(fromModelConverter::convert);
+            tb.toModel(UIValidators::validateInteger, Integer::valueOf);
+            tb.fromModel(value -> value == null ? "" : format.format(value));
         });
     }
 

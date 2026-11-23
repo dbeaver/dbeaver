@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,13 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -36,6 +34,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public abstract class AbstractPopupPanel extends BaseDialog {
 
     private boolean modeless;
+    @Nullable
+    private Shell focusTrackedShell;
     private static boolean popupOpen;
 
     public static boolean isPopupOpen() {
@@ -114,21 +114,19 @@ public abstract class AbstractPopupPanel extends BaseDialog {
         return !modeless;
     }
 
-    protected void closeOnFocusLost(Control ... controls) {
-        if (modeless) {
-            FocusAdapter focusListener = new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e) {
-                    UIUtils.asyncExec(AbstractPopupPanel.this::handleFocusLost);
-                }
-            };
-            for (Control ctrl : controls) {
-                if (ctrl != null) {
-                    ctrl.addFocusListener(focusListener);
-                }
-            }
-        }
+    /**
+     * Closes a modeless popup when its shell loses focus, regardless of the focused child control.
+     */
+    protected void closeOnFocusLost() {
+        closeOnFocusLost(getShell());
+    }
 
+    /**
+     * @deprecated Use {@link #closeOnFocusLost()}; individual controls no longer need to be registered.
+     */
+    @Deprecated
+    protected void closeOnFocusLost(@NotNull Control ... controls) {
+        closeOnFocusLost();
     }
 
     /**
@@ -137,26 +135,38 @@ public abstract class AbstractPopupPanel extends BaseDialog {
      * @param shell the shell to monitor
      */
     protected void closeOnFocusLost(@NotNull Shell shell) {
+        if (focusTrackedShell == shell) {
+            return;
+        }
+        focusTrackedShell = shell;
         shell.addShellListener(ShellListener.shellDeactivatedAdapter(e -> UIUtils.asyncExec(this::handleFocusLost)));
     }
 
     private void handleFocusLost() {
+        // The popup can be locked after the listener is installed (e.g. Cloud Explorer).
+        if (!modeless) {
+            return;
+        }
         Shell shell = getShell();
         if (shell != null && !shell.isDisposed()) {
+            // A dialog may be parented to the workbench rather than to this popup.
+            if (UIUtils.isShellBlocked(shell)) {
+                return;
+            }
             Control focusControl = shell.getDisplay().getFocusControl();
+            if (focusControl == null) {
+                focusControl = shell.getDisplay().getActiveShell();
+            }
             if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
                 Object dialogData = focusControl.getShell().getData();
                 if (dialogData instanceof MessageBox ||
-                    dialogData instanceof MessageBoxModern ||
                     dialogData instanceof BlockingPopupDialog ||
-                    dialogData instanceof ErrorDialog
+                    dialogData instanceof Dialog
                 ) {
                     return;
                 }
                 cancelPressed();
             }
-        } else {
-            cancelPressed();
         }
     }
 

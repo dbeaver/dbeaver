@@ -68,12 +68,11 @@ public final class SWTThemeUtils {
         if (menuBar.foreground != display.menuBarForegroundPixel || menuBar.background != display.menuBarBackgroundPixel) {
             menuBar.initThemeColors();
             menuBar.updateBackground();
-            menuBar.updateForeground();
             boolean callback = menuBar.needsMenuCallback();
             MenuItem[] items = menuBar.getItems();
             for (int i = 0; i < items.length; i++) {
                 // SWT chooses both the owner-draw type and bitmap callback when it creates a menu item.
-                // Menu.updateForeground() changes only the bitmap, leaving Windows to draw the text twice.
+                // Changing only the bitmap leaves Windows to draw the text twice.
                 MENUITEMINFO info = new MENUITEMINFO();
                 info.cbSize = MENUITEMINFO.sizeof;
                 info.fMask = OS.MIIM_FTYPE;
@@ -128,6 +127,9 @@ public final class SWTThemeUtils {
      * Uses Windows-specific calls and constants to update native widgets look-and-feel
      */
     public static void updateWidgetTheme(@NotNull Control control, boolean dark) {
+        if (control instanceof Text text && (text.getStyle() & SWT.BORDER) != 0) {
+            updateTextBorder(text);
+        }
         // TODO: do not style custom wigets and empty composites
         OS.AllowDarkModeForWindow(control.handle, dark);
         // For Tree and Table we shouldn't set any theme but EXPLORER.
@@ -149,6 +151,20 @@ public final class SWTThemeUtils {
             OS.AllowDarkModeForWindow(tree.hwndHeader, dark);
             OS.SetWindowTheme(tree.hwndHeader, dark ? WINDOW_THEME_DEFAULT : null, null);
             OS.InvalidateRect(tree.hwndHeader, null, true);
+        }
+    }
+
+    private static void updateTextBorder(@NotNull Text text) {
+        int style = OS.GetWindowLong(text.handle, OS.GWL_STYLE);
+        int extStyle = OS.GetWindowLong(text.handle, OS.GWL_EXSTYLE);
+        // SWT selects the border style only at creation; match newly created Text controls after a theme switch.
+        int newStyle = text.isUseWsBorder() ? style | OS.WS_BORDER : style & ~OS.WS_BORDER;
+        int newExtStyle = text.isUseWsBorder() ? extStyle & ~OS.WS_EX_CLIENTEDGE : extStyle | OS.WS_EX_CLIENTEDGE;
+        if (newStyle != style || newExtStyle != extStyle) {
+            OS.SetWindowLong(text.handle, OS.GWL_STYLE, newStyle);
+            OS.SetWindowLong(text.handle, OS.GWL_EXSTYLE, newExtStyle);
+            OS.SetWindowPos(text.handle, 0, 0, 0, 0, 0,
+                OS.SWP_NOMOVE | OS.SWP_NOSIZE | OS.SWP_NOZORDER | OS.SWP_NOACTIVATE | OS.SWP_FRAMECHANGED);
         }
     }
 

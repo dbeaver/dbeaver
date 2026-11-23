@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
+import org.jkiss.dbeaver.ui.editors.acl.internal.ACLMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorLabelProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -248,7 +249,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
     private void updateCurrentPrivileges(boolean grant, @Nullable DBAPrivilegeType privilegeType) {
 
         if (ArrayUtils.isEmpty(currentObjects)) {
-            DBWorkbench.getPlatformUI().showError("Update privilege", "Can't update privilege - no current object");
+            DBWorkbench.getPlatformUI().showError(ACLMessages.acl_update_privilege_title, ACLMessages.acl_update_privilege_no_object);
             return;
         }
 
@@ -499,7 +500,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                         rootNode = DBNUtils.getChildFolder(monitor, dbNode, DBARole.class);
                     }
                     if (rootNode == null) {
-                        DBWorkbench.getPlatformUI().showError("Object tree", "Can't detect root node for objects tree");
+                        DBWorkbench.getPlatformUI().showError(ACLMessages.acl_object_tree_title, ACLMessages.acl_object_tree_no_root);
                     } else {
                         roleOrObjectTable.reloadTree(rootNode);
                     }
