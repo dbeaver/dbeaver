@@ -10,10 +10,10 @@
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
                 class="org.jkiss.dbeaver.ext.trino.model.data.TrinoValueHandlerProvider"
-                description="Trino data types provider"
+                description="%dataTypeProvider.TrinoValueHandlerProvider.description"
                 id="TrinoValueHandlerProvider"
                 parent="GenericValueHandlerProvider"
-                label="Trino data types provider">
+                label="%dataTypeProvider.TrinoValueHandlerProvider.label">
             <datasource class="org.jkiss.dbeaver.ext.trino.model.TrinoDataSource"/>
             <type name="Geometry"/>
             <type name="SphericalGeography"/>
