@@ -138,7 +138,7 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
             } catch (DBException e) {
                 log.debug("Cannot apply DataDam MCP datasource scope", e);
                 throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
-                    "Cannot apply DataDam MCP datasource scope", null);
+                    "Cannot apply DataDam MCP datasource scope");
             }
         } catch (DBException e) {
             if (isMasterPasswordRequired(e)) {

@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.DDWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
@@ -124,7 +123,7 @@ public class DDProjectUIManager {
         if (accessService.getStatus() == DDDesktopAccessService.Status.UNLOADED) {
             return;
         }
-        List<? extends DBPProject> visibleProjects = DDWorkspace.getInstance().getProjects();
+        List<? extends DBPProject> visibleProjects = DBWorkbench.getPlatform().getWorkspace().getVisibleProjects();
         if (visibleProjects.isEmpty() && !emptyProjectsPromptShown
             && DBPPlatformDesktop.getInstance().getWorkspace().canManageProjects()) {
             IWorkbenchWindow window = UIUtils.findActiveWorkbenchWindow();
@@ -133,7 +132,7 @@ public class DDProjectUIManager {
                 if (UIUtils.confirmAction(DDTrackingUIMessages.project_no_projects_title,
                     DDTrackingUIMessages.project_no_projects_message)
                     && NavigatorHandlerProjectCreate.createNewProject(window)) {
-                    visibleProjects = DDWorkspace.getInstance().getProjects();
+                    visibleProjects = DBWorkbench.getPlatform().getWorkspace().getVisibleProjects();
                 }
             }
         }
