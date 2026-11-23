@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.DDWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDShareClient;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProject;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProjectSyncBindingStore;
@@ -58,7 +58,7 @@ public class DDProjectManager {
     @NotNull
     private final DDProjectSyncService syncService;
     @NotNull
-    private final DDDesktopAccessService accessService;
+    private final DBDamAccessService accessService;
     private final ConcurrentMap<Path, DDProject> projects = new ConcurrentHashMap<>();
     private final Set<UUID> creatingProjects = ConcurrentHashMap.newKeySet();
 
@@ -66,7 +66,7 @@ public class DDProjectManager {
         @NotNull DBPWorkspace workspace,
         @NotNull DDShareClient client,
         @NotNull DDProjectSyncService syncService,
-        @NotNull DDDesktopAccessService accessService
+        @NotNull DBDamAccessService accessService
     ) {
         this.workspace = workspace;
         this.client = client;
@@ -78,7 +78,7 @@ public class DDProjectManager {
     public static synchronized DDProjectManager getInstance() {
         if (instance == null) {
             DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
-            DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+            DBDamAccessService accessService = DBDamAccessService.getInstance();
             DDShareClient client = new DDShareClient(DDEndpoints.getStorageBaseUrl(), accessService);
             DDProjectSyncService syncService = new DDProjectSyncService(client);
             instance = new DDProjectManager(workspace, client, syncService, accessService);
@@ -160,7 +160,7 @@ public class DDProjectManager {
         if (binding == null) {
             return BindingStatus.UNBOUND;
         }
-        if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+        if (accessService.getStatus() != DBDamAccessService.Status.SIGNED_IN) {
             return BindingStatus.ACCOUNT_UNKNOWN;
         }
         DDKeyBundle bundle = accessService.getKeyBundle();

@@ -27,9 +27,9 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
+import org.jkiss.dbeaver.ui.datadam.DBDamService;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -47,7 +47,7 @@ public class DDManagementMenu extends CompoundContributionItem {
         };
         integration.setChecked(enabled);
         integration.setEnabled(DDProductConfig.isIntegrationAvailable());
-        boolean signedIn = DDDesktopAccessService.getInstance().getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
+        boolean signedIn = DBDamAccessService.getInstance().getStatus() == DBDamAccessService.Status.SIGNED_IN;
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         Action configure = action(DDTrackingUIMessages.configuration, IAction.AS_PUSH_BUTTON, DDManagementActions::configure);
         Action tracking = action(DDTrackingUIMessages.tracking_title, IAction.AS_CHECK_BOX, () -> {
@@ -69,20 +69,20 @@ public class DDManagementMenu extends CompoundContributionItem {
             public void run() {
                 var previous = settings.get();
                 if (previous == null || !DDProductConfig.isIntegrationEnabled()
-                    || DDDesktopAccessService.getInstance().getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+                    || DBDamAccessService.getInstance().getStatus() != DBDamAccessService.Status.SIGNED_IN) {
                     return;
                 }
                 setEnabled(false);
-                DDDesktopDamService.getInstance().createJob("Update DataDam MCP status",
-                    account -> account.setDamSetting(DDRemoteDamDesktopSessionService.getInstance().getClientDamId(),
+                DBDamService.getInstance().createJob("Update DataDam MCP status",
+                    account -> account.setDamSetting(DBDamSessionService.getInstance().getClientDamId(),
                         DDRemoteDamSettingKeys.MCP_ENABLED, Boolean.toString(isChecked()), previous.accountId()),
                     updated -> {}, DDManagementActions::showError);
             }
         };
         mcp.setEnabled(false);
         if (enabled && signedIn) {
-            DDDesktopDamService.getInstance().createJob("Read DataDam MCP status",
-                account -> account.getDamSettings(DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
+            DBDamService.getInstance().createJob("Read DataDam MCP status",
+                account -> account.getDamSettings(DBDamSessionService.getInstance().getClientDamId()),
                 state -> {
                     settings.set(state);
                     boolean accountEnabled = state.settings().isAccountEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true);

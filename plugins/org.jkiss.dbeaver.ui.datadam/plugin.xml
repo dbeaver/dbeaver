@@ -254,7 +254,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer" order="100"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DBDamInitializer" order="100"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

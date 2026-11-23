@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
-import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionCatalog;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.*;
@@ -40,15 +39,16 @@ public class DDMcpAiFunctionCatalog {
     );
     private final Map<String, AIFunctionDescriptor> functions = new LinkedHashMap<>();
 
-    public DDMcpAiFunctionCatalog(@NotNull DDMcpConnectionCatalog connections) {
+    public DDMcpAiFunctionCatalog() {
         AIToolbox toolbox = AIAssistantRegistry.getInstance()
             .getAssistant(DBWorkbench.getPlatform().getWorkspace())
             .getToolboxManager()
             .getToolbox(AIConstants.INTERNAL_TOOLBOX_ID);
         if (toolbox != null) {
-            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions(AIFunctionPurpose.MCP)) {
-                if (functions.putIfAbsent(function.getFullId(), function) != null) {
-                    throw new IllegalStateException("Duplicate DBeaver MCP function: " + function.getFullId());
+            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions(AIFunctionPurpose.DAM)) {
+                String id = getFunctionId(function);
+                if (functions.putIfAbsent(id, function) != null) {
+                    throw new IllegalStateException("Duplicate DBeaver MCP function: " + id);
                 }
             }
         }
@@ -57,7 +57,7 @@ public class DDMcpAiFunctionCatalog {
     @NotNull
     public List<DDMcpFunctionDescriptor> getFunctions() throws DDMcpFunctionException {
         return functions.values().stream()
-            .map(function -> describe(function, CONNECTION_PARAMETERS))
+            .map(function -> describe(function, function.getPurpose() == AIFunctionPurpose.DAM ? List.of() : CONNECTION_PARAMETERS))
             .toList();
     }
 
@@ -74,9 +74,15 @@ public class DDMcpAiFunctionCatalog {
         List<DDMcpFunctionParameter> parameters = new ArrayList<>(connectionParameters);
         Arrays.stream(function.getParameters()).map(this::describeParameter).forEach(parameters::add);
         return new DDMcpFunctionDescriptor(
-            function.getFullId(), function.getName(), function.getAiDescription(), parameters,
+            getFunctionId(function), function.getName(), function.getAiDescription(), parameters,
             function.isReadOnlyHint(), function.isDestructiveHint(), function.isIdempotentHint()
         );
+    }
+
+    @NotNull
+    private String getFunctionId(@NotNull AIFunctionDescriptor function) {
+        // Keep the existing DataDam discovery IDs on the wire.
+        return function.getPurpose() == AIFunctionPurpose.DAM ? function.getId() : function.getFullId();
     }
 
     @NotNull

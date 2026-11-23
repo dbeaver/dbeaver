@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
 import org.jkiss.dbeaver.ui.controls.CInfoLabel;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
+import org.jkiss.dbeaver.ui.datadam.DBDamService;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.management.DDManagementActions;
@@ -124,7 +124,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
                 monitor.beginTask(DDMcpMessages.mcp_connection_status_loading, 1);
                 try {
                     if (!monitor.isCanceled()) {
-                        result.set(DDDesktopDamService.getInstance().getDamSettings());
+                        result.set(DBDamService.getInstance().getDamSettings());
                     }
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
