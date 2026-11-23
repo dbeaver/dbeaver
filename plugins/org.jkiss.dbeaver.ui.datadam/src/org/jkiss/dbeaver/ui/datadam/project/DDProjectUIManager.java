@@ -29,8 +29,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.DDWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DBDamSettingsStore;
@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
@@ -104,6 +105,9 @@ public class DDProjectUIManager {
         DDProjectSyncPropertyTester.firePropertyChange();
         // Wait for navigator initialization, which may be running a master-password dialog's event loop.
         UIExecutionQueue.queueExec(() -> {
+            if (DBWorkbench.getPlatform().getWorkspace() instanceof DBPProjectManager manager) {
+                manager.notifyProjectVisibilityChanged();
+            }
             for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
                 for (IWorkbenchPage page : window.getPages()) {
                     refreshNavigator(page, ProjectNavigatorView.VIEW_ID);
@@ -119,7 +123,7 @@ public class DDProjectUIManager {
         if (accessService.getStatus() == DBDamAccessService.Status.UNLOADED) {
             return;
         }
-        List<? extends DBPProject> visibleProjects = DDWorkspace.getInstance().getProjects();
+        List<? extends DBPProject> visibleProjects = DBWorkbench.getPlatform().getWorkspace().getVisibleProjects();
         if (visibleProjects.isEmpty() && !emptyProjectsPromptShown
             && DBPPlatformDesktop.getInstance().getWorkspace().canManageProjects()) {
             IWorkbenchWindow window = UIUtils.findActiveWorkbenchWindow();
@@ -128,7 +132,7 @@ public class DDProjectUIManager {
                 if (UIUtils.confirmAction(DDTrackingUIMessages.project_no_projects_title,
                     DDTrackingUIMessages.project_no_projects_message)
                     && NavigatorHandlerProjectCreate.createNewProject(window)) {
-                    visibleProjects = DDWorkspace.getInstance().getProjects();
+                    visibleProjects = DBWorkbench.getPlatform().getWorkspace().getVisibleProjects();
                 }
             }
         }

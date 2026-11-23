@@ -21,6 +21,7 @@ import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionErrorCode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
@@ -56,14 +57,19 @@ public class DDMcpConnectionCatalog {
         if (accessService.getStatus() != DBDamAccessService.Status.SIGNED_IN) {
             return List.of();
         }
-        return workspace.getProjects().stream()
+        return workspace.getVisibleProjects().stream()
             .filter(project -> projectId == null || projectId.equals(project.getId()))
             .filter(this::canReadProjectConnections)
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
-                .filter(DDMcpConnectionSettings::isEnabled)
+                .filter(this::isAllowedConnection)
                 .map(connection -> new AvailableConnection(project, connection,
                     !connection.isConnected())))
             .toList();
+    }
+
+    private boolean isAllowedConnection(@NotNull DBPDataSourceContainer connection) {
+        AIContextSettingsDataSource settings = new AIContextSettingsDataSource(connection);
+        return settings.isMetaTransferConfirmed() && settings.isDatadamMcpEnabled();
     }
 
     private boolean canReadProjectConnections(@NotNull DBPProject project) {
