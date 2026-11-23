@@ -131,8 +131,12 @@ public final class AIUserProfileCredentials {
                 // another client may have already rotated the refresh token
                 String storedRefreshToken = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(
                     getSecretId(profile, AIAccountProperties.ACCOUNT_REFRESH_TOKEN_PROPERTY));
-                AIAccountAuthenticator.Tokens tokens = authenticator.refresh(
-                    CommonUtils.isEmpty(storedRefreshToken) ? refreshToken : storedRefreshToken);
+                if (CommonUtils.isEmpty(storedRefreshToken)) {
+                    // signed out in another client
+                    account.clearAccountTokens();
+                    throw new DBException(account.getAccountAuthenticationProviderName() + " account is not connected");
+                }
+                AIAccountAuthenticator.Tokens tokens = authenticator.refresh(storedRefreshToken);
                 account.setAccountTokens(tokens);
                 saveAccountTokens(profile);
                 return tokens;
@@ -141,17 +145,10 @@ public final class AIUserProfileCredentials {
     }
 
     public static void save(@NotNull AIConfigurationProfile profile) throws DBException {
-        write(profile, getCredentials(profile.getConfiguration()));
+        save(profile, getCredentials(profile.getConfiguration()));
     }
 
-    // other credentials may have been changed in another client meanwhile
-    private static void saveAccountTokens(@NotNull AIConfigurationProfile profile) throws DBException {
-        Map<String, String> credentials = getCredentials(profile.getConfiguration());
-        credentials.keySet().retainAll(AIAccountProperties.ACCOUNT_CREDENTIAL_PROPERTY_IDS);
-        write(profile, credentials);
-    }
-
-    private static void write(@NotNull AIConfigurationProfile profile, @NotNull Map<String, String> credentials) throws DBException {
+    public static void save(@NotNull AIConfigurationProfile profile, @NotNull Map<String, String> credentials) throws DBException {
         DBSSecretController controller = DBSSecretController.getGlobalSecretController();
         for (var credential : credentials.entrySet()) {
             controller.setPrivateSecretValue(
@@ -164,6 +161,13 @@ public final class AIUserProfileCredentials {
             );
         }
         controller.flushChanges();
+    }
+
+    // other credentials may have been changed in another client meanwhile
+    private static void saveAccountTokens(@NotNull AIConfigurationProfile profile) throws DBException {
+        Map<String, String> credentials = getCredentials(profile.getConfiguration());
+        credentials.keySet().retainAll(AIAccountProperties.ACCOUNT_CREDENTIAL_PROPERTY_IDS);
+        save(profile, credentials);
     }
 
     /**

@@ -184,7 +184,6 @@ public class AIUIMessages extends NLS {
     public static String ai_profiles_credentials;
     public static String ai_profiles_credentials_personal;
     public static String ai_profiles_credentials_shared;
-    public static String ai_profiles_load_cancelled;
     public static String ai_settings_user_save_error_title;
 
     static {

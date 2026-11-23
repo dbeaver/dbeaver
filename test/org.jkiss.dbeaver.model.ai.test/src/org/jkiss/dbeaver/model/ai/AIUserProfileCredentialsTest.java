@@ -174,6 +174,22 @@ class AIUserProfileCredentialsTest {
     }
 
     @Test
+    void refreshFailsAfterSignOutInAnotherClient() throws Exception {
+        secrets.put("ai.profile.openai.refreshToken", "desktop-refresh");
+        AIConfigurationProfile profile = loadSettings().getConfiguration("openai");
+        AIUserProfileCredentials.load(profile);
+        secrets.remove("ai.profile.openai.refreshToken");
+        AIAccountAuthenticator authenticator = Mockito.mock(AIAccountAuthenticator.class);
+        OpenAIProperties properties = (OpenAIProperties) profile.getConfiguration();
+
+        Assertions.assertThrows(DBException.class, () -> properties.getValidAccessToken(authenticator));
+
+        Assertions.assertNull(secrets.get("ai.profile.openai.refreshToken"));
+        Assertions.assertFalse(properties.isAccountConnected());
+        Mockito.verifyNoInteractions(authenticator);
+    }
+
+    @Test
     void signOutRemovesStoredAccountTokens() throws Exception {
         secrets.put("ai.profile.openai.refreshToken", "refresh");
         AIConfigurationProfile profile = loadSettings().getConfiguration("openai");

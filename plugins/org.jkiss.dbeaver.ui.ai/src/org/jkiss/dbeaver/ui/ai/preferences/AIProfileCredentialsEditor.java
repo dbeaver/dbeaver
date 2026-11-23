@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -37,32 +36,22 @@ final class AIProfileCredentialsEditor {
     private final Map<AIConfigurationProfile, Map<String, String>> loadedCredentials = new LinkedHashMap<>();
     private final Map<AIConfigurationProfile, Map<String, String>> editedCredentials = new LinkedHashMap<>();
     private final Map<AIConfigurationProfile, DBException> loadErrors = new LinkedHashMap<>();
-    private boolean profilesLoaded;
 
-    void loadProfiles(@NotNull AIConfigurationProfile[] profiles, boolean canManageConfiguration)
-        throws InvocationTargetException, InterruptedException {
-        UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
-            for (AIConfigurationProfile profile : profiles) {
-                if (!profile.isAvailable()) {
-                    continue;
-                }
-                try {
-                    AIConfigurationProfile target = canManageConfiguration ? profile : copyProfile(profile);
-                    if (AIUserProfileCredentials.isUserProfile(target)) {
-                        AIUserProfileCredentials.load(target);
-                        loadedCredentials.put(profile, AIUserProfileCredentials.getCredentials(target.getConfiguration()));
-                    } else {
-                        target.resolveSecrets();
-                    }
-                    if (target != profile) {
-                        personalProfiles.put(profile, target);
-                    }
-                } catch (DBException e) {
-                    loadErrors.put(profile, e);
-                }
+    void loadProfile(@NotNull AIConfigurationProfile profile, boolean canManageConfiguration) {
+        try {
+            AIConfigurationProfile target = canManageConfiguration ? profile : copyProfile(profile);
+            if (AIUserProfileCredentials.isUserProfile(target)) {
+                AIUserProfileCredentials.load(target);
+                loadedCredentials.put(profile, AIUserProfileCredentials.getCredentials(target.getConfiguration()));
+            } else {
+                target.resolveSecrets();
             }
-        });
-        profilesLoaded = true;
+            if (target != profile) {
+                personalProfiles.put(profile, target);
+            }
+        } catch (DBException e) {
+            loadErrors.put(profile, e);
+        }
     }
 
     void createControl(@NotNull Composite parent, @NotNull AIConfigurationProfile profile) throws DBException {
@@ -102,28 +91,29 @@ final class AIProfileCredentialsEditor {
 
     void saveChanges(@NotNull AIConfigurationProfile[] profiles) throws DBException {
         for (AIConfigurationProfile profile : profiles) {
-            AIConfigurationProfile target = personalProfiles.getOrDefault(profile, profile);
-            if (!profile.isAvailable() || loadErrors.containsKey(profile) || !AIUserProfileCredentials.isUserProfile(target)) {
+            // only loaded personal profiles have saved values to compare with
+            Map<String, String> loaded = loadedCredentials.get(profile);
+            if (loaded == null) {
                 continue;
             }
+            AIConfigurationProfile target = personalProfiles.getOrDefault(profile, profile);
             Map<String, String> edited = editedCredentials.get(profile);
             if (edited != null) {
                 AIUserProfileCredentials.setCredentials(target.getConfiguration(), edited);
             }
             Map<String, String> credentials = AIUserProfileCredentials.getCredentials(target.getConfiguration());
-            if (!credentials.equals(loadedCredentials.get(profile))) {
-                AIUserProfileCredentials.save(target);
+            // unchanged keys may have been updated meanwhile, e.g. a refreshed account token
+            Map<String, String> changes = new LinkedHashMap<>(credentials);
+            changes.entrySet().removeIf(credential -> credential.getValue().equals(loaded.get(credential.getKey())));
+            if (!changes.isEmpty()) {
+                AIUserProfileCredentials.save(target, changes);
                 loadedCredentials.put(profile, credentials);
             }
             if (target != profile) {
                 // the chat uses the settings profile, it may still keep older values
-                AIUserProfileCredentials.setCredentials(profile.getConfiguration(), credentials);
+                AIUserProfileCredentials.load(profile);
             }
         }
-    }
-
-    boolean isLoaded() {
-        return profilesLoaded;
     }
 
     void checkLoaded(@NotNull AIConfigurationProfile profile) throws DBException {

@@ -313,22 +313,15 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             if (partDivider.isDisposed()) {
                 return;
             }
+            resolveSelectedProfileSecrets();
             if (DBWorkbench.isDistributed()) {
-                try {
-                    credentialsEditor.loadProfiles(getVisibleProfiles(), canManageConfiguration());
-                    setErrorMessage(null);
-                    setValid(true);
-                    engineGroup.setEnabled(true);
-                    showProfileSettings();
-                    profilesViewer.refresh();
-                    packProfilesColumns();
-                } catch (InvocationTargetException e) {
-                    setErrorMessage(e.getCause().getMessage());
-                } catch (InterruptedException e) {
-                    setErrorMessage(AIUIMessages.ai_profiles_load_cancelled);
-                }
+                setErrorMessage(null);
+                setValid(true);
+                engineGroup.setEnabled(true);
+                showProfileSettings();
+                profilesViewer.refresh();
+                packProfilesColumns();
             } else {
-                resolveSelectedProfileSecrets();
                 loadSelectedProfileSettings();
             }
             relayoutPage();
@@ -626,14 +619,20 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         if (DBWorkbench.isDistributed()) {
             try {
                 credentialsEditor.checkLoaded(selectedProfile);
-                setErrorMessage(null);
-                setValid(credentialsEditor.isLoaded());
-                engineGroup.setEnabled(isValid());
             } catch (DBException e) {
                 UIUtils.disposeChildControls(engineGroup);
                 setErrorMessage(e.getMessage());
                 setValid(false);
                 engineGroup.setEnabled(false);
+                return;
+            }
+            // the first profile is loaded after the page is shown
+            boolean loaded = resolvedProfiles.contains(selectedProfile);
+            setErrorMessage(null);
+            setValid(loaded);
+            engineGroup.setEnabled(loaded);
+            if (!loaded) {
+                UIUtils.disposeChildControls(engineGroup);
                 return;
             }
         }
@@ -708,13 +707,15 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     }
 
     private void resolveSelectedProfileSecrets() {
-        // in team edition the credentials editor resolves all visible profiles
-        if (DBWorkbench.isDistributed()
-            || selectedProfile == null || !selectedProfile.isAvailable() || resolvedProfiles.contains(selectedProfile)) {
+        if (selectedProfile == null || !selectedProfile.isAvailable() || resolvedProfiles.contains(selectedProfile)) {
             return;
         }
         try {
-            selectedProfile.resolveSecrets();
+            if (DBWorkbench.isDistributed()) {
+                credentialsEditor.loadProfile(selectedProfile, canManageConfiguration());
+            } else {
+                selectedProfile.resolveSecrets();
+            }
             resolvedProfiles.add(selectedProfile);
         } catch (DBException e) {
             log.error("Error resolving profile secrets", e);
