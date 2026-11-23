@@ -68,6 +68,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ScopeSelectorDialog extends BaseDialog {
 
@@ -201,7 +202,12 @@ public class ScopeSelectorDialog extends BaseDialog {
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     if (!dataSourceContainer.isConnected() || dataSourceContainer.getDataSource() == null) {
-                        if (!DBUtils.initDataSource(monitor, dataSourceContainer, null)) {
+                        AtomicReference<IStatus> connectionStatus = new AtomicReference<>();
+                        if (!DBUtils.initDataSource(monitor, dataSourceContainer, connectionStatus::set)) {
+                            IStatus status = connectionStatus.get();
+                            if (status != null && status.getException() != null) {
+                                throw new DBException(AIChatMessagesUI.ai_chat_connect_error_message, status.getException());
+                            }
                             throw new DBException(AIChatMessagesUI.ai_chat_connect_error_message);
                         }
                     }
