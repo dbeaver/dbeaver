@@ -432,8 +432,9 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
 
     public void saveSettings() {
         if (task != null) {
-            task.setName(taskLabelText.getText());
-            task.setDescription(taskDescriptionText.getText());
+            // The task page may not have been opened in the task-specific wizard.
+            task.setName(taskName);
+            task.setDescription(CommonUtils.notEmpty(taskDescription));
             task.setType(selectedTaskType);
             // Change task folder in edit task case
             if (selectedTaskFolderName != null) {

@@ -71,6 +71,31 @@ public class CDataCatalogRefreshTest extends DBeaverUnitTest {
         Assertions.assertEquals(2026, existing.getDriverInfo().versionYear());
     }
 
+    @Test
+    public void updateCategoriesForExistingDriversIncludingModifiedDrivers() {
+        var provider = new CDataDataSourceProvider();
+        var descriptor = DataSourceProviderRegistry.getInstance().getDataSourceProvider("cdata");
+        List<DBPDriver> drivers = new ArrayList<>();
+        var initial = info("postgresql", 2026);
+        provider.refreshProvidedDrivers(descriptor, drivers, List.of(initial));
+        var existing = (CDataDriverDescriptor) drivers.getFirst();
+        Assertions.assertEquals(List.of("cdata"), existing.getCategories());
+        existing.setName("Custom PostgreSQL");
+        existing.setModified(true);
+        var updated = new CDataDriverInfo(initial.dataSource(), initial.objectName(), initial.driverName(), initial.versionYear(),
+            initial.tier(), initial.purchaseUrl(), initial.dataTypeId(), null, null, null, List.of("sql", "analytic", "cdata"));
+
+        var changed = provider.refreshProvidedDrivers(descriptor, drivers, List.of(updated));
+
+        Assertions.assertEquals(List.of(existing), changed);
+        Assertions.assertEquals(List.of("cdata", "sql", "analytic"), existing.getCategories());
+        Assertions.assertEquals("Custom PostgreSQL", existing.getName());
+
+        provider.refreshProvidedDrivers(descriptor, drivers, List.of(initial));
+
+        Assertions.assertEquals(List.of("cdata"), existing.getCategories());
+    }
+
     @NotNull
     private static CDataDriverInfo info(@NotNull String source, int year) {
         return new CDataDriverInfo(source, source, source + " JDBC Driver", year,

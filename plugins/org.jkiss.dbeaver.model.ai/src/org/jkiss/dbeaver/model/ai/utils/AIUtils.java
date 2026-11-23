@@ -282,7 +282,7 @@ public final class AIUtils {
                 AIMessages.ai_execute_query_confirm_dml_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
         }
-        if (queryCategories.contains(SQLQueryCategory.SQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
+        if (queryCategories.contains(SQLQueryCategory.DQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_sql_message :
                 AIMessages.ai_execute_query_confirm_sql_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
@@ -352,24 +352,18 @@ public final class AIUtils {
         return new DataSourceContextProvider(dataSource);
     }
 
+    @NotNull
+    public static AIDatabaseScope getDefaultScope() {
+        return AIDatabaseScope.CURRENT_DATASOURCE;
+    }
+
     public static void updateScopeSettingsIfNeeded(
         @NotNull AIContextSettings settings,
         @NotNull DBPDataSourceContainer container,
         @Nullable DBCExecutionContext executionContext
     ) {
-        if (settings.getScope() != null || !container.isConnected()) {
-            return;
-        }
-        if (executionContext == null || executionContext.getContextDefaults() == null) {
-            // default scope
-            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
-            return;
-        }
-        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-        if (contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange()) {
-            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
-        } else {
-            settings.setScope(AIDatabaseScope.CURRENT_DATASOURCE);
+        if (settings.getScope() == null) {
+            settings.setScope(getDefaultScope());
         }
     }
 

@@ -21,6 +21,17 @@ import org.eclipse.osgi.util.NLS;
 public class TaskNativeUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages"; //$NON-NLS-1$
 
+    public static String tools_catalogs_error_title;
+    public static String tools_catalogs_error_message;
+    public static String tools_file_resolve_error_title;
+    public static String tools_file_resolve_error_message;
+    public static String tools_settings_load_error_title;
+    public static String tools_settings_load_error_message;
+    public static String tools_client_download_error_title;
+    public static String tools_client_download_error_message;
+    public static String tools_task_run_error_message;
+    public static String tools_internal_error_message;
+
     public static String tools_script_execute_wizard_task_completed;
     public static String tools_wizard_error_no_database_object_selected;
     public static String tools_wizard_error_no_native_client_selected;

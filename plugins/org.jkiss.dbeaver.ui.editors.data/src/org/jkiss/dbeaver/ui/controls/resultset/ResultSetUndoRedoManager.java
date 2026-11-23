@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -201,7 +202,7 @@ final class ResultSetUndoRedoManager {
             }
             viewer.getModel().refreshChangeCount();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Cell edit", "Error restoring cell value", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_edit_cell_title, ResultSetMessages.error_restore_cell_message, e);
             return false;
         }
 

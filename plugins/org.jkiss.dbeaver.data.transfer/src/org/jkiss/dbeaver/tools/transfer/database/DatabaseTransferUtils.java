@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
@@ -263,10 +264,10 @@ public class DatabaseTransferUtils {
                 }
                 return actions.toArray(DBEPersistAction[]::new);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Can't create or update target table", null, e);
+                DBWorkbench.getPlatformUI().showError(DTMessages.database_transfer_target_table_error_title, null, e);
                 if (!DBWorkbench.getPlatformUI().confirmAction(
-                    "Generate DDL automatically",
-                    "Do you want to create or update target object with auto-generated SQL script?")) {
+                    DTMessages.database_transfer_generate_ddl_title,
+                    DTMessages.database_transfer_generate_ddl_message)) {
                     throw new DBException("Target table create or update was canceled");
                 }
             }

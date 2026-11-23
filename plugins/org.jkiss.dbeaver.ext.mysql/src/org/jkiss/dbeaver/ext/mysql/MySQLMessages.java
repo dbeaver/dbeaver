@@ -21,6 +21,9 @@ import org.eclipse.osgi.util.NLS;
 public class MySQLMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mysql.MySQLMessages";
 
+    public static String create_foreign_key_title;
+    public static String create_foreign_key_myisam_error;
+
     public static String exception_direct_database_rename;
 
     static {

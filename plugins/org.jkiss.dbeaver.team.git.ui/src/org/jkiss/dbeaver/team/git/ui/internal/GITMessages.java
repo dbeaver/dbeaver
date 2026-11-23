@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,14 @@ package org.jkiss.dbeaver.team.git.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class GITMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.team.git.ui.internal.GITResources"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.team.git.ui.internal.GITResources"; //$NON-NLS-1$
+
+    public static String git_history_no_repository_title;
+    public static String git_history_select_resource_message;
+    public static String git_history_no_repository_message;
+    public static String project_share_no_project_title;
+    public static String project_share_select_resource_message;
+
 
 	public static String project_share_handler_notifications_title_project_added;
 	public static String project_share_handler_notifications_text_project_added;

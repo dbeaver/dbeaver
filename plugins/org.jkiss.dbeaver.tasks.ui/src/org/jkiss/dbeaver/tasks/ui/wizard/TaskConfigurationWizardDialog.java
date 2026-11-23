@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -58,7 +59,6 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
     private static final Log log = Log.getLog(TaskConfigurationWizardDialog.class);
     private TaskConfigurationWizard<?> nestedTaskWizard;
-    private TaskConfigurationWizardPageTask taskEditPage;
     private boolean editMode;
     private boolean selectorMode;
 
@@ -205,7 +205,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             if (!getCurrentPage().isPageComplete()) {
                 return;
             }
-            taskEditPage = getTaskPage();
+            TaskConfigurationWizardPageTask taskEditPage = getTaskPage();
             try {
                 TaskConfigurationWizard<?> nextTaskWizard = taskEditPage.getTaskWizard();
                 if (nextTaskWizard != nestedTaskWizard) {
@@ -258,14 +258,11 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         return super.createContents(parent);
     }
 
+    @Nullable
     TaskConfigurationWizardPageTask getTaskPage() {
-        if (taskEditPage != null) {
-            return taskEditPage;
-        } else {
-            IWizardPage[] pages = getWizard().getPages();
-            if (pages.length > 0 && pages[0] instanceof TaskConfigurationWizardPageTask) {
-                return (TaskConfigurationWizardPageTask)pages[0];
-            }
+        IWizardPage[] pages = getWizard().getPages();
+        if (pages.length > 0 && pages[0] instanceof TaskConfigurationWizardPageTask taskPage) {
+            return taskPage;
         }
         return null;
     }
@@ -367,7 +364,8 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     ) {
         TaskTypeDescriptor taskType = TaskRegistry.getInstance().getTaskType(taskTypeId);
         if (taskType == null) {
-            DBWorkbench.getPlatformUI().showError("Bad task type", "Task type '" + taskTypeId + "' not found");
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIMessages.task_type_error_title, NLS.bind(TaskUIMessages.task_type_not_found_message, taskTypeId));
             return IDialogConstants.CANCEL_ID;
         }
         try {
@@ -385,7 +383,8 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
                 return IDialogConstants.ABORT_ID;
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Task create error", "Error creating task '" + taskTypeId + "'", e);
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIMessages.task_create_error_title, NLS.bind(TaskUIMessages.task_create_error_message, taskTypeId), e);
             return IDialogConstants.CANCEL_ID;
         }
     }
