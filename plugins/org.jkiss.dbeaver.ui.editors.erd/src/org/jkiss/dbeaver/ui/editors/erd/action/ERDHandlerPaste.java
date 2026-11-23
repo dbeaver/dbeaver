@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorAdapter;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart;
+import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.model.DiagramCollectSettingsDefault;
 import org.jkiss.utils.CommonUtils;
 
@@ -87,7 +88,8 @@ public class ERDHandlerPaste extends AbstractHandler {
                             }
                         });
                     } catch (InvocationTargetException e) {
-                        DBWorkbench.getPlatformUI().showError("Entity collect error", "Error during diagram entities collect", e);
+                        DBWorkbench.getPlatformUI().showError(ERDUIMessages.erd_entity_collect_error_title,
+                            ERDUIMessages.erd_entity_collect_error_message, e);
                     } catch (InterruptedException e) {
                         // ignore
                     }

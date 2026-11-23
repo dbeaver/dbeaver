@@ -20,9 +20,11 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
+import org.jkiss.dbeaver.data.office.ui.internal.OfficeUIMessages;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -54,7 +56,8 @@ public class OpenSpreadsheetHandler extends AbstractHandler
     {
     	IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
-            DBWorkbench.getPlatformUI().showError("Open Excel", "No active results viewer");
+            DBWorkbench.getPlatformUI().showError(
+                OfficeUIMessages.spreadsheet_open_excel_title, OfficeUIMessages.spreadsheet_no_results_message);
             return null;
         }
 
@@ -74,7 +77,8 @@ public class OpenSpreadsheetHandler extends AbstractHandler
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {
-            DBWorkbench.getPlatformUI().showError("Open Excel", ModelMessages.error_not_connected_to_database);
+            DBWorkbench.getPlatformUI().showError(
+                OfficeUIMessages.spreadsheet_open_excel_title, ModelMessages.error_not_connected_to_database);
             return null;
         }
 
@@ -127,11 +131,13 @@ public class OpenSpreadsheetHandler extends AbstractHandler
 
                     UIUtils.asyncExec(() -> {
                         if (!ShellUtils.launchProgram(tempFile.toAbsolutePath().toString())) {
-                            DBWorkbench.getPlatformUI().showError("Open XLSX", "Can't open XLSX file '" + tempFile.toAbsolutePath() + "'");
+                            DBWorkbench.getPlatformUI().showError(
+                                OfficeUIMessages.spreadsheet_open_xlsx_title,
+                                NLS.bind(OfficeUIMessages.spreadsheet_open_xlsx_error_message, tempFile.toAbsolutePath()));
                         }
                     });
                 } catch (Exception e) {
-                    DBWorkbench.getPlatformUI().showError("Error opening in Excel", null, e);
+                    DBWorkbench.getPlatformUI().showError(OfficeUIMessages.spreadsheet_open_excel_error_title, null, e);
                 }
                 return Status.OK_STATUS;
             }

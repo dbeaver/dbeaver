@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerObjectPrivilege;
 import org.jkiss.dbeaver.ext.mimer.ui.config.MimerIdentPickerUtils;
+import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 
 import java.util.ArrayList;
@@ -83,7 +84,7 @@ public class MimerAddPrivilegesHandler extends AbstractHandler {
 
         MimerOnlineActionUtils.run(
             dataSource,
-            "Add privileges",
+            MimerUIMessages.action_add_privileges_title,
             statements,
             false,
             () -> MimerOnlineActionUtils.refresh(nodes));

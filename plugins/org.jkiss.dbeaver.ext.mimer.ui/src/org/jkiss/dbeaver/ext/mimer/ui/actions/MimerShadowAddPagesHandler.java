@@ -72,7 +72,7 @@ public class MimerShadowAddPagesHandler extends AbstractHandler {
         final List<DBNNode> parents = MimerOnlineActionUtils.parentsOf(nodes);
         MimerOnlineActionUtils.run(
             (MimerDataSource) nodes.get(0).getObject().getDataSource(),
-            "Add pages to shadow",
+            MimerUIMessages.action_shadow_add_pages_title,
             statements,
             false,
             () -> MimerOnlineActionUtils.refresh(parents));

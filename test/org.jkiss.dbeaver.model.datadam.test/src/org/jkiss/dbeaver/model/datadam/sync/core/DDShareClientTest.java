@@ -25,8 +25,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.utils.Pair;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -34,10 +34,10 @@ import org.mockito.Mockito;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.Map;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.crypto.KeyGenerator;
@@ -71,9 +71,9 @@ class DDShareClientTest {
             }
         });
         server.start();
-        try (var session = Mockito.mockStatic(DDDesktopAccessService.class)) {
-            var manager = Mockito.mock(DDDesktopAccessService.class);
-            session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
+        try (var session = Mockito.mockStatic(DBDamAccessService.class)) {
+            var manager = Mockito.mock(DBDamAccessService.class);
+            session.when(DBDamAccessService::getInstance).thenReturn(manager);
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
             DDShareClient client = client("http://127.0.0.1:" + server.getAddress().getPort(), manager);
 
@@ -124,7 +124,7 @@ class DDShareClientTest {
         });
         server.start();
         try {
-            var access = Mockito.mock(DDDesktopAccessService.class);
+            var access = Mockito.mock(DBDamAccessService.class);
             Mockito.when(access.getAccessTokenForResource(Mockito.any())).thenReturn("token");
             Mockito.when(access.getKeyBundle())
                 .thenReturn(bundle, new DDKeyBundle(bundle.accountId(), "other", "other", 1, UUID.randomUUID()));
@@ -162,7 +162,7 @@ class DDShareClientTest {
         });
         server.start();
         try {
-            var manager = Mockito.mock(DDDesktopAccessService.class);
+            var manager = Mockito.mock(DBDamAccessService.class);
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
             Mockito.when(manager.getKeyBundle())
                 .thenReturn(new DDKeyBundle(UUID.fromString(PROJECT_B), "unused", "unused", 1, UUID.randomUUID()));
@@ -226,9 +226,9 @@ class DDShareClientTest {
             exchange.close();
         });
         server.start();
-        try (var session = Mockito.mockStatic(DDDesktopAccessService.class)) {
-            var manager = Mockito.mock(DDDesktopAccessService.class);
-            session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
+        try (var session = Mockito.mockStatic(DBDamAccessService.class)) {
+            var manager = Mockito.mock(DBDamAccessService.class);
+            session.when(DBDamAccessService::getInstance).thenReturn(manager);
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
             Assertions.assertThrows(DDShareException.class, () -> client(base, manager).listProjects());
             Assertions.assertEquals(0, redirected.get());
@@ -239,7 +239,7 @@ class DDShareClientTest {
 
     @Test
     void storageCallsRequireSsoInsteadOfFallingBackToBundleSignatures() throws Exception {
-        DDDesktopAccessService accessService = Mockito.mock(DDDesktopAccessService.class);
+        DBDamAccessService accessService = Mockito.mock(DBDamAccessService.class);
         Mockito.when(accessService.getAccessTokenForResource(Mockito.any()))
             .thenThrow(new DBException("Sign in to DataDam first"));
         DDShareClient client = client("http://127.0.0.1:1", accessService);
@@ -289,7 +289,7 @@ class DDShareClientTest {
     }
 
     @NotNull
-    private DDShareClient client(@NotNull String url, @NotNull DDDesktopAccessService accessService) {
+    private DDShareClient client(@NotNull String url, @NotNull DBDamAccessService accessService) {
         return new DDShareClient(url, accessService) {
             @NotNull
             @Override

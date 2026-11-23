@@ -687,7 +687,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
 
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Script generation", "Can't generate changes script", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                ResultSetMessages.error_generate_script_title, ResultSetMessages.error_generate_changes_script, e.getTargetException());
         }
 */
         return null;

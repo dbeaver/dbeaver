@@ -21,6 +21,14 @@ import org.eclipse.osgi.util.NLS;
 public class DTMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tools.transfer.internal.DTMessages"; //$NON-NLS-1$
 
+    public static String database_transfer_target_table_error_title;
+    public static String database_transfer_generate_ddl_title;
+    public static String database_transfer_generate_ddl_message;
+    public static String database_transfer_post_actions_error_title;
+    public static String database_transfer_post_actions_error_message;
+    public static String data_transfer_event_processor_error_title;
+    public static String data_transfer_event_processor_error_message;
+
     public static String data_transfer_wizard_init_column_description;
     public static String data_transfer_wizard_job_container_name;
     public static String data_transfer_wizard_job_task_export;

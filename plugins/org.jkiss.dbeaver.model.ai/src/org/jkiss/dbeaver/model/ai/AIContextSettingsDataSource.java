@@ -21,6 +21,7 @@ import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
@@ -60,6 +61,12 @@ public class AIContextSettingsDataSource extends AIContextSettings {
         return dataSourceContainer;
     }
 
+    @NotNull
+    @Override
+    public AIDatabaseScope getScope() {
+        return CommonUtils.notNull(super.getScope(), AIUtils.getDefaultScope());
+    }
+
     protected void loadSettings() {
         Object dsConfig = dataSourceContainer.getExtension(AI_DS_EXTENSION);
         if (dsConfig == null) {
@@ -82,7 +89,9 @@ public class AIContextSettingsDataSource extends AIContextSettings {
     public void saveSettings() {
         // Save settings as map
         dataSourceContainer.setExtension(AI_DS_EXTENSION, saveSettingsToMap());
-        dataSourceContainer.persistConfiguration();
+        if (dataSourceContainer.persistConfiguration()) {
+            AIProjectConnectionCount.refresh(dataSourceContainer.getRegistry());
+        }
     }
 
     // Deprecated methods - kept for backward compatibility

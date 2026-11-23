@@ -25,12 +25,12 @@ import com.dbeaver.messaging.rpc.MessagingRpcException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 
-public class DDSharedProjectDesktopRpcRegistration implements DDDesktopRpcRegistration {
+public class DDSharedProjectDesktopRpcRegistration implements DBDamRpcRegistration {
     private static final Log log = Log.getLog(DDSharedProjectDesktopRpcRegistration.class);
     private final DDSharedProjectEventsServiceDesktop service = DDSharedProjectEventsServiceDesktop.getInstance();
-    private final DDDesktopAccessService access = DDDesktopAccessService.getInstance();
+    private final DBDamAccessService access = DBDamAccessService.getInstance();
     @Nullable
     private MessagingRpcEndpoint registeredEndpoint;
     @Nullable

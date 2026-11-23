@@ -111,7 +111,7 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
                     Throwable lastLoadError = parentNode.getLastLoadError();
                     if (lastLoadError != null) {
                         UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showError(
-                            "Error during node load",
+                            UINavigatorMessages.error_node_load_title,
                             CommonUtils.notEmpty(lastLoadError.getMessage()),
                             lastLoadError));
                     }
@@ -122,7 +122,7 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
                 // Collapse this item
                 UIUtils.asyncExec(() -> {
                     DBWorkbench.getPlatformUI().showError(
-                        "Navigator error",
+                        UINavigatorMessages.error_navigator_title,
                         ex.getMessage(),
                         ex);
                     if (!navigatorTree.getViewer().getControl().isDisposed()) {

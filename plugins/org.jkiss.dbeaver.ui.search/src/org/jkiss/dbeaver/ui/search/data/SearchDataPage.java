@@ -420,7 +420,8 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Data sources load", "Error loading settings", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                UISearchMessages.search_data_sources_load_title, UISearchMessages.search_settings_load_error, e.getTargetException());
         } catch (InterruptedException e) {
             // Ignore
         }

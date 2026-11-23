@@ -23,6 +23,7 @@ import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -126,7 +127,8 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {
-            DBWorkbench.getPlatformUI().showError("Copy as " + processor.getName(), ModelMessages.error_not_connected_to_database);
+            DBWorkbench.getPlatformUI().showError(
+                NLS.bind(ResultSetMessages.error_copy_as_title, processor.getName()), ModelMessages.error_not_connected_to_database);
             return;
         }
 
@@ -206,7 +208,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     consumer.finishTransfer(monitor, true);
                     monitor.worked(1);
                 } catch (Exception e) {
-                    DBWorkbench.getPlatformUI().showError("Error opening in " + processor.getAppName(), null, e);
+                    DBWorkbench.getPlatformUI().showError(NLS.bind(ResultSetMessages.error_open_in_title, processor.getAppName()), null, e);
                 } finally {
                     monitor.done();
                 }

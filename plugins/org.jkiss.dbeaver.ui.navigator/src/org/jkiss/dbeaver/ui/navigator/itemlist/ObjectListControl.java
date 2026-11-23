@@ -360,7 +360,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 // interrupted
             }
             if (loadingJob != null) {
-                DBWorkbench.getPlatformUI().showMessageBox("Load", "Service is busy", true);
+                DBWorkbench.getPlatformUI().showMessageBox(
+                    UINavigatorMessages.error_load_title, UINavigatorMessages.error_service_busy_message, true);
                 return;
             }
             return;

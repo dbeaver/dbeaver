@@ -268,7 +268,7 @@ public class TextViewDialog extends ValueViewDialog {
                 rawValue,
                 false, false);
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Extract editor value", "Can't extract editor value", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_extract_value_title, ResultSetMessages.error_extract_value_message, e);
             return null;
         }
     }
