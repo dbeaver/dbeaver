@@ -36,6 +36,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_desktop_sign_out;
     public static String sync_preference_page_logout_confirm_title;
     public static String sync_preference_page_logout_confirm_message;
+    public static String sync_preference_page_project_deletion_confirm_message;
     public static String sync_preference_page_open_account;
     public static String sync_preference_page_dam_name_label;
     public static String sync_preference_page_dam_id_label;

@@ -35,9 +35,9 @@ import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DBDamSettingsStore;
 import org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectEventsServiceDesktop;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -75,7 +75,8 @@ public class DDProjectUIManager {
         DBDamSettingsStore.getInstance().addListener(settings -> DDProjectSyncPropertyTester.firePropertyChange());
         accessService.addKeyBundleListener(() -> {
             // Sign-out refreshes after its progress dialog closes.
-            if (accessService.getStatus() != DBDamAccessService.Status.SIGNED_OUT) {
+            if (accessService.getStatus() != DBDamAccessService.Status.SIGNED_OUT
+                && !DDProjectKeyUIManager.getInstance().isCleanupInProgress()) {
                 refreshProjectVisibility();
             }
         });

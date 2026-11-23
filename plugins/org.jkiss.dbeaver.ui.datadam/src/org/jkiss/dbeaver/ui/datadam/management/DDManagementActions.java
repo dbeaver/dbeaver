@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 
@@ -75,6 +76,12 @@ public final class DDManagementActions {
 
     public static void toggleLogin() {
         boolean signedIn = DBDamAccessService.getInstance().getStatus() == DBDamAccessService.Status.SIGNED_IN;
+        if (signedIn && !UIUtils.confirmAction(
+            UIUtils.getActiveWorkbenchShell(), DDTrackingUIMessages.sync_preference_page_logout_confirm_title,
+            DDTrackingUIMessages.sync_preference_page_project_deletion_confirm_message
+        )) {
+            return;
+        }
         String failure = signedIn ? DDTrackingUIMessages.sync_preference_page_logout_failed
             : DDTrackingUIMessages.sync_preference_page_login_failed;
         try {
@@ -85,7 +92,7 @@ public final class DDManagementActions {
                 try {
                     var access = DBDamAccessService.getInstance();
                     if (signedIn) {
-                        access.signOut();
+                        DDProjectKeyUIManager.getInstance().signOut();
                     } else {
                         access.signIn(monitor);
                     }

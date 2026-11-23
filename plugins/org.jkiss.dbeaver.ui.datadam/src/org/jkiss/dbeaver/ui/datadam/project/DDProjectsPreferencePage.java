@@ -569,9 +569,11 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private void forgetKeys() {
         if (UIUtils.confirmAction(
             getShell(), DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_title,
-            DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_message
+            DDTrackingUIMessages.sync_preference_page_project_deletion_confirm_message
         )) {
-            runKeyOperation(DDTrackingUIMessages.sync_preference_page_cannot_forget_keys, accessService::forgetKeys);
+            runKeyOperation(DDTrackingUIMessages.sync_preference_page_cannot_forget_keys,
+                DDProjectKeyUIManager.getInstance()::forgetKeys);
+            uiManager.refreshProjectVisibility();
         }
     }
 

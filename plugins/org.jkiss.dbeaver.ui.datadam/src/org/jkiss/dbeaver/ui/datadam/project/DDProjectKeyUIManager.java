@@ -37,10 +37,12 @@ import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Interactive recovery for account encryption resets, before project operations start. */
 public final class DDProjectKeyUIManager {
     private static final DDProjectKeyUIManager INSTANCE = new DDProjectKeyUIManager();
+    private final AtomicBoolean cleanupInProgress = new AtomicBoolean();
 
     private DDProjectKeyUIManager() {
     }
@@ -48,6 +50,51 @@ public final class DDProjectKeyUIManager {
     @NotNull
     public static DDProjectKeyUIManager getInstance() {
         return INSTANCE;
+    }
+
+    boolean isCleanupInProgress() {
+        return cleanupInProgress.get();
+    }
+
+    /** Invoked from a progress operation after the user confirms local project deletion. */
+    public void forgetKeys() throws DBException {
+        if (!cleanupInProgress.compareAndSet(false, true)) {
+            throw new DBException("DataDam project cleanup is already in progress");
+        }
+        var access = DBDamAccessService.getInstance();
+        try {
+            DDKeyBundle bundle = access.getKeyBundle();
+            access.forgetKeys();
+            if (bundle != null) {
+                forgetKeys(bundle.accountId());
+            }
+        } finally {
+            cleanupInProgress.set(false);
+        }
+    }
+
+    /** Invoked from a progress operation after the user confirms sign-out and project deletion. */
+    public void signOut() throws DBException {
+        if (!cleanupInProgress.compareAndSet(false, true)) {
+            throw new DBException("DataDam project cleanup is already in progress");
+        }
+        var access = DBDamAccessService.getInstance();
+        try {
+            DDKeyBundle bundle = access.getKeyBundle();
+            access.signOut();
+            if (bundle != null) {
+                forgetKeys(bundle.accountId());
+            }
+        } finally {
+            cleanupInProgress.set(false);
+        }
+    }
+
+    /** Removes only local projects bound to the captured account after access has been cleared. */
+    public void forgetKeys(@NotNull UUID accountId) throws DBException {
+        DDProjectManager manager = DDProjectManager.getInstance();
+        prepareProjectDeletion(manager, accountId);
+        manager.deleteAccountProjects(accountId);
     }
 
     public synchronized boolean ensureKeysReady(@NotNull DBRProgressMonitor monitor) throws DBException {
