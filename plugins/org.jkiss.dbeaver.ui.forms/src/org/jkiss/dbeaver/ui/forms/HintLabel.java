@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.forms;
 
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
@@ -25,18 +26,25 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 
 /** A description styled by the active Eclipse theme. */
-final class HintLabel extends Composite {
-    private static final String CSS_CLASS = "dbeaverFormHint";
+public final class HintLabel extends Composite {
+    public static final String CSS_CLASS = "dbeaverFormHint";
+    public static final int PREFERRED_WIDTH_IN_LINE_HEIGHTS = 30;
 
     HintLabel(@NotNull Composite parent, @NotNull String text) {
         super(parent, SWT.NONE);
         GridLayoutFactory.fillDefaults().margins(0, 0).applyTo(this);
 
-        Label label = UIControlFactory.createLabel(this, SWT.NONE);
+        Label label = UIControlFactory.createLabel(this, SWT.WRAP);
         CSSUtils.setCSSClass(label, CSS_CLASS);
         label.setText(text);
         var font = UIUtils.modifyFontSize(label.getFont(), -1);
         label.setFont(font);
         label.addDisposeListener(e -> font.dispose());
+        GridData data = new GridData(GridData.FILL_HORIZONTAL);
+        data.widthHint = Math.min(
+            label.computeSize(SWT.DEFAULT, SWT.DEFAULT).x,
+            UIUtils.getFontHeight(label) * PREFERRED_WIDTH_IN_LINE_HEIGHTS
+        );
+        label.setLayoutData(data);
     }
 }

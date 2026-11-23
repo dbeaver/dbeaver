@@ -20,7 +20,9 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProjectVisibilityPolicy;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public final class ProjectVisibility {
     private static final Log log = Log.getLog(ProjectVisibility.class);
@@ -29,14 +31,15 @@ public final class ProjectVisibility {
     }
 
     public static boolean isVisible(@NotNull DBNProject node) {
-        ProjectVisibilityPolicy policy = (ProjectVisibilityPolicy) Platform.getAdapterManager().loadAdapter(
-            node, ProjectVisibilityPolicy.class.getName());
-        if (policy == null) {
-            return true;
-        }
         try {
-            return policy.isVisible(node.getProject());
-        } catch (DBException e) {
+            DBPProjectVisibilityPolicy service = DBWorkbench.findService(DBPProjectVisibilityPolicy.class);
+            if (service != null && !service.isVisible(node.getProject())) {
+                return false;
+            }
+            ProjectVisibilityPolicy policy = (ProjectVisibilityPolicy) Platform.getAdapterManager().loadAdapter(
+                node, ProjectVisibilityPolicy.class.getName());
+            return policy == null || policy.isVisible(node.getProject());
+        } catch (DBException | IllegalStateException e) {
             log.debug("Error checking project visibility", e);
             return false;
         }

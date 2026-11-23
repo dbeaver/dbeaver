@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.virtual.EditVirtualColumnsPage;
 import org.jkiss.dbeaver.ui.controls.resultset.virtual.EditVirtualEntityDialog;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -222,7 +223,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
     private void createColumnsPage(@NotNull Composite parent) {
         ConComposite group = new ConComposite(parent);
-        group.setGridLayout(1);
+        group.setLayout(new GridLayout(1, false));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         createTableTitle(group, DataEditorsMessages.virtual_structure_editor_columns_group_virtual);
 
@@ -236,7 +237,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             return;
         }
         ConComposite group = new ConComposite(parent);
-        group.setGridLayout(1);
+        group.setLayout(new GridLayout(1, false));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         createTableTitle(group, DataEditorsMessages.virtual_structure_editor_columns_group_unique_keys);
 
@@ -259,9 +260,8 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                             // Show error if a constraint with the same name already exists
                             if (!vEntity.addConstraint(newConstraint)) {
                                 DBWorkbench.getPlatformUI().showError(
-                                    "Virtual Unique Key Creation Failed",
-                                    "Duplicate constraint '" + newConstraint.getName()
-                                        + "' in entity '" + vEntity.getName()
+                                    ResultSetMessages.error_virtual_key_title,
+                                    NLS.bind(ResultSetMessages.error_duplicate_constraint, newConstraint.getName(), vEntity.getName())
                                 );
                             } else {
                                 createUniqueKeyItem(ukTable, newConstraint);
@@ -337,7 +337,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
     private void createForeignKeysPage(@NotNull Composite parent) {
         ConComposite group = new ConComposite(parent);
-        group.setGridLayout(1);
+        group.setLayout(new GridLayout(1, false));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         createTableTitle(group, DataEditorsMessages.virtual_structure_editor_control_group_label_foreign_key);
 
@@ -383,7 +383,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
     private void createReferencesPage(@NotNull Composite parent) {
         ConComposite group = new ConComposite(parent);
-        group.setGridLayout(1);
+        group.setLayout(new GridLayout(1, false));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         createTableTitle(group, DataEditorsMessages.virtual_structure_editor_control_group_references);
 

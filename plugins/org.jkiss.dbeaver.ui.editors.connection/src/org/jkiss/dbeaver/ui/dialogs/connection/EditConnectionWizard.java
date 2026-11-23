@@ -394,6 +394,7 @@ public class EditConnectionWizard extends ConnectionWizard {
             pageSettings.saveSettings(dataSource);
         }
         pageGeneral.saveSettings(dataSource);
+        applyConnectionName(dataSource);
         pageInternalParameters.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);
 

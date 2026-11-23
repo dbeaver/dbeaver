@@ -83,7 +83,7 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
         );
         showPreviousCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateTransactionFilter()));
 
-        closeOnFocusLost(logViewer.getSearchText(), logViewer.getControl(), showAllCheck, showPreviousCheck);
+        closeOnFocusLost();
     }
 
     protected void updateTransactionFilter() {

@@ -28,7 +28,6 @@ import java.util.Locale;
 
 class NativeOSProviderTest {
     private static final String WINDOWS_FRAGMENT = "org.eclipse.equinox.security.win32";
-    private static final String LINUX_FRAGMENT = "org.eclipse.equinox.security.linux";
 
     @Test
     @EnabledOnOs(OS.WINDOWS)
@@ -42,9 +41,12 @@ class NativeOSProviderTest {
 
     @Test
     @EnabledOnOs(OS.LINUX)
-    void linuxProviderUsesRegisteredExtensionId() {
-        // A Linux provider can be registered but unavailable when the desktop keyring is missing.
-        Assumptions.assumeTrue(Platform.getBundle(LINUX_FRAGMENT) != null);
-        Assertions.assertNotNull(Platform.getExtensionRegistry().getExtension(DBSecurityProviders.LINUX_INTEGRATION));
+    void linuxKeyringProviderIsRegistered() {
+        Assertions.assertNotNull(Platform.getExtensionRegistry().getExtension(DBSecurityProviders.LINUX_KEYRING));
+        String providerId = DBSecurityUtils.findNativeOSProvider();
+        if (providerId != null) {
+            Assertions.assertEquals(DBSecurityProviders.LINUX_KEYRING.toLowerCase(Locale.ROOT),
+                providerId);
+        }
     }
 }

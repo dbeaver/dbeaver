@@ -218,7 +218,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                             EntityEditor.class.getName());
                     }
                 } else {
-                    DBWorkbench.getPlatformUI().showError("No object", "Node has no associated database object");
+                    DBWorkbench.getPlatformUI().showError(
+                        UINavigatorMessages.error_no_object_title, UINavigatorMessages.error_no_object_message);
                     return null;
                 }
             } else {
@@ -230,7 +231,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         } catch (Exception ex) {
             DBWorkbench.getPlatformUI()
                 .showError(UINavigatorMessages.actions_navigator_error_dialog_open_entity_title,
-                    "Can't open entity '" + selectedNode.getNodeDisplayName() + "'",
+                    NLS.bind(UINavigatorMessages.error_open_object_message, selectedNode.getNodeDisplayName()),
                     ex);
             return null;
         }

@@ -27,6 +27,8 @@ import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Listener;
@@ -73,11 +75,11 @@ final class AIImageAttachmentViewer {
             @NotNull
             @Override
             protected Composite createDialogArea(@NotNull Composite parent) {
-                Composite area = UIUtils.createPlaceholder(parent, 1);
-                area.setLayoutData(new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, true, true));
+                // NO_TRIM removes the native shell border on Windows as well as its title strip.
+                Composite area = new Composite(parent, RuntimeUtils.isWindows() ? SWT.BORDER : SWT.NONE);
+                area.setLayout(new FillLayout());
+                area.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
                 Browser browser = new Browser(area, SWT.NONE);
-                browser.setLayoutData(new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, true, true));
-                closeOnFocusLost(browser);
                 Shell popup = getShell();
                 popup.setBackground(UIStyles.getDefaultTextBackground());
                 popup.setBackgroundMode(SWT.INHERIT_DEFAULT);

@@ -94,6 +94,9 @@ public interface AIEngineProperties {
 
     void setTimeout(int timeout);
 
+    default void clearUserCredentials() {
+    }
+
     void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException;
 
     void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException;

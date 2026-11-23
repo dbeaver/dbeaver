@@ -70,6 +70,27 @@ public interface AIFunctionDescriptor {
      */
     boolean isSystem();
 
+    /**
+     * MCP hint: the function does not modify its environment. Defaults to false.
+     */
+    default boolean isReadOnlyHint() {
+        return false;
+    }
+
+    /**
+     * MCP hint: the function may perform destructive updates. Defaults to true.
+     */
+    default boolean isDestructiveHint() {
+        return true;
+    }
+
+    /**
+     * MCP hint: repeated calls with the same arguments have no additional side effects. Defaults to false.
+     */
+    default boolean isIdempotentHint() {
+        return false;
+    }
+
     boolean isEnabledByDefault();
 
     default boolean isOmitConfirmation() {

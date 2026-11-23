@@ -37,11 +37,11 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -99,7 +99,7 @@ public class AboutBoxDialog extends InformationDialog
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(CoreMessages.dialog_about_title);
+        newShell.setText(CoreApplicationMessages.dialog_about_title);
     }
 
     @NotNull
@@ -206,7 +206,7 @@ public class AboutBoxDialog extends InformationDialog
         Text versionLabel = new Text(group, SWT.NONE);
         versionLabel.setEditable(false);
         versionLabel.setBackground(background);
-        versionLabel.setText(CoreMessages.dialog_about_label_version + GeneralUtils.getProductVersion());
+        versionLabel.setText(CoreApplicationMessages.dialog_about_label_version + GeneralUtils.getProductVersion());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         versionLabel.setLayoutData(gd);
@@ -215,7 +215,7 @@ public class AboutBoxDialog extends InformationDialog
         if (patchNumber > 0) {
             Label patchLabel = new Label(group, SWT.NONE);
             patchLabel.setBackground(background);
-            patchLabel.setText(NLS.bind(CoreMessages.dialog_about_label_patch, patchNumber));
+            patchLabel.setText(NLS.bind(CoreApplicationMessages.dialog_about_label_patch, patchNumber));
             patchLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
         }
 

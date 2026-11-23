@@ -20,7 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.data.DBDVoid;
+import org.jkiss.dbeaver.model.data.ResultSetValuePath;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -40,6 +42,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class DBUtilsTest extends DBeaverUnitTest {
 
@@ -213,6 +218,30 @@ public class DBUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void testRowValuePathDistinguishesMissingArrayPositionFromNullElement() {
+        DBDAttributeBinding attribute = Mockito.mock(DBDAttributeBinding.class);
+        Mockito.when(attribute.getOrdinalPosition()).thenReturn(0);
+        DBDValueRow row = Mockito.mock(DBDValueRow.class);
+        Mockito.when(row.getValues()).thenReturn(new Object[] { Arrays.asList("present", null) });
+
+        ResultSetValuePath.PathAttributeItem root = new ResultSetValuePath.PathAttributeItem(attribute);
+        Assertions.assertEquals("present", DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(0)))));
+        Assertions.assertNull(DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(1)))));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(2)))));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(2), new ResultSetValuePath.PathIndexItem(0)))));
+
+        Mockito.when(row.getValues()).thenReturn(new Object[] { List.of(List.of("nested")) });
+        Assertions.assertEquals("nested", DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(0), new ResultSetValuePath.PathIndexItem(0)))));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(0), new ResultSetValuePath.PathIndexItem(1)))));
+    }
+
+    @Test
     public void checkIdentifiersQuote() throws Exception {
         Assertions.assertEquals(DBUtils.getQuotedIdentifier(mockDataSource, "table_name"), "table_name");
         Assertions.assertEquals(DBUtils.getQuotedIdentifier(mockDataSource, "table name"), "\"table name\"");
@@ -366,6 +395,17 @@ public class DBUtilsTest extends DBeaverUnitTest {
 
         // All nulls should produce empty string
         Assertions.assertEquals("", DBUtils.getSimpleQualifiedName(null, null, null));
+    }
+
+    @Test
+    public void testConvertArrayStringToList() {
+        Assertions.assertEquals(List.of("a", "b"), DBUtils.convertArrayStringToList("[a, b]"));
+        Assertions.assertEquals(List.of("a", "b c"), DBUtils.convertArrayStringToList("[\"a\", \"b c\"]"));
+        Assertions.assertEquals(List.of(), DBUtils.convertArrayStringToList("[]"));
+        // A quoted element ending with a comma is split into tokens, one of which is a single quote character
+        Assertions.assertEquals(
+            List.of("\"FROM AAAA", "\""),
+            DBUtils.convertArrayStringToList("[\"FROM AAAA,\"]"));
     }
 
 }
