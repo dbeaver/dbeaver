@@ -18,12 +18,54 @@ package org.jkiss.dbeaver.model.ai.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
+import org.jkiss.dbeaver.model.ai.AIFunctionPurpose;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.Arrays;
+import java.util.List;
+
 class AIFunctionInternalDescriptorTest {
+    @Test
+    void exposesDamFunctionsOnlyToDataDamMcp() {
+        var extensions = Mockito.mock(IExtensionRegistry.class);
+        var platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+        IConfigurationElement[] definitions = Arrays.stream(AIFunctionPurpose.values()).map(purpose -> {
+            var config = configuration();
+            Mockito.when(config.getName()).thenReturn("function");
+            Mockito.when(config.getAttribute("id")).thenReturn(purpose.name());
+            Mockito.when(config.getAttribute("purpose")).thenReturn(purpose.name());
+            Mockito.when(config.getAttribute("class")).thenReturn("test.Function");
+            return config;
+        }).toArray(IConfigurationElement[]::new);
+        Mockito.when(extensions.getConfigurationElementsFor(AIFunctionInternalDescriptor.EXTENSION_ID)).thenReturn(definitions);
+        Mockito.when(extensions.getConfigurationElementsFor(AIFunctionImplementationDescriptor.EXTENSION_ID))
+            .thenReturn(new IConfigurationElement[0]);
+        try (var eclipse = Mockito.mockStatic(Platform.class);
+             var workbench = Mockito.mockStatic(DBWorkbench.class)) {
+            eclipse.when(Platform::getExtensionRegistry).thenReturn(extensions);
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            var registry = new AIFunctionInternalRegistry(Mockito.mock(AIToolboxInternalDescriptor.class));
+
+            Assertions.assertEquals(List.of("TOOL", "ALL"), functionIds(registry, AIFunctionPurpose.TOOL));
+            Assertions.assertEquals(List.of("MCP", "ALL"), functionIds(registry, AIFunctionPurpose.MCP));
+            Assertions.assertEquals(List.of("MCP", "DAM", "ALL"), functionIds(registry, AIFunctionPurpose.DAM));
+            Assertions.assertEquals(List.of("TOOL", "MCP", "ALL"), functionIds(registry, AIFunctionPurpose.ALL));
+        }
+    }
+
+    @NotNull
+    private List<String> functionIds(@NotNull AIFunctionInternalRegistry registry, @NotNull AIFunctionPurpose purpose) {
+        return registry.getAllFunctions(purpose).stream().map(AIFunctionDescriptor::getId).toList();
+    }
+
     @Test
     void usesMcpDefaultsWhenXmlOmitsHints() {
         var descriptor = new AIFunctionInternalDescriptor(Mockito.mock(AIToolboxInternalDescriptor.class), configuration());

@@ -137,7 +137,11 @@ public class AIFunctionInternalRegistry {
     }
 
     private boolean functionFilter(@NotNull AIFunctionDescriptor descriptor, @NotNull AIFunctionPurpose purpose) {
+        if (descriptor.getPurpose() == AIFunctionPurpose.DAM) {
+            return purpose == AIFunctionPurpose.DAM;
+        }
         return descriptor.getPurpose() == purpose
+            || purpose == AIFunctionPurpose.DAM && descriptor.getPurpose() == AIFunctionPurpose.MCP
             || descriptor.getPurpose() == AIFunctionPurpose.ALL
             || purpose == AIFunctionPurpose.ALL;
     }
