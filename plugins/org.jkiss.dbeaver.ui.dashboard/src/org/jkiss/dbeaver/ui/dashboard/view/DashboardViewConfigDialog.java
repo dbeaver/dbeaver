@@ -136,7 +136,7 @@ public class DashboardViewConfigDialog extends BaseDialog {
 
             super.okPressed();
         } catch (IOException e) {
-            DBWorkbench.getPlatformUI().showError("Error saving dashboard view", null, e);
+            DBWorkbench.getPlatformUI().showError(UIDashboardMessages.dashboard_view_save_error, null, e);
         }
     }
 

@@ -125,10 +125,14 @@ public class DDDesktopRpcRegistrationRegistry {
             // a callback arriving during initialization must be applied after the handshake snapshot
             endpoint.register(DDRemoteDamSettingsService.SERVICE_ID, DDRemoteDamSettingsService.class, updated -> {
                 synchronized (settingsLock) {
+                    if (endpoint.isClosed()) {
+                        return;
+                    }
                     try {
                         registerAll(endpoint, updated);
+                        DDRemoteDamSettingsStore.getInstance().updateSettings(updated);
                     } catch (DBException e) {
-                        throw new DDRemoteDamException("Cannot apply DAM settings", e);
+                        throw new DDRemoteDamException("Cannot apply Dam settings", e);
                     }
                 }
             });

@@ -23,6 +23,7 @@ import com.dbeaver.messaging.requestreply.MessagingSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.Map;
@@ -47,6 +48,10 @@ class DDMcpDesktopRpcRegistrationTest {
             registration.register(first, DDRemoteDamSettings.EMPTY);
             Assertions.assertEquals(0, active.get());
             registration.register(first, enabled);
+            var service = ArgumentCaptor.forClass(DDMcpFunctionService.class);
+            Mockito.verify(first).register(Mockito.eq(DDMcpFunctionService.SERVICE_ID), Mockito.eq(DDMcpFunctionService.class),
+                service.capture(), Mockito.any());
+            Assertions.assertInstanceOf(DDMcpTrackingFunctionService.class, service.getValue());
             registration.register(first, enabled);
             Assertions.assertEquals(1, active.get());
             registration.register(first, new DDRemoteDamSettings(Map.of(DDRemoteDamSettingKeys.MCP_ENABLED, "false"), enabled.dam()));

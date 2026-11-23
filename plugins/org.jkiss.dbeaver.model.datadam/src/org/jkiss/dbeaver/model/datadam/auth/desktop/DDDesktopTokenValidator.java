@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
+import com.dbeaver.datadam.sso.api.DDSsoConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -61,6 +62,19 @@ public class DDDesktopTokenValidator {
             return matchesEndpoint(token, resource);
         } catch (DBException | RuntimeException e) {
             return false;
+        }
+    }
+
+    public boolean matchesIssuer(@NotNull DDDesktopUserToken token) {
+        return DDEndpoints.getSsoBaseUrl().equals(token.issuer());
+    }
+
+    @NotNull
+    public String getIssuer(@NotNull String accessToken) throws DBException {
+        try {
+            return JSONUtils.parseJwtClaims(accessToken).get(DDSsoConstants.CLAIM_ISSUER).getAsString();
+        } catch (RuntimeException e) {
+            throw new DBException("DataDam access token has no valid issuer");
         }
     }
 

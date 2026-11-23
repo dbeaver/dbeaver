@@ -25,16 +25,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopDamNameService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -81,20 +80,13 @@ public class DDDesktopDamService {
     }
 
     @NotNull
+    public DDAccountClient.DamSettingsState getDamSettings() throws DBException {
+        return account.getDamSettings(DDRemoteDamDesktopSessionService.getInstance().getClientDamId());
+    }
+
+    @NotNull
     public String suggestDamName() {
-        String computer = System.getenv("COMPUTERNAME");
-        if (computer == null || computer.isBlank()) {
-            computer = System.getenv("HOSTNAME");
-        }
-        if (computer == null || computer.isBlank()) {
-            try {
-                computer = InetAddress.getLocalHost().getHostName();
-            } catch (UnknownHostException e) {
-                // The product name is still a usable suggestion without a computer name.
-            }
-        }
-        String product = GeneralUtils.getProductName();
-        return computer == null || computer.isBlank() ? product : product + ": " + computer;
+        return DDDesktopDamNameService.suggestDamName();
     }
 
     private void awaitConnection(
@@ -142,7 +134,7 @@ public class DDDesktopDamService {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
+                if (monitor.isCanceled() || !DDProductConfig.isIntegrationEnabled()) {
                     return Status.CANCEL_STATUS;
                 }
                 try {

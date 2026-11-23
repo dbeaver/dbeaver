@@ -20,8 +20,6 @@ import com.dbeaver.datadam.mcp.api.exception.DDMcpFunctionException;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionErrorCode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -31,8 +29,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import java.util.List;
 
 public class DDMcpConnectionCatalog {
-    private static final Log log = Log.getLog(DDMcpConnectionCatalog.class);
-
     @Nullable
     private static DDMcpConnectionCatalog instance;
 
@@ -52,15 +48,21 @@ public class DDMcpConnectionCatalog {
 
     @NotNull
     public List<AvailableConnection> getAllowedConnections() throws DDMcpFunctionException {
+        return getAllowedConnections(null);
+    }
+
+    @NotNull
+    public List<AvailableConnection> getAllowedConnections(@Nullable String projectId) throws DDMcpFunctionException {
         if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
             return List.of();
         }
         return workspace.getProjects().stream()
+            .filter(project -> projectId == null || projectId.equals(project.getId()))
             .filter(this::canReadProjectConnections)
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
                 .filter(DDMcpConnectionSettings::isEnabled)
                 .map(connection -> new AvailableConnection(project, connection,
-                    requiresManualConnection(connection))))
+                    !connection.isConnected())))
             .toList();
     }
 
@@ -68,27 +70,15 @@ public class DDMcpConnectionCatalog {
         return project.isOpen() && (project.isRegistryLoaded() || !project.isPasswordProtected());
     }
 
-    private boolean requiresManualConnection(@NotNull DBPDataSourceContainer connection) {
-        if (connection.isConnected() || connection.getDriver().isAnonymousAccess()) {
-            return false;
-        }
-        try {
-            return !connection.isCredentialsSaved();
-        } catch (DBException e) {
-            log.error("Cannot check saved DataDam connection credentials", e);
-            return true;
-        }
-    }
-
     @NotNull
     public AvailableConnection getAllowedConnection(@NotNull String projectId, @NotNull String datasourceId)
         throws DDMcpFunctionException {
-        for (AvailableConnection available : getAllowedConnections()) {
+        for (AvailableConnection available : getAllowedConnections(projectId)) {
             if (available.project().getId().equals(projectId) && available.connection().getId().equals(datasourceId)) {
                 return available;
             }
         }
-        throw new DDMcpFunctionException(DDMcpFunctionErrorCode.ACCESS_DENIED, "Datasource is unavailable", null);
+        throw new DDMcpFunctionException(DDMcpFunctionErrorCode.ACCESS_DENIED, "Datasource is unavailable");
     }
 
     public record AvailableConnection(

@@ -19,14 +19,21 @@ package org.jkiss.dbeaver.model.datadam.auth.desktop;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
+import com.google.gson.JsonObject;
+import org.eclipse.core.runtime.ICoreRunnable;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistrationRegistry;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
+import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.jupiter.api.Assertions;
@@ -37,11 +44,254 @@ import org.mockito.Mockito;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(60)
 class DDDesktopAccessLifecycleTest {
+
+    @Test
+    void failedRecoveryCleanupPreservesKeysForBothResetAndReplacement() throws Exception {
+        var accountId = UUID.randomUUID();
+        var current = new DDKeyBundle(accountId, "signing", "data", 1, UUID.randomUUID());
+        var replacement = new DDKeyBundle(accountId, "new-signing", "new-data", 1, UUID.randomUUID());
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenReturn(accountId))) {
+            keys.when(DDKeyStore::load).thenReturn(current);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+            var failure = new DBException("Cannot delete a project");
+
+            for (DDKeyBundle candidate : new DDKeyBundle[] { null, replacement }) {
+                Assertions.assertSame(failure, Assertions.assertThrows(DBException.class,
+                    () -> access.recoverProjectKeys(current, candidate, () -> { throw failure; })));
+                Assertions.assertSame(current, access.getKeyBundle());
+            }
+            keys.verify(DDKeyStore::clear, Mockito.never());
+            keys.verify(() -> DDKeyStore.save(Mockito.any()), Mockito.never());
+        }
+    }
+
+    @Test
+    void staleRecoveryCannotDeleteProjectsOrForgetNewerKeys() throws Exception {
+        var accountId = UUID.randomUUID();
+        var current = new DDKeyBundle(accountId, "signing", "data", 1, UUID.randomUUID());
+        var replacement = new DDKeyBundle(accountId, "new-signing", "new-data", 1, UUID.randomUUID());
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenReturn(accountId))) {
+            keys.when(DDKeyStore::load).thenReturn(current);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+            access.completeKeyImport(current, replacement);
+            var cleanupCalled = new AtomicBoolean();
+
+            Assertions.assertThrows(DBException.class,
+                () -> access.recoverProjectKeys(current, null, () -> cleanupCalled.set(true)));
+            Assertions.assertFalse(cleanupCalled.get());
+            Assertions.assertSame(replacement, access.getKeyBundle());
+            keys.verify(DDKeyStore::clear, Mockito.never());
+        }
+    }
+
+    @Test
+    void recoverySerializesOtherAccessOperationsUntilCleanupAndCommitFinish() throws Exception {
+        var accountId = UUID.randomUUID();
+        var current = new DDKeyBundle(accountId, "signing", "data", 1, UUID.randomUUID());
+        var replacement = new DDKeyBundle(accountId, "new-signing", "new-data", 1, UUID.randomUUID());
+        var competing = new DDKeyBundle(UUID.randomUUID(), "other-signing", "other-data", 1, UUID.randomUUID());
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenReturn(accountId));
+             var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            keys.when(DDKeyStore::load).thenReturn(current);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+            var started = new CountDownLatch(1);
+            var transition = new AtomicReference<Future<?>>();
+
+            access.recoverProjectKeys(current, replacement, () -> {
+                transition.set(executor.submit(() -> {
+                    started.countDown();
+                    access.completeKeyImport(current, competing);
+                    return null;
+                }));
+                try {
+                    Assertions.assertTrue(started.await(1, TimeUnit.SECONDS));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new DBException("Interrupted while checking recovery serialization", e);
+                }
+                Assertions.assertThrows(TimeoutException.class, () -> transition.get().get(100, TimeUnit.MILLISECONDS));
+                Assertions.assertSame(current, access.getKeyBundle());
+            });
+
+            Assertions.assertSame(replacement, access.getKeyBundle());
+            var rejected = Assertions.assertThrows(ExecutionException.class, () -> transition.get().get(1, TimeUnit.SECONDS));
+            Assertions.assertInstanceOf(DBException.class, rejected.getCause());
+            keys.verify(() -> DDKeyStore.save(replacement));
+        }
+    }
+
+    @Test
+    void preparedReplacementDoesNotChangeSavedKeysUntilCommitted() throws Exception {
+        var accountId = UUID.randomUUID();
+        var current = new DDKeyBundle(accountId, "old-signing", "old-data", 1, UUID.randomUUID());
+        var replacement = new DDKeyBundle(accountId, "new-signing", "new-data", 1, UUID.randomUUID());
+        var state = new DDCryptoState(accountId, true, "bundle", 1L, "salt", 1, replacement.apiKeyId());
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) -> {
+                 Mockito.when(account.getAccountId()).thenReturn(accountId);
+                 Mockito.when(account.getCryptoState()).thenReturn(state);
+             })) {
+            keys.when(DDKeyStore::load).thenReturn(current);
+            keys.when(() -> DDKeyStore.unpack(state, "replacement-phrase")).thenReturn(replacement);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+
+            Assertions.assertSame(replacement, access.prepareKeyImport("replacement-phrase"));
+            Assertions.assertSame(current, access.getKeyBundle());
+            keys.verify(() -> DDKeyStore.save(Mockito.any()), Mockito.never());
+            keys.verify(DDKeyStore::clear, Mockito.never());
+
+            access.completeKeyImport(current, replacement);
+            Assertions.assertSame(replacement, access.getKeyBundle());
+            keys.verify(() -> DDKeyStore.save(replacement));
+
+            Assertions.assertThrows(DBException.class, () -> access.completeKeyImport(current, replacement));
+            keys.verify(() -> DDKeyStore.save(replacement));
+        }
+    }
+
+    @Test
+    void preparedReplacementCannotOverwriteKeysAfterAnExplicitReset() throws Exception {
+        var accountId = UUID.randomUUID();
+        var current = new DDKeyBundle(accountId, "signing", "data", 1, UUID.randomUUID());
+        var replacement = new DDKeyBundle(accountId, "replacement-signing", "replacement-data", 1, UUID.randomUUID());
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenReturn(accountId))) {
+            keys.when(DDKeyStore::load).thenReturn(current);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+            access.forgetKeys();
+
+            Assertions.assertThrows(DBException.class, () -> access.completeKeyImport(current, replacement));
+            Assertions.assertNull(access.getKeyBundle());
+            keys.verify(() -> DDKeyStore.save(Mockito.any()), Mockito.never());
+        }
+    }
+
+    @Test
+    void failedReplacementValidationPreservesTheSavedKeys() throws Exception {
+        var accountId = UUID.randomUUID();
+        var keyId = UUID.randomUUID();
+        var bundle = new DDKeyBundle(accountId, "signing", "data", 1, keyId);
+        var state = new DDCryptoState(accountId, true, "bundle", 1L, "salt", 1, keyId);
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) -> {
+                 Mockito.when(account.getAccountId()).thenReturn(accountId);
+                 Mockito.when(account.getCryptoState()).thenReturn(state);
+             })) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            keys.when(() -> DDKeyStore.unpack(state, "invalid-phrase")).thenThrow(new DBException("Incorrect recovery phrase"));
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+
+            Assertions.assertThrows(DBException.class, () -> access.importKeys("invalid-phrase"));
+            Assertions.assertSame(bundle, access.getKeyBundle());
+
+            Mockito.when(accounts.constructed().getLast().getCryptoState()).thenThrow(new DBException("Unavailable"));
+            Assertions.assertThrows(DBException.class, () -> access.importKeys("replacement-phrase"));
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            keys.verify(DDKeyStore::clear, Mockito.never());
+            keys.verify(() -> DDKeyStore.save(Mockito.any()), Mockito.never());
+        }
+    }
+
+    @Test
+    void detectsEncryptionResetWithoutDiscardingKeysBeforeUserRecovery() throws Exception {
+        var accountId = UUID.randomUUID();
+        var keyId = UUID.randomUUID();
+        var bundle = new DDKeyBundle(accountId, "signing", "data", 1, keyId);
+        var state = new AtomicReference<>(new DDCryptoState(accountId, true, "bundle", 1L, "salt", 1, keyId));
+        var tokens = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(tokens.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) -> {
+                 Mockito.when(account.getAccountId()).thenReturn(accountId);
+                 Mockito.when(account.getCryptoState()).thenAnswer(invocation -> state.get());
+             })) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            var access = new DDDesktopAccessService(tokens);
+            access.load();
+            Assertions.assertTrue(access.validateProjectKeys());
+
+            state.set(new DDCryptoState(accountId, true, "new-bundle", 1L, "salt", 1, UUID.randomUUID()));
+            Assertions.assertFalse(access.validateProjectKeys());
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            keys.verify(DDKeyStore::clear, Mockito.never());
+
+            state.set(new DDCryptoState(accountId, false, null, null, null, null, null));
+            Assertions.assertFalse(access.validateProjectKeys());
+            state.set(new DDCryptoState(UUID.randomUUID(), true, "bundle", 1L, "salt", 1, keyId));
+            Assertions.assertFalse(access.validateProjectKeys());
+
+            Mockito.when(accounts.constructed().getLast().getCryptoState()).thenThrow(new DBException("Offline"));
+            Assertions.assertThrows(DBException.class, access::validateProjectKeys);
+            Assertions.assertSame(bundle, access.getKeyBundle());
+        }
+    }
+
+    @Test
+    void missingProjectKeysDoNotTriggerAnAccountRequest() throws Exception {
+        try (var accounts = Mockito.mockConstruction(DDAccountClient.class)) {
+            Assertions.assertFalse(access().validateProjectKeys());
+            accounts.constructed().forEach(Mockito::verifyNoInteractions);
+        }
+    }
+
+    @Test
+    void readsLoginIdentityLocallyWithoutAccountRequestsOrTokenRefresh() {
+        var manager = Mockito.mock(DDDesktopTokenManager.class);
+        var userId = UUID.randomUUID();
+        JsonObject claims = new JsonObject();
+        claims.addProperty("sub", userId.toString());
+        claims.addProperty("email", "user@example.com");
+        Mockito.when(manager.getUnverifiedTokenClaims()).thenReturn(claims);
+        try (var accounts = Mockito.mockConstruction(DDAccountClient.class)) {
+            var identity = new DDDesktopAccessService(manager).getLoggedUserIdentity();
+            Assertions.assertEquals(userId, identity.userId());
+            Assertions.assertEquals("user@example.com", identity.userName());
+            Assertions.assertNull(identity.accountName());
+            for (var account : accounts.constructed()) {
+                Mockito.verifyNoInteractions(account);
+            }
+        }
+        Mockito.verify(manager).getUnverifiedTokenClaims();
+        Mockito.verifyNoMoreInteractions(manager);
+    }
 
     @Test
     void completesTheAccessChangeEvenWhenEncryptionKeysCannotBeLoaded() throws Exception {
@@ -91,12 +341,101 @@ class DDDesktopAccessLifecycleTest {
     }
 
     @Test
+    void startupRefreshRecoveryLoadsSavedKeysAndRetriesAccountValidation() throws Exception {
+        var bundle = new DDKeyBundle(UUID.randomUUID(), "signing", "data", 1, UUID.randomUUID());
+        var expiresAt = new AtomicReference<>(Instant.now().minusSeconds(60));
+        var manager = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(manager.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        Mockito.when(manager.getExpiresAt()).thenAnswer(invocation -> expiresAt.get());
+        Mockito.doThrow(new DBException("Offline")).when(manager).load(Mockito.any());
+        Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenAnswer(invocation -> {
+            expiresAt.set(Instant.now().plusSeconds(3600));
+            return "rotated-access";
+        });
+        List<ICoreRunnable> retries = new ArrayList<>();
+        List<Long> delays = new ArrayList<>();
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenThrow(new DBException("Account unavailable")).thenReturn(bundle.accountId()));
+             var jobs = Mockito.mockStatic(Job.class)) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            jobs.when(() -> Job.createSystem(Mockito.eq("Expire DataDam desktop access"), Mockito.any(ICoreRunnable.class)))
+                .thenAnswer(invocation -> {
+                    retries.add(invocation.getArgument(1));
+                    var job = Mockito.mock(Job.class);
+                    Mockito.doAnswer(schedule -> {
+                        delays.add(schedule.getArgument(0));
+                        return null;
+                    }).when(job).schedule(Mockito.anyLong());
+                    return job;
+                });
+            var access = new DDDesktopAccessService(manager);
+
+            Assertions.assertThrows(DBException.class, access::load);
+            Assertions.assertNull(access.getKeyBundle());
+            Assertions.assertEquals(30_000L, delays.getLast());
+
+            retries.getLast().run(new NullProgressMonitor());
+            Assertions.assertNull(access.getKeyBundle());
+            Assertions.assertEquals(30_000L, delays.getLast());
+
+            retries.getLast().run(new NullProgressMonitor());
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            Assertions.assertTrue(delays.getLast() > 30_000L);
+            Assertions.assertEquals(DDDesktopAccessService.Status.SIGNED_IN, access.getStatus());
+        }
+    }
+
+    @Test
+    void transientRefreshRetainsKeysAndRetriesUntilRecovery() throws Exception {
+        var bundle = new DDKeyBundle(UUID.randomUUID(), "signing", "data", 1, UUID.randomUUID());
+        var expiresAt = new AtomicReference<>(Instant.now().minusSeconds(60));
+        var manager = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(manager.getStatus()).thenReturn(DDDesktopTokenManager.Status.SIGNED_IN);
+        Mockito.when(manager.getExpiresAt()).thenAnswer(invocation -> expiresAt.get());
+        Mockito.when(manager.getAccessTokenForResource(Mockito.any()))
+            .thenThrow(new DBException("Offline"))
+            .thenAnswer(invocation -> {
+                expiresAt.set(Instant.now().plusSeconds(3600));
+                return "rotated-access";
+            });
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var accounts = Mockito.mockConstruction(DDAccountClient.class, (account, context) ->
+                 Mockito.when(account.getAccountId()).thenReturn(bundle.accountId()));
+             var jobs = new ExpiryJobs()) {
+            keys.when(DDKeyStore::load).thenReturn(bundle);
+            var access = new DDDesktopAccessService(manager);
+            List<String> events = new CopyOnWriteArrayList<>();
+            access.addAccessListener(listener(events));
+
+            access.signIn(Mockito.mock(DBRProgressMonitor.class));
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            Assertions.assertEquals(DDDesktopAccessService.Status.SIGNED_IN, access.getStatus());
+            Assertions.assertEquals(30_000L, jobs.latestDelay());
+
+            wake(jobs.latest());
+            Assertions.assertEquals(2, jobs.count());
+            Assertions.assertEquals(30_000L, jobs.latestDelay());
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            Assertions.assertEquals(List.of("changing", "changed"), events);
+
+            wake(jobs.latest());
+            Assertions.assertEquals(3, jobs.count());
+            Assertions.assertTrue(jobs.latestDelay() > 30_000L);
+            Assertions.assertSame(bundle, access.getKeyBundle());
+            Assertions.assertEquals(List.of("changing", "changed", "changing", "changed"), events);
+            keys.verify(DDKeyStore::clear, Mockito.never());
+        }
+    }
+
+    @Test
     void failedRefreshClosesRpcAndPausesTheChannelWithoutAnotherAccessOperation() throws Exception {
         var status = new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_IN);
         DDDesktopAccessService access = access(status);
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
         DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
+        Mockito.when(channel.getMonitor()).thenReturn(new DDConnectionMonitor());
         Mockito.when(channel.getStatus()).thenReturn(new DDRemoteDamChannelStatus(
             DDRemoteDamChannelState.CONNECTED, new DDRemoteDamSessionInfo("deployment", "instance", "session")));
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
@@ -129,8 +468,9 @@ class DDDesktopAccessLifecycleTest {
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
         DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
+        Mockito.when(channel.getMonitor()).thenReturn(new DDConnectionMonitor());
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
-             var session = new DDRemoteDamDesktopSessionService(access, channel);
+             var session = new DDRemoteDamDesktopSessionService(access, channel, Mockito.mock(DDDesktopRpcRegistrationRegistry.class));
              var jobs = new ExpiryJobs()) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
             session.start();
@@ -252,6 +592,7 @@ class DDDesktopAccessLifecycleTest {
 
     private static final class ExpiryJobs extends JobChangeAdapter implements AutoCloseable {
         private final List<Job> scheduled = new CopyOnWriteArrayList<>();
+        private final List<Long> delays = new CopyOnWriteArrayList<>();
 
         private ExpiryJobs() {
             Job.getJobManager().addJobChangeListener(this);
@@ -260,6 +601,7 @@ class DDDesktopAccessLifecycleTest {
         @Override
         public void scheduled(@NotNull IJobChangeEvent event) {
             if ("Expire DataDam desktop access".equals(event.getJob().getName())) {
+                delays.add(event.getDelay());
                 scheduled.add(event.getJob());
             }
         }
@@ -272,6 +614,10 @@ class DDDesktopAccessLifecycleTest {
 
         private int count() {
             return scheduled.size();
+        }
+
+        private long latestDelay() {
+            return delays.getLast();
         }
 
         @Override

@@ -342,6 +342,9 @@ public final class SQLObjectOperationRecognizer {
         if (node != null && node.getNodeName().equals(STMKnownRuleNames.sqlQueryBody)) {
             node = node.findFirstNonErrorChild();
         }
+        if (node != null && node.getNodeName().equals(STMKnownRuleNames.explainableSqlQueryBody)) {
+            node = node.findFirstNonErrorChild();
+        }
         return node != null && node.getNodeName().equals(STMKnownRuleNames.sqlSchemaStatement) ? node : null;
     }
 

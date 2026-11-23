@@ -12,6 +12,7 @@ function addFunctionConfirmation(args) {
         description: args.description,
         arguments: args.arguments,
         functionName: args.functionName,
+        functionCallId: args.functionCallId,
         paramsLabel: args.paramsLabel,
         resultLabel: args.resultLabel
     };
@@ -72,7 +73,7 @@ function addFunctionConfirmation(args) {
     const allowMenuBtn = document.createElement('button');
     allowMenuBtn.className = 'confirmation-btn confirmation-btn-allow confirmation-btn-allow-menu';
     allowMenuBtn.type = 'button';
-    allowMenuBtn.setAttribute('aria-label', 'Allow options');
+    allowMenuBtn.setAttribute('aria-label', chatStrings.allowOptions);
     allowMenuBtn.textContent = '\u25BE';
     allowMenuBtn.onclick = (event) => {
         event.preventDefault();
@@ -133,14 +134,14 @@ function appendConfirmationTitle(container, args) {
     const title = document.createElement('span');
     title.className = 'confirmation-title';
 
-    title.appendChild(document.createTextNode((args.titlePrefix || 'Allow') + ' '));
+    title.appendChild(document.createTextNode((args.titlePrefix || chatStrings.allowTitlePrefix) + ' '));
 
     const agent = document.createElement('span');
     agent.className = 'confirmation-title-emphasis';
     agent.textContent = args.agentName || '';
     title.appendChild(agent);
 
-    title.appendChild(document.createTextNode(' ' + (args.titleMiddle || 'to run tool') + ' '));
+    title.appendChild(document.createTextNode(' ' + (args.titleMiddle || chatStrings.allowTitleMiddle) + ' '));
 
     const tool = document.createElement('span');
     tool.className = 'confirmation-title-emphasis';
@@ -160,8 +161,8 @@ function formatArguments(args) {
 function createCollapsibleStatus(text, statusClass, data) {
     const details = document.createElement('details');
     details.className = 'fn-collapsible';
-    if (data && data.functionName) {
-        details.setAttribute('data-function-name', data.functionName);
+    if (data && data.functionCallId) {
+        details.setAttribute('data-function-call-id', data.functionCallId);
         if (data.awaitResult !== false) {
             details.classList.add('fn-awaiting-result');
         }
@@ -198,7 +199,7 @@ function createCollapsibleStatus(text, statusClass, data) {
         paramsDiv.className = 'fn-detail-section';
         const paramsLabel = document.createElement('div');
         paramsLabel.className = 'fn-detail-label';
-        paramsLabel.textContent = data.paramsLabel || 'Parameters';
+        paramsLabel.textContent = data.paramsLabel || chatStrings.parameters;
         paramsDiv.appendChild(paramsLabel);
         const paramsValue = document.createElement('pre');
         paramsValue.className = 'fn-detail-value';
@@ -307,27 +308,12 @@ function updateCollapsibleStatus(collapsible, text, statusClass) {
 }
 
 function findFunctionStatusTarget(args) {
-    const candidates = Array.from(document.querySelectorAll('.fn-collapsible')).filter(el =>
-        el.getAttribute('data-function-name') === args.functionName
-    );
-
-    const awaitingCandidates = candidates.filter(el => el.classList.contains('fn-awaiting-result'));
-    if (awaitingCandidates.length > 0) {
-        return awaitingCandidates[awaitingCandidates.length - 1];
+    if (!args.functionCallId) {
+        return null;
     }
-
-    if (args.messageId !== undefined && args.messageId !== null) {
-        const messageId = String(args.messageId);
-        const messageScopedCandidates = candidates.filter(el => {
-            const container = el.closest('.message.confirmation-result, .message.confirmation');
-            return container && container.dataset.messageId === messageId;
-        });
-        if (messageScopedCandidates.length > 0) {
-            return messageScopedCandidates[messageScopedCandidates.length - 1];
-        }
-    }
-
-    return candidates.length > 0 ? candidates[candidates.length - 1] : null;
+    return Array.from(document.querySelectorAll('.fn-collapsible')).find(el =>
+        el.getAttribute('data-function-call-id') === args.functionCallId
+    ) || null;
 }
 
 function updateFunctionResult(args) {
@@ -346,7 +332,7 @@ function updateFunctionResult(args) {
             if (!resultDiv.querySelector('.fn-detail-label')) {
                 const resultLabel = document.createElement('div');
                 resultLabel.className = 'fn-detail-label';
-                resultLabel.textContent = args.resultLabel || 'Result';
+                resultLabel.textContent = args.resultLabel || chatStrings.result;
                 resultDiv.appendChild(resultLabel);
             }
             if (!resultDiv.querySelector('.fn-detail-value')) {
@@ -360,7 +346,7 @@ function updateFunctionResult(args) {
         return;
     }
 
-    if (!args.hasException) {
+    if (!args.hasException || !args.functionCallId) {
         return;
     }
 

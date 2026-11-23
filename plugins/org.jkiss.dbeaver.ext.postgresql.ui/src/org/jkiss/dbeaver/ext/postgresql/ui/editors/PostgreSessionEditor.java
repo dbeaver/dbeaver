@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSession;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -122,9 +123,9 @@ public class PostgreSessionEditor extends AbstractSessionEditor
     private class CancelQueryAction extends Action {
         CancelQueryAction() {
             super(
-                "Cancel query",
+                PostgreMessages.session_editor_action_cancel_query,
                 UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP));
-            setToolTipText("Cancel query");
+            setToolTipText(PostgreMessages.session_editor_action_cancel_query);
         }
         @Override
         public void run() {
@@ -132,7 +133,7 @@ public class PostgreSessionEditor extends AbstractSessionEditor
             if (sessions != null && UIUtils.confirmAction(
                 getSite().getShell(),
                 this.getText(),
-                NLS.bind("Cancel query of session {0}?", sessions)))
+                NLS.bind(PostgreMessages.session_editor_cancel_query_confirm_message, sessions)))
             {
                 Map<String, Object> options = new HashMap<String,Object>();
                 options.put(PostgreSessionManager.OPTION_QUERY_CANCEL, true);
@@ -147,7 +148,7 @@ public class PostgreSessionEditor extends AbstractSessionEditor
         KillSessionAction()
         {
             super(
-                "Terminate",
+                PostgreMessages.session_editor_action_terminate,
                 UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP));
         }
 
@@ -158,7 +159,7 @@ public class PostgreSessionEditor extends AbstractSessionEditor
             if (sessions != null && UIUtils.confirmAction(
                 getSite().getShell(),
                 this.getText(),
-                NLS.bind("Terminate session {0}?", sessions)))
+                NLS.bind(PostgreMessages.session_editor_terminate_confirm_message, sessions)))
             {
                 getSessionsViewer().alterSessions(
                     sessions,

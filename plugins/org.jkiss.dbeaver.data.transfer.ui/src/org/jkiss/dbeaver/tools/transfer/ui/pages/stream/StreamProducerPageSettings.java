@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionListener;
@@ -157,7 +158,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                             if (!Files.exists(path)) {
                                 DBWorkbench.getPlatformUI().showError(
                                     DTUIMessages.stream_producer_column_mapping_error_title,
-                                    "File '" + fileName + "' doesn't exist");
+                                    NLS.bind(DTUIMessages.stream_producer_file_not_found_message, fileName));
                             } else {
                                 updateSingleConsumer(new VoidProgressMonitor(), pipe, path);
                                 item.setText(0, DBFUtils.convertPathToString(path));
@@ -167,7 +168,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                         } catch (Exception e) {
                             DBWorkbench.getPlatformUI().showError(
                                 DTUIMessages.stream_producer_column_mapping_error_title,
-                                "Error resolving file",
+                                DTUIMessages.stream_producer_file_resolve_error_message,
                                 e);
                         }
                     }
@@ -241,7 +242,9 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             );
             saveOpenFSBrowserPreference();
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Error updating stream settings", "Error updating settings", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                DTUIMessages.stream_producer_settings_update_error_title,
+                DTUIMessages.stream_producer_settings_update_error_message, e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }

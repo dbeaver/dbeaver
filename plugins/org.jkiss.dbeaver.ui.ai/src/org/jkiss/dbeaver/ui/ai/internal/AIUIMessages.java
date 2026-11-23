@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ui.ai.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class AIUIMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.internal.AIUIMessages"; //$NON-NLS-1$
+
     public static String ai_connection_settings_group;
+    public static String ai_connection_settings_mcp_group;
     public static String ai_connection_settings_enable_label;
     public static String ai_connection_settings_enable_tip;
     public static String ai_connection_settings_scope_label;
@@ -36,7 +39,6 @@ public class AIUIMessages extends NLS {
     public static String ai_engine_configurator_use_env;
     public static String ai_engine_configurator_use_env_tip;
     public static String ai_engine_configurator_use_env_variables_tip;
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.internal.AIUIMessages"; //$NON-NLS-1$
 
     public static String gpt_preference_page_checkbox_enable_ai_label;
     public static String gpt_preference_page_checkbox_enable_ai_tip;
@@ -59,6 +61,7 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_combo_engine;
     public static String gpt_preference_page_text_temperature;
     public static String ai_engine_configurator_temperature_default;
+    public static String ai_engine_configurator_context_window_size;
     public static String gpt_preference_page_refresh_models;
     public static String gpt_preference_page_ai_query_confirm_group;
     public static String gpt_preference_page_ai_query_confirm_rule_execute;
@@ -94,6 +97,12 @@ public class AIUIMessages extends NLS {
     public static String ai_function_allow_menu_always;
     public static String ai_function_allow_menu_configure;
     public static String scope_selector_customize;
+    public static String scope_selector_hint;
+    public static String scope_selector_title;
+    public static String scope_selector_selection_catalogs;
+    public static String scope_selector_selection_schemas;
+    public static String scope_selector_selection_tables;
+    public static String scope_selector_empty_scope;
     public static String scope_selector_not_available;
     public static String scope_selector_custom_objects;
     public static String scope_selector_loading;

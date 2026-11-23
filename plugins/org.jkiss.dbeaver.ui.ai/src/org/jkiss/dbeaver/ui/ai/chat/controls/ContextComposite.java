@@ -126,7 +126,9 @@ public class ContextComposite extends Composite {
                     updateConversation(conversation);
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI()
-                        .showError("Error updating conversation list", "Can't update conversation list", e);
+                        .showError(
+                            AIChatMessagesUI.ai_chat_conversation_update_error_title,
+                            AIChatMessagesUI.ai_chat_conversation_update_error_message, e);
                 }
             }
 
@@ -193,7 +195,8 @@ public class ContextComposite extends Composite {
                 try {
                     fillContextDropDown(manager);
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Error filling context drop-down", "Can't fill context drop-down", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        AIChatMessagesUI.ai_chat_context_load_error_title, AIChatMessagesUI.ai_chat_context_load_error_message, e);
                 }
             });
         }
@@ -266,7 +269,7 @@ public class ContextComposite extends Composite {
             this.contextName.setText(completionSettings.getDataSourceContainer().getName());
             this.contextIcon.setImage(DBeaverIcons.getImage(completionSettings.getDataSourceContainer().getDriver().getIcon()));
         } else {
-            this.contextName.setText("No connection");
+            this.contextName.setText(AIChatMessagesUI.ai_chat_context_menu_no_connection);
             this.contextIcon.setImage(DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT));
         }
 
@@ -348,8 +351,8 @@ public class ContextComposite extends Composite {
                         chat.setDataSource(container);
                     } catch (Exception e) {
                         DBWorkbench.getPlatformUI().showError(
-                            "Error setting data source",
-                            "Could not set data source: " + e.getMessage(),
+                            AIChatMessagesUI.ai_chat_data_source_set_error_title,
+                            NLS.bind(AIChatMessagesUI.ai_chat_data_source_set_error_message, e.getMessage()),
                             e
                         );
                     }
@@ -368,8 +371,8 @@ public class ContextComposite extends Composite {
                         chat.setDataSource(null);
                     } catch (Exception e) {
                         DBWorkbench.getPlatformUI().showError(
-                            "Error clearing data source",
-                            "Could not clear data source: " + e.getMessage(),
+                            AIChatMessagesUI.ai_chat_data_source_clear_error_title,
+                            NLS.bind(AIChatMessagesUI.ai_chat_data_source_clear_error_message, e.getMessage()),
                             e
                         );
                     }
@@ -392,8 +395,8 @@ public class ContextComposite extends Composite {
                         chat.setDataSource(dialog.getDataSource());
                     } catch (DBException e) {
                         DBWorkbench.getPlatformUI().showError(
-                            "Error setting data source",
-                            "Could not set data source: " + e.getMessage(),
+                            AIChatMessagesUI.ai_chat_data_source_set_error_title,
+                            NLS.bind(AIChatMessagesUI.ai_chat_data_source_set_error_message, e.getMessage()),
                             e
                         );
                     }
@@ -420,8 +423,8 @@ public class ContextComposite extends Composite {
                         chat.selectConversation(conversion);
                     } catch (Exception e) {
                         DBWorkbench.getPlatformUI().showError(
-                            "Error selecting conversation",
-                            "Could not select conversation: " + e.getMessage(),
+                            AIChatMessagesUI.ai_chat_conversation_select_error_title,
+                            NLS.bind(AIChatMessagesUI.ai_chat_conversation_select_error_message, e.getMessage()),
                             e
                         );
                     }
@@ -638,7 +641,8 @@ public class ContextComposite extends Composite {
             DBPDataSourceContainer dataSourceContainer = chat.getDataSourceContainer();
             if (dataSourceContainer == null) {
                 DBWorkbench.getPlatformUI().showError(
-                    "No connection", "Cannot change context level when no connection is selected");
+                    AIChatMessagesUI.ai_chat_context_menu_no_connection,
+                    AIChatMessagesUI.ai_chat_context_menu_no_database_connection);
                 return;
             }
             AIContextSettings currentSettings = chat.getChatSession().getConversationSettings(chat.getActiveConversation());

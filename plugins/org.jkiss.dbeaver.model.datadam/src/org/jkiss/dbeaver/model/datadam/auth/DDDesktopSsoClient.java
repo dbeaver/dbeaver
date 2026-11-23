@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.model.datadam.auth;
 
 import com.dbeaver.datadam.sso.api.DDSsoConstants;
 import com.dbeaver.datadam.sso.api.DDSsoScopes;
-import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
 import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.oauth.OAuthConstants;
 
 import java.net.URI;
@@ -56,22 +57,6 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
     @Override
     protected void logDebug(@NotNull String message) {
         log.debug(message);
-    }
-
-    @NotNull
-    public DDSsoConfigResponse discover() throws DBException {
-        try {
-            DDSsoConfigResponse config = executeGetRequest(
-                CommonUtils.removeLeadingSlash(DDSsoConstants.APPLICATION_CONFIG_PATH), DDSsoConfigResponse.class);
-            if (config == null || config.issuer() == null) {
-                throw new DBException("Invalid desktop SSO configuration");
-            }
-            URI issuer = URI.create(config.issuer());
-            requireSecureServer(issuer);
-            return config;
-        } catch (IllegalArgumentException e) {
-            throw new DBException("Invalid desktop SSO configuration", e);
-        }
     }
 
     @NotNull
@@ -140,12 +125,8 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
         if (tokens.refreshToken() != null && !DDSsoConstants.BASE64URL_256_PATTERN.matcher(tokens.refreshToken()).matches()) {
             throw new DBException("Invalid desktop SSO refresh token response");
         }
-        try {
-            if (!DDSsoScopes.parse(tokens.scope()).equals(DDSsoScopes.parse(scope))) {
-                throw new IllegalArgumentException();
-            }
-        } catch (IllegalArgumentException e) {
-            throw new DBException("Unexpected SSO access scopes");
+        if (!DDSsoScopes.parse(tokens.scope()).equals(DDSsoScopes.parse(scope))) {
+            throw new DBException("Response tokens scope doesn't match required scope '" + scope + "'");
         }
         return tokens;
     }
@@ -153,16 +134,36 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
     @NotNull
     @Override
     protected DBException mapErrorResponse(int code, @NotNull String message, @NotNull URI uri) {
+        if (code == HttpConstants.CODE_BAD_REQUEST) {
+            try {
+                var response = JsonParser.parseString(message);
+                var error = response.isJsonObject() ? response.getAsJsonObject().get(OAuthConstants.PARAM_ERROR) : null;
+                if (error != null && error.isJsonPrimitive() && DDSsoConstants.ERROR_INVALID_GRANT.equals(error.getAsString())) {
+                    return new InvalidGrantException();
+                }
+            } catch (JsonParseException e) {
+                // An unrecognized error response does not invalidate saved credentials.
+            }
+        }
         return new DBException("Desktop SSO request failed (HTTP " + code + ")");
     }
 
     @Override
     protected void handleRequestException(@NotNull String message, @NotNull Throwable e) throws DBException {
-        if (e instanceof JsonParseException) {
-            throw new DBException("Invalid desktop SSO response");
+        if (e instanceof InvalidGrantException exception) {
+            throw exception;
         }
-        // Transport errors can include response data. A failed rotation is never retried automatically.
-        throw new DBException("Desktop SSO request failed");
+        if (e instanceof JsonParseException) {
+            throw new DBException("Invalid desktop SSO response", e);
+        }
+        // Transport errors can include response data; expose only a generic message.
+        throw new DBException("Desktop SSO request failed", e);
+    }
+
+    public static class InvalidGrantException extends DBException {
+        public InvalidGrantException() {
+            super("DataDam authorization grant has expired or is no longer valid. Sign in again");
+        }
     }
 
     private void requireSecureServer(@NotNull URI url) throws DBException {

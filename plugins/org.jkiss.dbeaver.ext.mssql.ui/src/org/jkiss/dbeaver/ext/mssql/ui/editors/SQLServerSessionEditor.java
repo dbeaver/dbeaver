@@ -28,6 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSession;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
+import org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -118,7 +119,7 @@ public class SQLServerSessionEditor extends AbstractSessionEditor
         KillSessionAction()
         {
             super(
-                "Terminate",
+                SQLServerUIMessages.session_editor_action_terminate,
                 UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP));
         }
 
@@ -129,7 +130,7 @@ public class SQLServerSessionEditor extends AbstractSessionEditor
             if (sessions != null && UIUtils.confirmAction(
                 getSite().getShell(),
                 this.getText(),
-                NLS.bind("Terminate session {0}?", sessions)))
+                NLS.bind(SQLServerUIMessages.session_editor_terminate_confirm_message, sessions)))
             {
                 getSessionsViewer().alterSessions(
                     sessions,
