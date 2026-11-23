@@ -32,12 +32,12 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.DDWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSettingsStore;
 import org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectEventsServiceDesktop;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -64,17 +64,17 @@ public class DDProjectUIManager {
     @Nullable
     private static DDProjectUIManager instance;
 
-    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+    private final DBDamAccessService accessService = DBDamAccessService.getInstance();
     @NotNull
     private final DDProjectManager projectManager = DDProjectManager.getInstance();
     private boolean emptyProjectsPromptShown;
 
     private DDProjectUIManager() {
         DDSharedProjectEventsServiceDesktop.getInstance().subscribe(new DDProjectEventListener(this));
-        DDRemoteDamSettingsStore.getInstance().addListener(settings -> DDProjectSyncPropertyTester.firePropertyChange());
+        DBDamSettingsStore.getInstance().addListener(settings -> DDProjectSyncPropertyTester.firePropertyChange());
         accessService.addKeyBundleListener(() -> {
             // Sign-out refreshes after its progress dialog closes.
-            if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_OUT) {
+            if (accessService.getStatus() != DBDamAccessService.Status.SIGNED_OUT) {
                 refreshProjectVisibility();
             }
         });
@@ -91,7 +91,7 @@ public class DDProjectUIManager {
 
     public boolean isProjectSyncReady() {
         return DDProductConfig.isIntegrationEnabled()
-            && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
+            && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN
             && accessService.getKeyBundle() != null;
     }
 
@@ -116,7 +116,7 @@ public class DDProjectUIManager {
     }
 
     private void ensureActiveProject() {
-        if (accessService.getStatus() == DDDesktopAccessService.Status.UNLOADED) {
+        if (accessService.getStatus() == DBDamAccessService.Status.UNLOADED) {
             return;
         }
         List<? extends DBPProject> visibleProjects = DDWorkspace.getInstance().getProjects();

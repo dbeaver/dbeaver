@@ -28,9 +28,9 @@ import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistration;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamRpcRegistration;
 
-public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
+public class DDMcpDesktopRpcRegistration implements DBDamRpcRegistration {
     private static final Log log = Log.getLog(DDMcpDesktopRpcRegistration.class);
 
     @Nullable

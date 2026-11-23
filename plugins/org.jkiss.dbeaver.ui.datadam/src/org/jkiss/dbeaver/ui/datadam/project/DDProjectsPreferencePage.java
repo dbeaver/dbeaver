@@ -46,9 +46,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSettingsStore;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
@@ -60,7 +60,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
+import org.jkiss.dbeaver.ui.datadam.DBDamService;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
 import org.jkiss.dbeaver.ui.datadam.DDUIConstants;
 import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
@@ -88,8 +88,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
     private final DDProjectUIManager uiManager = DDProjectUIManager.getInstance();
     private final DDProjectConflictResolver conflictResolver = new DDProjectConflictResolver(uiManager);
-    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-    private final DDRemoteDamSettingsStore settingsStore = DDRemoteDamSettingsStore.getInstance();
+    private final DBDamAccessService accessService = DBDamAccessService.getInstance();
+    private final DBDamSettingsStore settingsStore = DBDamSettingsStore.getInstance();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private Composite content;
@@ -124,7 +124,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private ActionContributionItem unbindItem;
     private ActionContributionItem importAllItem;
     private boolean operationRunning;
-    private final DDRemoteDamSettingsStore.Listener settingsListener = settings -> UIUtils.asyncExec(() -> {
+    private final DBDamSettingsStore.Listener settingsListener = settings -> UIUtils.asyncExec(() -> {
         if (streamSyncCheck != null && !streamSyncCheck.isDisposed()) {
             showStreamSyncStatus(settings);
         }
@@ -412,10 +412,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         boolean enabled = streamSyncCheck.getSelection();
         streamSyncUpdating = true;
         streamSyncCheck.setEnabled(false);
-        streamSyncJob = DDDesktopDamService.getInstance().createJob(
+        streamSyncJob = DBDamService.getInstance().createJob(
             "Update DataDam project stream sync setting",
             account -> account.setDamSetting(
-                DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.PROJECTS_STREAM_SYNC,
+                DBDamSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.PROJECTS_STREAM_SYNC,
                 Boolean.toString(enabled), accountId),
             ignored -> {
                 if (!streamSyncCheck.isDisposed() && Objects.equals(accountId, accessService.getAccountId())) {
@@ -457,7 +457,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         boolean present = accountId != null;
         accountRow.setVisible(present);
         ((GridData) accountRow.getLayoutData()).exclude = !present;
-        boolean signedIn = accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
+        boolean signedIn = accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN;
         importKeysButton.setEnabled(!present && signedIn);
         importKeysButton.setVisible(!present);
         ((GridData) importKeysButton.getLayoutData()).exclude = present;
@@ -516,7 +516,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             streamSyncPermissionJob.cancel();
         }
         canManageStreamSync = false;
-        streamSyncPermissionJob = DDDesktopDamService.getInstance().createJob(
+        streamSyncPermissionJob = DBDamService.getInstance().createJob(
             "Check DataDam project sync setting permission",
             account -> account.canManageDamSettings(),
             allowed -> {

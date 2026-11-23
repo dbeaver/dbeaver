@@ -48,8 +48,8 @@ class AIFunctionInternalDescriptorTest {
         Mockito.when(extensions.getConfigurationElementsFor(AIFunctionInternalDescriptor.EXTENSION_ID)).thenReturn(definitions);
         Mockito.when(extensions.getConfigurationElementsFor(AIFunctionImplementationDescriptor.EXTENSION_ID))
             .thenReturn(new IConfigurationElement[0]);
-        try (var eclipse = Mockito.mockStatic(Platform.class);
-             var workbench = Mockito.mockStatic(DBWorkbench.class)) {
+        try (var eclipse = Mockito.mockStatic(Platform.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
+             var workbench = Mockito.mockStatic(DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
             eclipse.when(Platform::getExtensionRegistry).thenReturn(extensions);
             workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
             var registry = new AIFunctionInternalRegistry(Mockito.mock(AIToolboxInternalDescriptor.class));

@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDShareClient;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProjectSyncBindingStore;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProjectSyncLocalBinding;
@@ -54,7 +54,7 @@ class DDProjectManagerTest {
         DBPProject local = project("local", null);
         DBPWorkspace workspace = Mockito.mock(DBPWorkspace.class);
         Mockito.when(workspace.getProjects()).thenAnswer(invocation -> List.of(shared, otherAccount, local));
-        var access = Mockito.mock(DDDesktopAccessService.class);
+        var access = Mockito.mock(DBDamAccessService.class);
         var client = new DDShareClient("https://example.invalid", access);
         var manager = new DDProjectManager(workspace, client, new DDProjectSyncService(client), access);
 
@@ -74,7 +74,7 @@ class DDProjectManagerTest {
         DBPWorkspace workspace = Mockito.mock(DBPWorkspace.class);
         Mockito.when(workspace.getProjects()).thenAnswer(invocation -> List.of(first, active));
         Mockito.when(workspace.getActiveProject()).thenReturn(active);
-        var access = Mockito.mock(DDDesktopAccessService.class);
+        var access = Mockito.mock(DBDamAccessService.class);
         var client = new DDShareClient("https://example.invalid", access);
         var manager = new DDProjectManager(workspace, client, new DDProjectSyncService(client), access);
 
@@ -91,7 +91,7 @@ class DDProjectManagerTest {
         Files.writeString(DDProjectSyncBindingStore.getBindingFile(corrupt), "{}");
         DBPWorkspace workspace = Mockito.mock(DBPWorkspace.class);
         Mockito.when(workspace.getProjects()).thenAnswer(invocation -> List.of(first, corrupt));
-        var access = Mockito.mock(DDDesktopAccessService.class);
+        var access = Mockito.mock(DBDamAccessService.class);
         var client = new DDShareClient("https://example.invalid", access);
         var manager = new DDProjectManager(workspace, client, new DDProjectSyncService(client), access);
 
