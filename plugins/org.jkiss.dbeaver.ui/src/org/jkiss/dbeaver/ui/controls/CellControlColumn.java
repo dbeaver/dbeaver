@@ -21,6 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.custom.TreeEditor;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -73,6 +74,23 @@ public final class CellControlColumn {
         support.listen(column.getColumn(), SWT.Resize, event -> support.scheduleRefresh());
     }
 
+    public static void updateSelectionColors(
+        @NotNull Control cellControl,
+        @NotNull StructuredViewer viewer,
+        @NotNull Object element
+    ) {
+        Control list = viewer.getControl();
+        boolean selected = viewer.getStructuredSelection().toList().contains(element);
+        Color background = selected ? list.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION) : list.getBackground();
+        Color foreground = selected ? list.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT) : list.getForeground();
+        if (cellControl.getBackground() != background) {
+            cellControl.setBackground(background);
+        }
+        if (cellControl.getForeground() != foreground) {
+            cellControl.setForeground(foreground);
+        }
+    }
+
     private static void createLabelProvider(@NotNull ViewerColumn column) {
         column.setLabelProvider(new ColumnLabelProvider() {
             @NotNull
@@ -97,7 +115,7 @@ public final class CellControlColumn {
         private final BiConsumer<C, T> updateControl;
         @NotNull
         private final BooleanSupplier enabled;
-        private final Map<I, CellControlEditor<C>> editors = new IdentityHashMap<>();
+        private final Map<I, CellControlEditor<T, C>> editors = new IdentityHashMap<>();
         private final List<Runnable> removers = new ArrayList<>();
         private boolean refreshScheduled;
         private boolean disposed;
@@ -123,6 +141,7 @@ public final class CellControlColumn {
         protected void install() {
             listen(control, SWT.Paint, event -> scheduleRefresh());
             listen(control, SWT.Resize, event -> scheduleRefresh());
+            listen(control, SWT.Selection, event -> scheduleRefresh());
             addScrollListener(control.getVerticalBar());
             addScrollListener(control.getHorizontalBar());
             control.addDisposeListener(event -> dispose());
@@ -167,7 +186,7 @@ public final class CellControlColumn {
                 remove.run();
             }
             removers.clear();
-            for (CellControlEditor<C> editor : new ArrayList<>(editors.values())) {
+            for (CellControlEditor<T, C> editor : new ArrayList<>(editors.values())) {
                 editor.dispose();
             }
             editors.clear();
@@ -186,12 +205,13 @@ public final class CellControlColumn {
                     }
                     T element = elementType.cast(data);
                     visible.add(item);
-                    CellControlEditor<C> editor = editors.get(item);
-                    if (editor == null || editor.control().isDisposed()) {
+                    CellControlEditor<T, C> editor = editors.get(item);
+                    if (editor == null || editor.control().isDisposed() || editor.element() != element) {
                         removeEditor(item);
                         createEditor(item, element);
                     } else {
                         updateControl.accept(editor.control(), element);
+                        editor.editor().layout();
                     }
                 });
             }
@@ -206,12 +226,12 @@ public final class CellControlColumn {
             C cellControl = createControl.apply((Composite) control, element);
             updateControl.accept(cellControl, element);
             ControlEditor editor = createCellEditor(item, cellControl);
-            editors.put(item, new CellControlEditor<>(editor, cellControl));
+            editors.put(item, new CellControlEditor<>(editor, cellControl, element));
             item.addDisposeListener(event -> removeEditor(item));
         }
 
         private void removeEditor(@NotNull I item) {
-            CellControlEditor<C> editor = editors.remove(item);
+            CellControlEditor<T, C> editor = editors.remove(item);
             if (editor != null) {
                 editor.dispose();
             }
@@ -226,7 +246,11 @@ public final class CellControlColumn {
         @NotNull
         protected abstract ControlEditor createCellEditor(@NotNull I item, @NotNull C cellControl);
 
-        private record CellControlEditor<C extends Control>(@NotNull ControlEditor editor, @NotNull C control) {
+        private record CellControlEditor<T, C extends Control>(
+            @NotNull ControlEditor editor,
+            @NotNull C control,
+            @NotNull T element
+        ) {
             private void dispose() {
                 if (!control.isDisposed()) {
                     control.dispose();

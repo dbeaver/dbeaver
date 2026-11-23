@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.preferences.McpConnectionsPreferencePage.McpConnectionsPageRegistry.McpConnectionsPageContribution;
+import org.jkiss.dbeaver.ui.controls.CellControlColumn;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 
 import java.util.IdentityHashMap;
@@ -113,7 +114,10 @@ public class DDMcpConnectionsContribution implements McpConnectionsPageContribut
                 }));
                 return checkbox;
             },
-            (checkbox, connection) -> checkbox.setSelection(settings.apply(connection).isDatadamMcpEnabled()),
+            (checkbox, connection) -> {
+                checkbox.setSelection(settings.apply(connection).isDatadamMcpEnabled());
+                CellControlColumn.updateSelectionColors(checkbox, viewer, connection);
+            },
             this::isVisible
         );
     }
