@@ -79,6 +79,13 @@ public interface DBPScriptObject extends DBPObject {
 
     Map<String, Object> EMPTY_OPTIONS = Map.of();
 
+    /**
+     * Whether this object has a script definition, including an extended definition if supported.
+     */
+    default boolean supportsObjectDefinition() {
+        return true;
+    }
+
     @NotNull
     String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
         throws DBException;

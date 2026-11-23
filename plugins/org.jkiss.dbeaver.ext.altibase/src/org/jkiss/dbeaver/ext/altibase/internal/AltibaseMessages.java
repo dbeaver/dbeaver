@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.ext.altibase.internal;
 
-import org.eclipse.swt.widgets.Composite;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.osgi.util.NLS;
 
-/** A window-local contribution to the DBeaver status bar. */
-public interface IStatusBarContributor {
-    /**
-     * Creates content in a host-owned, single-column container.
-     * The host disposes this container when enablement becomes false or the window closes.
-     * Contributors must release listeners and jobs when the container is disposed.
-     */
-    void createControls(@NotNull Composite parent) throws DBException;
+public final class AltibaseMessages extends NLS {
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.altibase.internal.AltibaseMessages"; //$NON-NLS-1$
+
+    public static String sql_warning_title;
+    public static String password_expire_warning;
+
+    static {
+        NLS.initializeMessages(BUNDLE_NAME, AltibaseMessages.class);
+    }
+
+    private AltibaseMessages() {
+    }
 }

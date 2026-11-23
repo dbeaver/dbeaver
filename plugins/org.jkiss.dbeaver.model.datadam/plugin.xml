@@ -17,8 +17,18 @@
             destructiveHint="false"
             idempotentHint="true"
             name="List datasources"
-            description="Lists database connections allowed for DataDam MCP calls. requires_manual_connection is an advisory hint that authentication may be needed if a database call fails; calls can still be attempted."
-            class="org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListDatasourcesFunction"/>
+            description="Lists database connections allowed for DataDam MCP calls. requires_manual_connection means the connection is currently disconnected. Its tools can still try to connect; if they fail, connect in DBeaver and retry."
+            class="org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListDatasourcesFunction">
+            <parameter name="projectId" type="string" required="false" description="Project ID returned by listProjects"/>
+        </function>
+        <function
+            id="listProjects"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
+            name="List projects"
+            description="Lists projects with at least one database connection allowed for DataDam MCP calls."
+            class="org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListProjectsFunction"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.model.datadam.desktopRpcService">
@@ -28,6 +38,7 @@
 
     <extension point="org.jkiss.dbeaver.pluginService">
         <service class="org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionPluginService"/>
+        <service class="org.jkiss.dbeaver.model.datadam.rpc.DDDesktopDamNameService"/>
     </extension>
 
     <extension point="com.dbeaver.ai.engine">

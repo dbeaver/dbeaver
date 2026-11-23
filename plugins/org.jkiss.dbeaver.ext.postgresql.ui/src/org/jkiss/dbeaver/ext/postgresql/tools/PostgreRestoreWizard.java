@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
@@ -96,8 +97,8 @@ class PostgreRestoreWizard extends AbstractNativeImportExportWizard<PostgreDatab
     public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
             getShell(),
-            "Database restore",
-            "Restore '" + getObjectsName() + "'",
+            PostgreMessages.wizard_restore_msgbox_title,
+            NLS.bind(PostgreMessages.wizard_restore_msgbox_message, getObjectsName()),
             SWT.ICON_INFORMATION);
     }
 

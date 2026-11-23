@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import org.eclipse.osgi.util.NLS;
 
 public class LocksUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.locks.LocksUIResources"; //$NON-NLS-1$
+
+    public static String session_terminate_confirm_title;
+    public static String session_terminate_confirm_message;
     public static String actions_refresh_control_kill_waiting_session;
     public static String actions_refresh_control_refresh_locks;
     public static String create_editor_control_name_lock;

@@ -14,15 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls;
+package org.jkiss.dbeaver.data.office.ui.internal;
 
-import org.eclipse.swt.widgets.Composite;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ui.IStatusBarContributor;
+import org.eclipse.osgi.util.NLS;
 
-public class ProjectSelectorContributor implements IStatusBarContributor {
-    @Override
-    public void createControls(@NotNull Composite parent) {
-        new ProjectsPanel(parent);
+public class OfficeUIMessages extends NLS {
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.data.office.ui.internal.OfficeUIMessages";
+
+    public static String spreadsheet_open_excel_title;
+    public static String spreadsheet_no_results_message;
+    public static String spreadsheet_open_xlsx_title;
+    public static String spreadsheet_open_xlsx_error_message;
+    public static String spreadsheet_open_excel_error_title;
+
+    static {
+        NLS.initializeMessages(BUNDLE_NAME, OfficeUIMessages.class);
+    }
+
+    private OfficeUIMessages() {
     }
 }

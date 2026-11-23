@@ -19,10 +19,156 @@ package org.jkiss.dbeaver.model.datadam.transport;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
+import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+
 class DDConnectionMonitorTest {
+    @Test
+    void responseEditorProjectionContainsOnlyTheValueAttribute() {
+        String body = "{\"value\":{\"rows\":[1,2],\"code\":5},\"error\":false,\"message\":\"envelope metadata\"}";
+        var response = new DDConnectionMonitor.McpResponse("OK", null, body);
+
+        var value = JsonParser.parseString(response.valueText()).getAsJsonObject();
+
+        Assertions.assertEquals(2, value.size());
+        Assertions.assertEquals(2, value.getAsJsonArray("rows").size());
+        Assertions.assertEquals(5, value.get("code").getAsInt());
+        Assertions.assertFalse(value.has("message"));
+        Assertions.assertEquals(body, response.body());
+    }
+
+    @Test
+    void responseEditorProjectionUnwrapsStringsAndFormatsArrays() {
+        var text = new DDConnectionMonitor.McpResponse("OK", null, "{\"value\":\"first\\nsecond\",\"error\":false}");
+        Assertions.assertEquals("first\nsecond", text.valueText());
+
+        var array = new DDConnectionMonitor.McpResponse("OK", null, "{\"value\":[1,{\"name\":\"sample\"}],\"error\":false}");
+        Assertions.assertEquals(JsonParser.parseString("[1,{\"name\":\"sample\"}]"), JsonParser.parseString(array.valueText()));
+    }
+
+    @Test
+    void responseEditorProjectionPreservesPrimitiveAndExplicitNullValues() {
+        Assertions.assertEquals("42", new DDConnectionMonitor.McpResponse("OK", null, "{\"value\":42}").valueText());
+        Assertions.assertEquals("true", new DDConnectionMonitor.McpResponse("OK", null, "{\"value\":true}").valueText());
+        Assertions.assertEquals("null", new DDConnectionMonitor.McpResponse("OK", null, "{\"value\":null}").valueText());
+    }
+
+    @Test
+    void responseEditorProjectionDisplaysResponsesWithoutAValueEnvelope() {
+        for (String body : new String[] {
+            "{\"code\":\"INVALID_ARGUMENTS\",\"message\":\"failed\"}",
+            "[{\"id\":\"listProjects\",\"name\":\"List projects\"}]",
+            "[]", "{\"projects\":[]}", "42", "true", "null"
+        }) {
+            var response = new DDConnectionMonitor.McpResponse("OK", null, body);
+            Assertions.assertEquals(JsonParser.parseString(body), JsonParser.parseString(response.valueText()));
+            Assertions.assertEquals(body, response.body());
+        }
+        Assertions.assertEquals("failed", new DDConnectionMonitor.McpResponse("INTERNAL_ERROR", "failed", "\"failed\"").valueText());
+        Assertions.assertEquals("{invalid", new DDConnectionMonitor.McpResponse("OK", null, "{invalid").valueText());
+    }
+
+    @Test
+    void completesTheOriginalRowWithoutChangingItsPositionOrEarlierSnapshots() {
+        var clock = new AtomicLong(100);
+        var monitor = new DDConnectionMonitor(clock::get);
+        var request = monitor.beginMcpRequest("query", Map.of("query", "select 1"));
+        monitor.record(DDConnectionMonitor.EventType.CONNECTED, "connected");
+        var second = monitor.beginMcpRequest("another query", null);
+        var pending = monitor.getEvents();
+        Assertions.assertTrue(request.isPending());
+        Assertions.assertFalse(request.isError());
+
+        clock.set(2_500_100);
+        monitor.recordMcpResponse(request, "OK", null, "result");
+
+        var events = monitor.getEvents();
+        Assertions.assertEquals(3, events.size());
+        var completed = events.getFirst();
+        Assertions.assertEquals(request.requestId(), completed.requestId());
+        Assertions.assertEquals(request.time(), completed.time());
+        Assertions.assertEquals(request.details(), completed.details());
+        Assertions.assertSame(request.request(), completed.request());
+        Assertions.assertFalse(completed.isPending());
+        Assertions.assertFalse(completed.isError());
+        Assertions.assertEquals(Duration.ofNanos(2_500_000), completed.response().processingTime());
+        Assertions.assertTrue(completed.fullDetails().contains("select 1"));
+        Assertions.assertTrue(completed.fullDetails().endsWith("result"));
+        Assertions.assertTrue(pending.getFirst().isPending());
+        Assertions.assertSame(second, events.getLast());
+
+        monitor.recordMcpResponse(second, "INTERNAL_ERROR", null, "null");
+        Assertions.assertTrue(monitor.getRequestEvent(second.requestId()).isError());
+        Assertions.assertFalse(monitor.getRequestEvent(second.requestId()).isPending());
+    }
+
+    @Test
+    void clearingPendingRequestsDoesNotResurrectThemWhenResponsesArrive() {
+        var monitor = new DDConnectionMonitor();
+        var first = monitor.beginMcpRequest("first", null);
+        monitor.clearEvents();
+        monitor.recordMcpResponse(first, "OK", null, "result");
+        Assertions.assertTrue(monitor.getEvents().isEmpty());
+
+        var next = monitor.beginMcpRequest("next", null);
+        Assertions.assertNotEquals(first.requestId(), next.requestId());
+        monitor.recordMcpResponse(first, "ERROR", "late error", "error");
+        Assertions.assertSame(next, monitor.getEvents().getFirst());
+        Assertions.assertTrue(next.isPending());
+    }
+
+    @Test
+    void duplicateResponsesDoNotOverwriteTheCompletedRow() {
+        var monitor = new DDConnectionMonitor();
+        var request = monitor.beginMcpRequest("query", null);
+        monitor.recordMcpResponse(request, "OK", null, "first result");
+        var completed = monitor.getRequestEvent(request.requestId());
+        monitor.recordMcpResponse(request, "ERROR", "late error", "second result");
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertSame(completed, monitor.getRequestEvent(request.requestId()));
+    }
+
+    @Test
+    void evictsOlderResponsesInsteadOfAccumulatingLargePayloads() {
+        var monitor = new DDConnectionMonitor();
+        var request = monitor.beginMcpRequest("query", null);
+        monitor.recordMcpResponse(request, "OK", null, "a".repeat(6_000_000));
+        var second = monitor.beginMcpRequest("second query", null);
+        String body = "b".repeat(6_000_000);
+        monitor.recordMcpResponse(second, "OK", null, body);
+
+        var events = monitor.getEvents();
+        Assertions.assertEquals(1, events.size());
+        Assertions.assertSame(body, events.getFirst().response().body());
+        Assertions.assertEquals("second query", events.getFirst().details());
+        Assertions.assertTrue(events.getFirst().fullDetails().endsWith(body));
+    }
+
+    @Test
+    void keepsOneOversizedResponseCompleteUntilTheNextEvent() {
+        var monitor = new DDConnectionMonitor();
+        var request = monitor.beginMcpRequest("query", null);
+        monitor.beginMcpRequest("another pending query", null);
+        String body = "x".repeat(10_000_001);
+        monitor.recordMcpResponse(request, "OK", null, body);
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertSame(body, monitor.getEvents().getFirst().response().body());
+
+        monitor.record(DDConnectionMonitor.EventType.CONNECTED, "connected");
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertEquals(DDConnectionMonitor.EventType.CONNECTED, monitor.getEvents().getFirst().type());
+
+        monitor.clearEvents();
+        var next = monitor.beginMcpRequest("next query", null);
+        monitor.recordMcpResponse(next, "OK", null, body);
+        Assertions.assertSame(body, monitor.getEvents().getFirst().response().body());
+    }
+
     @Test
     void retainsFinalConnectionStatisticsUntilTheNextSocketOpens() {
         var monitor = new DDConnectionMonitor();
@@ -65,7 +211,7 @@ class DDConnectionMonitorTest {
     @Test
     void boundsEventsAndDetailsAndReturnsImmutableSnapshots() {
         var monitor = new DDConnectionMonitor();
-        monitor.record(DDConnectionMonitor.EventType.SIGNED_IN, "oldest");
+        var request = monitor.beginMcpRequest("oldest", null);
         var original = monitor.getEvents();
         for (int i = 0; i < 10_000; i++) {
             monitor.record(DDConnectionMonitor.EventType.ERROR, Integer.toString(i));
@@ -74,6 +220,9 @@ class DDConnectionMonitorTest {
         Assertions.assertEquals(10_000, events.size());
         Assertions.assertEquals("0", events.getFirst().details());
         Assertions.assertEquals("oldest", original.getFirst().details());
+        monitor.recordMcpResponse(request, "OK", null, "late response");
+        Assertions.assertEquals(events, monitor.getEvents());
+        Assertions.assertNull(monitor.getRequestEvent(request.requestId()));
         Assertions.assertThrows(UnsupportedOperationException.class, events::clear);
         monitor.record(DDConnectionMonitor.EventType.ERROR, "x".repeat(100_001));
         Assertions.assertEquals(10_000, monitor.getEvents().size());

@@ -47,9 +47,9 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -293,23 +293,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
             }
             if (ni == null) {
                 log.debug("Cannot detect local network interface");
-                return "NOMACADDR";
+                return RuntimeUtils.NO_MAC_HASH;
             }
-            byte[] hardwareAddress = ni.getHardwareAddress();
-
-            // Use MD5
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] messageDigest = md.digest(hardwareAddress);
-
-            long lValue = 0;
-            for (int i = 0; i < messageDigest.length; i++) {
-                lValue += (long)messageDigest[i] << (i * 8);
-            }
-
-            return Long.toString(Math.abs(lValue), 36).toUpperCase();
+            return RuntimeUtils.hashMacAddress(Objects.requireNonNull(ni.getHardwareAddress()));
         } catch (Exception e) {
             log.debug(e);
-            return "XXXXXXXXXX";
+            return RuntimeUtils.MAC_HASH_ERROR;
         }
     }
 

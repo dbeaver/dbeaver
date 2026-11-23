@@ -39,6 +39,14 @@ public class DDManagementMenu extends CompoundContributionItem {
     @NotNull
     protected IContributionItem[] getContributionItems() {
         boolean enabled = DDProductConfig.isIntegrationEnabled();
+        Action integration = new Action(DDTrackingUIMessages.integration_enabled, IAction.AS_CHECK_BOX) {
+            @Override
+            public void run() {
+                DDManagementActions.setIntegrationEnabled(isChecked());
+            }
+        };
+        integration.setChecked(enabled);
+        integration.setEnabled(DDProductConfig.isIntegrationAvailable());
         boolean signedIn = DDDesktopAccessService.getInstance().getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         Action configure = action(DDTrackingUIMessages.configuration, IAction.AS_PUSH_BUTTON, DDManagementActions::configure);
@@ -85,7 +93,7 @@ public class DDManagementMenu extends CompoundContributionItem {
         return new IContributionItem[] {
             new ActionContributionItem(configure), new ActionContributionItem(tracking),
             new ActionContributionItem(mcp),
-            new Separator(), new ActionContributionItem(login)
+            new Separator(), new ActionContributionItem(integration), new ActionContributionItem(login)
         };
     }
 

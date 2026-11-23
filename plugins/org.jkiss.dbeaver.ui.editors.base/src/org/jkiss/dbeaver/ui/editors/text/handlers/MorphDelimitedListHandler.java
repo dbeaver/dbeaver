@@ -55,7 +55,11 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
                 ISelection selection = provider.getSelection();
                 if (selection instanceof ITextSelection textSelection) {
                     if (textSelection.getLength() <= 0) {
-                        UIUtils.showMessageBox(activeShell, "Morph text", "Text selection is empty. You need to select some text to morph", SWT.ICON_INFORMATION);
+                        UIUtils.showMessageBox(
+                            activeShell,
+                            EditorsMessages.editor_morph_text_title,
+                            EditorsMessages.editor_morph_text_empty_selection,
+                            SWT.ICON_INFORMATION);
                         return null;
                     }
                     String formattedText = morphText(activeShell, textSelection.getText());
@@ -63,7 +67,8 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
                         try {
                             document.replace(textSelection.getOffset(), textSelection.getLength(), formattedText);
                         } catch (BadLocationException e) {
-                            DBWorkbench.getPlatformUI().showError("Morph text", "Error replacing text", e);
+                            DBWorkbench.getPlatformUI().showError(
+                                EditorsMessages.editor_morph_text_title, EditorsMessages.editor_morph_text_error, e);
                         }
                     }
                 }

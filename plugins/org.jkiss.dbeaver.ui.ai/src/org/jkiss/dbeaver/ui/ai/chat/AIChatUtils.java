@@ -98,7 +98,8 @@ public class AIChatUtils {
         }
         UIServiceConnections service = DBWorkbench.getService(UIServiceConnections.class);
         if (service == null) {
-            DBWorkbench.getPlatformUI().showError("Can't connect to data source", "Try establishing the connection manually");
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_connect_error_title, AIChatMessagesUI.ai_chat_connect_error_message);
             return;
         }
         try {
@@ -186,7 +187,8 @@ public class AIChatUtils {
             }
             settings.saveSettings();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Settings save", "Settings save failed", e);
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_settings_save_title, AIChatMessagesUI.ai_chat_settings_save_error, e);
         }
     }
 

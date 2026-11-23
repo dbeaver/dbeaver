@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,8 @@ public interface SQLEditorCommands
     String CMD_DISABLE_SQL_SYNTAX_PARSER = "org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser"; //$NON-NLS-1$
 
     String CMD_NAVIGATE_OBJECT = "org.jkiss.dbeaver.ui.editors.sql.navigate.object";
-    String CMD_TOGGLE_LAYOUT = "org.jkiss.dbeaver.ui.editors.sql.toggleLayout";
+    String CMD_RESULTS_BELOW = "org.jkiss.dbeaver.ui.editors.sql.resultsBelow";
+    String CMD_RESULTS_RIGHT = "org.jkiss.dbeaver.ui.editors.sql.resultsRight";
     String CMD_TOGGLE_SEPARATE_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.connection.separate";
 
     String CMD_AI_SUGGESTION = "com.dbeaver.ai.sql.suggestion";

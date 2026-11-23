@@ -132,7 +132,7 @@ public class DDDesktopRpcRegistrationRegistry {
                         registerAll(endpoint, updated);
                         DDRemoteDamSettingsStore.getInstance().updateSettings(updated);
                     } catch (DBException e) {
-                        throw new DDRemoteDamException("Cannot apply DAM settings", e);
+                        throw new DDRemoteDamException("Cannot apply Dam settings", e);
                     }
                 }
             });

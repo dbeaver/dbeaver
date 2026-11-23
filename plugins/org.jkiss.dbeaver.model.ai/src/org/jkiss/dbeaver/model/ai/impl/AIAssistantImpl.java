@@ -185,6 +185,9 @@ public class AIAssistantImpl implements AIAssistant {
             configurationProfile = AISettingsManager.getStaticSettings().getDefaultConfiguration();
         }
         CompletableFuture<AIChatConversation> future = conversation.startConversation();
+        if (future.isDone()) {
+            return future;
+        }
 
         try {
             AIEngineDescriptor engineDescriptor = configurationProfile.getEngineDescriptor();
@@ -331,6 +334,9 @@ public class AIAssistantImpl implements AIAssistant {
         RuntimeUtils.scheduleJob("Process AI function calls", monitor -> {
             // Post-process function calls
             for (AIFunctionCall fc : functionCalls) {
+                if (!conversation.isActive()) {
+                    return;
+                }
                 AIFunctionDescriptor function = fc.getOrResolveFunction(getToolboxManager());
                 if (function == null) {
                     log.warn("Invalid function call without function reference");

@@ -16,21 +16,25 @@
  */
 package org.jkiss.dbeaver.ui.datadam.management;
 
+import org.eclipse.core.expressions.EvaluationResult;
+import org.eclipse.core.expressions.Expression;
+import org.eclipse.core.expressions.ExpressionInfo;
+import org.eclipse.core.expressions.IEvaluationContext;
+import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.menus.ExtensionContributionFactory;
+import org.eclipse.ui.menus.IContributionRoot;
+import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.impl.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IStatusBarContributor;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
@@ -38,61 +42,65 @@ import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-public class DDStatusContribution implements IStatusBarContributor {
+public class DDStatusContribution extends ContributionItem {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         .withZone(ZoneId.systemDefault());
-    @Nullable
-    private Composite control;
-    private Label statusIcon;
+
+    public DDStatusContribution() {
+        super("org.jkiss.dbeaver.ui.datadam.monitor");
+    }
+
+    public static class Factory extends ExtensionContributionFactory {
+        @Override
+        public void createContributionItems(@NotNull IServiceLocator serviceLocator, @NotNull IContributionRoot additions) {
+            additions.addContributionItem(new DDStatusContribution(), new Expression() {
+                @Override
+                @NotNull
+                public EvaluationResult evaluate(@NotNull IEvaluationContext context) {
+                    return EvaluationResult.valueOf(DDProductConfig.isIntegrationAvailable());
+                }
+
+                @Override
+                public void collectExpressionInfo(@NotNull ExpressionInfo info) {
+                    info.addAccessedPropertyName(GlobalPropertyTester.NAMESPACE + "." + GlobalPropertyTester.PROP_HAS_PREFERENCE);
+                }
+            });
+        }
+    }
 
     @Override
-    public void createControls(@NotNull Composite parent) {
-        Composite widget = createWidget(parent);
-        widget.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, true));
-        var display = widget.getDisplay();
+    public void fill(@NotNull ToolBar parent, int index) {
+        ToolItem item = index < 0 ? new ToolItem(parent, SWT.DROP_DOWN) : new ToolItem(parent, SWT.DROP_DOWN, index);
+        item.setText("DataDam");
+        MenuManager menu = new MenuManager();
+        menu.setRemoveAllWhenShown(true);
+        menu.addMenuListener(manager -> manager.add(new DDManagementMenu()));
+        var contextMenu = menu.createContextMenu(parent);
+        parent.setMenu(contextMenu);
+        item.addListener(SWT.Selection, event -> {
+            var bounds = item.getBounds();
+            contextMenu.setLocation(parent.toDisplay(bounds.x, bounds.y + bounds.height));
+            contextMenu.setVisible(true);
+        });
+        var display = parent.getDisplay();
         Runnable refreshTask = new Runnable() {
             @Override
             public void run() {
-                if (!widget.isDisposed()) {
-                    if (DDProductConfig.isIntegrationEnabled()) {
-                        refresh();
-                    }
+                if (!item.isDisposed()) {
+                    refresh(item);
                     display.timerExec(1_000, this);
                 }
             }
         };
-        parent.addDisposeListener(event -> display.timerExec(-1, refreshTask));
+        item.addDisposeListener(event -> {
+            display.timerExec(-1, refreshTask);
+            menu.dispose();
+        });
         refreshTask.run();
     }
 
-    @NotNull
-    private Composite createWidget(@NotNull Composite parent) {
-        control = new Composite(parent, SWT.NONE);
-        GridLayout layout = new GridLayout(2, false);
-        layout.marginWidth = 0;
-        layout.marginHeight = 0;
-        layout.horizontalSpacing = 4;
-        control.setLayout(layout);
-        Label label = new Label(control, SWT.NONE);
-        label.setText("DataDam");
-        label.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, true));
-        statusIcon = new Label(control, SWT.NONE);
-        statusIcon.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, true));
-        MenuManager menu = new MenuManager();
-        menu.setRemoveAllWhenShown(true);
-        menu.addMenuListener(manager -> manager.add(new DDManagementMenu()));
-        var contextMenu = menu.createContextMenu(control);
-        for (Control part : new Control[] { control, label, statusIcon }) {
-            part.setMenu(contextMenu);
-            part.addListener(SWT.MouseDoubleClick, event -> DDTrackingView.show());
-        }
-        control.addDisposeListener(event -> menu.dispose());
-        refresh();
-        return control;
-    }
-
-    private void refresh() {
-        if (control == null || control.isDisposed()) {
+    private void refresh(@NotNull ToolItem item) {
+        if (item.isDisposed()) {
             return;
         }
         String status = DDTrackingUIMessages.status_unknown;
@@ -127,11 +135,7 @@ public class DDStatusContribution implements IStatusBarContributor {
                 }
             }
         }
-        statusIcon.setImage(DBeaverIcons.getImage(icon));
-        String tooltip = "DataDam: " + status + details;
-        control.setToolTipText(tooltip);
-        for (Control part : control.getChildren()) {
-            part.setToolTipText(tooltip);
-        }
+        item.setImage(DBeaverIcons.getImage(icon));
+        item.setToolTipText("DataDam: " + status + details);
     }
 }

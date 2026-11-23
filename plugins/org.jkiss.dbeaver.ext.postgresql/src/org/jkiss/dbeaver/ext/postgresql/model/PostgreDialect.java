@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach.PostgreServerCockroachDB;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -56,11 +57,18 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @NotNull
     @Override
     public SQLDialectFeatures getDialectFeatures() {
-        return DialectFeatures.INSTANCE;
+        return serverExtension instanceof PostgreServerCockroachDB ? CockroachDialectFeatures.INSTANCE : DialectFeatures.INSTANCE;
     }
 
     private static class DialectFeatures extends SQLDialectFeatures {
         static final DialectFeatures INSTANCE = new DialectFeatures();
+
+        /** @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">PostgreSQL array constructors</a> */
+        @NotNull
+        @Override
+        public ArraySubquerySemantics getArraySubquerySemantics() {
+            return ArraySubquerySemantics.MULTIDIMENSIONAL;
+        }
 
         @NotNull
         @Override
@@ -116,6 +124,17 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
                 new GlobalVariableInfo("system_user", PostgreSQLMessages.global_variable_system_user_description, DBPDataKind.STRING),
                 new GlobalVariableInfo("user", PostgreSQLMessages.global_variable_user_description, DBPDataKind.STRING)
             };
+        }
+    }
+
+    private static final class CockroachDialectFeatures extends DialectFeatures {
+        private static final CockroachDialectFeatures INSTANCE = new CockroachDialectFeatures();
+
+        /** @see <a href="https://www.cockroachlabs.com/docs/stable/scalar-expressions.html#conversion-of-subquery-results-to-an-array">CockroachDB array construction from subquery results</a> */
+        @NotNull
+        @Override
+        public ArraySubquerySemantics getArraySubquerySemantics() {
+            return ArraySubquerySemantics.NO_NESTED_ARRAY;
         }
     }
 

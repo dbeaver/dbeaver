@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
@@ -87,8 +88,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                 if (transformSourceCode(document, command)) {
                     DBeaverNotifications.showNotification(
                         DBeaverNotifications.NT_GENERIC,
-                        "SQL transformation (click to undo)",
-                        "SQL query was extracted from the source code",
+                        SQLEditorMessages.sql_transformation_notification_title,
+                        SQLEditorMessages.sql_transformation_notification_message,
                         DBPMessageType.INFORMATION,
                         () -> {
                             if (sourceViewer instanceof ITextOperationTarget) {
@@ -523,4 +524,3 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     }
 
 }
-

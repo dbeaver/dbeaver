@@ -17,12 +17,16 @@
 package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.cli.CLIConstants;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.regex.Pattern;
 
 public class OutputFileOption extends AbstractFileOption {
-    //stdin file name
+    private static final Pattern URI_SCHEME_PREFIX = Pattern.compile("^[A-Za-z][A-Za-z0-9+.-]*:");
 
     @Nullable
     @CommandLine.Option(
@@ -34,6 +38,13 @@ public class OutputFileOption extends AbstractFileOption {
 
     @Nullable
     public Path getOutputFile() {
+        if (!CommonUtils.isEmpty(outputFile)
+            && (IOUtils.isLocalFile(outputFile) || !URI_SCHEME_PREFIX.matcher(outputFile).find())
+        ) {
+            String launchDirectory = System.getenv(CLIConstants.ENV_LAUNCH_DIRECTORY);
+            Path path = Path.of(outputFile);
+            return CommonUtils.isEmpty(launchDirectory) ? path.toAbsolutePath() : Path.of(launchDirectory).resolve(path);
+        }
         return getPath(outputFile);
     }
 }

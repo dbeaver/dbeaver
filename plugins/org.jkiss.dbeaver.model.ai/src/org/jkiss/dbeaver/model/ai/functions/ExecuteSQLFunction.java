@@ -94,6 +94,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
 
 public abstract class ExecuteSQLFunction implements AIFunction {
@@ -329,6 +330,10 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         }
         if (!creation && Set.of("FUNCTION", "PROCEDURE", "ROUTINE").contains(type)) {
             Set<DBSObject> routines = findRoutines(context, executionContext, name);
+            if (routines == null) {
+                verifyDatasourceScope(context);
+                return;
+            }
             if (!routines.isEmpty()) {
                 for (DBSObject routine : routines) {
                     checkObjectScope(context, routine);
@@ -484,6 +489,10 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
     ) throws DBException {
         Set<DBSObject> routines = findRoutines(context, executionContext, name);
+        if (routines == null) {
+            verifyDatasourceScope(context);
+            return;
+        }
         if (routines.isEmpty()) {
             throw new DBException("Database routine '" + name + "' not found");
         }
@@ -492,7 +501,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         }
     }
 
-    @NotNull
+    @Nullable
     private Set<DBSObject> findRoutines(
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
     ) throws DBException {
@@ -500,27 +509,37 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         if (parts.length == 0 || parts.length > 3) {
             throw new DBException("Cannot verify this qualified routine name");
         }
-        DBSObject namespace = resolveNamespace(context, executionContext, parts, "FUNCTION", false);
-        DBSProcedureContainer procedures = DBUtils.getAdapter(DBSProcedureContainer.class, namespace);
-        String routineName = DBUtils.getUnQuotedNormalizedIdentifier(executionContext.getDataSource().getSQLDialect(), parts[parts.length - 1]);
-        Set<DBSObject> routines = new LinkedHashSet<>();
-        DBSObject procedure = procedures == null ? null : procedures.getProcedure(context.getMonitor(), routineName);
-        if (procedure != null && namespace != null && isWithin(procedure, namespace)) {
-            routines.add(procedure);
-        }
-        if (procedures != null) {
-            // Overloaded routines may use a signature rather than the display name as their unique cache key.
-            SQLIdentifierDetector identifiers = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect());
-            boolean exactName = identifiers.isQuoted(parts[parts.length - 1]) || namespace == null || !coversNamespace(context, namespace);
-            for (DBSProcedure candidate : CommonUtils.safeCollection(procedures.getProcedures(context.getMonitor()))) {
-                boolean matches = exactName ? candidate.getName().equals(routineName)
-                    : candidate.getName().equalsIgnoreCase(routineName);
-                if (matches && namespace != null && isWithin(candidate, namespace)) {
-                    routines.add(candidate);
+        try {
+            DBSObject namespace = resolveNamespace(context, executionContext, parts, "FUNCTION", false);
+            DBSProcedureContainer procedures = DBUtils.getAdapter(DBSProcedureContainer.class, namespace);
+            String routineName = DBUtils.getUnQuotedNormalizedIdentifier(
+                executionContext.getDataSource().getSQLDialect(), parts[parts.length - 1]);
+            Set<DBSObject> routines = new LinkedHashSet<>();
+            DBSObject procedure = procedures == null ? null : procedures.getProcedure(context.getMonitor(), routineName);
+            if (procedure != null && namespace != null && isWithin(procedure, namespace)) {
+                routines.add(procedure);
+            }
+            if (procedures != null) {
+                // Overloaded routines may use a signature rather than the display name as their unique cache key.
+                SQLIdentifierDetector identifiers = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect());
+                boolean exactName = identifiers.isQuoted(parts[parts.length - 1])
+                    || namespace == null || !coversNamespace(context, namespace);
+                for (DBSProcedure candidate : CommonUtils.safeCollection(procedures.getProcedures(context.getMonitor()))) {
+                    boolean matches = exactName ? candidate.getName().equals(routineName)
+                        : candidate.getName().equalsIgnoreCase(routineName);
+                    if (matches && namespace != null && isWithin(candidate, namespace)) {
+                        routines.add(candidate);
+                    }
                 }
             }
+            return routines;
+        } catch (DBException e) {
+            if (CommonUtils.hasCause(e, SQLFeatureNotSupportedException.class)) {
+                // A routine can be executable even when the driver cannot expose its metadata.
+                return null;
+            }
+            throw e;
         }
-        return routines;
     }
 
     private void verifyFunctionReference(
@@ -531,7 +550,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             verifyRoutine(context, executionContext, name);
         } else {
             Set<DBSObject> routines = findRoutines(context, executionContext, name);
-            if (!routines.isEmpty()) {
+            if (routines != null && !routines.isEmpty()) {
                 for (DBSObject routine : routines) {
                     checkObjectScope(context, routine);
                 }

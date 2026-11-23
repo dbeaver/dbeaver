@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,16 @@
 package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,7 +35,8 @@ import java.util.Map;
 public class HandlerDashboardCreate extends AbstractDataSourceHandler implements IElementUpdater {
 
     @Override
-    public Object execute(ExecutionEvent event) {
+    @Nullable
+    public Object execute(@NotNull ExecutionEvent event) {
         DBPDataSourceContainer dataSourceContainer = null;
         if (CommonUtils.toBoolean(event.getParameter("datasource"))) {
             dataSourceContainer = getDataSourceContainerFromPart(HandlerUtil.getActivePart(event));
@@ -46,13 +51,13 @@ public class HandlerDashboardCreate extends AbstractDataSourceHandler implements
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters) {
+    public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainerFromPart(
             UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart());
         if (dataSourceContainer == null) {
-            element.setText("New project dashboard");
+            element.setText(UIDashboardMessages.dashboard_create_project);
         } else {
-            element.setText("New dashboard for '" + dataSourceContainer.getName() + "'");
+            element.setText(NLS.bind(UIDashboardMessages.dashboard_create_for_connection, dataSourceContainer.getName()));
         }
     }
 }

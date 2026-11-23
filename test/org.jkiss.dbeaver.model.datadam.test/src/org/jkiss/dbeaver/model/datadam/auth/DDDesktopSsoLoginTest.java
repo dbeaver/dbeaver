@@ -96,6 +96,21 @@ class DDDesktopSsoLoginTest {
     }
 
     @Test
+    void recognizesOnlyExplicitInvalidGrantResponses() throws Exception {
+        try (var client = new DDDesktopSsoClient(issuer)) {
+            var invalidGrant = client.mapErrorResponse(400, "{\"error\":\"invalid_grant\"}", issuer);
+            Assertions.assertInstanceOf(DDDesktopSsoClient.InvalidGrantException.class, invalidGrant);
+            Assertions.assertSame(invalidGrant, Assertions.assertThrows(DDDesktopSsoClient.InvalidGrantException.class,
+                () -> client.handleRequestException("request failed", invalidGrant)));
+            for (String body : new String[] {"unavailable", "{\"error\":\"server_error\"}", "{}", "[]"}) {
+                Assertions.assertFalse(client.mapErrorResponse(400, body, issuer) instanceof DDDesktopSsoClient.InvalidGrantException);
+            }
+            Assertions.assertFalse(client.mapErrorResponse(503, "{\"error\":\"invalid_grant\"}", issuer)
+                instanceof DDDesktopSsoClient.InvalidGrantException);
+        }
+    }
+
+    @Test
     void usesLoopbackPkceAndExchangesCodeWithoutBackendCredentials() throws Exception {
         AtomicReference<Map<String, String>> authorization = new AtomicReference<>();
         var result = new DDDesktopSsoLogin().login(issuer, null, SCOPES, monitor, url -> {
