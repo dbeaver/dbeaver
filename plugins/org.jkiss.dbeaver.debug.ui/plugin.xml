@@ -90,7 +90,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <category description="Database Debug commands" id="org.jkiss.dbeaver.debug.ui.commands.category" name="Database Debug"/>
+        <category description="%category.org.jkiss.dbeaver.debug.ui.commands.category.description" id="org.jkiss.dbeaver.debug.ui.commands.category" name="%category.org.jkiss.dbeaver.debug.ui.commands.category.name"/>
 
         <command id="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" name="%commands.command.menuDelegateToolbar.name" description="%commands.command.menuDelegateToolbar.description"/>
     </extension>
@@ -207,8 +207,8 @@
     <extension point="org.jkiss.dbeaver.app.config">
         <feature
             id="debug"
-            label="Procedure debugger"
-            description="Enables debugging of stored procedures and functions in PostgreSQL and its derivatives (Greenplum, TimescaleDB, etc.)"
+            label="%feature.debug.label"
+            description="%feature.debug.description"
             enabledByDefault="false"/>
     </extension>
 

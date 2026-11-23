@@ -19,12 +19,28 @@ package org.jkiss.dbeaver.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class UIConnectionMessages extends NLS {
-
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIConnectionMessages"; //$NON-NLS-1$
 
+    public static String dialog_connection_project_password_title;
+    public static String dialog_driver_manager_delete_confirm_message;
+    public static String dialog_edit_driver_incomplete_files_title;
+    public static String dialog_edit_driver_incomplete_files_message;
+    public static String dialog_edit_driver_upload_title;
+    public static String dialog_edit_driver_upload_message;
+    public static String dialog_connection_virtual_model_group;
+    public static String dialog_connection_virtual_model_show;
+    public static String dialog_connection_virtual_model_show_tip;
+    public static String dialog_connection_virtual_model_reset;
+    public static String dialog_connection_virtual_model_reset_tip;
+    public static String dialog_connection_virtual_model_reset_title;
+    public static String dialog_connection_virtual_model_reset_message;
+
     public static String dialog_connection_edit_wizard_conn_conf_general_link;
+    public static String dialog_connection_name_pattern_settings;
     public static String dialog_connection_edit_connection_settings_variables_hint_label;
     public static String dialog_connection_database_documentation;
+    public static String dialog_connection_view_documentation;
+    public static String dialog_connection_view_driver_license;
     public static String dialog_connection_advanced_settings;
 
     public static String dialog_connection_driver;
@@ -310,6 +326,28 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_select_viewer_order_by_score_label;
     public static String dialog_driver_select_viewer_order_by_score_description;
 
+    public static String dialog_connection_advanced_tab;
+    public static String dialog_connection_driver_type;
+    public static String dialog_connection_driver_type_tip;
+    public static String dialog_connection_network_profile_edit;
+    public static String dialog_connection_network_profile_active;
+    public static String dialog_connection_network_profile_name;
+    public static String dialog_connection_network_profile_active_name;
+    public static String dialog_connection_network_profile_no_profile;
+    public static String dialog_connection_network_profile_no_active;
+    public static String dialog_connection_network_profile_none;
+    public static String dialog_connection_network_profile_change;
+    public static String dialog_connection_network_profile_keep;
+    public static String dialog_connection_network_profile_remove;
+    public static String dialog_connection_network_profile_unselect_confirmation;
+    public static String dialog_connection_network_profile_change_confirmation;
+    public static String dialog_connection_network_profile_provided;
+    public static String pref_page_network_profiles_save_error_title;
+    public static String pref_page_network_profiles_save_error;
+    public static String pref_page_network_profiles_no_secret_controller;
+    public static String pref_page_network_profiles_project_error_title;
+    public static String pref_page_network_profiles_project_error;
+
     public static String pref_page_network_profiles_tool_create_title;
     public static String pref_page_network_profiles_tool_create_text;
     public static String pref_page_network_profiles_tool_create_dialog_profile_name;
@@ -552,6 +590,39 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_transactions_ddl_behavior_label;
     public static String pref_page_transactions_ddl_behavior_tip;
     public static String pref_page_ui_general_group_general;
+
+    public static String preference_page_no_edit_access;
+    public static String dialog_connection_wizard_start_connection_monitor_connected;
+
+    public static String pref_page_drivers_proxy_save_error;
+    public static String pref_page_drivers_maven_save_error;
+    public static String dialog_driver_save_error_title;
+    public static String dialog_driver_libraries_sync_error;
+    public static String dialog_drivers_save_error;
+    public static String controls_client_homes_panel_download_title;
+    public static String controls_client_homes_panel_download_error;
+    public static String dialog_connection_database_info_title;
+    public static String dialog_connection_database_info_error;
+    public static String dialog_connection_create_error_title;
+    public static String dialog_connection_create_error;
+    public static String dialog_connection_persist_error_title;
+    public static String dialog_connection_persist_error;
+    public static String dialog_connection_no_project_title;
+    public static String dialog_connection_no_project_message;
+    public static String dialog_connection_internal_error_title;
+    public static String dialog_connection_wizard_open_error;
+    public static String dialog_connection_credentials_restricted_title;
+    public static String dialog_connection_credentials_restricted_message;
+    public static String dialog_connection_credentials_manager_title;
+    public static String dialog_connection_credentials_manager_message;
+    public static String dialog_connection_configuration_page_error;
+    public static String dialog_password_change_title;
+    public static String dialog_password_change_error;
+    public static String dialog_driver_download_network_error;
+    public static String dialog_driver_versions_title;
+    public static String dialog_driver_versions_error;
+    public static String dialog_connection_connect_title;
+    public static String dialog_connection_disconnect_title;
 
     static {
         // initialize resource bundle

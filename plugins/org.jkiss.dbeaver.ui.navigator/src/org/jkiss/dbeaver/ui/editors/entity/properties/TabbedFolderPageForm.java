@@ -158,6 +158,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
         propertiesGroup.addDisposeListener(e -> dispose());
 
+        UIUtils.installAndUpdateMainFont(propertiesGroup);
         refreshProperties();
     }
 
@@ -240,13 +241,13 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 }
             }
 
+            UIUtils.applyMainFont(propertiesGroup);
             layoutProperties();
         }
         for (Control x : propertiesGroup.getChildren()) {
             CSSUtils.markConnectionTypeColor(x);
         }
 
-        UIUtils.installAndUpdateMainFont(propertiesGroup);
         refreshPropertyValues(allProps, firstInit, afterRefresh);
     }
 

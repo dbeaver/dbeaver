@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -167,7 +166,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
     }
 
     protected void createSaveToFileButton(@NotNull Composite parent) {
-        createButton(parent, SAVE_TO_FILE_BUTTON_ID, ModelMessages.model_jdbc_save_to_file_, false);
+        createButton(parent, SAVE_TO_FILE_BUTTON_ID, SQLEditorMessages.model_jdbc_save_to_file_, false);
     }
 
     protected void saveToClipboard() {
@@ -178,7 +177,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
     protected boolean saveToFile() {
         Path file = DialogUtils.selectFileForSave(
             this.getShell(),
-            this.getTitle() + " : " + ModelMessages.model_jdbc_save_to_file_,
+            this.getTitle() + " : " + SQLEditorMessages.model_jdbc_save_to_file_,
             new String[]{"*.sql", "*.txt", "*", "*.*"},
             null
         );

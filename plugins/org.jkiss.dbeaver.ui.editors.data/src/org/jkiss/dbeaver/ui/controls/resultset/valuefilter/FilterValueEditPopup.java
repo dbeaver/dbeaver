@@ -220,7 +220,6 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                         reloadFilterValues();
                     }));
                 caseInsensitiveSearchCheck.setEnabled(isQueryDatabaseEnabled());
-                closeOnFocusLost(caseInsensitiveSearchCheck);
             }
             Button queryDatabaseCheck = UIUtils.createCheckbox(
                 optionsGroup,
@@ -239,7 +238,6 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                     }
                     reloadFilterValues();
                 }));
-            closeOnFocusLost(queryDatabaseCheck);
         }
         if (!filter.isDictionarySelector()) {
             showRowCountCheck = UIUtils.createCheckbox(
@@ -259,15 +257,12 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                     getDialogBoundsSettings().put(PROP_SHOW_DISTINCT_VALUES_COUNT, showDistinctValuesCountCheck.getSelection());
                     reloadFilterValues();
                 }));
-
-            closeOnFocusLost(showRowCountCheck);
-            closeOnFocusLost(showDistinctValuesCountCheck);
         }
 
         filter.createFilterButton(ResultSetMessages.sql_editor_resultset_filter_panel_btn_apply, SelectionListener.widgetSelectedAdapter(e ->
             applyFilterValue()));
 
-        closeOnFocusLost(filterTextbox, table);
+        closeOnFocusLost();
 
         filter.setFilterPattern(null);
         reloadFilterValues();

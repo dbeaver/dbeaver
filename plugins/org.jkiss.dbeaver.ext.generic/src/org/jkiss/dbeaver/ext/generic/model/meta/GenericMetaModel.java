@@ -387,7 +387,10 @@ public class GenericMetaModel {
                         }
                     }
                 } catch (Throwable e) {
-                    log.debug("Can't read generic functions", e);
+                    // Drivers may execute functions without supporting function metadata.
+                    if (!CommonUtils.hasCause(e, SQLFeatureNotSupportedException.class)) {
+                        log.debug("Can't read generic functions", e);
+                    }
                 }
             }
 

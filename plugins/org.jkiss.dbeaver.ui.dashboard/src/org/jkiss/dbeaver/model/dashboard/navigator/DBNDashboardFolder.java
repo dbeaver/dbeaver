@@ -26,14 +26,14 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.DBNSpecialFolder;
 import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
  * DBNDashboardFolder
  */
-public class DBNDashboardFolder extends DBNResource {
+public class DBNDashboardFolder extends DBNSpecialFolder {
     private static final DBIcon FOLDER_ICON = new DBIcon(RuntimeUtils.makePlatformResourceUrl(
         DashboardConstants.DASHBOARDS_PLUGIN_ID, "icons/dashboard_folder.svg"));
 

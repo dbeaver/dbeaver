@@ -21,6 +21,8 @@ import org.eclipse.osgi.util.NLS;
 public class ObjectEditorMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages"; //$NON-NLS-1$
 
+    public static String edit_object_error_saving_data;
+
     public static String dialog_struct_attribute_edit_page_header_edit_attribute;
     public static String dialog_struct_label_text_name;
     public static String dialog_struct_label_text_properties;

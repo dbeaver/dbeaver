@@ -17,9 +17,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -116,6 +114,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private static final int MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH = 1000;
 
     private Spreadsheet spreadsheet;
+    private final ResultSetColumnFilter columnFilter = new ResultSetColumnFilter();
 
     private SpreadsheetFindReplaceTarget findReplaceTarget;
     private ResultsetFindReplaceOverlay findReplaceOverlay;
@@ -165,6 +164,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return spreadsheet;
     }
 
+    @NotNull
+    ResultSetColumnFilter getColumnFilter() {
+        return columnFilter;
+    }
+
+    public void resetColumnFilter() {
+        columnFilter.disable();
+        columnFilter.restore(controller.getModel());
+        SpreadsheetColumnFilterHandler.refreshElements(controller);
+    }
+
     @Override
     public boolean isDirty() {
         return activeInlineEditor != null &&
@@ -183,7 +193,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     Object value = activeInlineEditor.extractEditorValue();
                     valueController.updateValue(value, true);
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Error extracting editor value", null, e);
+                    DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_extract_value_message, null, e);
                 }
             }
             spreadsheet.cancelInlineEditor();
@@ -204,6 +214,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
             new GridLabelProvider(),
             this);
         this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        ResultSetListenerAdapter columnFilterListener = new ResultSetListenerAdapter() {
+            @Override
+            public void handleResultSetChange() {
+                if (!spreadsheet.isDisposed() && columnFilter.apply(controller.getModel())) {
+                    refreshGrid(true, true);
+                }
+            }
+        };
+        controller.addListener(columnFilterListener);
+        spreadsheet.addDisposeListener(e -> controller.removeListener(columnFilterListener));
 
         this.spreadsheet.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN && e.data != null) {
@@ -701,8 +722,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 if (targetRange == null) {
                     DBWorkbench.getPlatformUI().showWarningMessageBox(
-                        "Advanced paste",
-                        "You can't perform this operation on a multiple range selection.\n\nPlease select a single range and try again."
+                        ResultSetMessages.dialog_paste_as_title,
+                        ResultSetMessages.error_paste_multiple_ranges
                     );
                     return;
                 }
@@ -832,7 +853,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             controller.updatePanelsContent(false);
             controller.refreshHintCache(updatedAttrs, updatedRows, null);
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Cannot replace cell value", null, e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_replace_cell_value, null, e);
         }
     }
 
@@ -959,6 +980,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (spreadsheet.isDisposed()) {
             return;
         }
+        // Includes fetched segments and quick-filter changes, which can alter whether a column contains data.
+        refreshMetadata |= columnFilter.apply(controller.getModel());
+        refreshGrid(refreshMetadata, keepState);
+    }
+
+    private void refreshGrid(boolean refreshMetadata, boolean keepState) {
         isHighContrastTheme = UIStyles.isHighContrastTheme();
 
         // Cache preferences
@@ -1032,6 +1059,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     @Override
     public void clearMetaData() {
+        columnFilter.restore(controller.getModel());
         this.curAttribute = null;
         if (this.columnOrder != SWT.NONE) {
             this.columnOrder = SWT.DEFAULT;
@@ -1164,7 +1192,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 {
                     // Hide/show
-                    if (getController().getModel().getDataFilter().hasHiddenAttributes()) {
+                    if (getController().getModel().getDataFilter().hasHiddenAttributes() || columnFilter.hasHiddenColumns()) {
                         manager.insertAfter(
                             IResultSetController.MENU_GROUP_ADDITIONS,
                             ActionUtils.makeCommandContribution(
@@ -1183,15 +1211,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     } else {
                         hideTitle = NLS.bind(ResultSetMessages.controls_resultset_viewer_hide_columns_x, selectedColumns.size());
                     }
-                    manager.insertAfter(
-                        IResultSetController.MENU_GROUP_ADDITIONS, 
-                        ActionUtils.makeCommandContribution(
-                            controller.getSite(),
-                            SpreadsheetCommandHandler.CMD_HIDE_COLUMNS,
-                            hideTitle,
-                            null
-                        )
+                    CommandContributionItem hideColumns = ActionUtils.makeCommandContribution(
+                        controller.getSite(),
+                        SpreadsheetCommandHandler.CMD_HIDE_COLUMNS,
+                        hideTitle,
+                        null
                     );
+                    hideColumns.setId(SpreadsheetCommandHandler.CMD_HIDE_COLUMNS);
+                    manager.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, hideColumns);
                 }
             }
         }
@@ -1220,13 +1247,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
         }
-        if (rowObject == null) {
+        if (rowObject == null || controller.getModel().getVisibleAttributes().isEmpty()) {
+            var hideEmptyMenu = new MenuManager(
+                ActionUtils.findCommandName(SpreadsheetCommandHandler.CMD_COLUMNS_HIDE_EMPTY),
+                SpreadsheetCommandHandler.CMD_COLUMNS_HIDE_EMPTY);
+            var hideEmptyAnchor = manager.find(SpreadsheetCommandHandler.CMD_HIDE_COLUMNS) == null
+                ? IResultSetController.MENU_GROUP_ADDITIONS
+                : SpreadsheetCommandHandler.CMD_HIDE_COLUMNS;
+            manager.insertAfter(hideEmptyAnchor, hideEmptyMenu);
             if (!controller.getModel().getVisibleAttributes().isEmpty()) {
-                manager.insertAfter(
-                    IResultSetController.MENU_GROUP_ADDITIONS,
-                    ActionUtils.makeCommandContribution(
-                        controller.getSite(),
-                        SpreadsheetCommandHandler.CMD_COLUMNS_HIDE_EMPTY));
                 manager.insertAfter(
                     IResultSetController.MENU_GROUP_ADDITIONS,
                     ActionUtils.makeCommandContribution(
@@ -1357,7 +1386,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         try {
             activeInlineEditor = valueController.getValueManager().createEditor(valueController);
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Cannot edit value", null, e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_edit_value, null, e);
             return null;
         }
         if (activeInlineEditor != null) {
@@ -1452,7 +1481,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         } else if (isAttributeExpandable(cell.row, attr)) {
             spreadsheet.toggleCellValue(cell.col, cell.row);
         } else if (DBUtils.isNullValue(value)) {
-            UIUtils.showMessageBox(getSpreadsheet().getShell(), "Wrong link", "Can't navigate to NULL value", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(getSpreadsheet().getShell(), ResultSetMessages.error_open_link_title, ResultSetMessages.error_navigate_null, SWT.ICON_ERROR);
         } else {
             IGridContentProvider.CellInformation cellInfo = spreadsheet.getContentProvider().getCellInfo(cell.col, cell.row, false);
             if ((cellInfo.state & IGridContentProvider.STATE_HYPER_LINK) != 0) {

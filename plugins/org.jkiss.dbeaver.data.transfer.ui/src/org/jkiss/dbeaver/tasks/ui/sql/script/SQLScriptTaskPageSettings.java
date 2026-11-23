@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionListener;
@@ -49,7 +50,6 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -83,9 +83,9 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
     private final List<DBNDataSource> selectedDataSources = new ArrayList<>();
 
     SQLScriptTaskPageSettings(SQLScriptTaskConfigurationWizard wizard) {
-        super(DTMessages.sql_script_task_title);
-        setTitle(DTMessages.sql_script_task_page_settings_title);
-        setDescription(DTMessages.sql_script_task_page_settings_description);
+        super(DTUIMessages.sql_script_task_title);
+        setTitle(DTUIMessages.sql_script_task_page_settings_title);
+        setDescription(DTUIMessages.sql_script_task_page_settings_description);
         this.sqlWizard = wizard;
     }
 
@@ -108,7 +108,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         {
             Composite filesGroup = UIUtils.createComposite(mainGroup, 2);
             filesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-            UIUtils.createControlLabel(filesGroup, DTMessages.sql_script_task_page_settings_group_files, 2);
+            UIUtils.createControlLabel(filesGroup, DTUIMessages.sql_script_task_page_settings_group_files, 2);
 
             scriptsViewer = new TableViewer(filesGroup, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
             scriptsViewer.setContentProvider(new ListContentProvider());
@@ -150,7 +150,9 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         try {
                             handler.openResource(resource);
                         } catch (Exception e) {
-                            DBWorkbench.getPlatformUI().showError("Error opening resource", "Failed to open resource " + resource, e);
+                            DBWorkbench.getPlatformUI().showError(
+                                DTUIMessages.sql_script_resource_open_error_title,
+                                NLS.bind(DTUIMessages.sql_script_resource_open_error_message, resource), e);
                         }
                     }
                 }
@@ -263,7 +265,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 mainGroup,
                 2);
             connectionsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-            UIUtils.createControlLabel(connectionsGroup, DTMessages.sql_script_task_page_settings_group_connections, 2);
+            UIUtils.createControlLabel(connectionsGroup, DTUIMessages.sql_script_task_page_settings_group_connections, 2);
 
 
             dataSourceViewer = new TableViewer(connectionsGroup, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
@@ -365,17 +367,17 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         {
             Composite settingsGroup = UIUtils.createTitledComposite(
                 composite,
-                DTMessages.sql_script_task_page_settings_group_script,
+                DTUIMessages.sql_script_task_page_settings_group_script,
                 3,
                 GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
-            ignoreErrorsCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_ignore_errors, "", dtSettings.isIgnoreErrors(), 1);
-            dumpQueryCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_dump_results, "", dtSettings.isDumpQueryResultsToLog(), 1);
+            ignoreErrorsCheck = UIUtils.createCheckbox(settingsGroup, DTUIMessages.sql_script_task_page_settings_option_ignore_errors, "", dtSettings.isIgnoreErrors(), 1);
+            dumpQueryCheck = UIUtils.createCheckbox(settingsGroup, DTUIMessages.sql_script_task_page_settings_option_dump_results, "", dtSettings.isDumpQueryResultsToLog(), 1);
             autoCommitCheck = UIUtils.createCheckbox(
                 settingsGroup,
-                DTMessages.sql_script_task_page_settings_option_auto_commit,
-                DTMessages.sql_script_task_page_settings_option_auto_commit_tip,
+                DTUIMessages.sql_script_task_page_settings_option_auto_commit,
+                DTUIMessages.sql_script_task_page_settings_option_auto_commit_tip,
                 dtSettings.isAutoCommit(),
                 1
             );

@@ -48,6 +48,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     private boolean showViews;
     private boolean fullSchemaBackup;
     private boolean useInserts;
+    private int rowsPerInsert = 1;
     private boolean noPrivileges;
     private boolean noOwner;
     private boolean dropObjects;
@@ -109,6 +110,14 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
 
     public void setUseInserts(boolean useInserts) {
         this.useInserts = useInserts;
+    }
+
+    public int getRowsPerInsert() {
+        return rowsPerInsert;
+    }
+
+    public void setRowsPerInsert(int rowsPerInsert) {
+        this.rowsPerInsert = Math.max(1, rowsPerInsert);
     }
 
     public boolean isNoPrivileges() {
@@ -192,6 +201,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         showViews = store.getBoolean("pg.export.showViews");
         fullSchemaBackup = store.getBoolean("pg.export.fullSchemaBackup");
         useInserts = store.getBoolean("pg.export.useInserts");
+        setRowsPerInsert(store.getInt("pg.export.rowsPerInsert"));
         noPrivileges = store.getBoolean("pg.export.noPrivileges");
         noOwner = store.getBoolean("pg.export.noOwner");
         dropObjects = store.getBoolean("pg.export.dropObjects");
@@ -272,6 +282,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         store.setValue("pg.export.showViews", showViews);
         store.setValue("pg.export.fullSchemaBackup", fullSchemaBackup);
         store.setValue("pg.export.useInserts", useInserts);
+        store.setValue("pg.export.rowsPerInsert", rowsPerInsert);
         store.setValue("pg.export.noPrivileges", noPrivileges);
         store.setValue("pg.export.noOwner", noOwner);
         store.setValue("pg.export.dropObjects", dropObjects);

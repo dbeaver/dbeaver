@@ -140,7 +140,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
 
         objectList.loadData();
 
-        closeOnFocusLost(objectList.getItemsViewer().getControl(), objectList.getSearchTextControl());
+        closeOnFocusLost();
 
         return group;
     }

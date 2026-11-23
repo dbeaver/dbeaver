@@ -47,8 +47,8 @@ public class ProductConfigWelcomePage extends ProductConfigWizardPage {
                 seenLanguageChangeWarning = true;
                 UIUtils.showMessageBox(
                     getShell(),
-                    "Language change",
-                    "Language change will be applied after restart.",
+                    ProductConfigMessages.welcome_language_change_title,
+                    ProductConfigMessages.welcome_language_change_message,
                     SWT.ICON_INFORMATION
                 );
             }
