@@ -75,12 +75,6 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
         return newVersion != null && newVersion.isMajorUpdate();
     }
 
-    static boolean isCriticalUpdate() {
-        // Temporary fallback until dbeaver/pro#10796: treat every pending patch as critical for toolbar coloring.
-        return currentVersion != null && newVersion != null && newVersion.isNewerThan(currentVersion, currentPatch)
-            && !newVersion.getApplicablePatches(currentVersion, currentPatch).isEmpty();
-    }
-
     static void startUpdate(@NotNull Version current, @NotNull VersionDescriptor available) {
         UIUtils.runInUIThread(() -> {
             if (!updateStarted) {

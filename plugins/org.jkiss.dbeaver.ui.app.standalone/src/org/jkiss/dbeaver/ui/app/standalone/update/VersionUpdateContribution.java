@@ -25,14 +25,17 @@ import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.menus.*;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.CommandContributionItemParameter;
+import org.eclipse.ui.menus.ExtensionContributionFactory;
+import org.eclipse.ui.menus.IContributionRoot;
+import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
-import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.function.Consumer;
@@ -68,7 +71,7 @@ public class VersionUpdateContribution extends ExtensionContributionFactory {
             @Override
             @NotNull
             public EvaluationResult evaluate(@NotNull IEvaluationContext context) {
-                return EvaluationResult.valueOf(true);
+                return EvaluationResult.valueOf(VersionUpdateHandler.isUpdateAvailable());
             }
 
             @Override
@@ -92,11 +95,9 @@ public class VersionUpdateContribution extends ExtensionContributionFactory {
         BaseThemeSettings.instance.addPropertyListener(
             BaseEditorColors.COLOR_BACKGROUND_GREEN, themeListener, null
         );
-        BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_ERROR, themeListener, null);
         item.addDisposeListener(event -> {
             BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_BACKGROUND_BLUE, themeListener);
             BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_BACKGROUND_GREEN, themeListener);
-            BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_ERROR, themeListener);
         });
         // Apply after the workbench has styled the native toolbar during creation.
         UIUtils.asyncExec(() -> updateColors(toolbar));
@@ -141,10 +142,8 @@ public class VersionUpdateContribution extends ExtensionContributionFactory {
         if (toolbar.isDisposed()) {
             return;
         }
-        boolean critical = VersionUpdateHandler.isCriticalUpdate();
-        var background = critical ? BaseThemeSettings.instance.colorError
-            : VersionUpdatePresentation.getUpdateBackground(VersionUpdateHandler.isMajorUpdate());
-        var foreground = critical ? UIStyles.getContrastColor(background) : toolbar.getParent().getForeground();
+        var background = VersionUpdatePresentation.getUpdateBackground(VersionUpdateHandler.isMajorUpdate());
+        var foreground = toolbar.getParent().getForeground();
         toolbar.setBackground(background);
         toolbar.setForeground(foreground);
         for (var item : toolbar.getItems()) {
