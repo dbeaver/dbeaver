@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -68,6 +69,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ScopeSelectorDialog extends BaseDialog {
@@ -84,6 +86,11 @@ public class ScopeSelectorDialog extends BaseDialog {
     private Composite treeArea;
     private Label loadingLabel;
     private ProgressBar loadingBar;
+    private final AtomicReference<String> progressText =
+        new AtomicReference<>(UINavigatorMessages.ui_navigator_loading_text_loading);
+    private final AtomicBoolean progressUpdateScheduled = new AtomicBoolean();
+    private boolean initialLoading = true;
+    private boolean treeLoading;
     @Nullable
     private AbstractJob loadJob;
     private List<? extends DBNNode> selectedNodes;
@@ -139,6 +146,7 @@ public class ScopeSelectorDialog extends BaseDialog {
         treeData.heightHint = 300;
         treeArea.setLayoutData(treeData);
         loadingLabel = UIUtils.createLabel(treeArea, UINavigatorMessages.ui_navigator_loading_text_loading);
+        loadingLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         loadingBar = new ProgressBar(treeArea, SWT.INDETERMINATE);
         loadingBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -201,9 +209,10 @@ public class ScopeSelectorDialog extends BaseDialog {
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
+                    DBRProgressMonitor progress = trackProgress(monitor);
                     if (!dataSourceContainer.isConnected() || dataSourceContainer.getDataSource() == null) {
                         AtomicReference<IStatus> connectionStatus = new AtomicReference<>();
-                        if (!DBUtils.initDataSource(monitor, dataSourceContainer, connectionStatus::set)) {
+                        if (!DBUtils.initDataSource(progress, dataSourceContainer, connectionStatus::set)) {
                             IStatus status = connectionStatus.get();
                             if (status != null && status.getException() != null) {
                                 throw new DBException(AIChatMessagesUI.ai_chat_connect_error_message, status.getException());
@@ -220,7 +229,7 @@ public class ScopeSelectorDialog extends BaseDialog {
                         throw new DBException(AIUIMessages.scope_selector_load_error);
                     }
                     List<DBSObject> selected = initialNodes.isEmpty()
-                        ? AITextUtils.loadCustomEntities(monitor, context.getDataSource(), savedObjectIds)
+                        ? AITextUtils.loadCustomEntities(progress, context.getDataSource(), savedObjectIds)
                         : initialNodes.stream().filter(DBNDatabaseNode.class::isInstance)
                             .map(DBNDatabaseNode.class::cast).map(DBNDatabaseNode::getObject)
                             .filter(Objects::nonNull).toList();
@@ -249,10 +258,29 @@ public class ScopeSelectorDialog extends BaseDialog {
     }
 
     private void showObjects(@NotNull DBSObjectContainer root, @NotNull List<DBSObject> selected) {
-        loadingLabel.dispose();
-        loadingBar.dispose();
-        selectorTree = new DatabaseObjectSelectionTree(treeArea, runnableContext, root);
+        selectorTree = new DatabaseObjectSelectionTree(treeArea, runnableContext, root,
+            new DatabaseObjectSelectionTree.ProgressListener() {
+                @Override
+                public void loadingStarted() {
+                    treeLoading = true;
+                    scheduleProgressUpdate(UINavigatorMessages.ui_navigator_loading_text_loading);
+                    updateLoadingState();
+                }
+
+                @NotNull
+                @Override
+                public DBRProgressMonitor wrapMonitor(@NotNull DBRProgressMonitor monitor) {
+                    return trackProgress(monitor);
+                }
+
+                @Override
+                public void loadingFinished() {
+                    treeLoading = false;
+                    updateLoadingState();
+                }
+            });
         selectorTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+        selectorTree.moveAbove(loadingLabel);
         selectorTree.setCheckedObjects(selected);
         Button showSystemObjects = UIUtils.createCheckbox(
             treeArea, UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
@@ -265,7 +293,49 @@ public class ScopeSelectorDialog extends BaseDialog {
         });
         updateOkButton();
         updateScopeInfo();
+        initialLoading = false;
+        updateLoadingState();
         getShell().layout(true, true);
+    }
+
+    @NotNull
+    private DBRProgressMonitor trackProgress(@NotNull DBRProgressMonitor monitor) {
+        return new ProxyProgressMonitor(monitor) {
+            private String task = UINavigatorMessages.ui_navigator_loading_text_loading;
+
+            @Override
+            public void beginTask(@NotNull String name, int totalWork) {
+                task = name;
+                scheduleProgressUpdate(task);
+                super.beginTask(name, totalWork);
+            }
+
+            @Override
+            public void subTask(@NotNull String name) {
+                scheduleProgressUpdate(task + ": " + name);
+                super.subTask(name);
+            }
+        };
+    }
+
+    private void scheduleProgressUpdate(@NotNull String text) {
+        progressText.set(text);
+        if (progressUpdateScheduled.compareAndSet(false, true)) {
+            UIUtils.asyncExec(() -> {
+                progressUpdateScheduled.set(false);
+                if (!loadingLabel.isDisposed()) {
+                    loadingLabel.setText(progressText.get());
+                    treeArea.layout(true, true);
+                }
+            });
+        }
+    }
+
+    private void updateLoadingState() {
+        boolean loading = initialLoading || treeLoading;
+        UIUtils.setControlVisible(loadingLabel, loading);
+        UIUtils.setControlVisible(loadingBar, loading);
+        treeArea.layout(true, true);
     }
 
     private void updateOkButton() {
