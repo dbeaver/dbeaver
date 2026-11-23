@@ -25,17 +25,14 @@ import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.menus.CommandContributionItem;
-import org.eclipse.ui.menus.CommandContributionItemParameter;
-import org.eclipse.ui.menus.ExtensionContributionFactory;
-import org.eclipse.ui.menus.IContributionRoot;
-import org.eclipse.ui.menus.UIElement;
+import org.eclipse.ui.menus.*;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.function.Consumer;
@@ -71,7 +68,7 @@ public class VersionUpdateContribution extends ExtensionContributionFactory {
             @Override
             @NotNull
             public EvaluationResult evaluate(@NotNull IEvaluationContext context) {
-                return EvaluationResult.valueOf(VersionUpdateHandler.isUpdateAvailable());
+                return EvaluationResult.valueOf(true);
             }
 
             @Override
@@ -149,7 +146,7 @@ public class VersionUpdateContribution extends ExtensionContributionFactory {
         boolean critical = VersionUpdateHandler.isCriticalUpdate();
         var background = critical ? BaseThemeSettings.instance.colorError
             : VersionUpdatePresentation.getUpdateBackground(VersionUpdateHandler.isMajorUpdate());
-        var foreground = critical ? BaseThemeSettings.instance.colorErrorForeground : toolbar.getParent().getForeground();
+        var foreground = critical ? UIStyles.getContrastColor(background) : toolbar.getParent().getForeground();
         toolbar.setBackground(background);
         toolbar.setForeground(foreground);
         for (var item : toolbar.getItems()) {
