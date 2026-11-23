@@ -93,12 +93,10 @@ public class VersionUpdateContribution extends ExtensionContributionFactory {
             BaseEditorColors.COLOR_BACKGROUND_GREEN, themeListener, null
         );
         BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_ERROR, themeListener, null);
-        BaseThemeSettings.instance.addPropertyListener(BaseEditorColors.COLOR_ERROR_FOREGROUND, themeListener, null);
         item.addDisposeListener(event -> {
             BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_BACKGROUND_BLUE, themeListener);
             BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_BACKGROUND_GREEN, themeListener);
             BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_ERROR, themeListener);
-            BaseThemeSettings.instance.removePropertyListener(BaseEditorColors.COLOR_ERROR_FOREGROUND, themeListener);
         });
         // Apply after the workbench has styled the native toolbar during creation.
         UIUtils.asyncExec(() -> updateColors(toolbar));
