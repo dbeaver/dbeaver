@@ -27,7 +27,6 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
@@ -45,13 +44,10 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.event.DDProjectEventListener;
 import org.jkiss.dbeaver.ui.datadam.project.job.*;
 import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectCreate;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
@@ -68,7 +64,6 @@ public class DDProjectUIManager {
     private final DBDamAccessService accessService = DBDamAccessService.getInstance();
     @NotNull
     private final DDProjectManager projectManager = DDProjectManager.getInstance();
-    private boolean emptyProjectsPromptShown;
 
     private DDProjectUIManager() {
         DDSharedProjectEventsServiceDesktop.getInstance().subscribe(new DDProjectEventListener(this));
@@ -116,34 +111,8 @@ public class DDProjectUIManager {
                     refreshNavigator(page, DatabaseNavigatorView.VIEW_ID);
                 }
             }
-            ensureActiveProject();
+            DDProjectKeyUIManager.getInstance().ensureActiveProject();
         });
-    }
-
-    private void ensureActiveProject() {
-        if (accessService.getStatus() == DBDamAccessService.Status.UNLOADED) {
-            return;
-        }
-        List<? extends DBPProject> visibleProjects = DBWorkbench.getPlatform().getWorkspace().getVisibleProjects();
-        if (visibleProjects.isEmpty() && !emptyProjectsPromptShown
-            && DBPPlatformDesktop.getInstance().getWorkspace().canManageProjects()) {
-            IWorkbenchWindow window = UIUtils.findActiveWorkbenchWindow();
-            if (window != null) {
-                emptyProjectsPromptShown = true;
-                if (UIUtils.confirmAction(DDTrackingUIMessages.project_no_projects_title,
-                    DDTrackingUIMessages.project_no_projects_message)
-                    && NavigatorHandlerProjectCreate.createNewProject(window)) {
-                    visibleProjects = DBWorkbench.getPlatform().getWorkspace().getVisibleProjects();
-                }
-            }
-        }
-        if (!visibleProjects.isEmpty()) {
-            emptyProjectsPromptShown = false;
-            DBPProject activeProject = DBPPlatformDesktop.getInstance().getWorkspace().getActiveProject();
-            if (!visibleProjects.contains(activeProject)) {
-                NavigatorHandlerProjectSetActive.setActiveProject(visibleProjects.getFirst());
-            }
-        }
     }
 
     private void refreshNavigator(@NotNull IWorkbenchPage page, @NotNull String viewId) {

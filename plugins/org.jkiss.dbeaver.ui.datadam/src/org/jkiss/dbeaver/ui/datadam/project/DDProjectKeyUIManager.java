@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
@@ -25,9 +27,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,6 +40,7 @@ import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -43,6 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class DDProjectKeyUIManager {
     private static final DDProjectKeyUIManager INSTANCE = new DDProjectKeyUIManager();
     private final AtomicBoolean cleanupInProgress = new AtomicBoolean();
+    private final AtomicBoolean activeProjectCheckRunning = new AtomicBoolean();
 
     private DDProjectKeyUIManager() {
     }
@@ -54,6 +60,32 @@ public final class DDProjectKeyUIManager {
 
     boolean isCleanupInProgress() {
         return cleanupInProgress.get();
+    }
+
+    public void ensureActiveProject() {
+        if (cleanupInProgress.get() || DBDamAccessService.getInstance().getStatus() == DBDamAccessService.Status.UNLOADED
+            || !activeProjectCheckRunning.compareAndSet(false, true)) {
+            return;
+        }
+        AbstractJob job = new AbstractJob(DDTrackingUIMessages.project_sync_title) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    if (cleanupInProgress.get() || monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    ensureActiveProject(DBPPlatformDesktop.getInstance().getWorkspace().getVisibleProjects());
+                    return Status.OK_STATUS;
+                } catch (DBException e) {
+                    return Status.error("Could not create a local project", e);
+                } finally {
+                    activeProjectCheckRunning.set(false);
+                }
+            }
+        };
+        job.setSystem(true);
+        job.schedule();
     }
 
     /** Invoked from a progress operation after the user confirms local project deletion. */
@@ -153,7 +185,7 @@ public final class DDProjectKeyUIManager {
         var accountProjects = manager.getAccountProjects(accountId);
         var workspace = DBPPlatformDesktop.getInstance().getWorkspace();
         DBPProject currentProject = workspace.getActiveProject();
-        if (currentProject == null || !accountProjects.contains(currentProject)) {
+        if (currentProject != null && !accountProjects.contains(currentProject)) {
             return;
         }
         DBPProject replacement = null;
@@ -163,16 +195,29 @@ public final class DDProjectKeyUIManager {
                 break;
             }
         }
-        if (replacement == null) {
+        ensureActiveProject(replacement == null ? List.of() : List.of(replacement));
+    }
+
+    private void ensureActiveProject(@NotNull List<? extends DBPProject> candidates) throws DBException {
+        DBPWorkspace workspace = DBPPlatformDesktop.getInstance().getWorkspace();
+        if (candidates.contains(workspace.getActiveProject())) {
+            return;
+        }
+        DBPProject project;
+        if (candidates.isEmpty()) {
+            if (!workspace.canManageProjects()) {
+                return;
+            }
             String name = DBConstants.DEFAULT_PROJECT_NAME;
             int suffix = 1;
             while (workspace.getProject(name) != null) {
                 name = DBConstants.DEFAULT_PROJECT_NAME + " " + suffix++;
             }
-            replacement = workspace.createProject(name, null);
+            project = workspace.createProject(name, null);
+        } else {
+            project = candidates.getFirst();
         }
-        DBPProject activeProject = replacement;
-        UIUtils.syncExec(() -> NavigatorHandlerProjectSetActive.setActiveProject(activeProject));
+        UIUtils.syncExec(() -> NavigatorHandlerProjectSetActive.setActiveProject(project));
     }
 
     private record Recovery(@Nullable String phrase) {
