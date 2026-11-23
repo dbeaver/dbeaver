@@ -30,4 +30,7 @@ public interface DBDamRpcRegistration {
     String getId();
 
     void register(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) throws DBException;
+
+    default void unregister(@NotNull MessagingRpcEndpoint endpoint) {
+    }
 }

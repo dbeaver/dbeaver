@@ -83,6 +83,9 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @SerializedName("openai.authentication")
     private String authentication = AUTHENTICATION_API_TOKEN;
+    // personal edits must not replace the shared authentication method
+    @Nullable
+    protected transient Boolean userAccountAuthentication;
     @SecureProperty
     @SerializedName(ACCESS_TOKEN)
     private String accessToken;
@@ -229,6 +232,9 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @NotNull
     @Property(order = 1)
     public String getAuthentication() {
+        if (userAccountAuthentication != null) {
+            return userAccountAuthentication ? AUTHENTICATION_CHATGPT_ACCOUNT : AUTHENTICATION_API_TOKEN;
+        }
         return AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
             ? AUTHENTICATION_CHATGPT_ACCOUNT
             : AUTHENTICATION_API_TOKEN;
@@ -249,11 +255,20 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     }
 
     @Override
+    public void setUserAccountAuthentication(@Nullable Boolean accountAuthentication) {
+        userAccountAuthentication = accountAuthentication;
+    }
+
+    @Override
     public boolean supportsDeviceAuthorization() {
         return true;
     }
 
     public void setAuthentication(@Nullable String authentication) {
+        if (userAccountAuthentication != null) {
+            userAccountAuthentication = AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication);
+            return;
+        }
         this.authentication = AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
             ? AUTHENTICATION_CHATGPT_ACCOUNT
             : AUTHENTICATION_API_TOKEN;
@@ -482,9 +497,10 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
             long expiresInSeconds = Math.max(0, (credentials.expiresAt - System.currentTimeMillis()) / 1000);
+            // empty tokens still reach the persistence, so a sign-out is saved too
             credentials.saveAccountTokensInternal(credentials.refreshToken, new AIAccountAuthenticator.Tokens(
-                credentials.accessToken,
-                credentials.refreshToken,
+                CommonUtils.notEmpty(credentials.accessToken),
+                CommonUtils.notEmpty(credentials.refreshToken),
                 expiresInSeconds,
                 credentials.accountId,
                 credentials.accountEmail
