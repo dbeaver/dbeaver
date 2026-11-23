@@ -17,14 +17,18 @@
 package org.jkiss.dbeaver.ui.datadam;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 /**
  * Interactive access check performed before a user-requested network operation.
@@ -57,17 +61,11 @@ public class DBDamTokenUIManager {
             status = accessService.getStatus();
         }
         if (status == DBDamAccessService.Status.INVALID_TOKEN) {
-            Boolean accepted = UIUtils.syncExec(new RunnableWithResult<>() {
-                @Override
-                public Boolean runWithResult() {
-                    return UIUtils.confirmAction(
-                        UIUtils.getActiveWorkbenchShell(),
-                        DDTrackingUIMessages.desktop_relogin_title,
-                        DDTrackingUIMessages.desktop_relogin_message
-                    );
-                }
-            });
-            if (!Boolean.TRUE.equals(accepted)) {
+            DDKeyBundle keys = accessService.getKeyBundle();
+            String message = keys == null ? DDTrackingUIMessages.desktop_relogin_message
+                : DDTrackingUIMessages.desktop_relogin_delete_projects_message;
+            if (!confirmOnUI(DDTrackingUIMessages.desktop_relogin_title, message)) {
+                handleDeclinedRelogin(keys);
                 return false;
             }
 
@@ -79,5 +77,29 @@ public class DBDamTokenUIManager {
             }
         }
         return !monitor.isCanceled() && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN;
+    }
+
+    private void handleDeclinedRelogin(@Nullable DDKeyBundle keys) throws DBException {
+        try {
+            if (keys == null) {
+                accessService.signOut();
+            } else {
+                DDProjectKeyUIManager.getInstance().signOut();
+            }
+        } finally {
+            if (accessService.getStatus() == DBDamAccessService.Status.SIGNED_OUT) {
+                DDProjectUIManager.getInstance().refreshProjectVisibility();
+            }
+        }
+    }
+
+    private boolean confirmOnUI(@NotNull String title, @NotNull String message) {
+        return Boolean.TRUE.equals(UIUtils.syncExec(new RunnableWithResult<>() {
+            @Nullable
+            @Override
+            public Boolean runWithResult() {
+                return UIUtils.confirmAction(UIUtils.getActiveWorkbenchShell(), title, message);
+            }
+        }));
     }
 }

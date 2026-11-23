@@ -64,6 +64,7 @@ public class DDTrackingUIMessages extends NLS {
 
     public static String desktop_relogin_title;
     public static String desktop_relogin_message;
+    public static String desktop_relogin_delete_projects_message;
     public static String project_keys_mismatch_title;
     public static String project_keys_mismatch_message;
     public static String project_keys_reset_local;
