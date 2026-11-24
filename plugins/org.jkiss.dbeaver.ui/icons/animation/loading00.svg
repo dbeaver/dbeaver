@@ -1,10 +1,17 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_12395_6109)">
 <path opacity="0.15" d="M8 4V1.5" stroke="#71717A"/>
-<path opacity="0.27" d="M10.8279 5.17205L12.5959 3.40405" stroke="#71717A"/>
+<path opacity="0.27" d="M10.8279 5.17199L12.5959 3.40399" stroke="#71717A"/>
 <path opacity="0.39" d="M12 8H14.5" stroke="#71717A"/>
-<path opacity="0.51" d="M10.8279 10.8279L12.5959 12.5959" stroke="#71717A"/>
+<path opacity="0.51" d="M10.8279 10.828L12.5959 12.596" stroke="#71717A"/>
 <path opacity="0.64" d="M8 12V14.5" stroke="#71717A"/>
-<path opacity="0.76" d="M5.17205 10.8279L3.40405 12.5959" stroke="#71717A"/>
+<path opacity="0.76" d="M5.17205 10.828L3.40405 12.596" stroke="#71717A"/>
 <path opacity="0.88" d="M4 8H1.5" stroke="#71717A"/>
-<path d="M5.17205 5.17205L3.40405 3.40405" stroke="#71717A"/>
+<path d="M5.17205 5.17199L3.40405 3.40399" stroke="#71717A"/>
+</g>
+<defs>
+<clipPath id="clip0_12395_6109">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
 </svg>
