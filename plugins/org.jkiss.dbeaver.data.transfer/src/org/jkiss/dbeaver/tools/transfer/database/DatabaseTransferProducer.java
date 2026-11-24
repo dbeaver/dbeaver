@@ -56,6 +56,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -247,7 +248,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 Boolean oldAutoCommit = null;
                 DBCSavepoint savepoint = null;
                 try {
-                    AbstractExecutionSource transferSource = new AbstractExecutionSource(dataContainer, context, consumer);
+                    TransferExecutionSource transferSource = new TransferExecutionSource(dataContainer, context, consumer);
                     if (!selectiveExportFromUI && (newConnection || forceDataReadTransactions)) {
                         // Turn off auto-commit in source DB
                         // Auto-commit has to be turned off because some drivers allows to read LOBs and
@@ -365,6 +366,52 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     private static void checkCanceled(@NotNull DBRProgressMonitor monitor) throws DBInterruptedException {
         if (monitor.isCanceled()) {
             throw new DBInterruptedException("Data transfer was canceled");
+        }
+    }
+
+    public static final class TransferExecutionSource extends AbstractExecutionSource implements DBPContextWithAttributes {
+
+        @Nullable
+        private Map<String, Object> contextAttributes;
+
+        public TransferExecutionSource(
+            @NotNull DBSDataContainer dataContainer,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull Object controller
+        ) {
+            super(dataContainer, executionContext, controller);
+        }
+
+        @NotNull
+        @Override
+        public Map<String, ?> getContextAttributes() {
+            return contextAttributes == null ? Collections.emptyMap() :
+                Collections.unmodifiableMap(new LinkedHashMap<>(contextAttributes));
+        }
+
+        @Nullable
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T> T getContextAttribute(@NotNull String attributeName) {
+            return contextAttributes == null ? null : (T) contextAttributes.get(attributeName);
+        }
+
+        @Override
+        public <T> void setContextAttribute(@NotNull String attributeName, @Nullable T attributeValue) {
+            if (contextAttributes == null) {
+                contextAttributes = new LinkedHashMap<>();
+            }
+            contextAttributes.put(attributeName, attributeValue);
+        }
+
+        @Override
+        public void removeContextAttribute(@NotNull String attributeName) {
+            if (contextAttributes != null) {
+                contextAttributes.remove(attributeName);
+                if (contextAttributes.isEmpty()) {
+                    contextAttributes = null;
+                }
+            }
         }
     }
 

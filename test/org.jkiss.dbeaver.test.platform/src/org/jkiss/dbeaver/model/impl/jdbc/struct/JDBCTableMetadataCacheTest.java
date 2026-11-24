@@ -29,12 +29,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaDataSnapshot;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -130,7 +130,7 @@ class JDBCTableMetadataCacheTest {
 
     @Test
     void executionSourceAttributesAreLazyScopedAndCopied() {
-        AbstractExecutionSource source = source();
+        DatabaseTransferProducer.TransferExecutionSource source = source();
         Assertions.assertTrue(source.getContextAttributes().isEmpty());
         source.setContextAttribute(DBSDataContainer.CONTEXT_READ_PREPARED_COLUMN_METADATA, null);
         Map<String, ?> previous = source.getContextAttributes();
@@ -250,8 +250,8 @@ class JDBCTableMetadataCacheTest {
     }
 
     @NotNull
-    private static AbstractExecutionSource source() {
-        return new AbstractExecutionSource(
+    private static DatabaseTransferProducer.TransferExecutionSource source() {
+        return new DatabaseTransferProducer.TransferExecutionSource(
             Mockito.mock(DBSDataContainer.class), Mockito.mock(DBCExecutionContext.class), new Object());
     }
 
