@@ -171,7 +171,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
             }
         };
         filter.setIncludeLeadingWildcard(true);
-        FilteredTree filteredTree = new FilteredTree(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, filter, true, true) {
+        FilteredTree filteredTree = new FilteredTree(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL, filter, true, true) {
             @Override
             protected @NotNull Text doCreateFilterText(@NotNull Composite parent) {
                 return new Text(parent, SWT.SINGLE | SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
