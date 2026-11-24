@@ -56,11 +56,17 @@ public class MySQLExecutionContext extends JDBCExecutionContext
 
     @Nullable
     @Override
-    public TemporaryTable registerTemporaryTable(@NotNull DBCSession session, @NotNull List<String> qualifiedName) throws DBException {
+    public TemporaryTable registerTemporaryTable(
+        @NotNull DBCSession session, @NotNull List<String> qualifiedName, boolean ifNotExists
+    ) throws DBException {
         Connection connection = getConnectionOrNull();
         TemporaryTableName name = temporaryTableName(session, qualifiedName);
         if (connection == null || name == null) {
             return null;
+        }
+        MySQLTemporaryTable existing = temporaryTables.get(name);
+        if (ifNotExists && existing != null && existing.getConnection() == connection) {
+            return existing;
         }
         MySQLCatalog catalog = getDataSource().getCatalog(name.catalog());
         if (catalog == null) {
@@ -75,7 +81,9 @@ public class MySQLExecutionContext extends JDBCExecutionContext
 
     @Nullable
     @Override
-    public TemporaryTable temporaryTableChanged(@NotNull DBCSession session, @NotNull List<String> qualifiedName, boolean dropped)
+    public TemporaryTable temporaryTableChanged(
+        @NotNull DBCSession session, @NotNull List<String> qualifiedName, boolean dropped, @NotNull List<String> newName
+    )
         throws DBException
     {
         if (temporaryTables.isEmpty()) {
@@ -84,6 +92,9 @@ public class MySQLExecutionContext extends JDBCExecutionContext
         TemporaryTableName name = temporaryTableName(session, qualifiedName);
         if (name == null) {
             return null;
+        }
+        if (!newName.isEmpty() && temporaryTables.remove(name) != null) {
+            return registerTemporaryTable(session, newName.size() == 1 ? List.of(name.catalog(), newName.getFirst()) : newName, false);
         }
         if (dropped) {
             return temporaryTables.remove(name);

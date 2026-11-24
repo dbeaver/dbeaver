@@ -4599,17 +4599,20 @@ public class SQLEditor extends SQLEditorBase implements
             List<String> name = operation.qualifiedNameParts().stream()
                 .map(part -> SQLUtils.identifierToCanonicalForm(dialect, part, true, false))
                 .toList();
+            List<String> newName = operation.newName().stream()
+                .map(part -> SQLUtils.identifierToCanonicalForm(dialect, part, true, false))
+                .toList();
             boolean removed = operation.operation() == SQLObjectOperation.Operation.DROP ||
                 operation.operation() == SQLObjectOperation.Operation.RENAME;
             try {
                 DBCTemporaryTableManager.TemporaryTable table = operation.temporary() ?
-                    temporaryTables.registerTemporaryTable(session, name) :
-                    temporaryTables.temporaryTableChanged(session, name, removed);
+                    temporaryTables.registerTemporaryTable(session, name, operation.ifNotExists()) :
+                    temporaryTables.temporaryTableChanged(session, name, removed, newName);
                 if (table == null) {
                     return operation.temporary();
                 }
                 RefreshTarget.TemporaryTable target = new RefreshTarget.TemporaryTable(table);
-                if (removed) {
+                if (removed && newName.isEmpty()) {
                     temporaryTableRefreshTargets.remove(target);
                 } else if (refreshBehavior == SQLPreferenceConstants.MetadataRefreshBehavior.ASK) {
                     temporaryTableRefreshTargets.add(target);

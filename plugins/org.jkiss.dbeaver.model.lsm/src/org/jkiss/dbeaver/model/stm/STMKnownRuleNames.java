@@ -303,6 +303,7 @@ public class STMKnownRuleNames {
     // table definition
     public static final String createTableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_createTableStatement];
     public static final String createTableHead = SQLStandardParser.ruleNames[SQLStandardParser.RULE_createTableHead];
+    public static final String renameTableAction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_renameTableAction];
     public static final String createViewStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_createViewStatement];
     public static final String viewColumnList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_viewColumnList];
     public static final String levelsClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_levelsClause];

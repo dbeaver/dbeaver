@@ -99,7 +99,7 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
                 SQLObjectOperation.Operation.CREATE,
                 SQLObjectOperation.ObjectKind.TABLE,
                 List.of("`test`", "`temp_table`"),
-                true
+                true, true, List.of()
             )),
             recognizeAll(BasicSQLDialect.INSTANCE, "CREATE TEMPORARY TABLE IF NOT EXISTS `test`.`temp_table` (id INT PRIMARY KEY)")
         );
@@ -118,6 +118,23 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
             );
         }
         assertMultipleDropTargets("DROP TEMPORARY TABLE IF EXISTS schema1.a, schema2.b", SQLObjectOperation.ObjectKind.TABLE);
+    }
+
+    @Test
+    void recognizesTableRenameWithoutConfusingColumnRename() {
+        for (String rename : List.of("RENAME TO", "RENAME AS", "RENAME")) {
+            Assertions.assertEquals(
+                List.of(new SQLObjectOperation(
+                    SQLObjectOperation.Operation.RENAME, SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("db", "original"), false, false, List.of("db", "renamed")
+                )),
+                recognizeAll(BasicSQLDialect.INSTANCE, "ALTER TABLE db.original " + rename + " db.renamed")
+            );
+        }
+        assertOperation(
+            "ALTER TABLE db.original RENAME COLUMN old_col TO new_col",
+            SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.TABLE, "db", "original"
+        );
     }
 
     @Test

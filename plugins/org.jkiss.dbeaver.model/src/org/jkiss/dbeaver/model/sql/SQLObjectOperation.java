@@ -27,14 +27,23 @@ public record SQLObjectOperation(
     @NotNull Operation operation,
     @NotNull ObjectKind objectKind,
     @NotNull List<String> qualifiedNameParts,
-    boolean temporary
+    boolean temporary,
+    boolean ifNotExists,
+    @NotNull List<String> newName
 ) {
     public SQLObjectOperation(@NotNull Operation operation, @NotNull ObjectKind objectKind, @NotNull List<String> qualifiedNameParts) {
         this(operation, objectKind, qualifiedNameParts, false);
     }
 
+    public SQLObjectOperation(
+        @NotNull Operation operation, @NotNull ObjectKind objectKind, @NotNull List<String> qualifiedNameParts, boolean temporary
+    ) {
+        this(operation, objectKind, qualifiedNameParts, temporary, false, List.of());
+    }
+
     public SQLObjectOperation {
         qualifiedNameParts = List.copyOf(qualifiedNameParts);
+        newName = List.copyOf(newName);
     }
 
     public enum Operation {

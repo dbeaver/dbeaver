@@ -201,7 +201,11 @@ public final class SQLObjectOperationRecognizer {
             STMTreeNode head = statement.findFirstChildOfName(STMKnownRuleNames.createTableHead);
             boolean temporary = head != null && head.findNonErrorChildren().stream().anyMatch(child ->
                 child.getText().equalsIgnoreCase("TEMPORARY") || child.getText().equalsIgnoreCase("TEMP"));
-            return new SQLObjectOperation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.TABLE, nameParts, temporary);
+            boolean ifNotExists = head != null && head.findNonErrorChildren().stream()
+                .anyMatch(child -> child.getText().equalsIgnoreCase("IF"));
+            return new SQLObjectOperation(
+                SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.TABLE, nameParts, temporary, ifNotExists, List.of()
+            );
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.createViewStatement)) {
             return createOperation(
@@ -274,6 +278,13 @@ public final class SQLObjectOperationRecognizer {
         List<String> sourceName = getNameParts(findDescendant(statement, nameNodeName));
         if (sourceName.isEmpty()) {
             return List.of();
+        }
+        STMTreeNode rename = findDescendant(statement, STMKnownRuleNames.renameTableAction);
+        if (rename != null) {
+            return List.of(new SQLObjectOperation(
+                SQLObjectOperation.Operation.RENAME, objectKind, sourceName, false, false,
+                getNameParts(findDescendant(rename, STMKnownRuleNames.tableName))
+            ));
         }
 
         SQLObjectOperation source = new SQLObjectOperation(

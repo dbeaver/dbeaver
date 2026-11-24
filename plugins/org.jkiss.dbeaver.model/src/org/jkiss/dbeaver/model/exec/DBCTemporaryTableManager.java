@@ -26,10 +26,13 @@ import java.util.List;
 
 public interface DBCTemporaryTableManager {
     @Nullable
-    TemporaryTable registerTemporaryTable(@NotNull DBCSession session, @NotNull List<String> qualifiedName) throws DBException;
+    TemporaryTable registerTemporaryTable(@NotNull DBCSession session, @NotNull List<String> qualifiedName, boolean ifNotExists)
+        throws DBException;
 
     @Nullable
-    TemporaryTable temporaryTableChanged(@NotNull DBCSession session, @NotNull List<String> qualifiedName, boolean dropped)
+    TemporaryTable temporaryTableChanged(
+        @NotNull DBCSession session, @NotNull List<String> qualifiedName, boolean dropped, @NotNull List<String> newName
+    )
         throws DBException;
 
     @Nullable

@@ -76,6 +76,16 @@ final class MySQLTemporaryTable extends MySQLTable implements DBCTemporaryTableM
                 }
                 String tableName = getFullyQualifiedName(DBPEvaluationContext.DML);
                 List<MySQLTableColumn> columns = readColumns(session, tableName);
+                try (JDBCPreparedStatement statement = session.prepareStatement("SHOW COLUMNS FROM " + tableName);
+                     JDBCResultSet result = statement.executeQuery()) {
+                    while (result.next()) {
+                        MySQLTableColumn column = findColumn(columns, result.getString("Field"));
+                        String type = result.getString("Type");
+                        if (column != null && (type.startsWith("enum(") || type.startsWith("set("))) {
+                            column.loadEnumValues(type);
+                        }
+                    }
+                }
                 List<MySQLTableConstraint> constraints = readPrimaryKey(session, tableName, columns);
                 if (!context.isCurrentTemporaryTable(this)) {
                     return false;
