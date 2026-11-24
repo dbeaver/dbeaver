@@ -79,7 +79,6 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
     private TreeViewer viewer;
     private ViewerColumnController<McpBooleanColumn, Object> columnController;
-    private Text filterControl;
     private boolean restoringProjects;
     private Button groupByProjectCheck;
     private ToolItem removeButton;
@@ -167,7 +166,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
             protected boolean isLeafMatch(@NotNull Viewer viewer, @Nullable Object element) {
                 return element instanceof DBPDataSourceContainer connection
                     && (wordMatches(connection.getName()) || wordMatches(connection.getProject().getName()))
-                    || element instanceof DBPProject project && wordMatches(project.getName());
+                    || element instanceof DBPProject project && snapshot.get(project).loaded() && wordMatches(project.getName());
             }
         };
         filter.setIncludeLeadingWildcard(true);
@@ -179,7 +178,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         };
         filteredTree.setInitialText(AIUIMessages.ai_mcp_connections_filter);
         viewer = filteredTree.getViewer();
-        filterControl = filteredTree.getFilterControl();
+        Text filterControl = filteredTree.getFilterControl();
         if (filterControl != null) {
             UIUtils.installAndUpdateMainFont(filterControl);
         }
@@ -261,8 +260,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         viewer.addTreeListener(new ITreeViewerListener() {
             @Override
             public void treeExpanded(@NotNull TreeExpansionEvent event) {
-                if (!restoringProjects && (filterControl == null || filterControl.getText().isBlank())
-                    && event.getElement() instanceof DBPProject project && !snapshot.get(project).loaded()) {
+                if (!restoringProjects && event.getElement() instanceof DBPProject project && !snapshot.get(project).loaded()) {
                     UIUtils.asyncExec(() -> {
                         if (!viewer.getControl().isDisposed() && viewer.getExpandedState(project)) {
                             loadProject(project);
