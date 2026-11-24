@@ -34,12 +34,15 @@ import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DBDamTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,7 +65,7 @@ public final class DDProjectKeyUIManager {
         return cleanupInProgress.get();
     }
 
-    public void ensureActiveProject() {
+    public void scheduleActiveProjectCheck() {
         if (cleanupInProgress.get() || DBDamAccessService.getInstance().getStatus() == DBDamAccessService.Status.UNLOADED
             || !activeProjectCheckRunning.compareAndSet(false, true)) {
             return;
@@ -90,40 +93,72 @@ public final class DDProjectKeyUIManager {
 
     /** Invoked from a progress operation after the user confirms local project deletion. */
     public void forgetKeys() throws DBException {
-        if (!cleanupInProgress.compareAndSet(false, true)) {
-            throw new DBException("DataDam project cleanup is already in progress");
-        }
         var access = DBDamAccessService.getInstance();
-        try {
-            DDKeyBundle bundle = access.getKeyBundle();
-            access.forgetKeys();
-            if (bundle != null) {
-                forgetKeys(bundle.accountId());
-            }
-        } finally {
-            cleanupInProgress.set(false);
-        }
+        changeAccessAndRemoveProjects(access.getKeyBundle(), access::forgetKeys);
     }
 
     /** Invoked from a progress operation after the user confirms sign-out and project deletion. */
     public void signOut() throws DBException {
+        signOut(DBDamAccessService.getInstance().getKeyBundle());
+    }
+
+    /** Uses the bundle captured when the user was warned about local project deletion. */
+    public void signOut(@Nullable DDKeyBundle keys) throws DBException {
+        changeAccessAndRemoveProjects(keys, DBDamAccessService.getInstance()::signOut);
+    }
+
+    private void changeAccessAndRemoveProjects(@Nullable DDKeyBundle keys, @NotNull AccessOperation operation) throws DBException {
         if (!cleanupInProgress.compareAndSet(false, true)) {
             throw new DBException("DataDam project cleanup is already in progress");
         }
-        var access = DBDamAccessService.getInstance();
         try {
-            DDKeyBundle bundle = access.getKeyBundle();
-            access.signOut();
-            if (bundle != null) {
-                forgetKeys(bundle.accountId());
+            operation.run();
+            if (keys != null) {
+                removeLocalAccountProjects(keys.accountId());
             }
         } finally {
-            cleanupInProgress.set(false);
+            finishProjectCleanup();
         }
     }
 
+    private void finishProjectCleanup() {
+        cleanupInProgress.set(false);
+        DDProjectUIManager.getInstance().refreshProjectVisibility();
+    }
+
+    public void signOutWithProgress() {
+        runWithProgress(this::signOut, DDTrackingUIMessages.sync_preference_page_logout_failed);
+    }
+
+    public void forgetKeysWithProgress() {
+        runWithProgress(this::forgetKeys, DDTrackingUIMessages.sync_preference_page_cannot_forget_keys);
+    }
+
+    private void runWithProgress(@NotNull AccessOperation operation, @NotNull String errorMessage) {
+        // Keep queued navigator updates outside the progress dialog's nested event loop.
+        UIExecutionQueue.blockQueue();
+        try {
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    operation.run();
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DDUIUtils.showError(DDTrackingUIMessages.sync_preference_page_title, errorMessage, e.getTargetException());
+        } finally {
+            UIExecutionQueue.unblockQueue();
+        }
+    }
+
+    @FunctionalInterface
+    private interface AccessOperation {
+        void run() throws DBException;
+    }
+
     /** Removes only local projects bound to the captured account after access has been cleared. */
-    public void forgetKeys(@NotNull UUID accountId) throws DBException {
+    private void removeLocalAccountProjects(@NotNull UUID accountId) throws DBException {
         DDProjectManager manager = DDProjectManager.getInstance();
         prepareProjectDeletion(manager, accountId);
         manager.deleteAccountProjects(accountId);
@@ -174,9 +209,17 @@ public final class DDProjectKeyUIManager {
         if (monitor.isCanceled() || !bundle.equals(access.getKeyBundle())) {
             return false;
         }
-        DDProjectManager manager = DDProjectManager.getInstance();
-        prepareProjectDeletion(manager, bundle.accountId());
-        access.recoverProjectKeys(bundle, replacement, () -> manager.deleteAccountProjects(bundle.accountId()));
+        if (!cleanupInProgress.compareAndSet(false, true)) {
+            throw new DBException("DataDam project cleanup is already in progress");
+        }
+        try {
+            DDProjectManager manager = DDProjectManager.getInstance();
+            // Activate the replacement before acquiring the access lock: this step needs the UI thread.
+            prepareProjectDeletion(manager, bundle.accountId());
+            access.recoverProjectKeys(bundle, replacement, () -> manager.deleteAccountProjects(bundle.accountId()));
+        } finally {
+            finishProjectCleanup();
+        }
         // Callers may already hold project objects that were removed during recovery.
         return false;
     }

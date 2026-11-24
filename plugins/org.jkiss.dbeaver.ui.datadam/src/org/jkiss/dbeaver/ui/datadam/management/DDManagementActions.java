@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 
 import java.lang.reflect.InvocationTargetException;
@@ -82,8 +81,12 @@ public final class DDManagementActions {
         )) {
             return;
         }
-        String failure = signedIn ? DDTrackingUIMessages.sync_preference_page_logout_failed
-            : DDTrackingUIMessages.sync_preference_page_login_failed;
+        if (signedIn) {
+            if (DDProductConfig.isIntegrationEnabled()) {
+                DDProjectKeyUIManager.getInstance().signOutWithProgress();
+            }
+            return;
+        }
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 if (!DDProductConfig.isIntegrationEnabled()) {
@@ -91,20 +94,14 @@ public final class DDManagementActions {
                 }
                 try {
                     var access = DBDamAccessService.getInstance();
-                    if (signedIn) {
-                        DDProjectKeyUIManager.getInstance().signOut();
-                    } else {
-                        access.signIn(monitor);
-                    }
+                    access.signIn(monitor);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.sync_preference_page_title, failure, e.getTargetException());
-        }
-        if (signedIn && DBDamAccessService.getInstance().getStatus() == DBDamAccessService.Status.SIGNED_OUT) {
-            DDProjectUIManager.getInstance().refreshProjectVisibility();
+            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.sync_preference_page_title,
+                DDTrackingUIMessages.sync_preference_page_login_failed, e.getTargetException());
         }
     }
 

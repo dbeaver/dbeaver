@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 /**
  * Interactive access check performed before a user-requested network operation.
@@ -65,7 +64,7 @@ public class DBDamTokenUIManager {
             String message = keys == null ? DDTrackingUIMessages.desktop_relogin_message
                 : DDTrackingUIMessages.desktop_relogin_delete_projects_message;
             if (!confirmOnUI(DDTrackingUIMessages.desktop_relogin_title, message)) {
-                handleDeclinedRelogin(keys);
+                DDProjectKeyUIManager.getInstance().signOut(keys);
                 return false;
             }
 
@@ -77,20 +76,6 @@ public class DBDamTokenUIManager {
             }
         }
         return !monitor.isCanceled() && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN;
-    }
-
-    private void handleDeclinedRelogin(@Nullable DDKeyBundle keys) throws DBException {
-        try {
-            if (keys == null) {
-                accessService.signOut();
-            } else {
-                DDProjectKeyUIManager.getInstance().signOut();
-            }
-        } finally {
-            if (accessService.getStatus() == DBDamAccessService.Status.SIGNED_OUT) {
-                DDProjectUIManager.getInstance().refreshProjectVisibility();
-            }
-        }
     }
 
     private boolean confirmOnUI(@NotNull String title, @NotNull String message) {

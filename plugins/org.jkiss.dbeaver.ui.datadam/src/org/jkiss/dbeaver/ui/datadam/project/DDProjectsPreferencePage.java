@@ -571,9 +571,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             getShell(), DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_title,
             DDTrackingUIMessages.sync_preference_page_project_deletion_confirm_message
         )) {
-            runKeyOperation(DDTrackingUIMessages.sync_preference_page_cannot_forget_keys,
-                DDProjectKeyUIManager.getInstance()::forgetKeys);
-            uiManager.refreshProjectVisibility();
+            DDProjectKeyUIManager.getInstance().forgetKeysWithProgress();
+            refreshKeys();
         }
     }
 

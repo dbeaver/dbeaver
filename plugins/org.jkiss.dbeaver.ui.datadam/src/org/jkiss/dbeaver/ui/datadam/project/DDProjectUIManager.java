@@ -111,7 +111,7 @@ public class DDProjectUIManager {
                     refreshNavigator(page, DatabaseNavigatorView.VIEW_ID);
                 }
             }
-            DDProjectKeyUIManager.getInstance().ensureActiveProject();
+            DDProjectKeyUIManager.getInstance().scheduleActiveProjectCheck();
         });
     }
 
