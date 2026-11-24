@@ -114,6 +114,45 @@ class SQLExecutionFunctionsTest {
     }
 
     @Test
+    void queryVerificationChecksCustomScopeWithoutExecuting() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        var schema = (DBSSchema) ((DBSObjectContainer) fixture.dataSource).getChild(null, "public");
+        var allowed = schema.getChild(null, "orders");
+        Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CUSTOM);
+        Mockito.when(fixture.databaseContext.getCustomEntities()).thenReturn(List.of(allowed));
+        var function = new ExecuteDQLFunction();
+
+        fixture.verify(function, "SELECT * FROM public.orders");
+        fixture.verify(function, "WITH x AS (SELECT * FROM public.orders) SELECT * FROM x");
+        fixture.assertRestricted(function, "SELECT * FROM public.orders JOIN public.source USING (id)");
+        fixture.assertRestricted(function, "SELECT * FROM public.orders WHERE id IN (SELECT id FROM private.orders)");
+        fixture.assertRestricted(function, "SELECT * FROM public.missing");
+
+        Mockito.verify(fixture.executionContext, Mockito.never()).openSession(Mockito.any(), Mockito.any(), Mockito.anyString());
+        Mockito.verify(fixture.executionContext, Mockito.never()).getOwnerInstance();
+        Mockito.verify(fixture.executionContext, Mockito.never()).close();
+    }
+
+    @Test
+    void queryVerificationResolvesUnqualifiedNamesInSuppliedContext() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        var otherSchema = (DBSSchema) ((DBSObjectContainer) fixture.dataSource).getChild(null, "private");
+        var queryContext = Mockito.mock(DBCExecutionContext.class);
+        var defaults = Mockito.mock(DBCExecutionContextDefaults.class);
+        Mockito.when(queryContext.getDataSource()).thenReturn(fixture.dataSource);
+        Mockito.when(queryContext.getContextDefaults()).thenReturn(defaults);
+        Mockito.doReturn(otherSchema).when(defaults).getDefaultSchema();
+        var function = new ExecuteDQLFunction();
+        var query = new SQLQuery(null, "SELECT * FROM orders");
+
+        function.verifyQuery(fixture.context, fixture.executionContext, query);
+        Assertions.assertThrows(DBException.class, () -> function.verifyQuery(fixture.context, queryContext, query));
+        Mockito.when(fixture.databaseContext.getExecutionContext()).thenReturn(queryContext);
+        Assertions.assertDoesNotThrow(() -> function.verifyQuery(fixture.context, queryContext, query));
+        Mockito.verify(queryContext, Mockito.never()).openSession(Mockito.any(), Mockito.any(), Mockito.anyString());
+    }
+
+    @Test
     void inlineExportsAllowAppendableFormatsAndRejectNonAppendableDocuments() throws DBException {
         ScopeFixture fixture = new ScopeFixture();
         DataTransferProcessorDescriptor processor = Mockito.mock(DataTransferProcessorDescriptor.class);

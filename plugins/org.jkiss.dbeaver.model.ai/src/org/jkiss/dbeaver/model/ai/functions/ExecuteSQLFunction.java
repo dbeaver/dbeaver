@@ -110,8 +110,11 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         return AIFunctionType.INFORMATION;
     }
 
-    /** A semantic rejection is final; text fallback is only for statements the parser cannot represent. */
-    protected final void verifyQuery(
+    /**
+     * Validates a query against this function's statement restrictions and the supplied AI scope without executing it.
+     * A semantic rejection is final; text fallback is only for statements the parser cannot represent.
+     */
+    public final void verifyQuery(
         @NotNull AIFunctionContext context,
         @NotNull DBCExecutionContext executionContext,
         @NotNull SQLQuery query
