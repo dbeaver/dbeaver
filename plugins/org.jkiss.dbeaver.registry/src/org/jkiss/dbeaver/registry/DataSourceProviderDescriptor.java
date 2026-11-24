@@ -108,25 +108,37 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.registry = registry;
         this.temporary = false;
 
+        // Provider declarations are constructed in parent-first order.
+        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        var metadataParent = !CommonUtils.isEmpty(parentId) && CommonUtils.toBoolean(config.getAttribute("inheritMetadata"))
+            ? registry.getDataSourceProvider(parentId)
+            : null;
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
-        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.dataSourceTypeId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE);
+        String label = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.name = label == null && metadataParent != null ? metadataParent.name : label;
+        String description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.description = description == null && metadataParent != null ? metadataParent.description : description;
+        String typeId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE);
+        this.dataSourceTypeId = typeId == null && metadataParent != null ? metadataParent.dataSourceTypeId : typeId;
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
-            this.icon = DBIcon.DATABASE_DEFAULT;
+            this.icon = metadataParent == null ? DBIcon.DATABASE_DEFAULT : metadataParent.icon;
         }
         String dialectId = config.getAttribute(RegistryConstants.ATTR_DIALECT);
-        if (CommonUtils.isEmpty(dialectId)) {
-            log.debug("No SQL dialect specified for data source provider '" + this.id + "'. Use default.");
-            dialectId = BasicSQLDialect.ID;
-        }
-        SQLDialectMetadataRegistry dialectRegistry = DBWorkbench.getPlatform().getSQLDialectRegistry();
-        this.scriptDialect = dialectRegistry.getDialect(dialectId);
-        if (this.scriptDialect == null) {
-            log.debug("Script dialect '" + dialectId + "' not found in registry (for data source provider " + id + "). Use default.");
-            this.scriptDialect = dialectRegistry.getDialect(BasicSQLDialect.ID);
+        if (dialectId == null && metadataParent != null) {
+            this.scriptDialect = metadataParent.scriptDialect;
+        } else {
+            if (CommonUtils.isEmpty(dialectId)) {
+                log.debug("No SQL dialect specified for data source provider '" + this.id + "'. Use default.");
+                dialectId = BasicSQLDialect.ID;
+            }
+            SQLDialectMetadataRegistry dialectRegistry = DBWorkbench.getPlatform().getSQLDialectRegistry();
+            this.scriptDialect = dialectRegistry.getDialect(dialectId);
+            if (this.scriptDialect == null) {
+                log.debug("Script dialect '" + dialectId + "' not found in registry (for data source provider " + id + "). Use default.");
+                this.scriptDialect = dialectRegistry.getDialect(BasicSQLDialect.ID);
+            }
         }
 
         // Keep tree configuration until a navigator actually requests this provider's tree.
@@ -818,7 +830,15 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
     @NotNull
     private DriverDescriptor loadDriver(IConfigurationElement config) {
-        return new DriverDescriptor(this, config);
+        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        if (CommonUtils.isEmpty(parentId)) {
+            return new DriverDescriptor(this, config);
+        }
+        DBPDriver parentDriver = parentProvider == null ? null : parentProvider.getOriginalDriver(parentId);
+        if (!(parentDriver instanceof DriverDescriptor descriptor)) {
+            throw new IllegalArgumentException("Parent driver '" + parentId + "' not found for provider '" + id + "'");
+        }
+        return new DriverDescriptor(this, config, descriptor);
     }
 
     @Override

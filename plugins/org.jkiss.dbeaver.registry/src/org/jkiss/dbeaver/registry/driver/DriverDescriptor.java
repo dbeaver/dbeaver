@@ -86,6 +86,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private final DataSourceProviderDescriptor providerDescriptor;
     private final String id;
+    @Nullable
+    private DriverConfiguration declaration;
     private DBPDataSourceType dataSourceType;
     private String category;
     private final List<String> categories;
@@ -293,9 +295,41 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     // Predefined driver constructor
     public DriverDescriptor(@NotNull DataSourceProviderDescriptor providerDescriptor, @NotNull IConfigurationElement config) {
+        this(providerDescriptor, config, null);
+    }
+
+    private record DriverConfiguration(
+        @NotNull IConfigurationElement element,
+        @Nullable DriverConfiguration parent
+    ) {
+        @Nullable
+        String getAttribute(@NotNull String name) {
+            String value = element.getAttribute(name);
+            return value != null || parent == null ? value : parent.getAttribute(name);
+        }
+
+        @NotNull
+        IConfigurationElement[] getChildren(@NotNull String name) {
+            IConfigurationElement[] children = element.getChildren(name);
+            // Library delivery and replacement rules belong to the concrete driver.
+            if (children.length > 0 || parent == null || RegistryConstants.TAG_FILE.equals(name)
+                || RegistryConstants.TAG_FILE_SOURCE.equals(name) || RegistryConstants.TAG_REPLACE.equals(name)) {
+                return children;
+            }
+            return parent.getChildren(name);
+        }
+    }
+
+    public DriverDescriptor(
+        @NotNull DataSourceProviderDescriptor providerDescriptor,
+        @NotNull IConfigurationElement element,
+        @Nullable DriverDescriptor parent
+    ) {
         super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
-        this.id = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_ID));
+        this.declaration = new DriverConfiguration(element, parent == null ? null : parent.declaration);
+        DriverConfiguration config = this.declaration;
+        this.id = CommonUtils.notEmpty(element.getAttribute(RegistryConstants.ATTR_ID));
         this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
 
         String dataSourceTypeId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE);
@@ -373,17 +407,23 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.dataSourceType = CommonUtils.isEmpty(dataSourceTypeId) ? null :
             providerDescriptor.getRegistry().getDataSourceType(dataSourceTypeId);
 
-        this.iconPlain = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        String icon = element.getAttribute(RegistryConstants.ATTR_ICON);
+        this.iconPlain = icon == null && parent != null ? parent.iconPlain : iconToImage(icon);
         if (this.iconPlain == null) {
             this.iconPlain = dataSourceType == null ? providerDescriptor.getIcon() : dataSourceType.getIcon();
         }
         this.iconBig = dataSourceType == null ? this.iconPlain : dataSourceType.getIconBig();
-        if (config.getAttribute(RegistryConstants.ATTR_ICON_BIG) != null) {
-            this.iconBig = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON_BIG));
+        String iconBig = element.getAttribute(RegistryConstants.ATTR_ICON_BIG);
+        if (iconBig != null) {
+            this.iconBig = iconToImage(iconBig);
+        } else if (parent != null) {
+            this.iconBig = parent.iconBig;
         }
-        String logoImageAttr = config.getAttribute("logoImage");
+        String logoImageAttr = element.getAttribute("logoImage");
         if (!CommonUtils.isEmpty(logoImageAttr)) {
             this.logoImage = iconToImage(logoImageAttr);
+        } else if (parent != null) {
+            this.logoImage = parent.logoImage;
         } else if (dataSourceType != null) {
             this.logoImage = dataSourceType.getLogoImage();
         }
@@ -488,11 +528,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         {
             IConfigurationElement[] notAvailable = config.getChildren(RegistryConstants.ATTR_NOT_AVAILABLE_DRIVER);
-            for (IConfigurationElement element : notAvailable) {
+            for (IConfigurationElement unavailable : notAvailable) {
                 this.stub = new DBPDriverStub(
-                    element.getAttribute(RegistryConstants.ATTR_MESSAGE),
-                    element.getAttribute(RegistryConstants.ATTR_TITLE),
-                    element.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
+                    unavailable.getAttribute(RegistryConstants.ATTR_MESSAGE),
+                    unavailable.getAttribute(RegistryConstants.ATTR_TITLE),
+                    unavailable.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
             }
         }
     }

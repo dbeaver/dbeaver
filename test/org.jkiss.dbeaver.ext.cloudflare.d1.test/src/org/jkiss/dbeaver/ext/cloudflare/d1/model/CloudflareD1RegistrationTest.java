@@ -136,10 +136,7 @@ public class CloudflareD1RegistrationTest {
                         Assertions.assertEquals("maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.d1:RELEASE", path);
                         Assertions.assertEquals("!drivers.cloudflare.d1", file.getAttribute("bundle"));
                     } else {
-                        Assertions.assertEquals(
-                            path.equals("drivers/cloudflare/d1") ? "drivers.cloudflare.d1.included" : "drivers.cloudflare.d1.osgi",
-                            file.getAttribute("bundle")
-                        );
+                        Assertions.assertEquals("drivers.cloudflare.d1", file.getAttribute("bundle"));
                         Assertions.assertTrue(bundledLibraries.add(path));
                     }
                     Assertions.assertFalse(Boolean.parseBoolean(file.getAttribute("optional")));
@@ -147,13 +144,7 @@ public class CloudflareD1RegistrationTest {
                 }
             }
             Assertions.assertEquals(1, mavenLibraries);
-            Assertions.assertEquals(Set.of(
-                "drivers/cloudflare/d1",
-                "bundle:/com.dbeaver.jdbc.driver.d1",
-                "bundle:/com.dbeaver.jdbc.api",
-                "bundle:/org.jkiss.utils",
-                "bundle:/com.google.gson"
-            ), bundledLibraries);
+            Assertions.assertEquals(Set.of("drivers/cloudflare/d1"), bundledLibraries);
             var auth = (Element) plugin.getElementsByTagName("authModel").item(0);
             Assertions.assertEquals("cloudflare_d1_native", auth.getAttribute("id"));
         }
