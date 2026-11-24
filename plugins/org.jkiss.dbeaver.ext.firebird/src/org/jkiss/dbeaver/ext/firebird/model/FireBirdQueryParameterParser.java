@@ -69,8 +69,7 @@ public class FireBirdQueryParameterParser implements SQLQueryParameterParser {
         @Nullable
         @Override
         protected SQLQueryParameter parseNamedParameter(@NotNull String name, int offset, int length, int ordinal) {
-            return block || procedure ? null :
-                super.parseNamedParameter(name, offset, length, ordinal);
+            return block ? null : super.parseNamedParameter(name, offset, length, ordinal);
         }
 
         @Nullable

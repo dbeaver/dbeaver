@@ -16,10 +16,21 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -32,6 +43,63 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
     @BeforeEach
     public void setUp() {
         dialect = new FireBirdSQLDialect();
+    }
+
+    @Test
+    public void generatesExecutableProcedureCallWithOnlyInputArguments() {
+        List<DBSProcedureParameter> parameters = List.of(
+            parameter("RET1", DBSProcedureParameterKind.OUT),
+            parameter("ARG1", DBSProcedureParameterKind.IN),
+            parameter("ARG2", DBSProcedureParameterKind.IN)
+        );
+        Assertions.assertEquals("execute procedure TEST_PROC(:ARG1, :ARG2);", generateCall(false, false, parameters));
+    }
+
+    @Test
+    public void generatesSelectableProcedureCallWithCastsOnlyForInputArguments() {
+        List<DBSProcedureParameter> parameters = List.of(
+            parameter("ARG1", DBSProcedureParameterKind.IN),
+            parameter("RET1", DBSProcedureParameterKind.OUT),
+            parameter("RET2", DBSProcedureParameterKind.OUT)
+        );
+        Assertions.assertEquals("select * from TEST_PROC(cast(:ARG1 as INTEGER));", generateCall(true, true, parameters));
+    }
+
+    @Test
+    public void omitsParenthesesWhenProcedureHasNoInputArguments() {
+        List<DBSProcedureParameter> parameters = List.of(parameter("RET1", DBSProcedureParameterKind.OUT));
+        Assertions.assertEquals("execute procedure TEST_PROC;", generateCall(false, false, parameters));
+        Assertions.assertEquals("select * from TEST_PROC;", generateCall(true, false, parameters));
+    }
+
+    @NotNull
+    private String generateCall(boolean selectable, boolean castParams, @NotNull List<DBSProcedureParameter> parameters) {
+        FireBirdProcedure procedure = Mockito.mock(FireBirdProcedure.class);
+        GenericDataSource dataSource = Mockito.mock(GenericDataSource.class);
+        DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
+        DBPPreferenceStore preferences = Mockito.mock(DBPPreferenceStore.class);
+        Mockito.when(procedure.getProcedureType()).thenReturn(DBSProcedureType.PROCEDURE);
+        Mockito.when(procedure.getFullyQualifiedName(DBPEvaluationContext.DML)).thenReturn("TEST_PROC");
+        Mockito.when(procedure.isSelectable()).thenReturn(selectable);
+        Mockito.when(procedure.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getContainer()).thenReturn(container);
+        Mockito.when(container.getPreferenceStore()).thenReturn(preferences);
+        Mockito.when(preferences.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)).thenReturn(":");
+
+        StringBuilder sql = new StringBuilder();
+        dialect.generateStoredProcedureCall(sql, procedure, parameters, castParams);
+        return sql.toString().stripTrailing();
+    }
+
+    @NotNull
+    private static DBSProcedureParameter parameter(@NotNull String name, @NotNull DBSProcedureParameterKind kind) {
+        DBSProcedureParameter parameter = Mockito.mock(DBSProcedureParameter.class);
+        DBSTypedObject type = Mockito.mock(DBSTypedObject.class);
+        Mockito.when(parameter.getName()).thenReturn(name);
+        Mockito.when(parameter.getParameterKind()).thenReturn(kind);
+        Mockito.when(parameter.getParameterType()).thenReturn(type);
+        Mockito.when(type.getFullTypeName()).thenReturn("INTEGER");
+        return parameter;
     }
 
     // ---- Block headers and bounds ----

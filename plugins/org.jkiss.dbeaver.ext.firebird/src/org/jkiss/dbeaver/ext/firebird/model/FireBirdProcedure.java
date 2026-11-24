@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,14 @@ import java.sql.SQLException;
 import java.util.Map;
 
 public class FireBirdProcedure extends GenericProcedure implements DBSObjectWithScript {
+
+    private static final int SELECTABLE_PROCEDURE_TYPE = 1;
+
+    private boolean selectable;
+
+    boolean isSelectable() {
+        return selectable;
+    }
 
     @Override
     public GenericCatalog getCatalog() {
@@ -115,22 +123,32 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         "F.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
                         "PP.RDB$PARAMETER_NUMBER + 1 AS ORDINAL_POSITION,\n" +
                         "F.RDB$CHARACTER_SET_ID,\n" +
+                        "P.RDB$PROCEDURE_TYPE,\n" +
                         "COALESCE(PP.RDB$DEFAULT_SOURCE, F.RDB$DEFAULT_SOURCE) AS DEFAULT_VALUE\n" +
                         (versionAtLeast3 ? ",PP.RDB$FIELD_NAME AS FIELD_NAME,\nPP.RDB$RELATION_NAME AS RELATION_NAME\n" : "") +
                         "FROM\n" +
-                        "   RDB$PROCEDURE_PARAMETERS PP,\n" +
-                        "   RDB$FIELDS F\n" +
-                        "WHERE\n" +
-                        "   PP.RDB$FIELD_SOURCE = F.RDB$FIELD_NAME\n" +
-                        "   AND PP.RDB$PROCEDURE_NAME=?\n" +
+                        "   RDB$PROCEDURES P\n" +
+                        "LEFT JOIN RDB$PROCEDURE_PARAMETERS PP ON PP.RDB$PROCEDURE_NAME = P.RDB$PROCEDURE_NAME\n" +
+                        (versionAtLeast3 ? "   AND PP.RDB$PACKAGE_NAME IS NOT DISTINCT FROM P.RDB$PACKAGE_NAME\n" : "") +
+                        "LEFT JOIN RDB$FIELDS F ON F.RDB$FIELD_NAME = PP.RDB$FIELD_SOURCE\n" +
+                        "WHERE P.RDB$PROCEDURE_NAME = ?\n" +
+                        (versionAtLeast3 ? "   AND P.RDB$PACKAGE_NAME IS NOT DISTINCT FROM ?\n" : "") +
                         "ORDER BY\n" +
                         "   PP.RDB$PARAMETER_NUMBER";
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 dbStat.setString(1, getName());
+                if (isProcedure && versionAtLeast3) {
+                    GenericPackage procedurePackage = getPackage();
+                    dbStat.setString(2, procedurePackage == null ? null : procedurePackage.getName());
+                }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
+                        selectable = isProcedure && dbResult.getInt("RDB$PROCEDURE_TYPE") == SELECTABLE_PROCEDURE_TYPE;
                         String parameterName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
+                        if (parameterName == null) {
+                            continue;
+                        }
                         int dataType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
                         int subType = JDBCUtils.safeGetInt(dbResult, "FIELD_SUB_TYPE");
                         FireBirdFieldType fieldDT = FireBirdFieldType.getById(dataType, subType);
