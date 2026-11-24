@@ -4301,6 +4301,10 @@ public class ResultSetViewer extends Viewer
 
         DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
         DBDDataFilter dataFilter = getDataFilter();
+        if (dataFilter.hasOrdering()) {
+            // Refresh may have already used the model's ordering without a saved filter.
+            return;
+        }
 
         boolean applied = OrderingUtils.addOrderingOnClientSide(
             dataFilter,
