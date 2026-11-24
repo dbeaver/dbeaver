@@ -16,28 +16,39 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.dialogs.FilteredPreferenceDialog;
+import org.eclipse.ui.activities.WorkbenchActivityHelper;
+import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 /** Opens the workbench preferences in a modeless dialog with the requested page selected. */
-public class WizardDialogModeless extends FilteredPreferenceDialog {
+public class WizardDialogModeless extends WorkbenchPreferenceDialog {
     private static WizardDialogModeless openDialog;
 
     public WizardDialogModeless(@Nullable Shell parentShell, @Nullable String pageId) throws DBException {
-        super(parentShell, PlatformUI.getWorkbench().getPreferenceManager());
+        super(parentShell, getWorkbenchPreferenceManager(pageId));
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MODELESS);
         setBlockOnOpen(false);
         if (pageId != null) {
-            if (findNodeMatching(pageId) == null) {
-                throw new DBException("Preference page not found: " + pageId);
-            }
             setSelectedNode(pageId);
         }
+    }
+
+    @NotNull
+    private static PreferenceManager getWorkbenchPreferenceManager(@Nullable String pageId) throws DBException {
+        PreferenceManager manager = PlatformUI.getWorkbench().getPreferenceManager();
+        // Validate before the superclass registers this dialog as the workbench singleton.
+        if (pageId != null && manager.getElements(PreferenceManager.PRE_ORDER).stream().noneMatch(
+            node -> pageId.equals(node.getId()) && !WorkbenchActivityHelper.filterItem(node)
+        )) {
+            throw new DBException("Preference page not found: " + pageId);
+        }
+        return manager;
     }
 
     public static void showPage(@Nullable Shell parentShell, @Nullable String pageId) throws DBException {
