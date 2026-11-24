@@ -177,6 +177,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
                 return new Text(parent, SWT.SINGLE | SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
             }
         };
+        filteredTree.setInitialText(AIUIMessages.ai_mcp_connections_filter);
         viewer = filteredTree.getViewer();
         filterControl = filteredTree.getFilterControl();
         if (filterControl != null) {
