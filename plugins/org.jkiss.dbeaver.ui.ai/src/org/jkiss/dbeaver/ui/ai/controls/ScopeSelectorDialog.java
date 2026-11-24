@@ -190,10 +190,15 @@ public class ScopeSelectorDialog extends BaseDialog {
             }
         });
         UIUtils.asyncExec(() -> {
-            if (!getShell().isDisposed()) {
+            if (isDialogOpen()) {
                 loadInitialObjects();
             }
         });
+    }
+
+    private boolean isDialogOpen() {
+        Shell shell = getShell();
+        return shell != null && !shell.isDisposed();
     }
 
     private void loadInitialObjects() {
@@ -207,6 +212,14 @@ public class ScopeSelectorDialog extends BaseDialog {
                         AtomicReference<IStatus> connectionStatus = new AtomicReference<>();
                         if (!DBUtils.initDataSource(progress, dataSourceContainer, connectionStatus::set)) {
                             IStatus status = connectionStatus.get();
+                            if (status != null && status.getSeverity() == IStatus.CANCEL) {
+                                UIUtils.asyncExec(() -> {
+                                    if (isDialogOpen()) {
+                                        cancelPressed();
+                                    }
+                                });
+                                return Status.CANCEL_STATUS;
+                            }
                             if (status != null && status.getException() != null) {
                                 throw new DBException(AIChatMessagesUI.ai_chat_connect_error_message, status.getException());
                             }
@@ -230,14 +243,14 @@ public class ScopeSelectorDialog extends BaseDialog {
                         return Status.CANCEL_STATUS;
                     }
                     UIUtils.asyncExec(() -> {
-                        if (!getShell().isDisposed() && !monitor.isCanceled()) {
+                        if (isDialogOpen() && !monitor.isCanceled()) {
                             showObjects(root, selected);
                         }
                     });
                     return Status.OK_STATUS;
                 } catch (Exception e) {
                     UIUtils.asyncExec(() -> {
-                        if (!getShell().isDisposed() && !monitor.isCanceled()) {
+                        if (isDialogOpen() && !monitor.isCanceled()) {
                             DBWorkbench.getPlatformUI().showError(AIUIMessages.scope_selector_load_error, null, e);
                             cancelPressed();
                         }
