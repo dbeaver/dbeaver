@@ -164,7 +164,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     private void createConnectionTree(@NotNull Composite parent) {
         PatternFilter filter = new PatternFilter() {
             @Override
-            protected boolean isLeafMatch(Viewer viewer, Object element) {
+            protected boolean isLeafMatch(@NotNull Viewer viewer, @Nullable Object element) {
                 return element instanceof DBPDataSourceContainer connection
                     && (wordMatches(connection.getName()) || wordMatches(connection.getProject().getName()))
                     || element instanceof DBPProject project && wordMatches(project.getName());
@@ -173,7 +173,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         filter.setIncludeLeadingWildcard(true);
         FilteredTree filteredTree = new FilteredTree(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, filter, true, true) {
             @Override
-            protected Text doCreateFilterText(Composite parent) {
+            protected @NotNull Text doCreateFilterText(@NotNull Composite parent) {
                 return new Text(parent, SWT.SINGLE | SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
             }
         };
@@ -198,7 +198,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         };
         columnController.setComparator(new ViewerColumnController.DefaultComparator() {
             @Override
-            public int category(Object element) {
+            public int category(@Nullable Object element) {
                 return element instanceof DBPProject ? 0 : 1;
             }
         });
@@ -259,7 +259,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         });
         viewer.addTreeListener(new ITreeViewerListener() {
             @Override
-            public void treeExpanded(TreeExpansionEvent event) {
+            public void treeExpanded(@NotNull TreeExpansionEvent event) {
                 if (!restoringProjects && (filterControl == null || filterControl.getText().isBlank())
                     && event.getElement() instanceof DBPProject project && !snapshot.get(project).loaded()) {
                     UIUtils.asyncExec(() -> {
@@ -326,7 +326,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
     private final class ConnectionLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
 
         @Override
-        public void update(ViewerCell cell) {
+        public void update(@NotNull ViewerCell cell) {
             StyledString styledText = getStyledText(cell.getElement());
             cell.setText(styledText.getString());
             cell.setStyleRanges(styledText.getStyleRanges());
@@ -335,7 +335,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         }
 
         @NotNull
-        public StyledString getStyledText(Object element) {
+        public StyledString getStyledText(@Nullable Object element) {
             if (element instanceof DBPProject project) {
                 ProjectEntry state = snapshot.get(project);
                 StyledString text = new StyledString(project.getName());
@@ -352,14 +352,14 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
         @NotNull
         @Override
-        public String getText(Object element) {
+        public String getText(@Nullable Object element) {
             return element instanceof DBPProject project ? project.getName()
                 : element instanceof DBPDataSourceContainer connection ? connection.getName() : "";
         }
 
         @Nullable
         @Override
-        public Image getImage(Object element) {
+        public Image getImage(@Nullable Object element) {
             if (element instanceof DBPProject project) {
                 return snapshot.get(project).getIcon(projectDecorator);
             }
@@ -369,7 +369,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
         @Nullable
         @Override
-        public String getToolTipText(Object element) {
+        public String getToolTipText(@Nullable Object element) {
             return element instanceof DBPDataSourceContainer connection
                 ? AIUIMessages.ai_mcp_connections_driver + ": " + connection.getDriver().getName() : null;
         }
@@ -382,14 +382,14 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         }
         ColumnLabelProvider labelProvider = new ColumnLabelProvider() {
             @Override
-            public String getText(Object element) {
+            public @NotNull String getText(@Nullable Object element) {
                 return element instanceof DBPDataSourceContainer connection
                     ? getSettings(connection).getScope().getTitle() : "";
             }
 
             @Nullable
             @Override
-            public Image getImage(Object element) {
+            public Image getImage(@Nullable Object element) {
                 return element instanceof DBPDataSourceContainer connection
                     && getSettings(connection).getScope() == AIDatabaseScope.CUSTOM
                     ? DBeaverIcons.getImage(UIIcon.CONFIGURATION) : null;
@@ -397,7 +397,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
             @Nullable
             @Override
-            public String getToolTipText(Object element) {
+            public String getToolTipText(@Nullable Object element) {
                 return element instanceof DBPDataSourceContainer connection
                     && getSettings(connection).getScope() == AIDatabaseScope.CUSTOM
                     ? AIUIMessages.ai_connection_settings_custom_scope_label : null;
@@ -440,7 +440,7 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
             }
 
             @Override
-            protected ComboBoxCellEditor getCellEditor(Object element) {
+            protected @NotNull ComboBoxCellEditor getCellEditor(@NotNull Object element) {
                 editingConnection = (DBPDataSourceContainer) element;
                 return editor;
             }
