@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.sql.SQLQueryType;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
@@ -203,9 +204,11 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
     private String getSourceTableName(@NotNull DBCSession session, @NotNull DBPNamedObject source) {
         DBPDataSource dataSource = session.getDataSource();
         SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, source);
-        if (queryContainer != null && (queryContainer.getQueryResultIndex() > 0 || isMultiStatementQuery(dataSource, queryContainer))) {
-            // a statement can produce an update count before the first result set
-            return getResultTableName(session);
+        if (queryContainer != null) {
+            int resultIndex = queryContainer.getQueryResultIndex();
+            if (resultIndex > 0 || isMultiStatementQuery(dataSource, queryContainer)) {
+                return getResultTableName(session, resultIndex == 0 ? queryContainer : null);
+            }
         }
         if (source instanceof SQLQueryContainer directQueryContainer) {
             String name = DTUtils.getTableNameFromQueryContainer(dataSource, directQueryContainer);
@@ -221,7 +224,7 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
     }
 
     @Nullable
-    private String getResultTableName(@NotNull DBCSession session) {
+    private String getResultTableName(@NotNull DBCSession session, @Nullable SQLQueryContainer firstResultQuery) {
         DBCEntityMetaData resultTable = null;
         for (DBDAttributeBinding column : columns) {
             DBCAttributeMetaData attribute = column.getMetaAttribute();
@@ -235,6 +238,13 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
             resultTable = table;
         }
         if (resultTable == null) {
+            // an earlier update count can precede the first result set
+            if (firstResultQuery != null
+                && firstResultQuery.getQuery() instanceof SQLQuery query
+                && query.getType() == SQLQueryType.SELECT
+            ) {
+                return DTUtils.getTableNameFromQuery(session.getDataSource(), firstResultQuery, omitSchema);
+            }
             return null;
         }
         DBPDataSource dataSource = session.getDataSource();
