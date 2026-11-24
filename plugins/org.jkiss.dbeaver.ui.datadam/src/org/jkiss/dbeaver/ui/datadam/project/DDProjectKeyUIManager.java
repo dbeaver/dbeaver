@@ -24,6 +24,7 @@ import org.eclipse.jface.window.Window;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -49,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Interactive recovery for account encryption resets, before project operations start. */
 public final class DDProjectKeyUIManager {
+    private static final Log log = Log.getLog(DDProjectKeyUIManager.class);
     private static final DDProjectKeyUIManager INSTANCE = new DDProjectKeyUIManager();
     private final AtomicBoolean cleanupInProgress = new AtomicBoolean();
     private final AtomicBoolean activeProjectCheckRunning = new AtomicBoolean();
@@ -243,12 +245,14 @@ public final class DDProjectKeyUIManager {
 
     private void ensureActiveProject(@NotNull List<? extends DBPProject> candidates) throws DBException {
         DBPWorkspace workspace = DBPPlatformDesktop.getInstance().getWorkspace();
-        if (candidates.contains(workspace.getActiveProject())) {
+        DBPProject currentProject = workspace.getActiveProject();
+        if (currentProject != null && candidates.contains(currentProject)) {
             return;
         }
         DBPProject project;
         if (candidates.isEmpty()) {
             if (!workspace.canManageProjects()) {
+                log.debug("Cannot create a local project: project management is not available");
                 return;
             }
             String name = DBConstants.DEFAULT_PROJECT_NAME;
@@ -256,11 +260,16 @@ public final class DDProjectKeyUIManager {
             while (workspace.getProject(name) != null) {
                 name = DBConstants.DEFAULT_PROJECT_NAME + " " + suffix++;
             }
+            log.debug("Creating local project '" + name + "': no suitable active project is available");
             project = workspace.createProject(name, null);
+            log.debug("Created local project '" + project.getName() + "'");
         } else {
             project = candidates.getFirst();
         }
-        UIUtils.syncExec(() -> NavigatorHandlerProjectSetActive.setActiveProject(project));
+        UIUtils.syncExec(() -> {
+            log.debug("Activating local project '" + project.getName() + "'");
+            NavigatorHandlerProjectSetActive.setActiveProject(project);
+        });
     }
 
     private record Recovery(@Nullable String phrase) {
