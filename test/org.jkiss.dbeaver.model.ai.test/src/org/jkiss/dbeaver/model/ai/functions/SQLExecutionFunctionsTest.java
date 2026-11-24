@@ -100,6 +100,7 @@ class SQLExecutionFunctionsTest {
         fixture.verify(function, "TABLE public.orders");
         fixture.verify(function, "SELECT * FROM public.orders");
         fixture.verify(function, "SELECT public.read_payroll()");
+        fixture.verify(function, "SELECT * FROM public.read_payroll() AS payroll");
         fixture.verify(function, "WITH x AS (SELECT * FROM public.orders) SELECT * FROM x");
         // An unparsed WITH statement cannot be assumed to contain only reads.
         fixture.assertRestricted(function, "WITH x AS (TABLE public.orders) SELECT * FROM x");
@@ -110,6 +111,7 @@ class SQLExecutionFunctionsTest {
         fixture.assertRestricted(function, "WITH x AS (SELECT * FROM private.orders) SELECT * FROM x");
         fixture.assertRestricted(function, "WITH x AS (TABLE private.orders) SELECT * FROM x");
         fixture.assertRestricted(function, "SELECT private.read_payroll()");
+        fixture.assertRestricted(function, "SELECT * FROM private.read_payroll() AS payroll");
         fixture.assertRestricted(function, "SELECT public.orders()");
     }
 
@@ -161,6 +163,10 @@ class SQLExecutionFunctionsTest {
         }
         fixture.assertRestricted(function, "DELETE FROM private.orders");
         fixture.assertRestricted(function, "INSERT INTO public.orders SELECT * FROM private.orders");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function, "INSERT INTO public.orders SELECT * FROM public.read_payroll()"));
+        fixture.assertRestricted(function, "INSERT INTO public.orders SELECT * FROM private.read_payroll()");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function, "UPDATE public.orders SET id=2 FROM public.read_payroll() p"));
+        fixture.assertRestricted(function, "UPDATE public.orders SET id=2 FROM private.read_payroll() p");
         fixture.assertRestricted(function, "UPDATE public.orders SET id=(SELECT max(id) FROM private.orders)");
         fixture.assertRestricted(function, "CALL public.refresh_orders(private.read_payroll())");
     }

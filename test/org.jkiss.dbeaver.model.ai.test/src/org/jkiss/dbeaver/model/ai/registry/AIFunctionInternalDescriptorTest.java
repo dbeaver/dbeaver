@@ -86,6 +86,24 @@ class AIFunctionInternalDescriptorTest {
         Assertions.assertTrue(descriptor.isIdempotentHint());
     }
 
+    @Test
+    void readsDangerousFlagAndParameterPreview() {
+        var config = configuration();
+        var contributor = config.getContributor();
+        var parameter = Mockito.mock(IConfigurationElement.class);
+        Mockito.when(parameter.getContributor()).thenReturn(contributor);
+        Mockito.when(parameter.getAttribute("name")).thenReturn("sqlQuery");
+        Mockito.when(parameter.getAttribute("preview")).thenReturn("sql");
+        Mockito.when(config.getAttribute("dangerous")).thenReturn("true");
+        Mockito.when(config.getChildren("parameter")).thenReturn(new IConfigurationElement[] { parameter });
+        var descriptor = new AIFunctionInternalDescriptor(Mockito.mock(AIToolboxInternalDescriptor.class), config);
+        Assertions.assertTrue(descriptor.isDangerous());
+        Assertions.assertEquals("sql", descriptor.getParameters()[0].getPreview());
+
+        var plain = new AIFunctionInternalDescriptor(Mockito.mock(AIToolboxInternalDescriptor.class), configuration());
+        Assertions.assertFalse(plain.isDangerous());
+    }
+
     @NotNull
     private IConfigurationElement configuration() {
         var config = Mockito.mock(IConfigurationElement.class);

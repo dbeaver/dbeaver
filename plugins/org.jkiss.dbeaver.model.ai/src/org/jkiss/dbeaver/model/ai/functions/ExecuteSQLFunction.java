@@ -35,6 +35,7 @@ import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
@@ -256,7 +257,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         return databaseContext;
     }
 
-    protected final void checkObjectScope(
+    protected void checkObjectScope(
         @NotNull AIFunctionContext context,
         @NotNull DBSObject object
     ) throws DBException {
@@ -271,14 +272,14 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         }
     }
 
-    protected final void verifyDatasourceScope(@NotNull AIFunctionContext context) throws DBException {
+    protected void verifyDatasourceScope(@NotNull AIFunctionContext context) throws DBException {
         AIDatabaseContext databaseContext = requireDatabaseContext(context);
         if (databaseContext.getScope() != AIDatabaseScope.CURRENT_DATASOURCE || databaseContext.hasDataSourceCustomScope()) {
             throw new DBException("This statement requires datasource-wide scope");
         }
     }
 
-    protected final void verifyObject(
+    protected void verifyObject(
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
     ) throws DBException {
         DBSObject object = findObject(context, executionContext, name);
@@ -473,7 +474,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
     }
 
     @Nullable
-    private DBSObject findObject(
+    protected final DBSObject findObject(
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
     ) throws DBException {
         String[] parts = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect()).splitIdentifier(name);
@@ -794,7 +795,8 @@ public abstract class ExecuteSQLFunction implements AIFunction {
                 || !aliases.contains(identifierKey(table.getName())))) {
                 names.add(table.getFullyQualifiedName());
             }
-            if (value instanceof Function function) {
+            // a table function in FROM is a nameless wrapper, the function itself is its child node
+            if (value instanceof Function function && !(function instanceof TableFunction)) {
                 routines.add(function.getName());
             }
             for (int i = node.jjtGetNumChildren() - 1; i >= 0; i--) {

@@ -50,6 +50,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final boolean ui;
     private final boolean enabledByDefault;
     private final boolean omitConfirmation;
+    private final boolean dangerous;
     private final boolean readOnlyHint;
     private final boolean destructiveHint;
     private final boolean idempotentHint;
@@ -92,6 +93,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
             AIFunctionAllowMode.ALWAYS_ALLOW
         );
         this.omitConfirmation = CommonUtils.toBoolean(config.getAttribute("omitConfirmation"), false);
+        this.dangerous = CommonUtils.toBoolean(config.getAttribute("dangerous"));
         this.readOnlyHint = CommonUtils.toBoolean(config.getAttribute("readOnlyHint"), false);
         this.destructiveHint = CommonUtils.toBoolean(config.getAttribute("destructiveHint"), true);
         this.idempotentHint = CommonUtils.toBoolean(config.getAttribute("idempotentHint"), false);
@@ -207,6 +209,11 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     @Override
     public boolean isOmitConfirmation() {
         return omitConfirmation;
+    }
+
+    @Override
+    public boolean isDangerous() {
+        return dangerous;
     }
 
     @NotNull
