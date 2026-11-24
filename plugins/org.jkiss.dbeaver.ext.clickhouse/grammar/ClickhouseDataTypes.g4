@@ -46,6 +46,8 @@ Decimal: 'Decimal' ('32'|'64'|'128'|'256')?;
 Date: 'Date' '32'?;
 DateTime: 'DateTime' '64'?;
 FixedString: 'FixedString';
+Dot: '.';
+QuotedIdentifier: '`' ('``' | ~'`')* '`' | '"' ('""' | ~'"')* '"';
 
 RightParen: ')';
 LeftParen: '(';
@@ -56,7 +58,7 @@ Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
 
 Comma: ',';
 Eq: '=';
-String: '\'' (~('\''|'\r'|'\n'))+ '\''; // FIXME: string does not support escape sequences
+String: '\'' ('\\' . | ~('\''|'\\'|'\r'|'\n'))* '\''; // FIXME: string does not support doubled quotes
 
 type
  : anyType EOF
@@ -72,8 +74,12 @@ anyType
  ;
 
 markerType
- : 'Nullable' LeftParen anyType RightParen
- | 'LowCardinality' LeftParen anyType RightParen
+ : markerTypePrefix LeftParen anyType RightParen
+ ;
+
+markerTypePrefix
+ : 'Nullable'       # nullableMarker
+ | 'LowCardinality' # lowCardinalityMarker
  ;
 
 simpleType
@@ -103,7 +109,16 @@ arrayType: Array LeftParen anyType RightParen;
 mapType: Map LeftParen key=anyType Comma value=anyType RightParen;
 
 stringType: 'String';
-jsonType: 'JSON';
+jsonType: 'JSON' (LeftParen jsonArgumentList? RightParen)?;
+jsonArgumentList: jsonArgument (Comma jsonArgument)*;
+jsonArgument
+  : jsonPath anyType
+  | Identifier Eq Number
+  | 'SKIP' 'REGEXP' String
+  | 'SKIP' jsonPath
+  ;
+jsonPath: jsonPathPart (Dot jsonPathPart)*;
+jsonPathPart: Identifier | QuotedIdentifier;
 fixedStringType: FixedString LeftParen Number RightParen;
 uuidType: 'UUID';
 boolType: 'Boolean' | 'Bool';

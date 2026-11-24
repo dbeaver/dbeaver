@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.clickhouse;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ClickhouseTypeParserTest extends DBeaverUnitTest {
 
@@ -32,5 +34,34 @@ class ClickhouseTypeParserTest extends DBeaverUnitTest {
             "DateTime64",
             ClickhouseTypeParser.getTypeNameWithoutModifiers("Nullable(DateTime64(3, 'UTC'))")
         );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "JSON", "json", "JSON()", "JSON(a UInt64)",
+        "JSON(a UInt64, items Array(Nullable(UInt64)))",
+        "JSON(max_dynamic_types=1, max_dynamic_paths=0)",
+        "JSON(SKIP a.b)", "JSON(SKIP REGEXP '^(foo|bar)$')",
+        "JSON(SKIP REGEXP '[)]')", "JSON(SKIP REGEXP 'a\\'b')",
+        "JSON(`a)b` UInt64)", "JSON(`a``)b` UInt64)", "JSON(\"a)b\" UInt64)",
+        "JSON(a Tuple(x UInt64, y String))", "JSON(a Enum8('x(y)'=1))",
+        "Nullable(JSON)", "Nullable(JSON())", "Nullable(JSON(a UInt64, items Array(Nullable(UInt64))))",
+        "Nullable(JSON(a UInt64)", "Nullable(JSON(a Array(Nullable(UInt64)))"
+        // JDBC metadata can omit the outer Nullable close.
+    })
+    void recognizesScalarJsonTypes(String typeName) {
+        Assertions.assertTrue(ClickhouseTypeParser.isScalarJsonType(typeName), typeName);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "JSONB", "JSONX(a UInt64)", "JSON(a UInt64)Extra", "JSON(a UInt64))",
+        "JSON(a UInt64", "JSON(a Array(UInt64)", "JSON(SKIP REGEXP 'unterminated)",
+        "Nullable(String)", "Nullable(JSON))", "Nullable(JSON(a UInt64)))",
+        "Array(JSON)", "Array(Nullable(JSON))", "Map(String, JSON)",
+        "LowCardinality(JSON)", "Nullable(Nullable(JSON))"
+    })
+    void excludesOtherAndMalformedTypes(String typeName) {
+        Assertions.assertFalse(ClickhouseTypeParser.isScalarJsonType(typeName), typeName);
     }
 }
