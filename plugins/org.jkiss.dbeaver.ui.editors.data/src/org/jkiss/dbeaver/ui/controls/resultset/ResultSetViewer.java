@@ -4309,7 +4309,7 @@ public class ResultSetViewer extends Viewer
         );
 
         if (applied) {
-            if (isHasMoreData()) {
+            if (strategy == OrderingStrategy.SMART && isHasMoreData()) {
                 // Sorting a partial result locally would leave the wrong rows in the first segment.
                 refreshWithFilter(dataFilter);
             } else {
