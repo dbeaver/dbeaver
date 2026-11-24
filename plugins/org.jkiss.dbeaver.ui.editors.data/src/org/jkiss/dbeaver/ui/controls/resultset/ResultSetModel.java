@@ -1247,11 +1247,11 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     public void resetOrdering(@NotNull DBDAttributeBinding columnElement) {
-        this.resetOrderingImpl(columnElement);
+        this.resetOrderingImpl();
         this.updateAllVisualNumbers();
     }
 
-    private void resetOrderingImpl(@NotNull DBDAttributeBinding columnElement) {
+    private void resetOrderingImpl() {
         final boolean hasOrdering = dataFilter.hasOrdering();
 
         // First sort in original order to reset multi-column orderings
@@ -1269,7 +1269,7 @@ public class ResultSetModel implements DBDResultSetModel {
                     }
                     Object cell1 = getCellValue(new ResultSetCellLocation(binding, row1));
                     Object cell2 = getCellValue(new ResultSetCellLocation(binding, row2));
-                    Comparator<Object> comparator = columnElement.getValueHandler().getComparator();
+                    Comparator<Object> comparator = binding.getValueHandler().getComparator();
                     if (comparator != null) {
                         result = comparator.compare(cell1, cell2);
                     } else if (cell1 instanceof String && cell2 instanceof String) {

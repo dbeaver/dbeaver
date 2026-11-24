@@ -130,6 +130,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -4273,12 +4274,12 @@ public class ResultSetViewer extends Viewer
         if (dataContainer != null) {
             DBDDataFilter dataFilter = restoreDataFilter(dataContainer);
             int segmentSize = getSegmentMaxRows();
-            Runnable finalizer = () -> {
+            Consumer<Boolean> finalizer = success -> {
                 if (activePresentation.getControl() != null && !activePresentation.getControl().isDisposed()) {
                     activePresentation.formatData(true);
                 }
 
-                if (dataFilter == null) {
+                if (success && dataFilter == null) {
                     // If no user-defined filter is present, apply default ordering
                     applyDefaultOrdering();
                 }
@@ -4301,21 +4302,24 @@ public class ResultSetViewer extends Viewer
 
         DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
         DBDDataFilter dataFilter = getDataFilter();
-        if (dataFilter.hasOrdering()) {
-            // Refresh may have already used the model's ordering without a saved filter.
+        if (CommonUtils.isNotEmpty(dataFilter.getOrder())) {
+            // Custom SQL ordering is always evaluated on the server.
             return;
         }
 
-        boolean applied = OrderingUtils.addOrderingOnClientSide(
+        boolean hadOrdering = dataFilter.hasOrdering();
+        boolean applied = !hadOrdering && OrderingUtils.addOrderingOnClientSide(
             dataFilter,
             rowIdentifier,
             OrderingPolicy.get(this.getPreferenceStore())
         );
 
-        if (applied) {
+        if (hadOrdering || applied) {
             if (strategy == OrderingStrategy.SMART && isHasMoreData()) {
-                // Sorting a partial result locally would leave the wrong rows in the first segment.
-                refreshWithFilter(dataFilter);
+                if (applied) {
+                    // Only newly added ordering needs another query; existing ordering was already used by the read.
+                    refreshWithFilter(dataFilter);
+                }
             } else {
                 if (rowIdentifier != null) {
                     getModel().resetOrdering(rowIdentifier.getAttributes());
@@ -4391,7 +4395,9 @@ public class ResultSetViewer extends Viewer
                 segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
             dataReceiver.setNextSegmentRead(false);
-            return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, false, true, onSuccess);
+            return runDataPump(
+                dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, false, true,
+                onSuccess == null ? null : success -> onSuccess.run());
         } else {
             return false;
         }
@@ -4495,7 +4501,7 @@ public class ResultSetViewer extends Viewer
                     false,
                     true,
                     true,
-                    () -> nextSegmentReadingBlocked = false);
+                    success -> nextSegmentReadingBlocked = false);
             }
         });
     }
@@ -4635,7 +4641,7 @@ public class ResultSetViewer extends Viewer
         final boolean saveHistory, // Save history state (sometimes we don'ty need it)
         final boolean scroll, // Scroll operation
         final boolean refresh, // Refresh. Nothing was changed but refresh from server or scroll happened
-        @Nullable final Runnable finalizer)
+        @Nullable final Consumer<Boolean> finalizer)
     {
         if (!scroll) {
             fireResultSetRefresh();
@@ -4646,7 +4652,7 @@ public class ResultSetViewer extends Viewer
             executionContext = DBUtils.getDefaultContext(dataContainer, false);
         }
         if (executionContext == null) {
-            if (finalizer != null) finalizer.run();
+            if (finalizer != null) finalizer.accept(false);
             UIUtils.syncExec(() ->
                 UIUtils.showMessageBox(viewerPanel.getShell(), ResultSetMessages.error_read_data_title,
                     ResultSetMessages.error_no_active_connection, SWT.ICON_WARNING));
@@ -5608,7 +5614,7 @@ public class ResultSetViewer extends Viewer
         private final boolean saveHistory;
         private final boolean scroll;
         private final Object presentationState;
-        private final Runnable finalizer;
+        private final Consumer<Boolean> finalizer;
 
         ResultSetDataPumpJob(
             @NotNull DBSDataContainer dataContainer,
@@ -5618,7 +5624,7 @@ public class ResultSetViewer extends Viewer
             int focusRow,
             boolean saveHistory,
             boolean scroll,
-            @Nullable Runnable finalizer)
+            @Nullable Consumer<Boolean> finalizer)
         {
             super(dataContainer, executionSource, executionContext, progressControl);
             this.focusRow = focusRow;
@@ -5639,7 +5645,7 @@ public class ResultSetViewer extends Viewer
             if (!acquireDataReadLock()) {
                 // Must run finalizer in any case
                 if (finalizer != null) {
-                    finalizer.run();
+                    finalizer.accept(false);
                 }
                 return Status.CANCEL_STATUS;
             }
@@ -5684,6 +5690,7 @@ public class ResultSetViewer extends Viewer
 
         private void updateResultsInUI() {
             final Throwable error = getError();
+            boolean success = false;
             if (getStatistics() != null) {
                 model.setStatistics(getStatistics());
             }
@@ -5795,10 +5802,11 @@ public class ResultSetViewer extends Viewer
 
                 // auto-refresh
                 autoRefreshControl.scheduleAutoRefresh(error != null);
+                success = error == null && !isCanceled();
             } finally {
                 if (finalizer != null) {
                     try {
-                        finalizer.run();
+                        finalizer.accept(success);
                     } catch (Throwable e) {
                         log.error(e);
                     }
