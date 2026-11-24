@@ -17,11 +17,14 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
@@ -52,7 +55,7 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
             parameter("ARG1", DBSProcedureParameterKind.IN),
             parameter("ARG2", DBSProcedureParameterKind.IN)
         );
-        Assertions.assertEquals("execute procedure TEST_PROC(:ARG1, :ARG2);", generateCall(false, false, parameters));
+        Assertions.assertEquals("execute procedure TEST_PROC(:ARG1, :ARG2);", generateCall(true, false, parameters));
     }
 
     @Test
@@ -62,25 +65,42 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
             parameter("RET1", DBSProcedureParameterKind.OUT),
             parameter("RET2", DBSProcedureParameterKind.OUT)
         );
-        Assertions.assertEquals("select * from TEST_PROC(cast(:ARG1 as INTEGER));", generateCall(true, true, parameters));
+        Assertions.assertEquals("select * from TEST_PROC(cast(:ARG1 as INTEGER));", generateCall(false, true, parameters));
     }
 
     @Test
     public void omitsParenthesesWhenProcedureHasNoInputArguments() {
         List<DBSProcedureParameter> parameters = List.of(parameter("RET1", DBSProcedureParameterKind.OUT));
-        Assertions.assertEquals("execute procedure TEST_PROC;", generateCall(false, false, parameters));
-        Assertions.assertEquals("select * from TEST_PROC;", generateCall(true, false, parameters));
+        Assertions.assertEquals("execute procedure TEST_PROC;", generateCall(true, false, parameters));
+        Assertions.assertEquals("select * from TEST_PROC;", generateCall(false, false, parameters));
+    }
+
+    @Test
+    public void reloadsCachedProcedureParametersAfterRefresh() throws DBException {
+        GenericStructContainer container = Mockito.mock(GenericStructContainer.class);
+        FireBirdProcedure procedure = Mockito.spy(new FireBirdProcedure(
+            container, "TEST_PROC", "TEST_PROC", null, DBSProcedureType.PROCEDURE, null));
+        VoidProgressMonitor monitor = new VoidProgressMonitor();
+        Mockito.doNothing().when(procedure).loadProcedureColumns(monitor);
+
+        procedure.getParameters(monitor);
+        procedure.getParameters(monitor);
+        Mockito.verify(procedure).loadProcedureColumns(monitor);
+
+        procedure.refreshObject(monitor);
+        procedure.getParameters(monitor);
+        Mockito.verify(procedure, Mockito.times(2)).loadProcedureColumns(monitor);
     }
 
     @NotNull
-    private String generateCall(boolean selectable, boolean castParams, @NotNull List<DBSProcedureParameter> parameters) {
+    private String generateCall(boolean executable, boolean castParams, @NotNull List<DBSProcedureParameter> parameters) {
         FireBirdProcedure procedure = Mockito.mock(FireBirdProcedure.class);
         GenericDataSource dataSource = Mockito.mock(GenericDataSource.class);
         DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
         DBPPreferenceStore preferences = Mockito.mock(DBPPreferenceStore.class);
         Mockito.when(procedure.getProcedureType()).thenReturn(DBSProcedureType.PROCEDURE);
         Mockito.when(procedure.getFullyQualifiedName(DBPEvaluationContext.DML)).thenReturn("TEST_PROC");
-        Mockito.when(procedure.isSelectable()).thenReturn(selectable);
+        Mockito.when(procedure.isExecutable()).thenReturn(executable);
         Mockito.when(procedure.getDataSource()).thenReturn(dataSource);
         Mockito.when(dataSource.getContainer()).thenReturn(container);
         Mockito.when(container.getPreferenceStore()).thenReturn(preferences);

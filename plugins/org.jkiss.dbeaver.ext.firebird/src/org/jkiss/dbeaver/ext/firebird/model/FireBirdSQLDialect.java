@@ -347,8 +347,7 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     @NotNull
     @Override
     protected String getStoredProcedureCallInitialClause(@NotNull DBSProcedure proc) {
-        if (proc instanceof FireBirdProcedure procedure
-            && proc.getProcedureType() == DBSProcedureType.PROCEDURE && !procedure.isSelectable()) {
+        if (proc instanceof FireBirdProcedure procedure && procedure.isExecutable()) {
             return "execute procedure " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
         }
         return "select * from " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);

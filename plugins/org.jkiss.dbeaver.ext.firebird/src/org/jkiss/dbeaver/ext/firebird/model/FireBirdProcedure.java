@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -37,12 +39,13 @@ import java.util.Map;
 
 public class FireBirdProcedure extends GenericProcedure implements DBSObjectWithScript {
 
-    private static final int SELECTABLE_PROCEDURE_TYPE = 1;
+    private static final int LEGACY_PROCEDURE_TYPE = 0;
+    private static final int EXECUTABLE_PROCEDURE_TYPE = 2;
 
-    private boolean selectable;
+    private boolean executable;
 
-    boolean isSelectable() {
-        return selectable;
+    boolean isExecutable() {
+        return executable;
     }
 
     @Override
@@ -71,8 +74,16 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
         return super.getObjectDefinitionText(monitor, options);
     }
 
+    @Nullable
     @Override
-    public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        clearProcedureColumns();
+        executable = false;
+        return super.refreshObject(monitor);
+    }
+
+    @Override
+    public void loadProcedureColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
             String sql;
             boolean isProcedure = getProcedureType() == DBSProcedureType.PROCEDURE;
@@ -124,6 +135,7 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         "PP.RDB$PARAMETER_NUMBER + 1 AS ORDINAL_POSITION,\n" +
                         "F.RDB$CHARACTER_SET_ID,\n" +
                         "P.RDB$PROCEDURE_TYPE,\n" +
+                        "P.RDB$PROCEDURE_OUTPUTS,\n" +
                         "COALESCE(PP.RDB$DEFAULT_SOURCE, F.RDB$DEFAULT_SOURCE) AS DEFAULT_VALUE\n" +
                         (versionAtLeast3 ? ",PP.RDB$FIELD_NAME AS FIELD_NAME,\nPP.RDB$RELATION_NAME AS RELATION_NAME\n" : "") +
                         "FROM\n" +
@@ -144,7 +156,12 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                 }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        selectable = isProcedure && dbResult.getInt("RDB$PROCEDURE_TYPE") == SELECTABLE_PROCEDURE_TYPE;
+                        if (isProcedure) {
+                            // JDBC maps a null type to zero, which also denotes a legacy procedure
+                            int procedureType = dbResult.getInt("RDB$PROCEDURE_TYPE");
+                            executable = procedureType == EXECUTABLE_PROCEDURE_TYPE
+                                || (procedureType == LEGACY_PROCEDURE_TYPE && dbResult.getInt("RDB$PROCEDURE_OUTPUTS") == 0);
+                        }
                         String parameterName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
                         if (parameterName == null) {
                             continue;
