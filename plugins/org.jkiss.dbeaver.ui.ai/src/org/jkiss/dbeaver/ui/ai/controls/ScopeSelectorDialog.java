@@ -26,11 +26,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.ProgressBar;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -64,11 +60,8 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectSelectionTree;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -354,6 +347,7 @@ public class ScopeSelectorDialog extends BaseDialog {
             runnableContext.run(true, true, monitor -> {
                 monitor.beginTask(AIUIMessages.scope_selector_loading, checkedObjects.size());
                 try {
+                    navigatorModel.ensureProjectLoaded(dataSourceContainer.getProject());
                     for (DBSObject object : checkedObjects) {
                         if (monitor.isCanceled()) {
                             throw new InterruptedException();

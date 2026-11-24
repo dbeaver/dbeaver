@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ai.preferences.McpBooleanColumn;
 import org.jkiss.dbeaver.ui.ai.preferences.McpConnectionsPreferencePage.McpConnectionsPageRegistry.McpConnectionsPageContribution;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 
 import java.util.IdentityHashMap;
@@ -86,12 +87,15 @@ public class DDMcpConnectionsContribution implements McpConnectionsPageContribut
     }
 
     @Override
-    public void createColumns(
+    @NotNull
+    public McpBooleanColumn createColumns(
         @NotNull TreeViewer viewer,
+        @NotNull ViewerColumnController<McpBooleanColumn, Object> columnController,
         @NotNull Function<DBPDataSourceContainer, AIContextSettingsDataSource> settings
     ) {
-        McpBooleanColumn.create(
+        return McpBooleanColumn.create(
             viewer,
+            columnController,
             DDMcpMessages.mcp_connection_settings_group,
             DDMcpMessages.mcp_connection_settings_enabled_tip,
             connection -> settings.apply(connection).isDatadamMcpEnabled(),

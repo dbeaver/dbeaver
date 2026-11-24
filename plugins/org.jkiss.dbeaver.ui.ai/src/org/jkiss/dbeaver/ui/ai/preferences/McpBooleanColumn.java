@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
@@ -36,22 +37,28 @@ public final class McpBooleanColumn {
     private McpBooleanColumn() {
     }
 
-    public static void create(
+    @NotNull
+    public static McpBooleanColumn create(
         @NotNull TreeViewer viewer,
+        @NotNull ViewerColumnController<McpBooleanColumn, Object> controller,
         @NotNull String title,
         @NotNull String tooltip,
         @NotNull Function<DBPDataSourceContainer, Boolean> getValue,
         @NotNull BiConsumer<DBPDataSourceContainer, Boolean> setValue,
         @NotNull BooleanSupplier visible
     ) {
-        TreeViewerColumn column = new TreeViewerColumn(viewer, SWT.CENTER);
-        column.getColumn().setText(title);
-        column.getColumn().setWidth(100);
-        column.setLabelProvider(new ColumnLabelProvider() {
+        McpBooleanColumn key = new McpBooleanColumn();
+        ColumnLabelProvider labelProvider = new ColumnLabelProvider() {
             @NotNull
             @Override
             public String getText(Object element) {
-                return "";
+                return element instanceof DBPDataSourceContainer connection
+                    ? getValue.apply(connection).toString() : "";
+            }
+
+            @Override
+            public void update(ViewerCell cell) {
+                // The boolean value is painted using the configured BooleanStyleSet.
             }
 
             @Nullable
@@ -59,21 +66,21 @@ public final class McpBooleanColumn {
             public String getToolTipText(Object element) {
                 return element instanceof DBPDataSourceContainer ? tooltip : null;
             }
-        });
+        };
 
         Tree tree = viewer.getTree();
-        int columnIndex = tree.indexOf(column.getColumn());
         ObjectViewerRenderer renderer = new ObjectViewerRenderer(viewer, false) {
             @Nullable
             @Override
             public Object getCellValue(Object element, int index) {
-                return index == columnIndex && element instanceof DBPDataSourceContainer connection
+                return index < tree.getColumnCount() && controller.getColumnData(index) == key
+                    && element instanceof DBPDataSourceContainer connection
                     ? getValue.apply(connection) : null;
             }
         };
         tree.addDisposeListener(event -> renderer.dispose());
-        tree.addListener(SWT.PaintItem, event -> paintCell(event, columnIndex, getValue, visible, renderer));
-        column.setEditingSupport(new EditingSupport(viewer) {
+        tree.addListener(SWT.PaintItem, event -> paintCell(event, controller, key, getValue, visible, renderer));
+        EditingSupport editingSupport = new EditingSupport(viewer) {
             @NotNull
             @Override
             protected CellEditor getCellEditor(Object element) {
@@ -98,19 +105,22 @@ public final class McpBooleanColumn {
                     tree.redraw();
                 }
             }
-        });
+        };
+        controller.addColumn(title, tooltip, SWT.CENTER, true, false, false, key, labelProvider, editingSupport);
+        return key;
     }
 
     private static void paintCell(
         @NotNull Event event,
-        int columnIndex,
+        @NotNull ViewerColumnController<McpBooleanColumn, Object> controller,
+        @NotNull McpBooleanColumn key,
         @NotNull Function<DBPDataSourceContainer, Boolean> getValue,
         @NotNull BooleanSupplier visible,
         @NotNull ObjectViewerRenderer renderer
     ) {
-        if (event.index == columnIndex && visible.getAsBoolean() && event.item instanceof TreeItem item
+        if (controller.getColumnData(event.index) == key && visible.getAsBoolean() && event.item instanceof TreeItem item
             && item.getData() instanceof DBPDataSourceContainer connection) {
-            renderer.paintCell(event, connection, getValue.apply(connection), item, Boolean.class, columnIndex,
+            renderer.paintCell(event, connection, getValue.apply(connection), item, Boolean.class, event.index,
                 true, (event.detail & SWT.SELECTED) != 0);
         }
     }
