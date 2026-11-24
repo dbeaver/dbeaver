@@ -57,6 +57,8 @@ public class WizardDialogModeless extends WorkbenchPreferenceDialog {
             dialog = new WizardDialogModeless(parentShell, pageId);
             dialog.open();
         } else {
+            // Preference links may have restricted the shared dialog to a subset of pages.
+            dialog.showOnly(null);
             if (pageId != null) {
                 if (dialog.findNodeMatching(pageId) == null) {
                     throw new DBException("Preference page not found: " + pageId);
