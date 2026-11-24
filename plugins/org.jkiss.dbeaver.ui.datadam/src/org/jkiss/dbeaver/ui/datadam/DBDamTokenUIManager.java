@@ -1,0 +1,83 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ui.datadam;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+
+/**
+ * Interactive access check performed before a user-requested network operation.
+ */
+public class DBDamTokenUIManager {
+    private static final Log log = Log.getLog(DBDamTokenUIManager.class);
+    private static final DBDamTokenUIManager INSTANCE = new DBDamTokenUIManager();
+
+    private final DBDamAccessService accessService = DBDamAccessService.getInstance();
+
+    private DBDamTokenUIManager() {
+    }
+
+    @NotNull
+    public static DBDamTokenUIManager getInstance() {
+        return INSTANCE;
+    }
+
+    public boolean ensureTokenReady(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (monitor.isCanceled() || !DDProductConfig.isIntegrationEnabled()) {
+            return false;
+        }
+        DBDamAccessService.Status status = accessService.getStatus();
+        if (status == DBDamAccessService.Status.UNLOADED) {
+            try {
+                accessService.load();
+            } catch (DBException e) {
+                log.debug("Could not load DataDam desktop access", e);
+            }
+            status = accessService.getStatus();
+        }
+        if (status == DBDamAccessService.Status.INVALID_TOKEN) {
+            Boolean accepted = UIUtils.syncExec(new RunnableWithResult<>() {
+                @Override
+                public Boolean runWithResult() {
+                    return UIUtils.confirmAction(
+                        UIUtils.getActiveWorkbenchShell(),
+                        DDTrackingUIMessages.desktop_relogin_title,
+                        DDTrackingUIMessages.desktop_relogin_message
+                    );
+                }
+            });
+            if (!Boolean.TRUE.equals(accepted)) {
+                return false;
+            }
+
+            try {
+                accessService.signIn(monitor);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return !monitor.isCanceled() && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN;
+    }
+}

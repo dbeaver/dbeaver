@@ -121,6 +121,9 @@ public class PostgreMessages extends NLS {
     public static String wizard_backup_page_setting_label_encoding;
     public static String wizard_backup_page_setting_checkbox_use_insert;
     public static String wizard_backup_page_setting_checkbox_use_insert_tip;
+    public static String wizard_backup_page_setting_label_rows_per_insert;
+    public static String wizard_backup_page_setting_label_rows_per_insert_tip;
+    public static String wizard_backup_page_setting_label_rows_per_insert_requires_pg_dump_12;
     public static String wizard_backup_page_setting_checkbox_no_privileges;
     public static String wizard_backup_page_setting_checkbox_no_privileges_tip;
     public static String wizard_backup_page_setting_checkbox_no_owner;

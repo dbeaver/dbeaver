@@ -21,6 +21,17 @@ import org.eclipse.osgi.util.NLS;
 public class AIUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.internal.AIUIMessages"; //$NON-NLS-1$
 
+    public static String ai_mcp_connections_info;
+    public static String ai_mcp_connections_connection;
+    public static String ai_mcp_connections_driver;
+    public static String ai_mcp_connections_save_error_message;
+    public static String ai_mcp_connections_ungrouped;
+    public static String ai_mcp_connections_load_all;
+    public static String ai_mcp_connections_open_failed;
+    public static String ai_mcp_connections_scope;
+    public static String ai_mcp_connections_add;
+    public static String ai_mcp_connections_remove;
+    public static String ai_mcp_connections_count;
     public static String ai_connection_settings_group;
     public static String ai_connection_settings_mcp_group;
     public static String ai_connection_settings_enable_label;
@@ -167,6 +178,9 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_duplicate_error_title;
     public static String ai_engines_page_duplicate_error_message;
     public static String ai_engines_page_delete_confirm_title;
+    public static String ai_engines_page_delete_error_title;
+    public static String ai_profiles_no_personal_profiles;
+    public static String ai_profiles_select_personal_profile;
     public static String ai_engines_page_delete_confirm_message;
     public static String ai_engines_page_save_error_title;
     public static String ai_engines_page_save_error_message;
@@ -176,6 +190,12 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_configurator_error_message;
     public static String ai_engines_page_configurator_not_found_title;
     public static String ai_engines_page_configurator_not_found_message;
+
+    public static String ai_profiles_default;
+    public static String ai_profiles_credentials;
+    public static String ai_profiles_credentials_personal;
+    public static String ai_profiles_credentials_shared;
+    public static String ai_settings_user_save_error_title;
 
     static {
         // initialize resource bundle
