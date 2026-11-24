@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCTemporaryTableManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -144,6 +145,9 @@ public final class SQLMetadataRefreshTargetResolver {
      * </ul>
      */
     public sealed interface RefreshTarget {
+        record TemporaryTable(@NotNull DBCTemporaryTableManager.TemporaryTable table) implements RefreshTarget {
+        }
+
         /** Refreshes the entire data source when no narrower container can be identified. */
         record DataSource() implements RefreshTarget {
         }

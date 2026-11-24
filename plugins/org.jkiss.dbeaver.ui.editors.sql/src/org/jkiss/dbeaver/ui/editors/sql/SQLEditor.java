@@ -78,6 +78,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshTarget;
 import org.jkiss.dbeaver.model.sql.semantics.SQLObjectOperationRecognizer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -4419,6 +4420,7 @@ public class SQLEditor extends SQLEditorBase implements
         private final boolean closeTabOnError;
         private boolean metadataChanged;
         private SQLMetadataRefreshTransactionCoordinator.Handling metadataRefreshHandling;
+        private final Set<RefreshTarget.TemporaryTable> temporaryTableRefreshTargets = new LinkedHashSet<>();
         private SQLQueryListener extListener;
 
         SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
@@ -4507,10 +4509,15 @@ public class SQLEditor extends SQLEditorBase implements
                     SQLPreferenceConstants.MetadataRefreshBehavior refreshBehavior = SQLPreferenceConstants.MetadataRefreshBehavior.parse(
                         owner.getActivePreferenceStore().getString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
                     );
-                    if (!result.hasError() && refreshBehavior != SQLPreferenceConstants.MetadataRefreshBehavior.NEVER) {
-                        SQLQuery query = result.getStatement();
+                    SQLQuery query = result.getStatement();
+                    if (!result.hasError() && (refreshBehavior != SQLPreferenceConstants.MetadataRefreshBehavior.NEVER ||
+                        (session.getExecutionContext() instanceof DBCTemporaryTableManager && query.getType() == SQLQueryType.DDL))) {
                         List<SQLObjectOperation> objectOperations = owner.recognizeObjectOperations(query);
-                        if (query.getType() == SQLQueryType.DDL || !objectOperations.isEmpty()) {
+                        for (SQLObjectOperation objectOperation : objectOperations) {
+                            if (handleTemporaryTableOperation(session, objectOperation, refreshBehavior) ||
+                                refreshBehavior == SQLPreferenceConstants.MetadataRefreshBehavior.NEVER) {
+                                continue;
+                            }
                             metadataChanged = true;
                             if (metadataRefreshHandling == null || !metadataRefreshHandling.acceptsTargets()) {
                                 metadataRefreshHandling = SQLMetadataRefreshTransactionCoordinator.begin(
@@ -4519,13 +4526,7 @@ public class SQLEditor extends SQLEditorBase implements
                                     session
                                 );
                             }
-                            for (SQLObjectOperation objectOperation : objectOperations) {
-                                rememberMetadataRefreshTarget(
-                                    session.getProgressMonitor(),
-                                    session.getExecutionContext(),
-                                    objectOperation
-                                );
-                            }
+                            rememberMetadataRefreshTarget(session.getProgressMonitor(), session.getExecutionContext(), objectOperation);
                         }
                     }
                 } finally {
@@ -4584,6 +4585,43 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        private boolean handleTemporaryTableOperation(
+            @NotNull DBCSession session,
+            @NotNull SQLObjectOperation operation,
+            @NotNull SQLPreferenceConstants.MetadataRefreshBehavior refreshBehavior
+        ) {
+            if (operation.objectKind() != SQLObjectOperation.ObjectKind.TABLE ||
+                (operation.operation() == SQLObjectOperation.Operation.CREATE && !operation.temporary()) ||
+                !(session.getExecutionContext() instanceof DBCTemporaryTableManager temporaryTables)) {
+                return false;
+            }
+            SQLDialect dialect = session.getDataSource().getSQLDialect();
+            List<String> name = operation.qualifiedNameParts().stream()
+                .map(part -> SQLUtils.identifierToCanonicalForm(dialect, part, true, false))
+                .toList();
+            boolean removed = operation.operation() == SQLObjectOperation.Operation.DROP ||
+                operation.operation() == SQLObjectOperation.Operation.RENAME;
+            try {
+                DBCTemporaryTableManager.TemporaryTable table = operation.temporary() ?
+                    temporaryTables.registerTemporaryTable(session, name) :
+                    temporaryTables.temporaryTableChanged(session, name, removed);
+                if (table == null) {
+                    return operation.temporary();
+                }
+                RefreshTarget.TemporaryTable target = new RefreshTarget.TemporaryTable(table);
+                if (removed) {
+                    temporaryTableRefreshTargets.remove(target);
+                } else if (refreshBehavior == SQLPreferenceConstants.MetadataRefreshBehavior.ASK) {
+                    temporaryTableRefreshTargets.add(target);
+                } else if (refreshBehavior == SQLPreferenceConstants.MetadataRefreshBehavior.ALWAYS) {
+                    table.refreshTemporaryMetadata(session.getProgressMonitor());
+                }
+            } catch (DBException e) {
+                log.debug("Error refreshing temporary table metadata", e);
+            }
+            return true;
+        }
+
         private void rememberMetadataRefreshTarget(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBCExecutionContext executionContext,
@@ -4592,8 +4630,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (objectOperation == null) {
                 return;
             }
-            SQLMetadataRefreshTargetResolver.RefreshTarget target =
-                SQLMetadataRefreshTargetResolver.createTarget(monitor, executionContext, objectOperation);
+            RefreshTarget target = SQLMetadataRefreshTargetResolver.createTarget(monitor, executionContext, objectOperation);
             metadataRefreshHandling.add(target);
         }
 
@@ -4757,6 +4794,12 @@ public class SQLEditor extends SQLEditorBase implements
                 refreshContextDefaults(session);
                 if (metadataChanged && metadataRefreshHandling != null) {
                     metadataRefreshHandling.finish();
+                }
+                if (!temporaryTableRefreshTargets.isEmpty()) {
+                    SQLMetadataRefreshTransactionCoordinator.requestTemporaryTableRefresh(
+                        session.getExecutionContext(),
+                        temporaryTableRefreshTargets
+                    );
                 }
             }
             if (extListener != null) {

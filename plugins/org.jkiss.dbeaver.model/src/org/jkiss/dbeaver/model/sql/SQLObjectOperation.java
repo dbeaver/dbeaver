@@ -26,8 +26,13 @@ import java.util.List;
 public record SQLObjectOperation(
     @NotNull Operation operation,
     @NotNull ObjectKind objectKind,
-    @NotNull List<String> qualifiedNameParts
+    @NotNull List<String> qualifiedNameParts,
+    boolean temporary
 ) {
+    public SQLObjectOperation(@NotNull Operation operation, @NotNull ObjectKind objectKind, @NotNull List<String> qualifiedNameParts) {
+        this(operation, objectKind, qualifiedNameParts, false);
+    }
+
     public SQLObjectOperation {
         qualifiedNameParts = List.copyOf(qualifiedNameParts);
     }

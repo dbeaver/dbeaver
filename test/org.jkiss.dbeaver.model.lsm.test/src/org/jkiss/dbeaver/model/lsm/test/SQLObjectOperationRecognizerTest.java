@@ -93,6 +93,34 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
     }
 
     @Test
+    void recognizesTemporaryTableOperations() {
+        Assertions.assertEquals(
+            List.of(new SQLObjectOperation(
+                SQLObjectOperation.Operation.CREATE,
+                SQLObjectOperation.ObjectKind.TABLE,
+                List.of("`test`", "`temp_table`"),
+                true
+            )),
+            recognizeAll(BasicSQLDialect.INSTANCE, "CREATE TEMPORARY TABLE IF NOT EXISTS `test`.`temp_table` (id INT PRIMARY KEY)")
+        );
+        for (String sql : List.of(
+            "CREATE TEMPORARY TABLE example LIKE original",
+            "CREATE TEMPORARY TABLE example AS SELECT 1 AS id"
+        )) {
+            Assertions.assertEquals(
+                List.of(new SQLObjectOperation(
+                    SQLObjectOperation.Operation.CREATE,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("example"),
+                    true
+                )),
+                recognizeAll(BasicSQLDialect.INSTANCE, sql)
+            );
+        }
+        assertMultipleDropTargets("DROP TEMPORARY TABLE IF EXISTS schema1.a, schema2.b", SQLObjectOperation.ObjectKind.TABLE);
+    }
+
+    @Test
     void recognizesMultipleDropTargetsInSourceOrder() {
         assertMultipleDropTargets(
             "DROP TABLE schema1.a, schema2.b",

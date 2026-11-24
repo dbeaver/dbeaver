@@ -2575,6 +2575,12 @@ public final class DBUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBCEntityMetaData entityMeta
     ) throws DBException {
+        if (executionContext instanceof DBCTemporaryTableManager temporaryTables) {
+            DBSEntity temporaryTable = temporaryTables.findTemporaryTable(entityMeta);
+            if (temporaryTable != null) {
+                return temporaryTable;
+            }
+        }
         final DBSObjectContainer objectContainer = getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
         if (objectContainer != null) {
             DBSEntity entity = getEntityFromMetaData(monitor, executionContext, objectContainer, entityMeta, false);

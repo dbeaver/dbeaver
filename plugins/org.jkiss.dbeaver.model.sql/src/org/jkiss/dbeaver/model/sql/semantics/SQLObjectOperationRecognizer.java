@@ -194,11 +194,14 @@ public final class SQLObjectOperationRecognizer {
             return createOperation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.SCHEMA, name);
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.createTableStatement)) {
-            return createOperation(
-                SQLObjectOperation.Operation.CREATE,
-                SQLObjectOperation.ObjectKind.TABLE,
-                findDescendant(statement, STMKnownRuleNames.tableName)
-            );
+            List<String> nameParts = getNameParts(findDescendant(statement, STMKnownRuleNames.tableName));
+            if (nameParts.isEmpty()) {
+                return null;
+            }
+            STMTreeNode head = statement.findFirstChildOfName(STMKnownRuleNames.createTableHead);
+            boolean temporary = head != null && head.findNonErrorChildren().stream().anyMatch(child ->
+                child.getText().equalsIgnoreCase("TEMPORARY") || child.getText().equalsIgnoreCase("TEMP"));
+            return new SQLObjectOperation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.TABLE, nameParts, temporary);
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.createViewStatement)) {
             return createOperation(

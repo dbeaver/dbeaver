@@ -505,7 +505,8 @@ authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
 schemaElement: createTableStatement|createViewStatement;
 
-createTableStatement: createTableHead (tableName? createTableExtraHead tableElementList createTableTail)?;
+createTableStatement: createTableHead (tableName? createTableExtraHead
+    (tableElementList createTableTail | LIKE tableName | AS? queryExpression))?;
 createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
@@ -569,7 +570,7 @@ dropColumnDefaultClause: DROP DEFAULT;
 dropColumnDefinition: DROP (COLUMN)? columnName dropBehaviour;
 addTableConstraintDefinition: ADD tableConstraintDefinition;
 dropTableConstraintDefinition: DROP CONSTRAINT constraintName dropBehaviour;
-dropTableStatement: DROP TABLE ifExistsSpec? (tableName (Comma tableName)*)? dropBehaviour?;
+dropTableStatement: DROP (TEMPORARY|TEMP)? TABLE ifExistsSpec? (tableName (Comma tableName)*)? dropBehaviour?;
 dropViewStatement: DROP VIEW ifExistsSpec?  (tableName (Comma tableName)*)? dropBehaviour?;
 dropProcedureStatement: DROP PROCEDURE ifExistsSpec? qualifiedName ddlStatementTail?;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
