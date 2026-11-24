@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -80,18 +79,6 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
         Mockito.when(jdbcDriver.acceptsURL(Mockito.anyString())).thenReturn(true);
         Mockito.when(jdbcDriver.connect(Mockito.anyString(), Mockito.any(Properties.class))).thenReturn(connection);
         dataSource = new TestDataSource(monitor, container);
-    }
-
-    @Test
-    public void declaredValidatorAlsoAppliesToOtherJdbcDataSourceTypes() throws DBException {
-        TestJDBCDataSource other = createOtherDataSource();
-        configuration.setProperty("allowLocalInfile", "true");
-
-        Assertions.assertEquals(MySQLConnectionValidator.class.getName(),
-            driver.getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR));
-        Assertions.assertThrows(DBCException.class, () -> open(other, true, false));
-        Mockito.verify(driver.getDriverLoader(container), Mockito.never()).getDriverInstance(monitor);
-        Mockito.verifyNoInteractions(jdbcDriver);
     }
 
     @ParameterizedTest

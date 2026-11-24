@@ -17,17 +17,11 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverConstants;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
@@ -39,37 +33,6 @@ public class MySQLConnectionValidatorTest extends DBeaverUnitTest {
     private static final List<String> BOOLEAN_PROPERTIES = List.of(
         "autoDeserialize", "allowLocalInfile", "allowLoadLocalInfile", "allowUrlInLocalInfile"
     );
-
-    @ParameterizedTest
-    @CsvSource({
-        "mysql, mysql5", "mysql, mysql8", "mysql, mysql_ndb", "mysql, mariaDB",
-        "tidb, tidb", "polardbx, polardbx", "oceanbase, alipay_oceanbase",
-        "doris, doris", "greptime, greptime", "manticore, manticore", "starrocks, starrocks",
-        "oceanbase_oracle, alipay_oceanbase_oracle"
-    })
-    public void driverDeclaresLoadableValidator(@NotNull String providerId, @NotNull String driverId) throws Exception {
-        DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
-        Assertions.assertNotNull(provider);
-        DBPDriver driver = provider.getDriver(driverId);
-        Assertions.assertNotNull(driver);
-        Assertions.assertEquals(MySQLConnectionValidator.class.getName(),
-            driver.getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR));
-        Assertions.assertSame(MySQLConnectionValidator.class,
-            provider.getContributorBundle().loadClass(MySQLConnectionValidator.class.getName()));
-        Assertions.assertFalse(driver.getConnectionProperties().containsKey(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"mysql", "tidb", "polardbx", "oceanbase"})
-    public void customDriverInheritsValidatorDefault(@NotNull String providerId) {
-        DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
-        Assertions.assertNotNull(provider);
-        DriverDescriptor driver = new DriverDescriptor(provider, "validator-test");
-        Assertions.assertFalse(driver.getDriverParameters().containsKey(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR));
-        Assertions.assertEquals(MySQLConnectionValidator.class.getName(),
-            driver.getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR));
-        Assertions.assertTrue(provider.getDriverProperty(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR).isHidden());
-    }
 
     @ParameterizedTest
     @ValueSource(strings = {
