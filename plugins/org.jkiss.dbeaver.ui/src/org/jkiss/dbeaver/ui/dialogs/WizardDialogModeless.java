@@ -16,50 +16,55 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.dialogs.FilteredPreferenceDialog;
-import org.eclipse.ui.internal.registry.PreferencePageRegistryReader;
+import org.eclipse.ui.activities.WorkbenchActivityHelper;
+import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /** Opens the workbench preferences in a modeless dialog with the requested page selected. */
-public class WizardDialogModeless extends FilteredPreferenceDialog {
-    private static final Map<String, WizardDialogModeless> OPEN_DIALOGS = new HashMap<>();
+public class WizardDialogModeless extends WorkbenchPreferenceDialog {
+    private static WizardDialogModeless openDialog;
 
-    private final String pageId;
-
-    public WizardDialogModeless(@Nullable Shell parentShell, @NotNull String pageId) throws DBException {
-        super(parentShell, new PreferenceManager());
-        this.pageId = pageId;
+    public WizardDialogModeless(@Nullable Shell parentShell, @Nullable String pageId) throws DBException {
+        super(parentShell, getWorkbenchPreferenceManager(pageId));
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MODELESS);
         setBlockOnOpen(false);
-        // Independent nodes keep this dialog's page lifecycle separate from the modal preferences window.
-        var reader = new PreferencePageRegistryReader(PlatformUI.getWorkbench());
-        reader.loadFromRegistry(Platform.getExtensionRegistry());
-        for (var node : reader.getTopLevelNodes()) {
-            getPreferenceManager().addToRoot((IPreferenceNode) node);
+        if (pageId != null) {
+            setSelectedNode(pageId);
         }
-        if (findNodeMatching(pageId) == null) {
-            throw new DBException("Preference page not found: " + pageId);
-        }
-        setSelectedNode(pageId);
     }
 
-    public static void showPage(@Nullable Shell parentShell, @NotNull String pageId) throws DBException {
-        var dialog = OPEN_DIALOGS.get(pageId);
+    @NotNull
+    private static PreferenceManager getWorkbenchPreferenceManager(@Nullable String pageId) throws DBException {
+        PreferenceManager manager = PlatformUI.getWorkbench().getPreferenceManager();
+        // Validate before the superclass registers this dialog as the workbench singleton.
+        if (pageId != null && manager.getElements(PreferenceManager.PRE_ORDER).stream().noneMatch(
+            node -> pageId.equals(node.getId()) && !WorkbenchActivityHelper.filterItem(node)
+        )) {
+            throw new DBException("Preference page not found: " + pageId);
+        }
+        return manager;
+    }
+
+    public static void showPage(@Nullable Shell parentShell, @Nullable String pageId) throws DBException {
+        var dialog = openDialog;
         if (dialog == null) {
             dialog = new WizardDialogModeless(parentShell, pageId);
             dialog.open();
         } else {
+            // Preference links may have restricted the shared dialog to a subset of pages.
+            dialog.showOnly(null);
+            if (pageId != null) {
+                if (dialog.findNodeMatching(pageId) == null) {
+                    throw new DBException("Preference page not found: " + pageId);
+                }
+                dialog.setCurrentPageId(pageId);
+            }
             dialog.getShell().forceActive();
         }
     }
@@ -67,7 +72,11 @@ public class WizardDialogModeless extends FilteredPreferenceDialog {
     @Override
     protected void configureShell(@NotNull Shell shell) {
         super.configureShell(shell);
-        OPEN_DIALOGS.put(pageId, this);
-        shell.addDisposeListener(event -> OPEN_DIALOGS.remove(pageId, this));
+        openDialog = this;
+        shell.addDisposeListener(event -> {
+            if (openDialog == this) {
+                openDialog = null;
+            }
+        });
     }
 }
