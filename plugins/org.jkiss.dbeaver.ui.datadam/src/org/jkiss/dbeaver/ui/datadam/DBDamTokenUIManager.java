@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -63,8 +65,11 @@ public class DBDamTokenUIManager {
             DDKeyBundle keys = accessService.getKeyBundle();
             String message = keys == null ? DDTrackingUIMessages.desktop_relogin_message
                 : DDTrackingUIMessages.desktop_relogin_delete_projects_message;
-            if (!confirmOnUI(DDTrackingUIMessages.desktop_relogin_title, message)) {
+            ReloginChoice choice = promptRelogin(message);
+            if (choice == ReloginChoice.SIGN_OUT) {
                 DDProjectKeyUIManager.getInstance().signOut(keys);
+            }
+            if (choice != ReloginChoice.SIGN_IN) {
                 return false;
             }
 
@@ -78,13 +83,26 @@ public class DBDamTokenUIManager {
         return !monitor.isCanceled() && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN;
     }
 
-    private boolean confirmOnUI(@NotNull String title, @NotNull String message) {
-        return Boolean.TRUE.equals(UIUtils.syncExec(new RunnableWithResult<>() {
+    @Nullable
+    private ReloginChoice promptRelogin(@NotNull String message) {
+        return UIUtils.syncExec(new RunnableWithResult<>() {
             @Nullable
             @Override
-            public Boolean runWithResult() {
-                return UIUtils.confirmAction(UIUtils.getActiveWorkbenchShell(), title, message);
+            public ReloginChoice runWithResult() {
+                MessageDialog dialog = new MessageDialog(
+                    UIUtils.getActiveWorkbenchShell(), DDTrackingUIMessages.desktop_relogin_title,
+                    null, message, MessageDialog.QUESTION,
+                    new String[] {IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL}, 0);
+                return switch (dialog.open()) {
+                    case 0 -> ReloginChoice.SIGN_IN;
+                    case 1 -> ReloginChoice.SIGN_OUT;
+                    default -> ReloginChoice.CANCEL;
+                };
             }
-        }));
+        });
+    }
+
+    private enum ReloginChoice {
+        SIGN_IN, SIGN_OUT, CANCEL
     }
 }
