@@ -118,6 +118,8 @@
                          label="%colorDefinition.org.jkiss.dbeaver.ui.icons.accent.label" value="51,142,204"/>
         <colorDefinition id="org.jkiss.dbeaver.ui.icons.accent.source.unknown" isEditable="false"
                          label="%colorDefinition.org.jkiss.dbeaver.ui.icons.accent.label" value="51,139,201"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.accent.source.legacy" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.accent.label" value="51,136,198"/>
 
         <colorDefinition id="org.jkiss.dbeaver.ui.icons.default" categoryId="org.jkiss.dbeaver.ui.icons"
                          label="%colorDefinition.org.jkiss.dbeaver.ui.icons.default.label"

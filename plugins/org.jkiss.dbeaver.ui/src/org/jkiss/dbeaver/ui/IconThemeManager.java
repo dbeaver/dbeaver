@@ -170,6 +170,7 @@ final class IconThemeManager {
         // Older type icons used variants of Accent, also defined in the registry.
         putColor(colors, colorLookup, BaseThemeSettings.ICON_ACCENT + ".source.type", BaseThemeSettings.ICON_ACCENT);
         putColor(colors, colorLookup, BaseThemeSettings.ICON_ACCENT + ".source.unknown", BaseThemeSettings.ICON_ACCENT);
+        putColor(colors, colorLookup, BaseThemeSettings.ICON_ACCENT + ".source.legacy", BaseThemeSettings.ICON_ACCENT);
         return Collections.unmodifiableMap(colors);
     }
 
