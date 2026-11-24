@@ -17,12 +17,15 @@
 package org.jkiss.dbeaver.model.datadam.mcp.function;
 
 import com.dbeaver.datadam.mcp.api.exception.DDMcpFunctionException;
-import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionResult;
 import com.dbeaver.datadam.mcp.api.model.DDMcpListProjectsResult;
 import com.dbeaver.datadam.mcp.api.model.DDMcpProject;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIFunction;
+import org.jkiss.dbeaver.model.ai.AIFunctionContext;
+import org.jkiss.dbeaver.model.ai.AIFunctionResult;
+import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionCatalog;
-import org.jkiss.dbeaver.model.datadam.mcp.DDMcpFunction;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,12 +33,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DDMcpListProjectsFunction implements DDMcpFunction {
+public class DDMcpListProjectsFunction implements AIFunction {
     private final DDMcpConnectionCatalog connections = DDMcpConnectionCatalog.getInstance();
 
     @NotNull
     @Override
-    public DDMcpFunctionResult call(@NotNull Map<String, Object> arguments) throws DDMcpFunctionException {
+    public AIFunctionResult callFunction(@NotNull AIFunctionContext context, @NotNull Map<String, Object> arguments)
+        throws DBException {
+        try {
+            return new AIFunctionResult(AIFunctionType.INFORMATION, listProjects());
+        } catch (DDMcpFunctionException e) {
+            throw new DBException(e.getMessage(), e);
+        }
+    }
+
+    @NotNull
+    private DDMcpListProjectsResult listProjects() throws DDMcpFunctionException {
         List<DDMcpProject> projects = new ArrayList<>();
         Set<String> projectIds = new HashSet<>();
         for (var available : connections.getAllowedConnections()) {
@@ -44,6 +57,6 @@ public class DDMcpListProjectsFunction implements DDMcpFunction {
                 projects.add(new DDMcpProject(project.getId(), project.getName(), project.getDescription()));
             }
         }
-        return new DDMcpFunctionResult(new DDMcpListProjectsResult(projects), false);
+        return new DDMcpListProjectsResult(projects);
     }
 }

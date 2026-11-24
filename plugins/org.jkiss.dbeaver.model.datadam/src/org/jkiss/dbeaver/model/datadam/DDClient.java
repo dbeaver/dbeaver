@@ -21,7 +21,7 @@ import com.dbeaver.rest.client.interceptor.HttpInterceptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.HttpConstants;
 
@@ -34,7 +34,7 @@ import java.util.List;
 /** Common HTTP configuration for DataDam desktop clients. */
 public abstract class DDClient extends AbstractGraphQlClient {
     private final Log log = Log.getLog(getClass());
-    protected final DDDesktopAccessService accessService;
+    protected final DBDamAccessService accessService;
 
     protected DDClient(
         @NotNull String url,
@@ -42,7 +42,7 @@ public abstract class DDClient extends AbstractGraphQlClient {
         int readTimeoutMs,
         @NotNull List<HttpInterceptor> interceptors,
         @NotNull HttpClient.Redirect redirectPolicy,
-        @NotNull DDDesktopAccessService accessService
+        @NotNull DBDamAccessService accessService
     ) {
         super(url, connectTimeoutMs, readTimeoutMs, interceptors, redirectPolicy);
         this.accessService = accessService;

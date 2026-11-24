@@ -107,12 +107,13 @@
          </attribute>
          <attribute name="purpose">
             <annotation>
-               <documentation>Function purpose: TOOL (AI assistant tool), MCP (MCP protocol only), ALL (both). Defaults to TOOL</documentation>
+               <documentation>Function purpose: TOOL (AI assistant tool), MCP (MCP protocol only), DAM (DataDam MCP only), ALL (TOOL and MCP). Defaults to TOOL</documentation>
             </annotation>
             <simpleType>
                <restriction base="string">
                   <enumeration value="TOOL"/>
                   <enumeration value="MCP"/>
+                  <enumeration value="DAM"/>
                   <enumeration value="ALL"/>
                </restriction>
             </simpleType>

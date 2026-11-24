@@ -42,8 +42,7 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.IWizardContainer;
@@ -87,6 +86,7 @@ import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
+import org.jkiss.dbeaver.ui.controls.CellControlColumn;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
 import org.jkiss.dbeaver.ui.controls.TitledComposite;
@@ -108,6 +108,9 @@ import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.SortedMap;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
 
 /**
  * UI Utils
@@ -1075,6 +1078,28 @@ public class UIUtils {
         }
 
         return button;
+    }
+
+    public static <T, C extends Control> void attachCellControlColumn(
+        @NotNull TreeViewer viewer,
+        @NotNull TreeViewerColumn column,
+        @NotNull Class<T> elementType,
+        @NotNull BiFunction<Composite, T, C> createControl,
+        @NotNull BiConsumer<C, T> updateControl,
+        @NotNull BooleanSupplier enabled
+    ) {
+        CellControlColumn.attach(viewer, column, elementType, createControl, updateControl, enabled);
+    }
+
+    public static <T, C extends Control> void attachCellControlColumn(
+        @NotNull TableViewer viewer,
+        @NotNull TableViewerColumn column,
+        @NotNull Class<T> elementType,
+        @NotNull BiFunction<Composite, T, C> createControl,
+        @NotNull BiConsumer<C, T> updateControl,
+        @NotNull BooleanSupplier enabled
+    ) {
+        CellControlColumn.attach(viewer, column, elementType, createControl, updateControl, enabled);
     }
 
     @NotNull

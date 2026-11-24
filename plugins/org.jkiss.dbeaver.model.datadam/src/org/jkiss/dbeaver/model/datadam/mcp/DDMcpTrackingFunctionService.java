@@ -26,7 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 
 import java.util.LinkedHashMap;
@@ -68,7 +68,7 @@ public final class DDMcpTrackingFunctionService implements DDMcpFunctionService 
         DDConnectionMonitor target = monitor;
         if (target == null) {
             try {
-                target = DDRemoteDamDesktopSessionService.getInstance().getMonitor();
+                target = DBDamSessionService.getInstance().getMonitor();
             } catch (DBException e) {
                 log.debug("Cannot record DataDam MCP request", e);
             }
