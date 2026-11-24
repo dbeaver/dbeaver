@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,7 +134,8 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
         try {
             settings.loadSettings(UIUtils.getDefaultRunnableContext(), getPreferenceStore());
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Settings load", "Error loading wizard settings", e);
+            DBWorkbench.getPlatformUI().showError(
+                TaskNativeUIMessages.tools_settings_load_error_title, TaskNativeUIMessages.tools_settings_load_error_message, e);
         }
 
         super.initializeWizard(pageContainer);
@@ -197,8 +198,10 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Download local client file(s)", "Error downloading client file(s)", e.getTargetException());
-            ((WizardPage) getContainer().getCurrentPage()).setErrorMessage("Error downloading local client file(s)");
+            DBWorkbench.getPlatformUI().showError(
+                TaskNativeUIMessages.tools_client_download_error_title,
+                TaskNativeUIMessages.tools_client_download_error_message, e.getTargetException());
+            ((WizardPage) getContainer().getCurrentPage()).setErrorMessage(TaskNativeUIMessages.tools_client_download_error_message);
             getContainer().updateMessage();
             return false;
         } catch (InterruptedException e) {
@@ -237,7 +240,7 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
             container.setCompleteMarkAfterProgress();
             return false;
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Error running task", e);
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), TaskNativeUIMessages.tools_task_run_error_message, e);
             return false;
         }
     }
@@ -273,7 +276,7 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
         UIUtils.showMessageBox(
             getShell(),
             taskTitle,
-            errorMessage == null ? "Internal error" : errorMessage,
+            errorMessage == null ? TaskNativeUIMessages.tools_internal_error_message : errorMessage,
             SWT.ICON_ERROR);
     }
 

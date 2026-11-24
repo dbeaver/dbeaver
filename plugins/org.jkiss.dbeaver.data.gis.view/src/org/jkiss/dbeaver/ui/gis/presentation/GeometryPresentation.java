@@ -67,7 +67,7 @@ public class GeometryPresentation extends AbstractPresentation {
             );
             leafletViewer.getBrowserComposite().setLayoutData(new GridData(GridData.FILL_BOTH));
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("GIS Viewer", "Error initializing GIS viewer", e);
+            DBWorkbench.getPlatformUI().showError(GISMessages.gis_viewer_title, GISMessages.gis_viewer_initialization_error, e);
         }
     }
 
@@ -175,7 +175,7 @@ public class GeometryPresentation extends AbstractPresentation {
         try {
             leafletViewer.setGeometryData(geometries.toArray(new DBGeometry[0]));
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Error rendering GIS data", "Error while rendering geometry data", e);
+            DBWorkbench.getPlatformUI().showError(GISMessages.gis_render_data_error_title, GISMessages.gis_render_data_error_message, e);
         }
     }
 

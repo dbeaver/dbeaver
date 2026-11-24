@@ -142,7 +142,7 @@ abstract class QueryResultsContainer implements
                 IWorkbenchPage.MATCH_NONE
             );
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Detached results", "Can't open results view", e);
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_results_detached_title, SQLEditorMessages.sql_results_detached_error, e);
             detached = false;
         }
     }

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -232,6 +233,7 @@ public class CLIUtils {
     ) {
         if (CommonUtils.isNotEmpty(dataSourceOptions.getUrl())) {
             connectionConfiguration.setUrl(dataSourceOptions.getUrl());
+            connectionConfiguration.setConfigurationType(DBPDriverConfigurationType.URL);
         }
         if (CommonUtils.isNotEmpty(dataSourceOptions.getHost())) {
             connectionConfiguration.setHostName(dataSourceOptions.getHost());

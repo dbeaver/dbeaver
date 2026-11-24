@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionListener;
@@ -149,7 +150,9 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         try {
                             handler.openResource(resource);
                         } catch (Exception e) {
-                            DBWorkbench.getPlatformUI().showError("Error opening resource", "Failed to open resource " + resource, e);
+                            DBWorkbench.getPlatformUI().showError(
+                                DTUIMessages.sql_script_resource_open_error_title,
+                                NLS.bind(DTUIMessages.sql_script_resource_open_error_message, resource), e);
                         }
                     }
                 }

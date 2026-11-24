@@ -47,6 +47,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -410,6 +412,92 @@ class SQLExecutionFunctionsTest {
         Mockito.when(procedures.getProcedure(Mockito.any(), Mockito.anyString())).thenReturn(null);
         Mockito.doReturn(List.of(procedure)).when(procedures).getProcedures(Mockito.any());
         Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(), "SELECT public.refresh_orders()"));
+    }
+
+    @Test
+    void unsupportedRoutineMetadataAllowsDatasourceScopedCalls() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        var schema = (DBSSchema) ((DBSObjectContainer) fixture.dataSource).getChild(null, "public");
+        var procedures = (DBSProcedureContainer) schema;
+        var unsupported = new DBException("Metadata unavailable", new DBException("Driver metadata error",
+            new SQLFeatureNotSupportedException()));
+        Mockito.when(procedures.getProcedure(Mockito.any(), Mockito.anyString())).thenThrow(unsupported);
+        Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
+
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(), "SELECT custom_function()"));
+        Map<ExecuteSQLFunction, List<String>> statements = Map.of(
+            new ExecuteDQLFunction(), List.of(
+                "SELECT custom_function() FROM public.orders", "SELECT public.custom_function() FROM public.orders"),
+            new ExecuteDMLFunction(), List.of("CALL public.custom_procedure()"),
+            new ExecuteDDLFunction(), List.of("DROP FUNCTION public.custom_function")
+        );
+        for (var entry : statements.entrySet()) {
+            for (String sql : entry.getValue()) {
+                Assertions.assertDoesNotThrow(() -> fixture.verify(entry.getKey(), sql), sql);
+                Assertions.assertDoesNotThrow(() -> fixture.verifyText(entry.getKey(), sql), sql);
+            }
+        }
+    }
+
+    @Test
+    void unsupportedRoutineMetadataKeepsBuiltinAndScopeChecks() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        var schema = (DBSSchema) ((DBSObjectContainer) fixture.dataSource).getChild(null, "public");
+        var procedures = (DBSProcedureContainer) schema;
+        Mockito.when(procedures.getProcedure(Mockito.any(), Mockito.anyString()))
+            .thenThrow(new DBException("Unsupported metadata", new SQLFeatureNotSupportedException()));
+        var function = new ExecuteDQLFunction();
+
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function, "SELECT count(*) FROM public.orders"));
+        fixture.assertRestricted(function, "SELECT custom_function()");
+        fixture.assertRestricted(function, "SELECT public.custom_function()");
+        fixture.assertTextRestricted(function, "SELECT public.custom_function() FROM public.orders");
+        fixture.assertRestricted(new ExecuteDMLFunction(), "CALL public.custom_procedure()");
+        fixture.assertRestricted(new ExecuteDDLFunction(), "DROP FUNCTION public.custom_function");
+
+        Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
+        Mockito.when(fixture.databaseContext.hasDataSourceCustomScope()).thenReturn(true);
+        fixture.assertRestricted(function, "SELECT custom_function()");
+        fixture.assertRestricted(function, "SELECT public.custom_function()");
+    }
+
+    @Test
+    void unsupportedRoutineEnumerationIsTreatedAsUnavailableMetadata() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        var schema = (DBSSchema) ((DBSObjectContainer) fixture.dataSource).getChild(null, "public");
+        var procedures = (DBSProcedureContainer) schema;
+        Mockito.when(procedures.getProcedure(Mockito.any(), Mockito.anyString())).thenReturn(null);
+        Mockito.when(procedures.getProcedures(Mockito.any()))
+            .thenThrow(new DBException("Unsupported enumeration", new SQLFeatureNotSupportedException()));
+        Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
+
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(), "SELECT public.custom_function()"));
+        Assertions.assertDoesNotThrow(() -> fixture.verifyText(new ExecuteDMLFunction(), "CALL public.custom_procedure()"));
+    }
+
+    @Test
+    void otherRoutineMetadataErrorsStillPropagate() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        var schema = (DBSSchema) ((DBSObjectContainer) fixture.dataSource).getChild(null, "public");
+        var procedures = (DBSProcedureContainer) schema;
+        var failure = new DBException("Cannot read metadata", new SQLException("Connection lost"));
+        Mockito.when(procedures.getProcedure(Mockito.any(), Mockito.anyString())).thenThrow(failure);
+        Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
+
+        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class,
+            () -> fixture.verify(new ExecuteDQLFunction(), "SELECT public.custom_function()")));
+        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class,
+            () -> fixture.verifyText(new ExecuteDMLFunction(), "CALL public.custom_procedure()")));
+    }
+
+    @Test
+    void supportedMetadataStillRejectsMissingQualifiedRoutines() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
+
+        var failure = Assertions.assertThrows(DBException.class,
+            () -> fixture.verify(new ExecuteDQLFunction(), "SELECT public.missing_function()"));
+        Assertions.assertEquals("Database routine 'public.missing_function' not found", failure.getMessage());
     }
 
     @Test

@@ -113,7 +113,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     public void setUp() throws IOException {
         cacheFile = tempDirectory.resolve("cdata-drivers.json");
         Files.writeString(tempDirectory.resolve(CDataDriverSettings.FILE_NAME), """
-            {"adwords":{"datatype_id":"google_ads"}}
+            {"_meta":{"version":1},"adwords":{"datatype_id":"google_ads"}}
             """);
         monitor = Mockito.mock(DBRProgressMonitor.class);
         downloadConnection = Mockito.mock(HttpURLConnection.class);
@@ -529,7 +529,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     public void mergeSettingsWithVendorCatalogAndIgnoreVendorMappings() throws Exception {
         String vendorCatalog = CATALOG.replace("google_ads", "untrusted_type");
         Files.writeString(tempDirectory.resolve(CDataDriverSettings.FILE_NAME), """
-            {"adwords":{"datatype_id":"google_ads","icon_driver":"generic:google-ads"}}
+            {"_meta":{"version":1},"adwords":{"datatype_id":"google_ads","icon_driver":"generic:google-ads"}}
             """);
         Mockito.when(downloadConnection.getInputStream()).thenReturn(
             new ByteArrayInputStream(vendorCatalog.getBytes(StandardCharsets.UTF_8)));
@@ -565,7 +565,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
         saveCachedCatalog(LAST_MODIFIED);
         saveCachedETag("old");
         Files.writeString(tempDirectory.resolve(CDataDriverSettings.FILE_NAME), """
-            {"adwords":{"datatype_id":"new_type"}}
+            {"_meta":{"version":1},"adwords":{"datatype_id":"new_type"}}
             """);
         Mockito.when(downloadConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
 
@@ -600,7 +600,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
             if (request == 3) {
                 exchange.sendResponseHeaders(HttpURLConnection.HTTP_UNAVAILABLE, -1);
             } else {
-                byte[] content = ("{\"adwords\":{\"datatype_id\":\"type" + request + "\","
+                byte[] content = ("{\"_meta\":{\"version\":1},\"adwords\":{\"datatype_id\":\"type" + request + "\","
                     + "\"icon_driver\":\"generic:google-ads\"}}").getBytes(StandardCharsets.UTF_8);
                 exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, content.length);
                 exchange.getResponseBody().write(content);

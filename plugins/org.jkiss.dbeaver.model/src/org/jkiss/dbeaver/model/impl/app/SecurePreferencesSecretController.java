@@ -46,9 +46,9 @@ public class SecurePreferencesSecretController implements DBSSecretController, D
 
     private final Path root;
     private final String nodeName;
-    private final Map<String, String> options;
+    private final Map<String, Object> options;
 
-    private SecurePreferencesSecretController(String root, String nodeName, Map<String, String> options) {
+    private SecurePreferencesSecretController(String root, String nodeName, Map<String, Object> options) {
         this.root = Path.of(root);
         this.nodeName = nodeName;
         this.options = options;
@@ -58,6 +58,15 @@ public class SecurePreferencesSecretController implements DBSSecretController, D
     public static SecurePreferencesSecretController create(@NotNull String nodeName, @Nullable String providerId) {
         return new SecurePreferencesSecretController("", nodeName, providerId == null
             ? Map.of() : Map.of(IProviderHints.REQUIRED_MODULE_ID, providerId));
+    }
+
+    @NotNull
+    public static SecurePreferencesSecretController createWithoutEquinoxPrompts(
+        @NotNull String nodeName, @NotNull String providerId
+    ) {
+        return new SecurePreferencesSecretController("", nodeName, Map.of(
+            IProviderHints.REQUIRED_MODULE_ID, providerId,
+            IProviderHints.PROMPT_USER, Boolean.FALSE));
     }
 
     @Nullable
@@ -70,7 +79,7 @@ public class SecurePreferencesSecretController implements DBSSecretController, D
                 .get(keyPath.getFileName().toString(), null);
         } catch (StorageException e) {
             if (e.getErrorCode() == StorageException.NO_PASSWORD) {
-                throw new DBSecurityException("Cannot load secure settings - master password is not provided");
+                throw new DBSecurityException("Cannot load secure settings - master password is not provided", e);
             }
             throw new DBSecurityException("Error getting preference value '" + secretId + "'", e);
         }

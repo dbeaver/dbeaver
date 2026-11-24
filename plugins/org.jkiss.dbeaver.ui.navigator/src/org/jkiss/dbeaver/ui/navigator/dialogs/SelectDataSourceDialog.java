@@ -39,8 +39,18 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContentProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeChildrenLoading;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * SelectDataSourceDialog
@@ -55,7 +65,13 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     @Nullable
     private final DBPProject project;
     private final boolean allowAllProjects;
+    private final boolean multiSelection;
+    @Nullable
+    private final Predicate<DBPProject> projectFilter;
+    @Nullable
+    private final Predicate<DBPDataSourceContainer> dataSourceFilter;
     private DBPDataSourceContainer dataSource;
+    private List<DBPDataSourceContainer> selectedDataSources = List.of();
 
     private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
     private boolean showConnected;
@@ -77,10 +93,34 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         @Nullable DBPDataSourceContainer selection,
         boolean allowAllProjects
     ) {
+        this(parentShell, project, selection, allowAllProjects, false, null, null);
+    }
+
+    private SelectDataSourceDialog(
+        @NotNull Shell parentShell,
+        @Nullable DBPProject project,
+        @Nullable DBPDataSourceContainer selection,
+        boolean allowAllProjects,
+        boolean multiSelection,
+        @Nullable Predicate<DBPProject> projectFilter,
+        @Nullable Predicate<DBPDataSourceContainer> dataSourceFilter
+    ) {
         super(parentShell, UINavigatorMessages.dialog_select_datasource_title);
         this.project = project;
         this.dataSource = selection;
         this.allowAllProjects = allowAllProjects;
+        this.multiSelection = multiSelection;
+        this.projectFilter = projectFilter;
+        this.dataSourceFilter = dataSourceFilter;
+    }
+
+    @NotNull
+    public static SelectDataSourceDialog forMultipleConnections(
+        @NotNull Shell parentShell,
+        @NotNull Predicate<DBPProject> projectFilter,
+        @NotNull Predicate<DBPDataSourceContainer> dataSourceFilter
+    ) {
+        return new SelectDataSourceDialog(parentShell, null, null, true, true, projectFilter, dataSourceFilter);
     }
 
     @Override
@@ -93,7 +133,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     @Override
     protected Composite createDialogArea(@NotNull Composite parent)
     {
-        showConnected = getDialogBoundsSettings().getBoolean(PARAM_SHOW_CONNECTED);
+        showConnected = !multiSelection && getDialogBoundsSettings().getBoolean(PARAM_SHOW_CONNECTED);
         showAllProjects = allowAllProjects && getDialogBoundsSettings().getBoolean(PARAM_SHOW_ALL_PROJECTS);
 
         Composite group = super.createDialogArea(parent);
@@ -126,8 +166,10 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
 
             @Override
-            public boolean select(Object element) {
-                return element instanceof DBNProject ||
+            public boolean select(@NotNull Object element) {
+                // Keep the loading placeholder visible so lazy projects stay expanded until their children arrive.
+                return element instanceof TreeNodeChildrenLoading ||
+                    element instanceof DBNProject ||
                     element instanceof DBNProjectDatabases ||
                     element instanceof DBNLocalFolder ||
                     element instanceof DBNDataSource;
@@ -136,11 +178,44 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(
             group,
             getTreeRootNode(),
-            SWT.SINGLE | SWT.BORDER,
+            (multiSelection ? SWT.MULTI : SWT.SINGLE) | SWT.BORDER,
             false,
             dsFilter,
             UINavigatorMessages.filter_connection_name_placeholder)
         {
+            @NotNull
+            @Override
+            protected DatabaseNavigatorContentProvider createContentProvider(boolean showRoot) {
+                // Flatten the Connections container in this selector and map its children back to the project
+                // so selection and reveal use the same hierarchy as the displayed tree.
+                return new DatabaseNavigatorContentProvider(this, showRoot) {
+                    @NotNull
+                    @Override
+                    public Object[] getChildren(@NotNull Object parent) {
+                        Object[] children = super.getChildren(parent);
+                        if (!(parent instanceof DBNProject)) {
+                            return children;
+                        }
+                        List<Object> result = new ArrayList<>();
+                        for (Object child : children) {
+                            if (child instanceof DBNProjectDatabases) {
+                                Collections.addAll(result, super.getChildren(child));
+                            } else {
+                                result.add(child);
+                            }
+                        }
+                        return result.toArray();
+                    }
+
+                    @Nullable
+                    @Override
+                    public Object getParent(@NotNull Object child) {
+                        Object parent = super.getParent(child);
+                        return parent instanceof DBNProjectDatabases databases ? databases.getParentNode() : parent;
+                    }
+                };
+            }
+
             @Override
             protected void onTreeRefresh() {
                 DBNNode treeRootNode = getTreeRootNode();
@@ -177,6 +252,8 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         Button showConnectedCheck = new Button(group, SWT.CHECK);
         showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
         showConnectedCheck.setSelection(showConnected);
+        showConnectedCheck.setVisible(!multiSelection);
+        showConnectedCheck.setLayoutData(GridDataFactory.swtDefaults().exclude(multiSelection).create());
         showConnectedCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 showConnected = showConnectedCheck.getSelection();
                 treeViewer.getControl().setRedraw(false);
@@ -222,6 +299,14 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
+                if (element instanceof DBNProject projectNode && projectFilter != null
+                    && !projectFilter.test(projectNode.getProject())) {
+                    return false;
+                }
+                if (element instanceof DBNDataSource connectionNode && dataSourceFilter != null
+                    && !dataSourceFilter.test(connectionNode.getDataSourceContainer())) {
+                    return false;
+                }
                 if (showConnected) {
                     if (element instanceof DBNDataSource) {
                         return ((DBNDataSource) element).getDataSource() != null;
@@ -230,15 +315,21 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                         return ((DBNLocalFolder) element).hasConnected();
                     }
                 }
-                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource;
+                return element instanceof TreeNodeChildrenLoading || element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource;
             }
         });
         treeViewer.addSelectionChangedListener(
             event -> {
                 IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
-                Object selNode = structSel.isEmpty() ? null : structSel.getFirstElement();
-                if (selNode instanceof DBNDataSource dbnDataSource) {
-                    dataSource = dbnDataSource.getObject();
+                List<DBPDataSourceContainer> selected = new ArrayList<>();
+                for (Object element : structSel) {
+                    if (element instanceof DBNDataSource dbnDataSource) {
+                        selected.add(dbnDataSource.getObject());
+                    }
+                }
+                selectedDataSources = selected;
+                dataSource = selected.isEmpty() ? null : selected.getFirst();
+                if (dataSource != null) {
                     enableButton(IDialogConstants.OK_ID, true);
                     String description = dataSource.getDescription();
                     if (description == null) {
@@ -246,7 +337,6 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                     }
                     descriptionText.setText(description);
                 } else {
-                    dataSource = null;
                     enableButton(IDialogConstants.OK_ID, false);
                 }
             }
@@ -278,13 +368,15 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         return group;
     }
 
-    private void expandFolders(DatabaseNavigatorTree dataSourceTree, DBNNode node) {
+    private void expandFolders(@NotNull DatabaseNavigatorTree dataSourceTree, @NotNull DBNNode node) {
         if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNProject || node instanceof DBNRoot) {
-            if (node instanceof DBNProject p && !p.getProject().isOpen()) {
-                // Don't try to expand unloaded projects - let the user do it
+            if (node instanceof DBNProject p && (!p.getProject().isOpen() || p.getProject() != project)) {
+                // Expand only the current project automatically; let the user expand other projects.
                 return;
             }
-            dataSourceTree.getViewer().expandToLevel(node, 1);
+            if (!(node instanceof DBNProjectDatabases)) {
+                dataSourceTree.getViewer().expandToLevel(node, 1);
+            }
             DBNNode[] childNodes;
             try {
                 childNodes = node.getChildren(new VoidProgressMonitor());
@@ -328,7 +420,9 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
 
         // Add the buttons to the button bar.
         createButton(composite, IDialogConstants.OK_ID, UINavigatorMessages.dialog_select_datasource_button_select, true);
-        createButton(composite, IDialogConstants.IGNORE_ID, UINavigatorMessages.dialog_select_datasource_button_none, false);
+        if (!multiSelection) {
+            createButton(composite, IDialogConstants.IGNORE_ID, UINavigatorMessages.dialog_select_datasource_button_none, false);
+        }
 //        if (!isModeless()) {
 //            createButton(composite, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
 //        }
@@ -348,6 +442,11 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     public DBPDataSourceContainer getDataSource()
     {
         return dataSource;
+    }
+
+    @NotNull
+    public List<DBPDataSourceContainer> getSelectedDataSources() {
+        return List.copyOf(selectedDataSources);
     }
 
 }

@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
@@ -83,7 +84,7 @@ public abstract class AIChatControllerBase implements AIChatController {
                     return dsConnected;
                 });
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Error executing query in SQL editor", null, e);
+                DBWorkbench.getPlatformUI().showError(AIChatMessagesUI.ai_chat_query_execution_error, null, e);
             }
         });
         if (inNewConsole) {
@@ -201,8 +202,8 @@ public abstract class AIChatControllerBase implements AIChatController {
             return new Region(offset, text.length());
         } catch (BadLocationException ex) {
             DBWorkbench.getPlatformUI().showError(
-                "Insert SQL",
-                "Error inserting SQL completion in text editor",
+                AIChatMessagesUI.ai_chat_insert_sql_title,
+                AIChatMessagesUI.ai_chat_insert_sql_error,
                 ex
             );
             return null;
@@ -223,7 +224,8 @@ public abstract class AIChatControllerBase implements AIChatController {
     private void openNewEditor(@NotNull Consumer<SQLEditor> consumer) {
         AIContextSettings settings = getContextSettings();
         if (settings == null) {
-            DBWorkbench.getPlatformUI().showError("Can't open editor", "Please set the active connection");
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_open_editor_error, AIChatMessagesUI.ai_chat_active_connection_required);
             return;
         }
         DBPDataSourceContainer container = settings.getDataSourceContainer();
@@ -240,7 +242,8 @@ public abstract class AIChatControllerBase implements AIChatController {
     private void openChatConsole(@NotNull Consumer<SQLEditor> consumer) {
         AIContextSettings settings = getContextSettings();
         if (settings == null) {
-            DBWorkbench.getPlatformUI().showError("Can't open editor", "Please set the active connection");
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_open_editor_error, AIChatMessagesUI.ai_chat_active_connection_required);
             return;
         }
         DBPDataSourceContainer container = settings.getDataSourceContainer();
@@ -283,7 +286,8 @@ public abstract class AIChatControllerBase implements AIChatController {
     private void findOrOpenEditor(@NotNull Consumer<SQLEditor> consumer) {
         AIContextSettings settings = getContextSettings();
         if (settings == null) {
-            DBWorkbench.getPlatformUI().showError("Can't open editor", "Please set the active connection");
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_open_editor_error, AIChatMessagesUI.ai_chat_active_connection_required);
             return;
         }
         IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
