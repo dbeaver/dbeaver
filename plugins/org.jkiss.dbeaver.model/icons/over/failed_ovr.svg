@@ -1,11 +1,9 @@
 <svg width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_12394_4765)">
-<path d="M4.5 2V6" stroke="#F44D20"/>
-<path d="M5 7H4V8H5V7Z" fill="#F44D20"/>
-</g>
-<defs>
-<clipPath id="clip0_12394_4765">
-<rect width="9" height="9" fill="white"/>
-</clipPath>
-</defs>
+<path d="M4.5 8C6.433 8 8 6.433 8 4.5C8 2.567 6.433 1 4.5 1C2.567 1 1 2.567 1 4.5C1 6.433 2.567 8 4.5 8Z" fill="white"/>
+<path opacity="0.15" d="M4.5 8C6.433 8 8 6.433 8 4.5C8 2.567 6.433 1 4.5 1C2.567 1 1 2.567 1 4.5C1 6.433 2.567 8 4.5 8Z" fill="#ED8000"/>
+<path d="M4.5 7C5.88071 7 7 5.88071 7 4.5C7 3.11929 5.88071 2 4.5 2C3.11929 2 2 3.11929 2 4.5C2 5.88071 3.11929 7 4.5 7Z" fill="#ED8000"/>
+<mask id="stroke0_12372_16527" fill="white">
+<path d="M4.5 7C5.88071 7 7 5.88071 7 4.5C7 3.11929 5.88071 2 4.5 2C3.11929 2 2 3.11929 2 4.5C2 5.88071 3.11929 7 4.5 7Z"/>
+</mask>
+<path d="M7 4.5C7 5.88071 5.88071 7 4.5 7C3.11929 7 2 5.88071 2 4.5C2 3.11929 3.11929 2 4.5 2C5.88071 2 7 3.11929 7 4.5Z" stroke-width="2" stroke="#ED8000" mask="url(#stroke0_12372_16527)"/>
 </svg>
