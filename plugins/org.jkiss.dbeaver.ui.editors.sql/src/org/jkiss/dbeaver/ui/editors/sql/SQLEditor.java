@@ -153,6 +153,7 @@ public class SQLEditor extends SQLEditorBase implements
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
+    private static final long MIB = 1024L * 1024;
     static final String NOTIFICATION_SQL_METADATA_REFRESH = "sql.metadata.refresh";
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
@@ -238,6 +239,8 @@ public class SQLEditor extends SQLEditorBase implements
     private Boolean isDisableFetchResultSet = null;
     private boolean datasourceChanged;
     private volatile boolean isPartControlInitialized = false;
+    @Nullable
+    private IEditorInput preflightedInput;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
@@ -2573,6 +2576,11 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void init(IEditorSite site, IEditorInput editorInput)
     throws PartInitException {
+        if (!confirmLargeScriptOpen(site.getShell(), editorInput)) {
+            throw new PartInitException(Status.CANCEL_STATUS);
+        }
+        // AbstractTextEditor.init installs the input via doSetInput. Do not ask twice.
+        preflightedInput = editorInput;
         super.init(site, editorInput);
 
         updateResultSetOrientation();
@@ -2663,6 +2671,12 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     protected void doSetInput(IEditorInput editorInput) throws CoreException {
+        if (preflightedInput == editorInput) {
+            preflightedInput = null;
+        } else if (!confirmLargeScriptOpen(getSite().getShell(), editorInput)) {
+            // This must stay outside the catch(Throwable) below: a refusal is not a load error.
+            throw new CoreException(Status.CANCEL_STATUS);
+        }
         checkInputFileExistence(editorInput);
         try {
             super.doSetInput(editorInput);
@@ -2709,6 +2723,58 @@ public class SQLEditor extends SQLEditorBase implements
         }
         baseEditorImage = getTitleImage();
         editorImage = baseEditorImage;
+    }
+
+    private boolean confirmLargeScriptOpen(@NotNull Shell shell, @NotNull IEditorInput input) {
+        File file = EditorUtils.getLocalFileFromInput(input);
+        if (file == null || !file.isFile()) {
+            return true;
+        }
+        long fileBytes = file.length();
+        Runtime runtime = Runtime.getRuntime();
+        long maxHeap = runtime.maxMemory();
+        long allocatedHeap = runtime.totalMemory();
+        long freeHeap = runtime.freeMemory();
+        long peakBytes = SQLScriptMemoryEstimate.estimatePeakBytes(file, fileBytes);
+        if (!SQLScriptMemoryEstimate.shouldWarn(fileBytes, maxHeap, allocatedHeap, freeHeap, peakBytes)) {
+            return true;
+        }
+
+        long availableBytes = SQLScriptMemoryEstimate.availableBytes(maxHeap, allocatedHeap, freeHeap);
+        MessageDialog dialog = new MessageDialog(
+            shell,
+            SQLEditorMessages.sql_editor_large_file_title,
+            null,
+            NLS.bind(
+                SQLEditorMessages.sql_editor_large_file_message,
+                file.getName(), toMiB(fileBytes), toMiB(peakBytes), toMiB(availableBytes)
+            ),
+            MessageDialog.WARNING,
+            2,
+            SQLEditorMessages.sql_editor_large_file_open_anyway,
+            SQLEditorMessages.sql_editor_large_file_open_externally,
+            IDialogConstants.CANCEL_LABEL
+        );
+        int choice = dialog.open();
+        if (choice == 0) {
+            return true;
+        }
+        if (choice == 1) {
+            Path path = file.toPath();
+            UIUtils.asyncExec(() -> {
+                if (!ShellUtils.openExternalFile(path)) {
+                    DBWorkbench.getPlatformUI().showError(
+                        SQLEditorMessages.sql_editor_large_file_title,
+                        SQLEditorMessages.sql_editor_large_file_external_error
+                    );
+                }
+            });
+        }
+        return false;
+    }
+
+    private static long toMiB(long bytes) {
+        return bytes / MIB + (bytes % MIB == 0 ? 0 : 1);
     }
 
     private void accomplishEditorInputInitialization(@NotNull IEditorInput editorInput) {
