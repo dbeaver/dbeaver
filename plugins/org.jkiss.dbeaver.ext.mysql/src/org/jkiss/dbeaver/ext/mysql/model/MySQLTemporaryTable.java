@@ -37,6 +37,7 @@ import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -86,7 +87,7 @@ final class MySQLTemporaryTable extends MySQLTable implements DBCTemporaryTableM
                         }
                     }
                 }
-                List<MySQLTableConstraint> constraints = readPrimaryKey(session, tableName, columns);
+                List<MySQLTableConstraint> constraints = readKeys(session, tableName, columns);
                 if (!context.isCurrentTemporaryTable(this)) {
                     return false;
                 }
@@ -125,30 +126,34 @@ final class MySQLTemporaryTable extends MySQLTable implements DBCTemporaryTableM
     }
 
     @NotNull
-    private List<MySQLTableConstraint> readPrimaryKey(
+    List<MySQLTableConstraint> readKeys(
         @NotNull JDBCSession session,
         @NotNull String tableName,
         @NotNull List<MySQLTableColumn> columns
     ) throws SQLException, DBException {
-        Map<Integer, MySQLTableColumn> keyColumns = new TreeMap<>();
-        try (JDBCPreparedStatement statement = session.prepareStatement("SHOW INDEX FROM " + tableName + " WHERE Key_name = 'PRIMARY'");
+        Map<String, Map<Integer, MySQLTableColumn>> keys = new LinkedHashMap<>();
+        try (JDBCPreparedStatement statement = session.prepareStatement("SHOW INDEX FROM " + tableName + " WHERE Non_unique = 0");
              JDBCResultSet result = statement.executeQuery()) {
             while (result.next()) {
                 MySQLTableColumn column = findColumn(columns, result.getString("Column_name"));
-                if (column == null) {
-                    return List.of();
-                }
-                keyColumns.put(result.getInt("Seq_in_index"), column);
+                keys.computeIfAbsent(result.getString("Key_name"), key -> new TreeMap<>())
+                    .put(result.getInt("Seq_in_index"), column != null && column.isRequired() ? column : null);
             }
         }
-        if (keyColumns.isEmpty()) {
-            return List.of();
+        List<MySQLTableConstraint> constraints = new ArrayList<>();
+        for (var key : keys.entrySet()) {
+            if (key.getValue().containsValue(null)) {
+                continue;
+            }
+            DBSEntityConstraintType type = key.getKey().equals("PRIMARY") ?
+                DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
+            MySQLTableConstraint constraint = new MySQLTableConstraint(this, key.getKey(), null, type, true);
+            for (MySQLTableColumn column : key.getValue().values()) {
+                constraint.addAttributeReference(column);
+            }
+            constraints.add(constraint);
         }
-        MySQLTableConstraint primaryKey = new MySQLTableConstraint(this, "PRIMARY", null, DBSEntityConstraintType.PRIMARY_KEY, true);
-        for (MySQLTableColumn column : keyColumns.values()) {
-            primaryKey.addAttributeReference(column);
-        }
-        return List.of(primaryKey);
+        return List.copyOf(constraints);
     }
 
     private boolean isTemporaryInSession(@NotNull JDBCSession session) throws SQLException {

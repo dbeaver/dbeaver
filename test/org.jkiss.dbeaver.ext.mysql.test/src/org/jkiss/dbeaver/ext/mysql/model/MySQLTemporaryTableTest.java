@@ -17,10 +17,15 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -65,6 +70,36 @@ public class MySQLTemporaryTableTest extends DBeaverUnitTest {
         column.loadEnumValues("set('one','two')");
         Assertions.assertEquals(List.of("one", "two"), column.getEnumValues());
         Assertions.assertTrue(column.isTypeSet());
+    }
+
+    @Test
+    void usesCompleteNonNullableUniqueKeysAsRowIdentifiers() throws Exception {
+        JDBCSession session = Mockito.mock(JDBCSession.class);
+        MySQLTemporaryTable table = (MySQLTemporaryTable) createContext()
+            .registerTemporaryTable(session, List.of("test", "temp_table"), false);
+        MySQLTableColumn first = new MySQLTableColumn(table);
+        first.setName("first");
+        first.setRequired(true);
+        MySQLTableColumn second = new MySQLTableColumn(table);
+        second.setName("second");
+        second.setRequired(true);
+        MySQLTableColumn nullable = new MySQLTableColumn(table);
+        nullable.setName("nullable");
+        JDBCPreparedStatement statement = Mockito.mock(JDBCPreparedStatement.class);
+        JDBCResultSet result = Mockito.mock(JDBCResultSet.class);
+        Mockito.when(session.prepareStatement("SHOW INDEX FROM temp_table WHERE Non_unique = 0")).thenReturn(statement);
+        Mockito.when(statement.executeQuery()).thenReturn(result);
+        Mockito.when(result.next()).thenReturn(true, true, true, true, true, true, false);
+        Mockito.when(result.getString("Key_name")).thenReturn("valid", "valid", "nullable", "nullable", "functional", "functional");
+        Mockito.when(result.getString("Column_name")).thenReturn("second", "first", "first", "nullable", "first", null);
+        Mockito.when(result.getInt("Seq_in_index")).thenReturn(2, 1, 1, 2, 1, 2);
+
+        List<MySQLTableConstraint> keys = table.readKeys(session, "temp_table", List.of(first, second, nullable));
+        Assertions.assertEquals(1, keys.size());
+        MySQLTableConstraint key = keys.getFirst();
+        Assertions.assertEquals(DBSEntityConstraintType.UNIQUE_KEY, key.getConstraintType());
+        Assertions.assertEquals(List.of(first, second), key.getAttributeReferences(null).stream().map(ref -> ref.getAttribute()).toList());
+        Assertions.assertTrue(DBUtils.isIdentifierConstraint(new VoidProgressMonitor(), key));
     }
 
     private MySQLExecutionContext createContext() {

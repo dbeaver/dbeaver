@@ -105,7 +105,11 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
         );
         for (String sql : List.of(
             "CREATE TEMPORARY TABLE example LIKE original",
-            "CREATE TEMPORARY TABLE example AS SELECT 1 AS id"
+            "CREATE TEMPORARY TABLE example (LIKE original)",
+            "CREATE TEMPORARY TABLE example AS SELECT 1 AS id",
+            "CREATE TEMPORARY TABLE example ENGINE=MEMORY AS SELECT 1 AS id",
+            "CREATE TEMPORARY TABLE example ENGINE=MEMORY SELECT 1 AS id",
+            "CREATE TEMPORARY TABLE example ENGINE=MEMORY AS WITH source AS (SELECT 1 AS id) SELECT * FROM source"
         )) {
             Assertions.assertEquals(
                 List.of(new SQLObjectOperation(
@@ -114,7 +118,7 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
                     List.of("example"),
                     true
                 )),
-                recognizeAll(BasicSQLDialect.INSTANCE, sql)
+                recognizeAll(BasicSQLDialect.INSTANCE, sql), sql
             );
         }
         assertMultipleDropTargets("DROP TEMPORARY TABLE IF EXISTS schema1.a, schema2.b", SQLObjectOperation.ObjectKind.TABLE);

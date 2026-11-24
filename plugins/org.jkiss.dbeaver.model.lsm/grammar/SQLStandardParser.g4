@@ -506,7 +506,8 @@ schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification
 schemaElement: createTableStatement|createViewStatement;
 
 createTableStatement: createTableHead (tableName? createTableExtraHead
-    (tableElementList createTableTail | LIKE tableName | AS? queryExpression))?;
+    (tableElementList createTableTail | LIKE tableName | LeftParen LIKE tableName RightParen
+        | (~(AS|SELECT|WITH|LeftParen|RightParen|Semicolon))* AS? withClause? queryExpression))?;
 createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
