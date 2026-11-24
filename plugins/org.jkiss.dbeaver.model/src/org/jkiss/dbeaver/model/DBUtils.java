@@ -1415,7 +1415,9 @@ public final class DBUtils {
             DBSEntityConstraint uniqueId = null;
             //DBSEntityConstraint uniqueIndex = null;
             for (DBSEntityConstraint id : identifiers) {
-                if (id instanceof DBSEntityReferrer referrer && id.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                if (id instanceof DBSEntityReferrer referrer
+                    && (id.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY
+                        || id instanceof DBSTableIndex index && index.isPrimary())) {
                     return getEntityAttributes(monitor, referrer);
                 } else if (id.getConstraintType().isUnique()) {
                     uniqueId = id;

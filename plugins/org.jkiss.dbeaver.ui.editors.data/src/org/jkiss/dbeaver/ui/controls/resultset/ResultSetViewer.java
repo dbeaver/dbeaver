@@ -4309,11 +4309,16 @@ public class ResultSetViewer extends Viewer
         );
 
         if (applied) {
-            if (rowIdentifier != null) {
-                getModel().resetOrdering(rowIdentifier.getAttributes());
+            if (isHasMoreData()) {
+                // Sorting a partial result locally would leave the wrong rows in the first segment.
+                refreshWithFilter(dataFilter);
+            } else {
+                if (rowIdentifier != null) {
+                    getModel().resetOrdering(rowIdentifier.getAttributes());
+                }
+                getActivePresentation().refreshData(false, false, true);
+                updateFiltersText();
             }
-            getActivePresentation().refreshData(false, false, true);
-            updateFiltersText();
         }
     }
 
