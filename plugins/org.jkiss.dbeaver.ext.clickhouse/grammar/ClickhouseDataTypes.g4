@@ -112,13 +112,29 @@ stringType: 'String';
 jsonType: 'JSON' (LeftParen jsonArgumentList? RightParen)?;
 jsonArgumentList: jsonArgument (Comma jsonArgument)*;
 jsonArgument
-  : jsonPath anyType
+  : jsonPath jsonHintType
   | Identifier Eq Number
   | 'SKIP' 'REGEXP' String
   | 'SKIP' jsonPath
   ;
 jsonPath: jsonPathPart (Dot jsonPathPart)*;
 jsonPathPart: Identifier | QuotedIdentifier;
+// JSON typed paths may use types not yet modeled by anyType (e.g. Dynamic or BFloat16).
+jsonHintType: jsonHintTypeName (LeftParen jsonHintArgumentList? RightParen)?;
+jsonHintTypeName
+  : Identifier | Int | Float | Decimal | Date | DateTime | FixedString
+  | Enum | Map | Array | Tuple
+  | 'Nullable' | 'LowCardinality' | 'String' | 'JSON' | 'UUID'
+  | 'Boolean' | 'Bool' | 'IPV4' | 'IPv4' | 'IPV6' | 'IPv6'
+  ;
+jsonHintArgumentList: jsonHintArgument (Comma jsonHintArgument)*;
+jsonHintArgument
+  : jsonPath jsonHintType
+  | jsonHintType
+  | Number
+  | String (Eq Number)?
+  | Identifier Eq Number
+  ;
 fixedStringType: FixedString LeftParen Number RightParen;
 uuidType: 'UUID';
 boolType: 'Boolean' | 'Bool';

@@ -45,6 +45,9 @@ class ClickhouseTypeParserTest extends DBeaverUnitTest {
         "JSON(SKIP REGEXP '[)]')", "JSON(SKIP REGEXP 'a\\'b')",
         "JSON(`a)b` UInt64)", "JSON(`a``)b` UInt64)", "JSON(\"a)b\" UInt64)",
         "JSON(a Tuple(x UInt64, y String))", "JSON(a Enum8('x(y)'=1))",
+        "JSON(score BFloat16)", "JSON(payload Dynamic)", "JSON(a Nullable(BFloat16))",
+        "JSON(a Array(Dynamic))", "JSON(a Tuple(x BFloat16, y String))",
+        "JSON(a Variant(UInt64, String))", "JSON(a QBit(Float32, 8))",
         "Nullable(JSON)", "Nullable(JSON())", "Nullable(JSON(a UInt64, items Array(Nullable(UInt64))))",
         "Nullable(JSON(a UInt64)", "Nullable(JSON(a Array(Nullable(UInt64)))"
         // JDBC metadata can omit the outer Nullable close.
