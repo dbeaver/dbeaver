@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
-import org.jkiss.dbeaver.model.ai.AIProjectConnectionCount;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -287,9 +286,12 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         @Override
         public StyledString getStyledText(Object element) {
             if (element instanceof DBPProject project) {
-                Integer count = snapshot.get(project).count();
-                return new StyledString(project.getName()).append("    " + NLS.bind(AIUIMessages.ai_mcp_connections_count,
-                    count == null ? "—" : count.toString()), StyledString.QUALIFIER_STYLER);
+                ProjectEntry state = snapshot.get(project);
+                StyledString text = new StyledString(project.getName());
+                if (state.loaded()) {
+                    text.append("    " + NLS.bind(AIUIMessages.ai_mcp_connections_count, state.count()), StyledString.QUALIFIER_STYLER);
+                }
+                return text;
             }
             if (element instanceof DBPDataSourceContainer connection) {
                 return new StyledString(connection.getName());
@@ -418,9 +420,6 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
     private void openAllProjects() {
         for (ProjectEntry project : snapshot.projects.values()) {
-            if (project.count() != null && project.count() == 0) {
-                continue;
-            }
             try {
                 project.load();
             } catch (Exception e) {
@@ -538,7 +537,6 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
                         showSaveError(new DBException("Cannot persist AI settings for connection '" + connection.getName() + "'"));
                         return false;
                     }
-                    AIProjectConnectionCount.refresh(connection.getRegistry());
                 } catch (Exception e) {
                     connection.setExtension(AIContextSettingsDataSource.AI_DS_EXTENSION, previous);
                     showSaveError(e);
@@ -609,30 +607,25 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         @NotNull
         private ProjectEntry get(@NotNull DBPProject project) {
             return projects.computeIfAbsent(project.getId(), id ->
-                new ProjectEntry(project, AIProjectConnectionCount.getCount(project)));
+                new ProjectEntry(project));
         }
 
         @NotNull
         private ProjectEntry[] visibleProjects() {
-            return projects.values().stream()
-                .filter(project -> project.count() == null || project.count() > 0)
-                .toArray(ProjectEntry[]::new);
+            return projects.values().toArray(ProjectEntry[]::new);
         }
     }
 
     private static final class ProjectEntry {
         @NotNull
         private final DBPProject project;
-        @Nullable
-        private final Integer initialCount;
         private final Map<String, ConnectionEntry> connections = new LinkedHashMap<>();
         @Nullable
         private Image icon;
         private boolean loaded;
 
-        private ProjectEntry(@NotNull DBPProject project, @Nullable Integer initialCount) {
+        private ProjectEntry(@NotNull DBPProject project) {
             this.project = project;
-            this.initialCount = initialCount;
         }
 
         @NotNull
@@ -668,9 +661,6 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
                 throw new DBException("Cannot load AI connections for project '" + project.getName() + "'");
             }
             readConnections(registry);
-            if (retry) {
-                AIProjectConnectionCount.getInstance().handleRegistryLoad(registry);
-            }
         }
 
         private void readConnections(@NotNull DBPDataSourceRegistry registry) {
@@ -682,7 +672,6 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
             connections.clear();
             connections.putAll(loadedConnections);
             loaded = true;
-            AIProjectConnectionCount.refresh(registry);
         }
 
         @NotNull
@@ -697,17 +686,10 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
             return icon;
         }
 
-        @Nullable
-        private Integer count() {
-            if (loaded) {
-                return (int) connections.values().stream()
-                    .filter(connection -> connection.settings.isMetaTransferConfirmed())
-                    .count();
-            }
-            if (initialCount == null) {
-                return null;
-            }
-            return initialCount;
+        private int count() {
+            return (int) connections.values().stream()
+                .filter(connection -> connection.settings.isMetaTransferConfirmed())
+                .count();
         }
 
         @NotNull
