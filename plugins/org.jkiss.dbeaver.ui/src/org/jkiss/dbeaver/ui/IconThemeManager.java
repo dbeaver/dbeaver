@@ -126,8 +126,10 @@ final class IconThemeManager {
                 for (int i = table.getTopIndex(); i < end; i++) {
                     refreshTableItem(table.getItem(i), Math.max(1, table.getColumnCount()));
                 }
-            } else if (event.widget instanceof ToolBar || event.widget instanceof CTabFolder) {
-                refreshControl((Control) event.widget);
+            } else if (event.widget instanceof ToolBar toolbar) {
+                refreshToolbarIcons(toolbar);
+            } else if (event.widget instanceof CTabFolder folder) {
+                refreshTabIcons(folder);
             }
         };
         display.addFilter(SWT.Paint, paintListener);
@@ -295,20 +297,7 @@ final class IconThemeManager {
                 label.setImage(image);
             }
         } else if (control instanceof ToolBar toolbar) {
-            for (ToolItem item : toolbar.getItems()) {
-                Image image = refreshedModelImage(item, item.getImage());
-                if (image != item.getImage()) {
-                    item.setImage(image);
-                }
-                image = refreshedImage(item.getHotImage());
-                if (image != item.getHotImage()) {
-                    item.setHotImage(image);
-                }
-                image = refreshedImage(item.getDisabledImage());
-                if (image != item.getDisabledImage()) {
-                    item.setDisabledImage(image);
-                }
-            }
+            refreshToolbarIcons(toolbar);
         } else if (control instanceof TabFolder folder) {
             for (TabItem item : folder.getItems()) {
                 Image image = refreshedImage(item.getImage());
@@ -317,12 +306,7 @@ final class IconThemeManager {
                 }
             }
         } else if (control instanceof CTabFolder folder) {
-            for (CTabItem item : folder.getItems()) {
-                Image image = refreshedModelImage(item, item.getImage());
-                if (image != item.getImage()) {
-                    item.setImage(image);
-                }
-            }
+            refreshTabIcons(folder);
         } else if (control instanceof Tree tree) {
             for (TreeColumn column : tree.getColumns()) {
                 Image image = refreshedImage(column.getImage());
@@ -356,6 +340,32 @@ final class IconThemeManager {
         if (control instanceof Composite composite) {
             for (Control child : composite.getChildren()) {
                 refreshControl(child);
+            }
+        }
+    }
+
+    private static void refreshToolbarIcons(@NotNull ToolBar toolbar) {
+        for (ToolItem item : toolbar.getItems()) {
+            Image image = refreshedModelImage(item, item.getImage());
+            if (image != item.getImage()) {
+                item.setImage(image);
+            }
+            image = refreshedImage(item.getHotImage());
+            if (image != item.getHotImage()) {
+                item.setHotImage(image);
+            }
+            image = refreshedImage(item.getDisabledImage());
+            if (image != item.getDisabledImage()) {
+                item.setDisabledImage(image);
+            }
+        }
+    }
+
+    private static void refreshTabIcons(@NotNull CTabFolder folder) {
+        for (CTabItem item : folder.getItems()) {
+            Image image = refreshedModelImage(item, item.getImage());
+            if (image != item.getImage()) {
+                item.setImage(image);
             }
         }
     }

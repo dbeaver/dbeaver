@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  * SVG paint substitution before rasterization. Source artwork always uses the light palette.
  */
 public final class SVGUtils {
-    private static final String PLUGIN_ICON_PREFIX = "platform:/plugin/org.jkiss.dbeaver.";
+    private static final String PLUGIN_ICON_PREFIX = "platform:/plugin/";
     private static final Pattern PAINT = Pattern.compile(
         "(?i)((?<![\\w:-])(?:fill|stroke)\\s*=\\s*[\"']\\s*|(?<![\\w-])(?:fill|stroke)\\s*:\\s*)"
             + "(#[0-9a-f]{6}|#[0-9a-f]{3}|white)(?=\\s*(?:[\"';}]|!important|$))");
@@ -56,11 +56,13 @@ public final class SVGUtils {
         if (bundleEnd < 0 || !location.startsWith("/icons/", bundleEnd)) {
             return false;
         }
+        String bundleName = location.substring(PLUGIN_ICON_PREFIX.length(), bundleEnd);
+        if (!bundleName.startsWith("org.jkiss.dbeaver.") && !bundleName.startsWith("com.dbeaver.")) {
+            return false;
+        }
         // Brand artwork is not part of the semantic icon palette.
         String name = location.substring(location.lastIndexOf('/') + 1);
-        boolean driverLogo = location.startsWith("platform:/plugin/org.jkiss.dbeaver.ext.")
-            && name.contains("_icon");
-        return !driverLogo && !location.contains("/idp/") && !name.contains("logo") && !name.startsWith("engine_");
+        return !name.contains("_icon") && !name.contains("logo");
     }
 
     @NotNull
