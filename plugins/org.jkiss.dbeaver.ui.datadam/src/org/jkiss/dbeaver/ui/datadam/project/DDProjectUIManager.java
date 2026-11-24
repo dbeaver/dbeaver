@@ -137,9 +137,23 @@ public class DDProjectUIManager {
             return List.of();
         }
         List<ProjectListing> listings = loadProjectListings(monitor);
-        if (listings == null) {
+        return listings == null ? null : loadProjectViews(monitor, listings);
+    }
+
+    /** Refreshes an existing view without prompting for authentication or key recovery. */
+    @Nullable
+    public List<DDProjectView> refreshProjectViews(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (monitor.isCanceled() || !isProjectSyncReady()) {
             return null;
         }
+        List<ProjectListing> listings = readProjectListings(monitor);
+        return listings == null ? null : loadProjectViews(monitor, listings);
+    }
+
+    @Nullable
+    private List<DDProjectView> loadProjectViews(
+        @NotNull DBRProgressMonitor monitor, @NotNull List<ProjectListing> listings
+    ) throws DBException {
         DDProjectManager manager = getProjectManager();
         List<ProjectViewJob> jobs = new ArrayList<>();
         for (ProjectListing listing : listings) {
@@ -200,6 +214,11 @@ public class DDProjectUIManager {
             || !DDProjectKeyUIManager.getInstance().ensureKeysReady(monitor)) {
             return null;
         }
+        return readProjectListings(monitor);
+    }
+
+    @Nullable
+    private List<ProjectListing> readProjectListings(@NotNull DBRProgressMonitor monitor) throws DBException {
         DDProjectManager manager = getProjectManager();
         Map<UUID, DDSharedProject> remoteProjects = new LinkedHashMap<>();
         for (DDSharedProject remote : manager.getRemoteProjects()) {
