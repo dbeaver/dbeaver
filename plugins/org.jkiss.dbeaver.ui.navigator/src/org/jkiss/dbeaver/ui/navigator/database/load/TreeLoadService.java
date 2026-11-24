@@ -54,11 +54,13 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
         DBNNode[] children;
         try {
             children = DBNUtils.getNodeChildrenFiltered(monitor, parentNode, true);
-        } catch (Throwable ex) {
+        } catch (DBException ex) {
             // A project can be deleted while its previously scheduled tree load is running.
-            if (ex instanceof DBException && parentNode.isDisposed()) {
+            if (parentNode.isDisposed()) {
                 throw new InterruptedException("Navigator node was disposed while loading");
             }
+            throw new InvocationTargetException(ex);
+        } catch (Throwable ex) {
             throw new InvocationTargetException(ex);
         }
         if (monitor.isCanceled() || parentNode.isDisposed()) {
