@@ -24,15 +24,20 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
@@ -186,22 +191,7 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
             }
         }
         columns = getSite().getAttributes();
-        DBPNamedObject source = getSite().getSource();
-        SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, source);
-        if (CommonUtils.isNotEmpty(userTableName)) {
-            // We will use custom table name in this case. As is.
-            tableName = userTableName;
-        } else if (queryContainer != null && queryContainer.getQueryResultIndex() > 0) {
-            // the shared query text may describe an earlier result set
-            tableName = getResultTableName(session.getDataSource());
-        } else if (source instanceof SQLQueryContainer directQueryContainer) {
-            tableName = DTUtils.getTableNameFromQueryContainer(session.getDataSource(), directQueryContainer);
-            if (CommonUtils.isEmpty(tableName)) {
-                tableName = DTUtils.getTargetContainersNameFromQuery(directQueryContainer);
-            }
-        } else {
-            tableName = DTUtils.getTableName(session.getDataSource(), source, omitSchema);
-        }
+        tableName = CommonUtils.isEmpty(userTableName) ? getSourceTableName(session, getSite().getSource()) : userTableName;
         if (CommonUtils.isEmpty(tableName)) {
             tableName = DTConstants.DEFAULT_TABLE_NAME_EXPORT;
         }
@@ -210,7 +200,28 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
     }
 
     @Nullable
-    private String getResultTableName(@NotNull DBPDataSource dataSource) {
+    private String getSourceTableName(@NotNull DBCSession session, @NotNull DBPNamedObject source) {
+        DBPDataSource dataSource = session.getDataSource();
+        SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, source);
+        if (queryContainer != null && (queryContainer.getQueryResultIndex() > 0 || isMultiStatementQuery(dataSource, queryContainer))) {
+            // a statement can produce an update count before the first result set
+            return getResultTableName(session);
+        }
+        if (source instanceof SQLQueryContainer directQueryContainer) {
+            String name = DTUtils.getTableNameFromQueryContainer(dataSource, directQueryContainer);
+            return CommonUtils.isEmpty(name) ? DTUtils.getTargetContainersNameFromQuery(directQueryContainer) : name;
+        }
+        return DTUtils.getTableName(dataSource, source, omitSchema);
+    }
+
+    private static boolean isMultiStatementQuery(@NotNull DBPDataSource dataSource, @NotNull SQLQueryContainer queryContainer) {
+        return queryContainer.getQuery() instanceof SQLQuery query
+            && !query.representsOneStatement()
+            && SQLScriptParser.parseScript(dataSource, query.getOriginalText()).size() > 1;
+    }
+
+    @Nullable
+    private String getResultTableName(@NotNull DBCSession session) {
         DBCEntityMetaData resultTable = null;
         for (DBDAttributeBinding column : columns) {
             DBCAttributeMetaData attribute = column.getMetaAttribute();
@@ -226,15 +237,26 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
         if (resultTable == null) {
             return null;
         }
+        DBPDataSource dataSource = session.getDataSource();
         if (omitSchema) {
             return DBUtils.getQuotedIdentifier(dataSource, resultTable.getEntityName());
         }
-        return DBUtils.getFullyQualifiedName(
-            dataSource,
-            CommonUtils.nullIfEmpty(resultTable.getCatalogName()),
-            CommonUtils.nullIfEmpty(resultTable.getSchemaName()),
-            resultTable.getEntityName()
-        );
+        try {
+            DBSEntity entity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), resultTable);
+            if (entity != null) {
+                return DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML);
+            }
+        } catch (DBException e) {
+            log.debug("Could not resolve the result table for SQL export", e);
+        }
+        String catalog = CommonUtils.nullIfEmpty(resultTable.getCatalogName());
+        String schema = CommonUtils.nullIfEmpty(resultTable.getSchemaName());
+        DBCExecutionContextDefaults<?, ?> defaults = session.getExecutionContext().getContextDefaults();
+        DBSCatalog defaultCatalog = defaults == null ? null : defaults.getDefaultCatalog();
+        if (schema != null && defaultCatalog != null && defaultCatalog.getName().equals(catalog)) {
+            catalog = null;
+        }
+        return DBUtils.getFullyQualifiedName(dataSource, catalog, schema, resultTable.getEntityName());
     }
 
     private String transformTableNameCase(DBPDataSource dataSource, String tableIdentifier) {
