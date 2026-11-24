@@ -47,6 +47,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 /** Interactive recovery for account encryption resets, before project operations start. */
 public final class DDProjectKeyUIManager {
@@ -54,6 +55,8 @@ public final class DDProjectKeyUIManager {
     private static final DDProjectKeyUIManager INSTANCE = new DDProjectKeyUIManager();
     private final AtomicBoolean cleanupInProgress = new AtomicBoolean();
     private final AtomicBoolean activeProjectCheckRunning = new AtomicBoolean();
+    // Acquired only by worker operations; UI callbacks must never wait for this lock.
+    private final ReentrantLock projectOperationLock = new ReentrantLock();
 
     private DDProjectKeyUIManager() {
     }
@@ -76,6 +79,7 @@ public final class DDProjectKeyUIManager {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                projectOperationLock.lock();
                 try {
                     if (cleanupInProgress.get() || monitor.isCanceled()) {
                         return Status.CANCEL_STATUS;
@@ -85,6 +89,7 @@ public final class DDProjectKeyUIManager {
                 } catch (DBException e) {
                     return Status.error("Could not create a local project", e);
                 } finally {
+                    projectOperationLock.unlock();
                     activeProjectCheckRunning.set(false);
                 }
             }
@@ -113,12 +118,14 @@ public final class DDProjectKeyUIManager {
         if (!cleanupInProgress.compareAndSet(false, true)) {
             throw new DBException("DataDam project cleanup is already in progress");
         }
+        projectOperationLock.lock();
         try {
-            operation.run();
             if (keys != null) {
                 removeLocalAccountProjects(keys.accountId());
             }
+            operation.run();
         } finally {
+            projectOperationLock.unlock();
             finishProjectCleanup();
         }
     }
@@ -159,7 +166,7 @@ public final class DDProjectKeyUIManager {
         void run() throws DBException;
     }
 
-    /** Removes only local projects bound to the captured account after access has been cleared. */
+    /** Removes local account projects before discarding the credentials needed to retry cleanup. */
     private void removeLocalAccountProjects(@NotNull UUID accountId) throws DBException {
         DDProjectManager manager = DDProjectManager.getInstance();
         prepareProjectDeletion(manager, accountId);
@@ -214,12 +221,14 @@ public final class DDProjectKeyUIManager {
         if (!cleanupInProgress.compareAndSet(false, true)) {
             throw new DBException("DataDam project cleanup is already in progress");
         }
+        projectOperationLock.lock();
         try {
             DDProjectManager manager = DDProjectManager.getInstance();
             // Activate the replacement before acquiring the access lock: this step needs the UI thread.
             prepareProjectDeletion(manager, bundle.accountId());
             access.recoverProjectKeys(bundle, replacement, () -> manager.deleteAccountProjects(bundle.accountId()));
         } finally {
+            projectOperationLock.unlock();
             finishProjectCleanup();
         }
         // Callers may already hold project objects that were removed during recovery.
