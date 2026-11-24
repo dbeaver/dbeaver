@@ -309,7 +309,7 @@ abstract class QueryResultsContainer implements
     /**
      * Returns the number of this container's result set among the results of its query
      */
-    private int getQueryResultIndex() {
+    private int computeQueryResultIndex() {
         int index = 0;
         for (QueryResultsContainer qrc : queryProcessor.resultContainers) {
             if (qrc == this) {
@@ -441,9 +441,14 @@ abstract class QueryResultsContainer implements
         return query;
     }
 
+    @Override
+    public int getQueryResultIndex() {
+        return queryResultIndex;
+    }
+
     void setQuery(SQLScriptElement query) {
         this.query = query;
-        this.queryResultIndex = getQueryResultIndex();
+        this.queryResultIndex = computeQueryResultIndex();
     }
 
     @Override

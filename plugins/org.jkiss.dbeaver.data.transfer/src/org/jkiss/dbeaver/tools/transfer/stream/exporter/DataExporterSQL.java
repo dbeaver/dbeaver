@@ -17,10 +17,13 @@
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -176,7 +179,7 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
     }
 
     @Override
-    public void exportHeader(DBCSession session) {
+    public void exportHeader(@NotNull DBCSession session) {
         if (useNativeDataFormat) {
             if (session instanceof DBDFormatSettingsExt) {
                 ((DBDFormatSettingsExt) session).setUseNativeDateTimeFormat(true);
@@ -184,13 +187,17 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
         }
         columns = getSite().getAttributes();
         DBPNamedObject source = getSite().getSource();
+        SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, source);
         if (CommonUtils.isNotEmpty(userTableName)) {
             // We will use custom table name in this case. As is.
             tableName = userTableName;
-        } else if (source instanceof SQLQueryContainer) {
-            tableName = DTUtils.getTableNameFromQueryContainer(session.getDataSource(), (SQLQueryContainer) source);
+        } else if (queryContainer != null && queryContainer.getQueryResultIndex() > 0) {
+            // the shared query text may describe an earlier result set
+            tableName = getResultTableName(session.getDataSource());
+        } else if (source instanceof SQLQueryContainer directQueryContainer) {
+            tableName = DTUtils.getTableNameFromQueryContainer(session.getDataSource(), directQueryContainer);
             if (CommonUtils.isEmpty(tableName)) {
-                tableName = DTUtils.getTargetContainersNameFromQuery((SQLQueryContainer) source);
+                tableName = DTUtils.getTargetContainersNameFromQuery(directQueryContainer);
             }
         } else {
             tableName = DTUtils.getTableName(session.getDataSource(), source, omitSchema);
@@ -200,6 +207,34 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
         }
 
         rowCount = 0;
+    }
+
+    @Nullable
+    private String getResultTableName(@NotNull DBPDataSource dataSource) {
+        DBCEntityMetaData resultTable = null;
+        for (DBDAttributeBinding column : columns) {
+            DBCAttributeMetaData attribute = column.getMetaAttribute();
+            DBCEntityMetaData table = attribute == null ? null : attribute.getEntityMetaData();
+            if (table == null || CommonUtils.isEmpty(table.getEntityName())) {
+                continue;
+            }
+            if (resultTable != null && !resultTable.equals(table)) {
+                return null;
+            }
+            resultTable = table;
+        }
+        if (resultTable == null) {
+            return null;
+        }
+        if (omitSchema) {
+            return DBUtils.getQuotedIdentifier(dataSource, resultTable.getEntityName());
+        }
+        return DBUtils.getFullyQualifiedName(
+            dataSource,
+            CommonUtils.nullIfEmpty(resultTable.getCatalogName()),
+            CommonUtils.nullIfEmpty(resultTable.getSchemaName()),
+            resultTable.getEntityName()
+        );
     }
 
     private String transformTableNameCase(DBPDataSource dataSource, String tableIdentifier) {

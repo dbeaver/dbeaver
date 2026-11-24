@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,5 +32,10 @@ public interface SQLQueryContainer extends DBPDataSourceContainerProvider, DBPCo
     SQLScriptElement getQuery();
 
     Map<String, Object> getQueryParameters();
+
+    // zero-based among the result sets returned by this query
+    default int getQueryResultIndex() {
+        return 0;
+    }
 
 }
