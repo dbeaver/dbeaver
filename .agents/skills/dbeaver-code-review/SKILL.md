@@ -1,6 +1,6 @@
 ---
 name: dbeaver-code-review
-description: Review pull requests for copy-paste defects, accidentally committed sensitive data, and unnecessary VoidProgressMonitor use in Java changes.
+description: Review pull requests for copy-paste defects and accidentally committed sensitive data. Use this during code review when changed code may have been copied or pasted.
 ---
 
 # Pull Requests Review
