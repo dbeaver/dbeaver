@@ -182,6 +182,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String show_in_navigator;
     public static String clear_events;
     public static String configuration;
+    public static String manage_database_connections;
     public static String integration_enabled;
     public static String status_connected;
     public static String status_disconnected;

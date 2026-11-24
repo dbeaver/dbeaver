@@ -57,7 +57,7 @@ public class DDStatusContribution extends ContributionItem {
                 @Override
                 @NotNull
                 public EvaluationResult evaluate(@NotNull IEvaluationContext context) {
-                    return EvaluationResult.valueOf(DDProductConfig.isIntegrationAvailable());
+                    return EvaluationResult.valueOf(DDProductConfig.isIntegrationEnabled());
                 }
 
                 @Override
