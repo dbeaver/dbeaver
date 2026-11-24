@@ -136,13 +136,13 @@ public class CloudflareD1RegistrationTest {
                         Assertions.assertEquals("maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.d1:RELEASE", path);
                         Assertions.assertEquals("!drivers.cloudflare.d1", file.getAttribute("bundle"));
                     } else {
-                        Assertions.assertEquals("drivers.cloudflare.d1", file.getAttribute("bundle"));
                         Assertions.assertEquals(
-                            path.equals("drivers/cloudflare/d1") || path.equals("bundle:/com.dbeaver.jdbc.driver.d1"),
-                            Boolean.parseBoolean(file.getAttribute("optional"))
+                            path.equals("drivers/cloudflare/d1") ? "drivers.cloudflare.d1.included" : "drivers.cloudflare.d1.osgi",
+                            file.getAttribute("bundle")
                         );
                         Assertions.assertTrue(bundledLibraries.add(path));
                     }
+                    Assertions.assertFalse(Boolean.parseBoolean(file.getAttribute("optional")));
                     Assertions.assertNotEquals("true", file.getAttribute("ignore-dependencies"));
                 }
             }
