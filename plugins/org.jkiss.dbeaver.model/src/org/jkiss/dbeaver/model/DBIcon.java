@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -35,11 +34,8 @@ import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * DBIcon
@@ -190,9 +186,6 @@ public class DBIcon implements DBPImage {
     private static final boolean VALIDATE_ICON_FILE = false;
 
     private static final Map<String, DBPImage> iconMap = new HashMap<>();
-    private static final Set<String> iconLocations = ConcurrentHashMap.newKeySet();
-    private static final Set<String> scannedIconBundles = ConcurrentHashMap.newKeySet();
-    private static final String PLUGIN_ICON_PREFIX = "platform:/plugin/";
 
 
     static  {
@@ -236,53 +229,10 @@ public class DBIcon implements DBPImage {
                     }
                 }
                 DBIcon.iconMap.put(icon.getToken(), icon);
-                iconLocations.add(icon.getLocation());
             } catch (Exception e) {
                 log.error(e);
             }
         }
-        loadBundleIcons(iconBundle);
-    }
-
-    private static synchronized void loadBundleIcons(@NotNull Bundle bundle) {
-        String bundleName = bundle.getSymbolicName();
-        if (!scannedIconBundles.add(bundleName)) {
-            return;
-        }
-        Enumeration<URL> entries = bundle.findEntries("icons", "*.svg", true);
-        if (entries != null) {
-            while (entries.hasMoreElements()) {
-                String path = entries.nextElement().getPath();
-                iconLocations.add(PLUGIN_ICON_PREFIX + bundleName + (path.startsWith("/") ? path : "/" + path));
-            }
-        }
-    }
-
-    public static boolean isRegisteredIconLocation(@Nullable String location) {
-        if (location == null) {
-            return false;
-        }
-        if (iconLocations.contains(location)) {
-            return true;
-        }
-        // Extension contributions can be rendered before the bundle's DBIcon constants are initialized.
-        if (!location.startsWith(PLUGIN_ICON_PREFIX) || !location.endsWith(".svg")) {
-            return false;
-        }
-        int bundleEnd = location.indexOf('/', PLUGIN_ICON_PREFIX.length());
-        if (bundleEnd < 0 || !location.startsWith("/icons/", bundleEnd)) {
-            return false;
-        }
-        String bundleName = location.substring(PLUGIN_ICON_PREFIX.length(), bundleEnd);
-        if (!bundleName.startsWith("org.jkiss.dbeaver.")) {
-            return false;
-        }
-        Bundle bundle = Platform.getBundle(bundleName);
-        if (bundle == null || bundle.getEntry(location.substring(bundleEnd + 1)) == null) {
-            return false;
-        }
-        loadBundleIcons(bundle);
-        return iconLocations.contains(location);
     }
 
     public DBIcon(@NotNull String path) {

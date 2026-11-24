@@ -22,7 +22,6 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBIcon;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -38,6 +37,7 @@ import java.util.regex.Pattern;
  * SVG paint substitution before rasterization. Source artwork always uses the light palette.
  */
 public final class SVGUtils {
+    private static final String PLUGIN_ICON_PREFIX = "platform:/plugin/org.jkiss.dbeaver.";
     private static final Pattern PAINT = Pattern.compile(
         "(?i)((?<![\\w:-])(?:fill|stroke)\\s*=\\s*[\"']\\s*|(?<![\\w-])(?:fill|stroke)\\s*:\\s*)"
             + "(#[0-9a-f]{6}|#[0-9a-f]{3}|white)(?=\\s*(?:[\"';}]|!important|$))");
@@ -49,7 +49,11 @@ public final class SVGUtils {
     }
 
     static boolean isThemeableSvg(@Nullable String location) {
-        if (location == null || !location.endsWith(".svg") || !DBIcon.isRegisteredIconLocation(location)) {
+        if (location == null || !location.startsWith(PLUGIN_ICON_PREFIX) || !location.endsWith(".svg")) {
+            return false;
+        }
+        int bundleEnd = location.indexOf('/', PLUGIN_ICON_PREFIX.length());
+        if (bundleEnd < 0 || !location.startsWith("/icons/", bundleEnd)) {
             return false;
         }
         // Brand artwork is not part of the semantic icon palette.

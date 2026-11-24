@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Device;
@@ -30,7 +31,9 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -215,7 +218,28 @@ public class DBeaverIcons {
     @NotNull
     private static ImageDescriptor trackImages(@NotNull DBPImage icon, @NotNull ImageDescriptor source) {
         Map<String, String> palette = IconThemeManager.getPalette();
-        return new ImageDescriptor() {
+        class TrackedImageDescriptor extends ImageDescriptor implements IAdaptable {
+            @Nullable
+            @Override
+            public <T> T getAdapter(@NotNull Class<T> adapter) {
+                // Eclipse command renderers recover the icon URI from its image descriptor.
+                // Only plain icons have a source URI; adapting composites would discard their overlays.
+                if (icon instanceof DBIcon) {
+                    URI uri = URI.create(icon.getLocation());
+                    if (adapter == URI.class) {
+                        return adapter.cast(uri);
+                    }
+                    if (adapter == URL.class) {
+                        try {
+                            return adapter.cast(uri.toURL());
+                        } catch (MalformedURLException e) {
+                            log.debug("Error adapting icon location", e);
+                        }
+                    }
+                }
+                return null;
+            }
+
             @NotNull
             private ImageDescriptor currentSource() {
                 // Composite descriptors cache their base pixels; rebuild them after a palette change.
@@ -237,7 +261,8 @@ public class DBeaverIcons {
                 }
                 return image;
             }
-        };
+        }
+        return new TrackedImageDescriptor();
     }
 
     static void disposeCachedImages() {

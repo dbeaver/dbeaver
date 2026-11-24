@@ -29,8 +29,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
@@ -40,15 +40,27 @@ import org.osgi.service.event.EventHandler;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 /**
  * Bridges theme registry changes to images already assigned to SWT and Eclipse model widgets.
  */
 final class IconThemeManager {
     private static final String E4_MODEL_ELEMENT = "modelElement";
+    private static final List<String> ICON_COLOR_IDS = List.of(
+        BaseThemeSettings.ICON_DEFAULT,
+        BaseThemeSettings.ICON_SECONDARY,
+        BaseThemeSettings.ICON_ACCENT,
+        BaseThemeSettings.ICON_TIP,
+        BaseThemeSettings.ICON_ATTENTION,
+        BaseThemeSettings.ICON_POSITIVE,
+        BaseThemeSettings.ICON_IMPORTANT,
+        BaseThemeSettings.ICON_DANGER,
+        BaseThemeSettings.ICON_BACKGROUND);
     private static final Map<Image, DBPImage> trackedImages = Collections.synchronizedMap(new WeakHashMap<>());
     private static final Map<Image, Map<String, Boolean>> originalImages = new WeakHashMap<>();
     private static final AtomicBoolean initializationPending = new AtomicBoolean();
@@ -144,25 +156,32 @@ final class IconThemeManager {
     }
 
     private static void updatePalette() {
-        BaseThemeSettings settings = BaseThemeSettings.instance;
-        Map<String, String> colors = new LinkedHashMap<>();
-        putColor(colors, "#71717A", settings.iconDefault);
-        putColor(colors, "#B7B1AD", settings.iconSecondary);
-        putColor(colors, "#3387C5", settings.iconAccent);
-        putColor(colors, "#14B8A6", settings.iconTip);
-        putColor(colors, "#ED8000", settings.iconAttention);
-        putColor(colors, "#4FA143", settings.iconPositive);
-        putColor(colors, "#B778F4", settings.iconImportant);
-        putColor(colors, "#F44D20", settings.iconDanger);
-        putColor(colors, "#FFFFFF", settings.iconBackground);
-        // Older type icons used these variants of Accent.
-        putColor(colors, "#338ECC", settings.iconAccent);
-        putColor(colors, "#338BC9", settings.iconAccent);
-        palette = Collections.unmodifiableMap(colors);
+        palette = readPalette(UIUtils.getColorRegistry()::getRGB);
     }
 
-    private static void putColor(@NotNull Map<String, String> colors, @NotNull String source, @Nullable Color target) {
-        colors.put(source, target == null || target.isDisposed() ? source : SVGUtils.toHex(target.getRGB()));
+    @NotNull
+    static Map<String, String> readPalette(@NotNull Function<String, RGB> colorLookup) {
+        Map<String, String> colors = new LinkedHashMap<>();
+        for (String colorId : ICON_COLOR_IDS) {
+            putColor(colors, colorLookup, colorId + ".source", colorId);
+        }
+        // Older type icons used variants of Accent, also defined in the registry.
+        putColor(colors, colorLookup, BaseThemeSettings.ICON_ACCENT + ".source.type", BaseThemeSettings.ICON_ACCENT);
+        putColor(colors, colorLookup, BaseThemeSettings.ICON_ACCENT + ".source.unknown", BaseThemeSettings.ICON_ACCENT);
+        return Collections.unmodifiableMap(colors);
+    }
+
+    private static void putColor(
+        @NotNull Map<String, String> colors,
+        @NotNull Function<String, RGB> colorLookup,
+        @NotNull String sourceId,
+        @NotNull String targetId
+    ) {
+        RGB source = colorLookup.apply(sourceId);
+        RGB target = colorLookup.apply(targetId);
+        if (source != null && target != null) {
+            colors.put(SVGUtils.toHex(source), SVGUtils.toHex(target));
+        }
     }
 
     private static void scheduleRefresh(@NotNull Display display) {
