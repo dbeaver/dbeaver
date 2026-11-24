@@ -73,6 +73,8 @@
                     <!-- Disable server timezone as it confuses during timestamp edit -->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <!-- Avoid exceeding the HTTP response header limit on long queries: https://github.com/ClickHouse/clickhouse-java/issues/3080 -->
+                    <property name="clickhouse_setting_send_progress_in_http_headers" value="0"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
