@@ -23,6 +23,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AIFunction;
 import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
+import org.jkiss.dbeaver.model.ai.AIFunctionPurpose;
+import org.jkiss.dbeaver.model.ai.AIFunctionResult;
+import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpAiFunctionCatalog;
 import org.junit.jupiter.api.Assertions;
@@ -34,8 +37,30 @@ import java.util.Map;
 
 class DDMcpDesktopFunctionServiceTest {
     @Test
+    void callsDamFunctionsWithoutAConnectionAndPreservesMcpErrors() throws Exception {
+        var descriptor = Mockito.mock(AIFunctionDescriptor.class);
+        Mockito.when(descriptor.getPurpose()).thenReturn(AIFunctionPurpose.DAM);
+        var function = Mockito.mock(AIFunction.class);
+        Mockito.when(descriptor.getInstance()).thenReturn(function);
+        Mockito.when(function.callFunction(Mockito.any(), Mockito.anyMap()))
+            .thenReturn(new AIFunctionResult(AIFunctionType.INFORMATION, "projects"))
+            .thenThrow(new DBException("Invalid projectId",
+                new DDMcpFunctionException(DDMcpFunctionErrorCode.INVALID_ARGUMENTS, "Invalid projectId")));
+        try (var connections = Mockito.mockStatic(DDMcpConnectionCatalog.class);
+             var functions = Mockito.mockConstruction(DDMcpAiFunctionCatalog.class, (catalog, context) ->
+                 Mockito.when(catalog.getFunction("listProjects")).thenReturn(descriptor))) {
+            var service = new DDMcpDesktopFunctionService();
+            var call = new DDMcpFunctionCall("listProjects", Map.of());
+
+            Assertions.assertEquals("projects", service.callFunction(call).value());
+            var error = Assertions.assertThrows(DDMcpFunctionException.class, () -> service.callFunction(call));
+            Assertions.assertEquals(DDMcpFunctionErrorCode.INVALID_ARGUMENTS, error.getCode());
+            Assertions.assertEquals("Invalid projectId", error.getMessage());
+        }
+    }
+
+    @Test
     void reportsFunctionErrorsWithAllCauseMessagesButNoStackTrace() throws Exception {
-        var registry = Mockito.mock(DDMcpFunctionRegistry.class);
         var connections = Mockito.mock(DDMcpConnectionCatalog.class);
         var connection = Mockito.mock(DBPDataSourceContainer.class);
         Mockito.when(connections.getAllowedConnection("project", "connection")).thenReturn(
@@ -45,11 +70,9 @@ class DDMcpDesktopFunctionServiceTest {
         Mockito.when(function.callFunction(Mockito.any(), Mockito.anyMap())).thenThrow(failure);
         var descriptor = Mockito.mock(AIFunctionDescriptor.class);
         Mockito.when(descriptor.getInstance()).thenReturn(function);
-        try (var registries = Mockito.mockStatic(DDMcpFunctionRegistry.class);
-             var catalogs = Mockito.mockStatic(DDMcpConnectionCatalog.class);
+        try (var catalogs = Mockito.mockStatic(DDMcpConnectionCatalog.class);
              var functions = Mockito.mockConstruction(DDMcpAiFunctionCatalog.class, (catalog, context) ->
                  Mockito.when(catalog.getFunction("db_executeDQL")).thenReturn(descriptor))) {
-            registries.when(DDMcpFunctionRegistry::getInstance).thenReturn(registry);
             catalogs.when(DDMcpConnectionCatalog::getInstance).thenReturn(connections);
             var service = new DDMcpDesktopFunctionService();
 

@@ -36,9 +36,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessListener;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.BaseEditorColors;
@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.management.DDManagementActions;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
 import org.jkiss.dbeaver.ui.forms.UIAlignX;
 import org.jkiss.dbeaver.ui.forms.UIGrowX;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
@@ -63,8 +63,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
     private static final String MCP_SETTINGS_URL = "remote-dams";
-    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-    private final DDDesktopAccessListener accessListener = new DDDesktopAccessListener() {
+    private final DBDamAccessService accessService = DBDamAccessService.getInstance();
+    private final DBDamAccessListener accessListener = new DBDamAccessListener() {
         @Override
         public void accessChanging() {
         }
@@ -199,8 +199,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         accountActionButton = UIUtils.createPushButton(
             accountActions, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
             SelectionListener.widgetSelectedAdapter(e -> {
-                DDDesktopAccessService.Status status = accessService.getStatus();
-                if (status == DDDesktopAccessService.Status.SIGNED_IN) {
+                DBDamAccessService.Status status = accessService.getStatus();
+                if (status == DBDamAccessService.Status.SIGNED_IN) {
                     logOut();
                 } else {
                     logIn();
@@ -283,19 +283,17 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private void logOut() {
         if (!UIUtils.confirmAction(getShell(), DDTrackingUIMessages.sync_preference_page_logout_confirm_title,
-            DDTrackingUIMessages.sync_preference_page_logout_confirm_message)) {
+            DDTrackingUIMessages.sync_preference_page_project_deletion_confirm_message)) {
             return;
         }
-        runOperation(DDTrackingUIMessages.sync_preference_page_logout_failed, monitor -> accessService.signOut());
-        if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_OUT) {
-            DDProjectUIManager.getInstance().refreshProjectVisibility();
-        }
+        DDProjectKeyUIManager.getInstance().signOutWithProgress();
+        refresh();
     }
 
     private void refresh() {
         boolean enabled = DDProductConfig.isIntegrationEnabled();
-        DDDesktopAccessService.Status status = accessService.getStatus();
-        boolean signedIn = status == DDDesktopAccessService.Status.SIGNED_IN;
+        DBDamAccessService.Status status = accessService.getStatus();
+        boolean signedIn = status == DBDamAccessService.Status.SIGNED_IN;
         userText.setText(signedIn ? DDTrackingUIMessages.sync_preference_page_account_signed_in
             : DDTrackingUIMessages.sync_preference_page_account_not_signed_in);
         accountActionButton.setText(signedIn
@@ -330,7 +328,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private void updateAccountActionBackground() {
         if (!accountActionButton.isDisposed()) {
-            if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+            if (accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN) {
                 accountActionButton.setBackground(BaseThemeSettings.instance.colorError);
             } else {
                 accountActionButton.setBackground(null);
@@ -353,7 +351,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 if (monitor.isCanceled()) {
                     return Status.CANCEL_STATUS;
                 }
-                var service = DDDesktopDamService.getInstance();
+                var service = DBDamService.getInstance();
                 boolean canRename = true;
                 try {
                     canRename = service.canRenameDam();
@@ -389,7 +387,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private boolean isDamNameJobActive(@NotNull AbstractJob job, @NotNull DBRProgressMonitor monitor) {
         return !damNameText.isDisposed() && damNameJob == job && !monitor.isCanceled()
-            && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
+            && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN;
     }
 
     private void showDam(@Nullable DDConnectedRemoteDam result) {
@@ -445,7 +443,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                     return Status.CANCEL_STATUS;
                 }
                 try {
-                    var updated = DDDesktopDamService.getInstance().renameDam(name);
+                    var updated = DBDamService.getInstance().renameDam(name);
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
                             showDam(updated);
@@ -472,17 +470,17 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             mcpJob.cancel();
         }
         showMcpLoading();
-        mcpJob = DDDesktopDamService.getInstance().createJob(
+        mcpJob = DBDamService.getInstance().createJob(
             "Read DataDam MCP status",
             account -> account.getDamSettings(
-                DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
+                DBDamSessionService.getInstance().getClientDamId()),
             status -> {
-                if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                if (!mcpCheck.isDisposed() && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN) {
                     showMcpStatus(status);
                 }
             },
             error -> {
-                if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                if (!mcpCheck.isDisposed() && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN) {
                     log.debug("Cannot read DataDam MCP status", error);
                     showMcpStatus(null);
                 }
@@ -498,18 +496,18 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             mcpJob.cancel();
         }
         showMcpLoading();
-        mcpJob = DDDesktopDamService.getInstance().createJob(
+        mcpJob = DBDamService.getInstance().createJob(
             "Update DataDam MCP status",
             account -> new DDAccountClient.DamSettingsState(previous.accountId(), account.setDamSetting(
-                DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.MCP_ENABLED,
+                DBDamSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.MCP_ENABLED,
                 Boolean.toString(enabled), previous.accountId()), previous.canManage()),
             updated -> {
-                if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                if (!mcpCheck.isDisposed() && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN) {
                     showMcpStatus(updated);
                 }
             },
             error -> {
-                if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                if (!mcpCheck.isDisposed() && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN) {
                     showMcpStatus(null);
                     DDUIUtils.showError(
                         SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, error);
@@ -550,7 +548,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 var user = accessService.getLoggedUserView();
                 UIUtils.asyncExec(() -> {
                     if (!userText.isDisposed() && userViewJob == this && !monitor.isCanceled()
-                        && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                        && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN) {
                         userText.setText(user.userName() == null
                             ? DDTrackingUIMessages.sync_preference_page_account_signed_in
                             : NLS.bind(
