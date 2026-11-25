@@ -455,8 +455,8 @@ public abstract class PostgreTable extends PostgreTableReal
                             }
                             PostgreTableBase subTable = schema.getTable(monitor, subTableId);
                             if (subTable == null && subTableName != null) {
-                                // The sub-table (e.g. a partition) can be created after the schema table cache was
-                                // loaded, so it may not be present there. Load such table separately and add it to the cache.
+                                // If not found by OID, try loading by name with cache refresh
+                                // This handles cases where the table was created externally after cache init
                                 schema.getTableCache().setFullCache(false);
                                 try {
                                     subTable = schema.getTableCache().getObject(monitor, schema, subTableName);
@@ -464,8 +464,12 @@ public abstract class PostgreTable extends PostgreTableReal
                                     schema.getTableCache().setFullCache(true);
                                 }
                             }
+                            if (subTable != null && subTable.getObjectId() != subTableId) {
+                                log.debug("Sub-table name collision: expected OID " + subTableId + " but got " + subTable.getObjectId() + " for name '" + subTableName + "'");
+                                subTable = null;
+                            }
                             if (subTable == null) {
-                                log.warn("Can't find sub-table '" + subTableId + "' in '" + schema.getName() + "'");
+                                log.warn("Can't find sub-table '" + subTableId + "' (" + subTableName + ") in '" + schema.getName() + "'");
                                 continue;
                             }
                             tables.add(
