@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.datadam.auth;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.keys.DDBip39Wordlist;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.auth;
+package org.jkiss.dbeaver.model.datadam.auth.desktop.keys;
 
 import java.util.List;
 
@@ -22,9 +22,9 @@ import java.util.List;
  * BIP-39 English wordlist. Generated from the browser vault's copy
  * (datadam static/js/bip39-wordlist.js) - keep the two in sync, index order matters.
  */
-final class DDBip39Wordlist {
+public final class DDBip39Wordlist {
 
-    static final List<String> WORDS = List.of(
+    public static final List<String> WORDS = List.of(
         "abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract",
         "absurd", "abuse", "access", "accident", "account", "accuse", "achieve", "acid",
         "acoustic", "acquire", "across", "act", "action", "actor", "actress", "actual",
