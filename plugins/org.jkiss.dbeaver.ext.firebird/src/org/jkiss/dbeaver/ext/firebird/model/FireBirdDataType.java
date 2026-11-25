@@ -28,7 +28,7 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
     private final FireBirdFieldType fieldType;
     private final int subType;
     private final boolean domain;
-    private final boolean systemDomain;
+    private boolean systemDomain;
     private int fieldLength;
     private int charLength;
     private String computedSource;
@@ -37,39 +37,23 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
     private String charsetName;
     private boolean notNull;
 
+    /**
+     * Creates a domain read from RDB$FIELDS. The remaining domain attributes are set with setters.
+     */
     public FireBirdDataType(
-        @NotNull FireBirdDataSource genericDataSource,
+        @NotNull FireBirdDataSource dataSource,
         @NotNull FireBirdFieldType fieldType,
         int subType,
         @NotNull String name,
         @Nullable String remarks,
-        boolean unsigned,
-        boolean searchable,
         int precision,
-        int minScale,
-        int maxScale,
-        int fieldLength,
-        int charLength,
-        @Nullable String computedSource,
-        @Nullable String validationSource,
-        @Nullable String defaultSource,
-        @Nullable String charsetName,
-        boolean notNull,
-        boolean systemDomain
+        int scale
     ) {
-        super(genericDataSource, fieldType.getValueType(), name, remarks, unsigned, searchable, precision, minScale, maxScale);
+        super(dataSource, fieldType.getValueType(), name, remarks, false, true, precision, scale, scale);
 
         this.fieldType = fieldType;
         this.subType = subType;
         this.domain = true;
-        this.systemDomain = systemDomain;
-        this.fieldLength = fieldLength;
-        this.charLength = charLength;
-        this.computedSource = computedSource;
-        this.validationSource = validationSource;
-        this.defaultSource = defaultSource;
-        this.charsetName = charsetName;
-        this.notNull = notNull;
     }
 
     public FireBirdDataType(@NotNull FireBirdDataSource dataSource, @NotNull FireBirdFieldType fieldType) {
@@ -78,7 +62,6 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
         this.fieldType = fieldType;
         this.subType = 0;
         this.domain = false;
-        this.systemDomain = false;
     }
 
     @NotNull
@@ -152,5 +135,37 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
     @Override
     public boolean isSystem() {
         return systemDomain || (domain && getTypeName().startsWith(FireBirdConstants.SYSTEM_OBJECT_PREFIX));
+    }
+
+    public void setFieldLength(int fieldLength) {
+        this.fieldLength = fieldLength;
+    }
+
+    public void setCharLength(int charLength) {
+        this.charLength = charLength;
+    }
+
+    public void setComputedSource(@Nullable String computedSource) {
+        this.computedSource = computedSource;
+    }
+
+    public void setValidationSource(@Nullable String validationSource) {
+        this.validationSource = validationSource;
+    }
+
+    public void setDefaultSource(@Nullable String defaultSource) {
+        this.defaultSource = defaultSource;
+    }
+
+    public void setCharsetName(@Nullable String charsetName) {
+        this.charsetName = charsetName;
+    }
+
+    public void setNotNull(boolean notNull) {
+        this.notNull = notNull;
+    }
+
+    public void setSystemDomain(boolean systemDomain) {
+        this.systemDomain = systemDomain;
     }
 }

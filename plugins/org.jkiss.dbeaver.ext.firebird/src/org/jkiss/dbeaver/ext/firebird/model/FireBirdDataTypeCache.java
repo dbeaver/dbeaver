@@ -93,17 +93,16 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                                 log.error("Field type '" + fieldType + "' not found");
                                 continue;
                             }
-                            String charsetName = dataSource.getMetaFieldValue(FireBirdConstants.TYPE_CHARACTER_SET_NAME, charsetId);
-                            boolean notNull = JDBCUtils.safeGetInt(dbResult, "RDB$NULL_FLAG") == 1;
-                            boolean systemDomain = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG") != 0;
-
                             FireBirdDataType dataType = new FireBirdDataType(
-                                dataSource, fieldDT, fieldSubType, typeName.trim(), typeDescription, false, true, fieldPrecision, fieldScale, fieldScale,
-                                fieldLength, charLength,
-                                computedSource, validationSource, defaultSource,
-                                charsetName,
-                                notNull,
-                                systemDomain);
+                                dataSource, fieldDT, fieldSubType, typeName.trim(), typeDescription, fieldPrecision, fieldScale);
+                            dataType.setFieldLength(fieldLength);
+                            dataType.setCharLength(charLength);
+                            dataType.setComputedSource(computedSource);
+                            dataType.setValidationSource(validationSource);
+                            dataType.setDefaultSource(defaultSource);
+                            dataType.setCharsetName(dataSource.getMetaFieldValue(FireBirdConstants.TYPE_CHARACTER_SET_NAME, charsetId));
+                            dataType.setNotNull(JDBCUtils.safeGetInt(dbResult, "RDB$NULL_FLAG") == 1);
+                            dataType.setSystemDomain(JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG") != 0);
                             tmpObjectList.add(dataType);
                         }
                     }

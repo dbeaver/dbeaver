@@ -68,8 +68,11 @@ public class FireBirdDataSourceDomainsTest extends DBeaverUnitTest {
 
     @NotNull
     private FireBirdDataType domain(@NotNull String name, boolean system) {
-        return new FireBirdDataType(
-            dataSource, FireBirdFieldType.VARCHAR, 0, name, null, false, true, 0, 0, 0,
-            36, 36, null, null, null, "UTF8", false, system);
+        FireBirdDataType domain = new FireBirdDataType(dataSource, FireBirdFieldType.VARCHAR, 0, name, null, 0, 0);
+        domain.setFieldLength(36);
+        domain.setCharLength(36);
+        domain.setCharsetName("UTF8");
+        domain.setSystemDomain(system);
+        return domain;
     }
 }
