@@ -38,6 +38,7 @@ public interface AIBaseFeatures {
     String PROMPT_TYPE = "promptType";
 
     DBRFeature AI_CHAT_FUNCTION_CALL = new DBRFeature("AI_CHAT_FUNCTION_CALL");
+    DBRFeature MCP_SERVER = new DBRFeature("MCP_SERVER");
 
     @NotNull
     static Map<String, Object> buildFeatureParameters(

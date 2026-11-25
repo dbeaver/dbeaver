@@ -1,3 +1,5 @@
 <svg width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M3.70703 2L4.70703 3H8V7H1V2H3.70703ZM2 6H7V4H4.29297L3.29297 3H2V6Z" fill="#ED8000"/>
+<path d="M1.5 1.5H3.5L4.5 2.5H7.5V6.5H1.5V1.5Z" fill="white"/>
+<path opacity="0.15" d="M1.5 1.5H3.5L4.5 2.5H7.5V6.5H1.5V1.5Z" fill="#ED8000"/>
+<path d="M1.5 1.5H3.5L4.5 2.5H7.5V6.5H1.5V1.5Z" stroke="#ED8000"/>
 </svg>

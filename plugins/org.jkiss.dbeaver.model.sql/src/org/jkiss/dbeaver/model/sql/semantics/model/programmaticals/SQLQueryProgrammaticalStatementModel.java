@@ -39,6 +39,9 @@ public abstract class SQLQueryProgrammaticalStatementModel extends SQLQueryModel
         if (statement.getNodeKindId() == SQLStandardParser.RULE_sqlQueryBody) {
             statement = statement.findFirstNonErrorChild();
         }
+        if (statement != null && statement.getNodeKindId() == SQLStandardParser.RULE_explainableSqlQueryBody) {
+            statement = statement.findFirstNonErrorChild();
+        }
         if (statement != null && statement.getNodeKindId() == SQLStandardParser.RULE_sqlSchemaStatement) {
             statement = statement.findFirstNonErrorChild();
         }

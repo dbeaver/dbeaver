@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ public class DB2Messages extends NLS {
     public static String no_ddl_for_nicknames;
     public static String no_ddl_for_nonsql_routines;
     public static String no_ddl_for_spaces_in_name;
+    public static String ddl_authorization_statements_missing;
 
     public static String dialog_table_tools_runstats_cols_all;
     public static String dialog_table_tools_runstats_cols_all_and_distribution;

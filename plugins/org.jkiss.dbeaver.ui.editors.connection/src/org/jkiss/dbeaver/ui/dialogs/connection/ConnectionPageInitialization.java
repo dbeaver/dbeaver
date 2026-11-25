@@ -175,7 +175,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
             getWizard().getRunnableContext().run(true, true, monitor ->
                 loadDatabaseSettings(monitor, dataSource));
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Database info reading", "Error reading information from database", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_database_info_title,
+                UIConnectionMessages.dialog_connection_database_info_error, e.getTargetException());
         } catch (InterruptedException e) {
             //
         }

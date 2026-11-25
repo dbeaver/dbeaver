@@ -27,9 +27,9 @@ import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.model.task.DBTTaskRunRecord;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStorage;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.UUIDv7;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 /** Records one execution, independently of task notification callbacks. */
@@ -61,7 +61,7 @@ public final class QMTaskExecution implements AutoCloseable {
 
     @NotNull
     private static DBTTaskRunRecord createSnapshot(@NotNull DBTTask task, @Nullable DBTTaskRun run) {
-        String id = run == null ? UUID.randomUUID().toString() : run.getId();
+        String id = run == null ? UUIDv7.randomUUID().toString() : run.getId();
         return new DBTTaskRunRecord(
             id, task.getId(), task.getName(), task.getType().getId(), task.getType().getName(),
             task.getProject().getId(), task.getProject().getName(),

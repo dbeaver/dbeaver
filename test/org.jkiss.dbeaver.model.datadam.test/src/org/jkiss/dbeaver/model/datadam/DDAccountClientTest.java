@@ -21,7 +21,7 @@ import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +44,7 @@ class DDAccountClientTest {
     private static final UUID ACCOUNT_ID = UUID.fromString("8decb064-2709-4914-b6b6-68eaef98cac3");
     private static final String CRYPTO_RESPONSE = """
         {"data":{"gatewayCryptoState":{"accountId":"8decb064-2709-4914-b6b6-68eaef98cac3","cryptoConfigured":true,
+        "apiKeyId":"00000000-0000-0000-0000-000000000001",
         "encryptedBundle":"encrypted-bundle","generation":2,"salt":"salt","iterations":100000}}}
         """;
     private final AtomicReference<String> response = new AtomicReference<>(CRYPTO_RESPONSE);
@@ -54,8 +55,8 @@ class DDAccountClientTest {
     private final AtomicInteger requests = new AtomicInteger();
     private HttpServer server;
     private URI account;
-    private MockedStatic<DDDesktopAccessService> session;
-    private DDDesktopAccessService manager;
+    private MockedStatic<DBDamAccessService> session;
+    private DBDamAccessService manager;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -75,9 +76,9 @@ class DDAccountClientTest {
             }
         });
         server.start();
-        manager = Mockito.mock(DDDesktopAccessService.class);
-        session = Mockito.mockStatic(DDDesktopAccessService.class);
-        session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
+        manager = Mockito.mock(DBDamAccessService.class);
+        session = Mockito.mockStatic(DBDamAccessService.class);
+        session.when(DBDamAccessService::getInstance).thenReturn(manager);
         Mockito.when(manager.getAccessTokenForResource(account.resolve("/graphql"))).thenReturn("test-access-token");
     }
 
@@ -98,6 +99,7 @@ class DDAccountClientTest {
         Assertions.assertTrue(body.get("query").getAsString().contains("gatewayCryptoState"));
         Assertions.assertEquals(ACCOUNT_ID, state.accountId());
         Assertions.assertTrue(state.cryptoConfigured());
+        Assertions.assertEquals(UUID.fromString("00000000-0000-0000-0000-000000000001"), state.apiKeyId());
         Assertions.assertEquals("encrypted-bundle", state.encryptedBundle());
         Assertions.assertEquals(2L, state.generation());
         Assertions.assertEquals("salt", state.salt());
@@ -131,6 +133,19 @@ class DDAccountClientTest {
         Assertions.assertEquals("desktop", variables.get("clientDamId").getAsString());
         Assertions.assertEquals("mcp.enabled", variables.get("key").getAsString());
         Assertions.assertEquals("Bearer test-access-token", authorization.get());
+    }
+
+    @Test
+    void readsRenamePermissionFromAccount() throws Exception {
+        var client = client();
+        response.set("{\"data\":{\"myPermissions\":[\"ACCOUNT_READ\",\"REMOTE_DAM_MANAGE\"]}}");
+        Assertions.assertTrue(client.canRenameDam());
+
+        response.set("{\"data\":{\"myPermissions\":[\"ACCOUNT_READ\"]}}");
+        Assertions.assertFalse(client.canRenameDam());
+
+        response.set("{\"data\":{\"myPermissions\":null}}");
+        Assertions.assertThrows(DBException.class, client::canRenameDam);
     }
 
     @Test

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,11 +43,8 @@ public class ClickhouseTableColumn extends GenericTableColumn {
     @Override
     public void setFullTypeName(@NotNull String fullTypeName) throws DBException {
         this.fullTypeName = fullTypeName;
-        if (fullTypeName.toUpperCase().contains("ARRAY")) {
-            setTypeName(fullTypeName);
-        } else {
-            super.setFullTypeName(fullTypeName);
-        }
+        // ClickHouse type arguments describe nested types as well as numeric modifiers.
+        setTypeName(fullTypeName);
     }
 
     @NotNull

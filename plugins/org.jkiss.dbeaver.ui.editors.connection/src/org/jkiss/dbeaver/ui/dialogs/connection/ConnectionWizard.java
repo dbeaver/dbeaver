@@ -281,12 +281,12 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
         if (targetDataSource.isSharedCredentials()) {
             if (!targetDataSource.getProject().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN)) {
-                UIUtils.showMessageBox(getShell(), "Credentials edit restricted",
-                    "Shared credentials edit is available for administrators only.",
+                UIUtils.showMessageBox(getShell(), UIConnectionMessages.dialog_connection_credentials_restricted_title,
+                    UIConnectionMessages.dialog_connection_credentials_restricted_message,
                     SWT.ICON_ERROR);
             } else {
-                UIUtils.showMessageBox(getShell(), "Use credentials manager",
-                    "Direct connection test is not available for shared connections.\nGo to shared credentials manager dialog.",
+                UIUtils.showMessageBox(getShell(), UIConnectionMessages.dialog_connection_credentials_manager_title,
+                    UIConnectionMessages.dialog_connection_credentials_manager_message,
                     SWT.ICON_WARNING);
             }
             return;

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools.fdw;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionListener;
@@ -25,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -101,8 +103,8 @@ class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigW
                             Files.writeString(saveFile, scriptText);
                         } catch (IOException e1) {
                             DBWorkbench.getPlatformUI().showError(
-                                "Save scritp to file",
-                                "Error saving script to file " + saveFile.toAbsolutePath(),
+                                PostgreMessages.fdw_save_script_title,
+                                NLS.bind(PostgreMessages.fdw_save_script_error, saveFile.toAbsolutePath()),
                                 e1
                             );
                         }

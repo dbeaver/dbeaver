@@ -596,7 +596,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                         ));
                 } else {
                     DBWorkbench.getPlatformUI().showError(
-                        "Data error", "Error synchronizing data with database", error);
+                        ResultSetMessages.error_data_title, ResultSetMessages.error_synchronize_data_message, error);
                     viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
                 }
                 if (hasZeroRowChanges && error == null && !viewer.getControl().isDisposed()) {
@@ -613,7 +613,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
     }
 
     private void showError(@NotNull Throwable error) {
-        DBWorkbench.getPlatformUI().showError("Data error", "Error generating script", error);
+        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_data_title, ResultSetMessages.error_generate_script_message, error);
     }
 
     @Nullable

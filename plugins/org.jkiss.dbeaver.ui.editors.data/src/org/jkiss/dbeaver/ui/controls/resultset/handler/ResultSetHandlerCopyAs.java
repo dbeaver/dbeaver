@@ -23,6 +23,7 @@ import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -59,7 +60,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -78,8 +78,8 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
     public Object execute(ExecutionEvent event) throws ExecutionException {
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
-                UIMessages.dialog_policy_data_copy_title,
-                UIMessages.dialog_policy_data_copy_msg,
+                ResultSetMessages.dialog_policy_data_copy_title,
+                ResultSetMessages.dialog_policy_data_copy_msg,
                 SWT.ICON_WARNING
             );
             return null;
@@ -127,7 +127,8 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {
-            DBWorkbench.getPlatformUI().showError("Copy as " + processor.getName(), ModelMessages.error_not_connected_to_database);
+            DBWorkbench.getPlatformUI().showError(
+                NLS.bind(ResultSetMessages.error_copy_as_title, processor.getName()), ModelMessages.error_not_connected_to_database);
             return;
         }
 
@@ -207,7 +208,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     consumer.finishTransfer(monitor, true);
                     monitor.worked(1);
                 } catch (Exception e) {
-                    DBWorkbench.getPlatformUI().showError("Error opening in " + processor.getAppName(), null, e);
+                    DBWorkbench.getPlatformUI().showError(NLS.bind(ResultSetMessages.error_open_in_title, processor.getAppName()), null, e);
                 } finally {
                     monitor.done();
                 }

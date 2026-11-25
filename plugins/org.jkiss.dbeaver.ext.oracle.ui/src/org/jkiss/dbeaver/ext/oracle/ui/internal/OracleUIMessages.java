@@ -22,6 +22,15 @@ import org.eclipse.osgi.util.NLS;
 public final class OracleUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages"; //$NON-NLS-1$
 
+    public static String compile_unexpected_error;
+    public static String compile_failed;
+    public static String compile_success;
+    public static String compile_error;
+    public static String schedule_unexpected_error;
+    public static String schedule_failed;
+    public static String schedule_success;
+    public static String action_done;
+
 
     public static String config_import_wizard_page_sql_developer_label_installation_not_found;
     public static String dialog_connection_advanced_tab;
