@@ -119,7 +119,8 @@ public class IndexCache extends JDBCCompositeCache<GenericStructContainer, Gener
             cardinality,
             indexName,
             indexType,
-            true);
+            true,
+            dbResult);
     }
 
     @Nullable

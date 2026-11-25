@@ -989,6 +989,24 @@ public class GenericMetaModel {
             persisted);
     }
 
+    /**
+     * Creates an index read with {@link #prepareIndexesLoadStatement}. Extensions override this method
+     * to read additional index attributes from the result set; by default it is not used.
+     */
+    @NotNull
+    public GenericTableIndex createIndexImpl(
+        @NotNull GenericTableBase table,
+        boolean nonUnique,
+        String qualifier,
+        long cardinality,
+        String indexName,
+        DBSIndexType indexType,
+        boolean persisted,
+        @Nullable JDBCResultSet dbResult
+    ) {
+        return createIndexImpl(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
+    }
+
     @NotNull
     public GenericUniqueKey createConstraintImpl(
         @NotNull GenericTableBase table,
