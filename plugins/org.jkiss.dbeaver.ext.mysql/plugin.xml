@@ -158,8 +158,7 @@
             <driver-properties>
                 <propertyGroup label="Parameters" description="Custom driver parameters">
                     <property id="cache-meta-data" label="%parameters.all.caches" description="%parameters.all.caches.tip" type="boolean" required="false" defaultValue="true"/>
-                    <property id="connection-validator" type="string" hidden="true"
-                              defaultValue="org.jkiss.dbeaver.ext.mysql.model.MySQLConnectionValidator"/>
+                    <property id="connection-validator" type="string" hidden="true" defaultValue="mysql"/>
                 </propertyGroup>
             </driver-properties>
             <drivers managable="true">
@@ -426,6 +425,10 @@
         <factory adaptableType="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" class="org.jkiss.dbeaver.ext.mysql.sql.MySQLDialectAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
         </factory>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.connectionValidator">
+        <validator id="mysql" class="org.jkiss.dbeaver.ext.mysql.model.MySQLConnectionValidator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dashboard">

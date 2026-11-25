@@ -20,10 +20,9 @@ package org.jkiss.dbeaver.model.connection;
  * DBPDriverConstants
  */
 public class DBPDriverConstants {
-    // JDBCConnectionValidator implementation loaded from the data source provider's bundle.
-    public static final String PARAM_CONNECTION_VALIDATOR = "connection-validator";
     public static final String PARAM_SUPPORTS_TRANSACTIONS = "supports-transactions";
     public static final String PARAM_SUPPORTS_READ_ONLY_MODE = "supports-read-only-mode";
     public static final String PARAM_SUPPORTS_CATALOG_SELECTION = "supports-catalog-selection";
     public static final String PARAM_SUPPORTS_SCHEMA_SELECTION = "supports-schema-selection";
+    public static final String PARAM_CONNECTION_VALIDATOR = "connection-validator";
 }

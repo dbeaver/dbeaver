@@ -42,7 +42,6 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss.SSS"/>
-                    <parameter name="connection-validator" value="org.jkiss.dbeaver.ext.mysql.model.MySQLConnectionValidator"/>
                     <parameter name="omit-schema" value="true"/>
                     <parameter name="supports-schema-selection" value="false"/>
                     <parameter name="supports-partitions" value="false"/>
@@ -54,6 +53,7 @@
                     <parameter name="supports-multi-insert" value="true"/>
                     <parameter name="read-only-data" value="true"/>
                     <parameter name="read-only-meta-data" value="true"/>
+                    <parameter name="connection-validator" value="mysql"/>
                 </driver>
             </drivers>
         </datasource>

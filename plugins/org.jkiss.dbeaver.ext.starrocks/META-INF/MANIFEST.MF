@@ -6,8 +6,7 @@ Bundle-Version: 1.0.14.qualifier
 Bundle-Vendor: DBeaver Corp
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.jdbc,
- org.jkiss.dbeaver.ext.generic,
- org.jkiss.dbeaver.ext.mysql
+ org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.jkiss.dbeaver.ext.starrocks,

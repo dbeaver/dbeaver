@@ -6,8 +6,7 @@ Bundle-Version: 1.0.2.qualifier
 Bundle-Release-Date: 20261221
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.ext.generic,
- org.jkiss.dbeaver.ext.mysql
+ org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp

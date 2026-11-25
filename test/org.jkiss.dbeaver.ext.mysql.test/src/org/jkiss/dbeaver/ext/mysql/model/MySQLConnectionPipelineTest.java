@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -62,10 +63,6 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
     @BeforeEach
     public void setUp() throws Exception {
         Mockito.when(container.getDriver()).thenReturn(driver);
-        var provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider("mysql");
-        Mockito.when(driver.getProviderDescriptor()).thenReturn(provider);
-        Mockito.when(driver.getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR))
-            .thenReturn(provider.getDriver("mysql8").getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR));
         Mockito.when(container.getPreferenceStore()).thenReturn(Mockito.mock(DBPPreferenceStore.class));
         Mockito.when(container.getActualConnectionConfiguration()).thenReturn(configuration);
         var descriptor = driver.getDataSourceProvider().detectConnectionAuthModel(driver, configuration);
@@ -73,12 +70,40 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
         Mockito.doReturn(authModel).when(descriptor).getInstance();
         Mockito.when(driver.isInstantiable()).thenReturn(true);
         Mockito.when(driver.getDriverClassName()).thenReturn("com.example.CustomDriver");
+        Mockito.when(driver.getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR)).thenReturn(
+            DataSourceProviderRegistry.getInstance().getDataSourceProvider("mysql").getDriver("mysql8")
+                .getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR)
+        );
         Mockito.when(driver.getConnectionURL(configuration)).thenReturn("jdbc:mysql://localhost/test");
         Mockito.when(driver.getDriverLoader(container).getDriverInstance(monitor)).thenReturn(jdbcDriver);
         Mockito.when(driver.getDriverLoader(container).getClassLoader()).thenReturn(getClass().getClassLoader());
         Mockito.when(jdbcDriver.acceptsURL(Mockito.anyString())).thenReturn(true);
         Mockito.when(jdbcDriver.connect(Mockito.anyString(), Mockito.any(Properties.class))).thenReturn(connection);
         dataSource = new TestDataSource(monitor, container);
+    }
+
+    @Test
+    public void declaredValidatorAppliesToOtherJdbcDataSources() {
+        configuration.setProperty("allowLoadLocalInfile", "true");
+
+        Assertions.assertThrows(DBCException.class, () -> open(createOtherDataSource(), true, false));
+        Mockito.verifyNoInteractions(jdbcDriver);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"true,false,true", "false,true,true", "false,false,false"})
+    public void missingValidatorRejectsConnectionOnlyWhenPolicyIsEnabled(boolean sanitize, boolean multiuser, boolean rejected)
+            throws Exception {
+        Mockito.when(driver.getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR)).thenReturn("missing-validator");
+
+        if (rejected) {
+            DBCException error = Assertions.assertThrows(DBCException.class, () -> open(sanitize, multiuser));
+            Assertions.assertTrue(error.getMessage().contains("missing-validator"));
+            Mockito.verify(driver.getDriverLoader(container), Mockito.never()).getDriverInstance(monitor);
+            Mockito.verifyNoInteractions(jdbcDriver);
+        } else {
+            Assertions.assertSame(connection, open(sanitize, multiuser));
+        }
     }
 
     @ParameterizedTest
@@ -149,7 +174,7 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
             Assertions.assertEquals("false", defaults.get(name));
         }
         Mockito.when(driver.getConnectionProperties()).thenReturn(defaults);
-        // The driver parameter, rather than the URL prefix, determines whether the policy applies.
+        // The driver's validator declaration, rather than the URL prefix, determines whether the policy applies.
         Mockito.when(driver.getConnectionURL(configuration)).thenReturn("jdbc:custom:test");
         configuration.setProperty("password", "example%password+");
         Properties expected = new Properties();
