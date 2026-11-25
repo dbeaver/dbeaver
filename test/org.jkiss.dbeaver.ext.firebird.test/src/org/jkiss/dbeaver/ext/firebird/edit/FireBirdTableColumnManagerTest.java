@@ -171,7 +171,7 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
     private FireBirdDataType domainType(@NotNull String name) {
         return new FireBirdDataType(
             dataSource, FireBirdFieldType.CHAR, 0, name, null, false, true, 0, 0, 0,
-            16, 16, null, null, null, "OCTETS", false);
+            16, 16, null, null, null, "OCTETS", false, false);
     }
 
     @NotNull

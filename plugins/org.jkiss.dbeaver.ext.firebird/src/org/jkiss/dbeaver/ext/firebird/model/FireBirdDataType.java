@@ -27,6 +27,7 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
     private final FireBirdFieldType fieldType;
     private final int subType;
     private final boolean domain;
+    private final boolean systemDomain;
     private int fieldLength;
     private int charLength;
     private String computedSource;
@@ -38,13 +39,15 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
     public FireBirdDataType(FireBirdDataSource genericDataSource, FireBirdFieldType fieldType, int subType, String name, String remarks,
         boolean unsigned, boolean searchable, int precision, int minScale, int maxScale,
         int fieldLength, int charLength,
-        String computedSource, String validationSource, String defaultSource, String charsetName, boolean notNull)
+        String computedSource, String validationSource, String defaultSource, String charsetName, boolean notNull,
+        boolean systemDomain)
     {
         super(genericDataSource, fieldType.getValueType(), name, remarks, unsigned, searchable, precision, minScale, maxScale);
 
         this.fieldType = fieldType;
         this.subType = subType;
         this.domain = true;
+        this.systemDomain = systemDomain;
         this.fieldLength = fieldLength;
         this.charLength = charLength;
         this.computedSource = computedSource;
@@ -60,6 +63,7 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
         this.fieldType = fieldType;
         this.subType = 0;
         this.domain = false;
+        this.systemDomain = false;
     }
 
     @NotNull
@@ -126,8 +130,12 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
         return domain;
     }
 
+    /**
+     * System domains (RDB$SYSTEM_FLAG set, e.g. RDB$..., MON$..., SEC$...) and the implicit RDB$&lt;n&gt; domains
+     * Firebird creates for columns with a built-in type. User-defined domains may contain '$' as well (DOM$USD).
+     */
     @Override
     public boolean isSystem() {
-        return getTypeName().contains("$");    // [JDBC: Firebird]
+        return systemDomain || (domain && getTypeName().startsWith(FireBirdConstants.SYSTEM_OBJECT_PREFIX));
     }
 }

@@ -153,19 +153,23 @@ public class FireBirdDataSource extends GenericDataSource
         return super.refreshObject(monitor);
     }
 
-	@NotNull
+    @NotNull
     @Override
-	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
-		FireBirdPlanAnalyser plan = new FireBirdPlanAnalyser((JDBCSession) session, query);
+    public DBCPlan planQueryExecution(
+        @NotNull DBCSession session,
+        @NotNull String query,
+        @NotNull DBCQueryPlannerConfiguration configuration
+    ) throws DBException {
+        FireBirdPlanAnalyser plan = new FireBirdPlanAnalyser((JDBCSession) session, query);
         plan.explain();
         return plan;
-	}
+    }
 
-	@NotNull
+    @NotNull
     @Override
-	public DBCPlanStyle getPlanStyle() {
-		return DBCPlanStyle.PLAN;
-	}
+    public DBCPlanStyle getPlanStyle() {
+        return DBCPlanStyle.PLAN;
+    }
 
     @Override
     public List<FireBirdTable> getPhysicalTables(@NotNull DBRProgressMonitor monitor) throws DBException {

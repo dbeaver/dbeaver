@@ -37,12 +37,16 @@ public class FireBirdDataSourceDomainsTest extends DBeaverUnitTest {
         dataSource = Mockito.mock(FireBirdDataSource.class);
         monitor = Mockito.mock(DBRProgressMonitor.class);
         Mockito.doReturn(List.of(
-            domain("DOM_UUID"),
-            domain("RDB$100"),
-            domain("RDB$FIELD_NAME"),
+            domain("DOM_UUID", false),
+            // Implicit domain of a column: not flagged as system, but internal
+            domain("RDB$100", false),
+            domain("RDB$FIELD_NAME", true),
+            domain("MON$IDLE_TIMER", true),
+            // User domains may contain '$'
+            domain("DOM$USD", false),
             new FireBirdDataType(dataSource, FireBirdFieldType.INTEGER),
             new FireBirdDataType(dataSource, FireBirdFieldType.VARCHAR),
-            domain("DOM_AMOUNT")
+            domain("DOM_AMOUNT", false)
         )).when(dataSource).getDataTypes(monitor);
         Mockito.when(dataSource.getDomains(monitor)).thenCallRealMethod();
         Mockito.when(dataSource.getBuiltInDataTypes(monitor)).thenCallRealMethod();
@@ -51,7 +55,7 @@ public class FireBirdDataSourceDomainsTest extends DBeaverUnitTest {
     @Test
     public void domainsContainOnlyUserDefinedDomains() throws DBException {
         Assertions.assertEquals(
-            List.of("DOM_UUID", "DOM_AMOUNT"),
+            List.of("DOM_UUID", "DOM$USD", "DOM_AMOUNT"),
             dataSource.getDomains(monitor).stream().map(FireBirdDataType::getTypeName).toList());
     }
 
@@ -63,9 +67,9 @@ public class FireBirdDataSourceDomainsTest extends DBeaverUnitTest {
     }
 
     @NotNull
-    private FireBirdDataType domain(@NotNull String name) {
+    private FireBirdDataType domain(@NotNull String name, boolean system) {
         return new FireBirdDataType(
             dataSource, FireBirdFieldType.VARCHAR, 0, name, null, false, true, 0, 0, 0,
-            36, 36, null, null, null, "UTF8", false);
+            36, 36, null, null, null, "UTF8", false, system);
     }
 }
