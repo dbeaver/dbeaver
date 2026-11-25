@@ -26,6 +26,8 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
 
     private final SMSubjectType subjectType;
     private final String subjectId;
+    @Nullable
+    private final Long subjectCreateTime;
 
     protected WSSubjectPermissionEvent(
         @NotNull SMSubjectType subjectType,
@@ -33,9 +35,20 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
         @Nullable String sessionId,
         @Nullable String userId
     ) {
+        this(subjectType, subjectId, sessionId, userId, null);
+    }
+
+    private WSSubjectPermissionEvent(
+        @NotNull SMSubjectType subjectType,
+        @NotNull String subjectId,
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @Nullable Long subjectCreateTime
+    ) {
         super("cb_subject_permissions_updated", WSConstants.TOPIC_SUBJECT_PERMISSIONS, sessionId, userId);
         this.subjectType = subjectType;
         this.subjectId = subjectId;
+        this.subjectCreateTime = subjectCreateTime;
     }
 
     @NotNull
@@ -45,11 +58,23 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
         @NotNull SMSubjectType subjectType,
         @NotNull String subjectId
     ) {
+        return update(sessionId, userId, subjectType, subjectId, null);
+    }
+
+    @NotNull
+    public static WSSubjectPermissionEvent update(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull SMSubjectType subjectType,
+        @NotNull String subjectId,
+        @Nullable Long subjectCreateTime
+    ) {
         return new WSSubjectPermissionEvent(
             subjectType,
             subjectId,
             sessionId,
-            userId
+            userId,
+            subjectCreateTime
         );
     }
 
@@ -61,5 +86,13 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
     @NotNull
     public SMSubjectType getSubjectType() {
         return subjectType;
+    }
+
+    /**
+     * Creation time of the affected subject record in epoch milliseconds, if known.
+     */
+    @Nullable
+    public Long getSubjectCreateTime() {
+        return subjectCreateTime;
     }
 }

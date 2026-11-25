@@ -38,6 +38,8 @@ public class SMUser extends SMSubject {
     private String disableReason;
     @Nullable
     private Instant lastLoginTime;
+    @Nullable
+    private Instant createTime;
 
     public SMUser(
         @NotNull String userId,
@@ -150,5 +152,14 @@ public class SMUser extends SMSubject {
 
     public void setLastLoginTime(@Nullable Instant lastLoginTime) {
         this.lastLoginTime = lastLoginTime;
+    }
+
+    @Nullable
+    public Instant getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(@Nullable Instant createTime) {
+        this.createTime = createTime;
     }
 }
