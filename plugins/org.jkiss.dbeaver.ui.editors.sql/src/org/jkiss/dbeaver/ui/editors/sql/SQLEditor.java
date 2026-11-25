@@ -2574,7 +2574,7 @@ public class SQLEditor extends SQLEditorBase implements
     // Initialization
 
     @Override
-    public void init(IEditorSite site, IEditorInput editorInput)
+    public void init(@NotNull IEditorSite site, @NotNull IEditorInput editorInput)
     throws PartInitException {
         if (!confirmLargeScriptOpen(site.getShell(), editorInput)) {
             throw new PartInitException(Status.CANCEL_STATUS);
@@ -2670,7 +2670,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    protected void doSetInput(IEditorInput editorInput) throws CoreException {
+    protected void doSetInput(@NotNull IEditorInput editorInput) throws CoreException {
         if (preflightedInput == editorInput) {
             preflightedInput = null;
         } else if (!confirmLargeScriptOpen(getSite().getShell(), editorInput)) {

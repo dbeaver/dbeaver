@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.jkiss.code.NotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -55,7 +57,7 @@ public final class SQLScriptMemoryEstimate {
         return contentBytes > Long.MAX_VALUE - lineBytes ? Long.MAX_VALUE : contentBytes + lineBytes;
     }
 
-    public static long estimatePeakBytes(File file, long fileBytes) {
+    public static long estimatePeakBytes(@NotNull File file, long fileBytes) {
         if (fileBytes < MIN_SAMPLE_FILE_BYTES || fileBytes > Integer.MAX_VALUE) {
             return estimatePeakBytes(fileBytes);
         }
@@ -78,7 +80,7 @@ public final class SQLScriptMemoryEstimate {
         return estimatePeakBytes(fileBytes, lines);
     }
 
-    static int countLineBreaks(byte[] bytes) {
+    static int countLineBreaks(@NotNull byte[] bytes) {
         int count = 0;
         for (int i = 0; i < bytes.length; i++) {
             if (bytes[i] == '\n' || bytes[i] == '\r' && (i + 1 == bytes.length || bytes[i + 1] != '\n')) {
