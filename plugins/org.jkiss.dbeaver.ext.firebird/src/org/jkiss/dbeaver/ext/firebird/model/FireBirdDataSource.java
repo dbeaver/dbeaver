@@ -144,6 +144,15 @@ public class FireBirdDataSource extends GenericDataSource
         super.initialize(monitor);
     }
 
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        // Domains live in the data type cache, which the generic refresh keeps. Clear it so that
+        // initialize() reloads RDB$FIELDS and created or dropped domains become visible.
+        getDataTypeCache().clearCache();
+        return super.refreshObject(monitor);
+    }
+
 	@NotNull
     @Override
 	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
