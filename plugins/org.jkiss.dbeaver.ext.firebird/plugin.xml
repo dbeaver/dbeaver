@@ -28,6 +28,13 @@
                 label="Firebird"
                 icon="icons/firebird_icon.png"
                 dialect="firebird">
+            <!-- Show only built-in types in "Data Types" and list user-defined domains in a separate folder -->
+            <treeInjection path="generic/catalog/schema/dataType" changeProperty="builtInDataTypes"/>
+            <treeInjection path="generic/catalog/schema" after="dataType">
+                <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdDataType" label="%tree.domains.node.name" icon="#data_types" description="%tree.domains.node.tip">
+                    <items label="%tree.domain.node.name" path="domain" property="domains" icon="#data_type"/>
+                </folder>
+            </treeInjection>
             <drivers managable="true">
 
                 <driver
