@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,20 +39,20 @@ import java.util.Map;
 
 public class OpenLinkInWindowHandler extends AbstractHandler implements IElementUpdater {
 
-    private static final String TITLE = "Search selection in web";
+    private static final String TITLE = SQLEditorMessages.sql_search_selection_title;
     private static final String SEARCH_WEB_ADDRESS_PREFIX = "https://www.google.com/search?q=";
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor == null) {
-            DBWorkbench.getPlatformUI().showError(TITLE, "No suitable editor was found for SQL");
+            DBWorkbench.getPlatformUI().showError(TITLE, SQLEditorMessages.sql_search_selection_no_editor);
             return null;
         }
 
         ISelection selection = editor.getSelectionProvider().getSelection();
         if (!(selection instanceof TextSelection textSelection) || isSelectedTextNullOrEmpty(selection)) {
-            DBWorkbench.getPlatformUI().showError(TITLE, "No text was selected");
+            DBWorkbench.getPlatformUI().showError(TITLE, SQLEditorMessages.sql_search_selection_no_text);
             return null;
         }
 
@@ -61,7 +61,7 @@ public class OpenLinkInWindowHandler extends AbstractHandler implements IElement
         if (AWTUtils.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             ShellUtils.launchProgram(SEARCH_WEB_ADDRESS_PREFIX + googleLink);
         } else {
-            DBWorkbench.getPlatformUI().showError(TITLE, "Desktop is not supported.");
+            DBWorkbench.getPlatformUI().showError(TITLE, SQLEditorMessages.sql_search_selection_desktop_unsupported);
         }
         return null;
     }

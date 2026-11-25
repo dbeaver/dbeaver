@@ -25,13 +25,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -275,6 +269,11 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
         if (connection != null && !(getContainer() instanceof IWizardContainer)) {
             connection.persistConfiguration();
         }
+    }
+
+    @Nullable
+    public AIContextSettingsDataSource getAISettings() {
+        return settings;
     }
 
     @Nullable

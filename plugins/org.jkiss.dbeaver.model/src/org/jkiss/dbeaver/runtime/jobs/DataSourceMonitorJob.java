@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -373,7 +375,7 @@ public class DataSourceMonitorJob extends AbstractJob {
         DBeaverNotifications.showNotification(
             dataSource,
             DBeaverNotifications.NT_DISCONNECT_IDLE,
-            "Connection '" + dataSource.getContainer().getName() + "' has been closed after long idle period",
+            NLS.bind(ModelMessages.notification_disconnect_idle, dataSource.getContainer().getName()),
             DBPMessageType.ERROR
         );
     }

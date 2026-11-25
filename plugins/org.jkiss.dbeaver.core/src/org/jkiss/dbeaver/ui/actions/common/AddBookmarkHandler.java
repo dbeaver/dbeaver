@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
             if (node instanceof DBNDataSource) {
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.actions_navigator_bookmark_error_title,
-                    "Connection itself cannot be bookmarked. Choose some element under a connection element.");
+                    CoreMessages.actions_navigator_bookmark_connection_message);
                 return null;
             }
             if (node instanceof DBNDatabaseNode dbNode) {

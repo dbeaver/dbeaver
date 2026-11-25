@@ -99,7 +99,7 @@ public final class SampleDatabaseUtil {
             dataSource.setName("DBeaver Sample Database (SQLite)");
             registry.addDataSource(dataSource);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Connection create error", null, e);
+            DBWorkbench.getPlatformUI().showError(SampleDatabaseMessages.connection_create_error_title, null, e);
         }
     }
 }

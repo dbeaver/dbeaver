@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
-import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionCatalog;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.*;
@@ -32,19 +31,24 @@ public class DDMcpAiFunctionCatalog {
     public static final String PROJECT_ID_PARAMETER = "project_id";
     public static final String DATASOURCE_ID_PARAMETER = "datasource_id";
 
-    private final DDMcpConnectionCatalog connections;
+    private static final List<DDMcpFunctionParameter> CONNECTION_PARAMETERS = List.of(
+        new DDMcpFunctionParameter(PROJECT_ID_PARAMETER, DDMcpFunctionParameter.Type.STRING,
+            "Project ID from listDatasources", true, null, null),
+        new DDMcpFunctionParameter(DATASOURCE_ID_PARAMETER, DDMcpFunctionParameter.Type.STRING,
+            "Datasource ID from the same listDatasources entry as project_id", true, null, null)
+    );
     private final Map<String, AIFunctionDescriptor> functions = new LinkedHashMap<>();
 
-    public DDMcpAiFunctionCatalog(@NotNull DDMcpConnectionCatalog connections) {
-        this.connections = connections;
+    public DDMcpAiFunctionCatalog() {
         AIToolbox toolbox = AIAssistantRegistry.getInstance()
             .getAssistant(DBWorkbench.getPlatform().getWorkspace())
             .getToolboxManager()
             .getToolbox(AIConstants.INTERNAL_TOOLBOX_ID);
         if (toolbox != null) {
-            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions(AIFunctionPurpose.MCP)) {
-                if (functions.putIfAbsent(function.getFullId(), function) != null) {
-                    throw new IllegalStateException("Duplicate DBeaver MCP function: " + function.getFullId());
+            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions(AIFunctionPurpose.DAM)) {
+                String id = getFunctionId(function);
+                if (functions.putIfAbsent(id, function) != null) {
+                    throw new IllegalStateException("Duplicate DBeaver MCP function: " + id);
                 }
             }
         }
@@ -52,13 +56,8 @@ public class DDMcpAiFunctionCatalog {
 
     @NotNull
     public List<DDMcpFunctionDescriptor> getFunctions() throws DDMcpFunctionException {
-        List<DDMcpConnectionCatalog.AvailableConnection> available = connections.getAllowedConnections();
-        List<DDMcpFunctionParameter> connectionParameters = List.of(
-            describeProjectParameter(available),
-            describeDatasourceParameter(available)
-        );
         return functions.values().stream()
-            .map(function -> describe(function, connectionParameters))
+            .map(function -> describe(function, function.getPurpose() == AIFunctionPurpose.DAM ? List.of() : CONNECTION_PARAMETERS))
             .toList();
     }
 
@@ -75,32 +74,15 @@ public class DDMcpAiFunctionCatalog {
         List<DDMcpFunctionParameter> parameters = new ArrayList<>(connectionParameters);
         Arrays.stream(function.getParameters()).map(this::describeParameter).forEach(parameters::add);
         return new DDMcpFunctionDescriptor(
-            function.getFullId(), function.getName(), function.getAiDescription(), parameters,
+            getFunctionId(function), function.getName(), function.getAiDescription(), parameters,
             function.isReadOnlyHint(), function.isDestructiveHint(), function.isIdempotentHint()
         );
     }
 
     @NotNull
-    private DDMcpFunctionParameter describeProjectParameter(
-        @NotNull List<DDMcpConnectionCatalog.AvailableConnection> available
-    ) {
-        List<String> projectIds = available.stream().map(connection -> connection.project().getId()).distinct().toList();
-        return new DDMcpFunctionParameter(
-            PROJECT_ID_PARAMETER, DDMcpFunctionParameter.Type.STRING,
-            "Project ID from listDatasources", true, null, projectIds.isEmpty() ? null : projectIds
-        );
-    }
-
-    @NotNull
-    private DDMcpFunctionParameter describeDatasourceParameter(
-        @NotNull List<DDMcpConnectionCatalog.AvailableConnection> available
-    ) {
-        List<String> datasourceIds = available.stream().map(connection -> connection.connection().getId()).distinct().toList();
-        return new DDMcpFunctionParameter(
-            DATASOURCE_ID_PARAMETER, DDMcpFunctionParameter.Type.STRING,
-            "Datasource ID from the same listDatasources entry as project_id", true, null,
-            datasourceIds.isEmpty() ? null : datasourceIds
-        );
+    private String getFunctionId(@NotNull AIFunctionDescriptor function) {
+        // Keep the existing DataDam discovery IDs on the wire.
+        return function.getPurpose() == AIFunctionPurpose.DAM ? function.getId() : function.getFullId();
     }
 
     @NotNull
