@@ -521,8 +521,10 @@ class DBDamChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         String reason = "Your plan allows up to 5 registered Dams.";
+        AtomicReference<String> observedReason = new AtomicReference<>();
         try (var channel = channel(clients, resource -> "token")) {
             channel.addSessionListener(events);
+            channel.observeState(status -> observedReason.set(channel.getMonitor().getRegistrationRejection()));
             channel.start();
             Peer peer = clients.next();
             peer.open();
@@ -531,7 +533,10 @@ class DBDamChannelTest extends DBeaverUnitTest {
             peer.listener.onClose(peer.socket, DDRemoteDamProtocol.REGISTRATION_LIMIT_EXCEEDED, reason);
 
             Assertions.assertEquals(DDRemoteDamChannelState.DISCONNECTED, channel.getStatus().state());
-            Assertions.assertEquals(reason, channel.getMonitor().getRegistrationRejection());
+            Assertions.assertEquals(reason, observedReason.get());
+            AtomicReference<String> lateReason = new AtomicReference<>();
+            channel.observeState(status -> lateReason.set(channel.getMonitor().getRegistrationRejection())).close();
+            Assertions.assertEquals(reason, lateReason.get());
             Assertions.assertEquals(reason, channel.getMonitor().snapshot().error());
             Assertions.assertTrue(channel.getMonitor().getEvents().stream()
                 .anyMatch(event -> event.isError() && reason.equals(event.details())));
@@ -539,7 +544,7 @@ class DBDamChannelTest extends DBeaverUnitTest {
             clients.expectNoAttempt();
 
             channel.start();
-            Assertions.assertNull(channel.getMonitor().getRegistrationRejection());
+            Assertions.assertNull(observedReason.get());
             ready(clients, events, "after-limit");
         }
     }

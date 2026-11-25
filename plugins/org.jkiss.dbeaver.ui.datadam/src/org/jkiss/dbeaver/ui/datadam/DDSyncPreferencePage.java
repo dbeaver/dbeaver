@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.datadam;
 import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
 import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDam;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
@@ -33,6 +34,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
@@ -43,6 +45,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
@@ -89,11 +92,15 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private AbstractJob mcpJob;
     @Nullable
     private DDAccountClient.DamSettingsState mcpSettings;
+    @Nullable
+    private DDRemoteDamSubscription damConnectionObservation;
 
     private Composite content;
     private Button mcpCheck;
     private Text userText;
     private Button accountActionButton;
+    private Composite damRegistrationWarning;
+    private Label damRegistrationWarningText;
     private Text damIdText;
     private Text damNameText;
     private Composite damNameRow;
@@ -193,6 +200,14 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         UIUtils.fixReadonlyTextBackground(userText);
         GridData statusLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
         userText.setLayoutData(statusLayout);
+        damRegistrationWarning = UIUtils.createPlaceholder(authenticationGroup, 2);
+        GridData warningLayout = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        warningLayout.exclude = true;
+        damRegistrationWarning.setLayoutData(warningLayout);
+        damRegistrationWarning.setVisible(false);
+        new Label(damRegistrationWarning, SWT.NONE).setImage(DBeaverIcons.getImage(DBIcon.STATUS_WARNING));
+        damRegistrationWarningText = new Label(damRegistrationWarning, SWT.WRAP);
+        damRegistrationWarningText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         createDamNameRow(authenticationGroup);
         Composite accountActions = UIUtils.createComposite(authenticationGroup, 2);
         accountActions.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
@@ -244,15 +259,14 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     @Override
     public void dispose() {
         accessService.removeAccessListener(accessListener);
+        stopObservingDamConnection();
         if (userViewJob != null) {
             userViewJob.cancel();
         }
         if (mcpJob != null) {
             mcpJob.cancel();
         }
-        if (damNameJob != null) {
-            damNameJob.cancel();
-        }
+        cancelDamNameJob();
         super.dispose();
     }
 
@@ -306,12 +320,14 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         damNameRow.setVisible(enabled && signedIn);
         ((GridData) damNameRow.getLayoutData()).exclude = !enabled || !signedIn;
         if (enabled && signedIn) {
-            loadDamName();
+            if (!observeDamRegistration()) {
+                loadDamName();
+            }
             loadMcpStatus();
         } else {
-            if (damNameJob != null) {
-                damNameJob.cancel();
-            }
+            stopObservingDamConnection();
+            showDamRegistrationWarning(null);
+            cancelDamNameJob();
             showDam(null);
             if (mcpJob != null) {
                 mcpJob.cancel();
@@ -323,6 +339,60 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             loadLoggedUserView();
         } else if (userViewJob != null) {
             userViewJob.cancel();
+        }
+    }
+
+    private boolean observeDamRegistration() {
+        try {
+            var session = DBDamSessionService.getInstance();
+            if (damConnectionObservation == null) {
+                damConnectionObservation = session.getChannel().observeState(status -> UIUtils.asyncExec(() -> {
+                    if (damRegistrationWarning.isDisposed() || !DDProductConfig.isIntegrationEnabled()
+                        || accessService.getStatus() != DBDamAccessService.Status.SIGNED_IN) {
+                        return;
+                    }
+                    boolean wasRejected = damRegistrationWarning.getVisible();
+                    boolean rejected = showDamRegistrationWarning(session.getMonitor().getRegistrationRejection());
+                    if (wasRejected && !rejected) {
+                        loadDamName();
+                    }
+                }));
+            }
+            return showDamRegistrationWarning(session.getMonitor().getRegistrationRejection());
+        } catch (DBException e) {
+            log.debug("Cannot observe DataDam connection", e);
+            return showDamRegistrationWarning(null);
+        }
+    }
+
+    private void stopObservingDamConnection() {
+        if (damConnectionObservation != null) {
+            damConnectionObservation.close();
+            damConnectionObservation = null;
+        }
+    }
+
+    private boolean showDamRegistrationWarning(@Nullable String reason) {
+        boolean rejected = reason != null;
+        String message = reason == null ? "" : reason;
+        if (damRegistrationWarning.getVisible() != rejected || !damRegistrationWarningText.getText().equals(message)) {
+            damRegistrationWarningText.setText(message);
+            damRegistrationWarning.setVisible(rejected);
+            ((GridData) damRegistrationWarning.getLayoutData()).exclude = !rejected;
+            damNameText.setMessage(rejected ? "" : DDTrackingUIMessages.sync_preference_page_dam_name_not_set);
+            if (rejected) {
+                cancelDamNameJob();
+                showDam(null, "");
+            }
+            content.layout(true, true);
+        }
+        return rejected;
+    }
+
+    private void cancelDamNameJob() {
+        if (damNameJob != null) {
+            damNameJob.cancel();
+            damNameJob = null;
         }
     }
 
@@ -338,9 +408,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void loadDamName() {
-        if (damNameJob != null) {
-            damNameJob.cancel();
-        }
+        cancelDamNameJob();
         damNameText.setEnabled(false);
         damIdText.setText("");
         setDamNameText(DDTrackingUIMessages.sync_preference_page_dam_name_connecting);
@@ -367,14 +435,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                             showDam(result);
                         }
                     });
-                } catch (InterruptedException e) {
+                } catch (InterruptedException | DBDamService.DamRegistrationRejectedException e) {
                     return Status.CANCEL_STATUS;
-                } catch (DBDamService.DamRegistrationRejectedException e) {
-                    UIUtils.asyncExec(() -> {
-                        if (isDamNameJobActive(this, monitor)) {
-                            showDam(null, e.getMessage());
-                        }
-                    });
                 } catch (DBException e) {
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
