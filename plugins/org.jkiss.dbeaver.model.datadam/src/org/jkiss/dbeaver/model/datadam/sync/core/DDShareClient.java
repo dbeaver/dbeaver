@@ -368,7 +368,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     private DDKeyBundle requireCredentialBundle() throws DBException {
         DDKeyBundle bundle = accessService.getKeyBundle();
         if (bundle == null || bundle.apiKeyId() == null) {
-            throw new DBException("Import the current DataDam recovery phrase before sharing projects");
+            throw new DBException("Import the current DataDam encryption key before sharing projects");
         }
         return bundle;
     }
@@ -377,7 +377,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     private SecretKey getDataKey() throws DBException {
         DDKeyBundle bundle = accessService.getKeyBundle();
         if (bundle == null) {
-            throw new DBException("Import encryption keys for the current DataDam account before transferring files");
+            throw new DBException("Import the encryption key for the current DataDam account before transferring files");
         }
         return new DDBundleCredentials(bundle).getDataKey();
     }
