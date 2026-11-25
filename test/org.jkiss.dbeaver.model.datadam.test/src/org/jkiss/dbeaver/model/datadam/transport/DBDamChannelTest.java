@@ -128,6 +128,7 @@ class DBDamChannelTest extends DBeaverUnitTest {
 
             Assertions.assertEquals(DDRemoteDamChannelState.DISCONNECTED, take(states).state());
             Assertions.assertEquals(DDRemoteDamChannelState.CONNECTING, take(states).state());
+            Assertions.assertNull(channel.getMonitor().getRegistrationRejection());
             ready(clients, events, "second");
             DDRemoteDamChannelStatus ready = take(states);
             Assertions.assertEquals(DDRemoteDamChannelState.CONNECTED, ready.state());
@@ -512,6 +513,34 @@ class DBDamChannelTest extends DBeaverUnitTest {
             clients.expectNoAttempt();
             channel.start();
             ready(clients, events, "resumed");
+        }
+    }
+
+    @Test
+    void reportsDamLimitWithoutRetryingAndAllowsAnExplicitRestart() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        String reason = "Your plan allows up to 5 registered Dams.";
+        try (var channel = channel(clients, resource -> "token")) {
+            channel.addSessionListener(events);
+            channel.start();
+            Peer peer = clients.next();
+            peer.open();
+            peer.nextSent();
+
+            peer.listener.onClose(peer.socket, DDRemoteDamProtocol.REGISTRATION_LIMIT_EXCEEDED, reason);
+
+            Assertions.assertEquals(DDRemoteDamChannelState.DISCONNECTED, channel.getStatus().state());
+            Assertions.assertEquals(reason, channel.getMonitor().getRegistrationRejection());
+            Assertions.assertEquals(reason, channel.getMonitor().snapshot().error());
+            Assertions.assertTrue(channel.getMonitor().getEvents().stream()
+                .anyMatch(event -> event.isError() && reason.equals(event.details())));
+            Assertions.assertTrue(events.connected.isEmpty());
+            clients.expectNoAttempt();
+
+            channel.start();
+            Assertions.assertNull(channel.getMonitor().getRegistrationRejection());
+            ready(clients, events, "after-limit");
         }
     }
 

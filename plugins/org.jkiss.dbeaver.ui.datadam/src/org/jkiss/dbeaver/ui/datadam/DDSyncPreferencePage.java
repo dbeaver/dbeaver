@@ -369,6 +369,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                     });
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
+                } catch (DBDamService.DamRegistrationRejectedException e) {
+                    UIUtils.asyncExec(() -> {
+                        if (isDamNameJobActive(this, monitor)) {
+                            showDam(null, e.getMessage());
+                        }
+                    });
                 } catch (DBException e) {
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
@@ -391,10 +397,13 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void showDam(@Nullable DDConnectedRemoteDam result) {
+        showDam(result, DDTrackingUIMessages.sync_preference_page_dam_name_unavailable);
+    }
+
+    private void showDam(@Nullable DDConnectedRemoteDam result, @NotNull String unavailableMessage) {
         dam = result;
         damIdText.setText(result == null ? "" : result.damId());
-        setDamNameText(result == null ? DDTrackingUIMessages.sync_preference_page_dam_name_unavailable
-            : result.damName() == null ? "" : result.damName());
+        setDamNameText(result == null ? unavailableMessage : result.damName() == null ? "" : result.damName());
         damNameText.setEnabled(result != null && canRenameDam);
     }
 
