@@ -30,4 +30,7 @@ import java.lang.annotation.Target;
 public @interface AuthProperty {
     // Property value can be provided by context
     String authContextType() default "";
+
+    // expression evaluated against the object when selecting credentials
+    String unavailableIf() default "";
 }
