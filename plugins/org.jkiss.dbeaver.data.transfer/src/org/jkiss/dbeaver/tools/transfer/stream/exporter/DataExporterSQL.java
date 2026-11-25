@@ -22,9 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,13 +29,10 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
-import org.jkiss.dbeaver.model.sql.SQLQueryType;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
@@ -207,7 +201,7 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
         if (queryContainer != null) {
             int resultIndex = queryContainer.getQueryResultIndex();
             if (resultIndex > 0 || isMultiStatementQuery(dataSource, queryContainer)) {
-                return getResultTableName(session, resultIndex == 0 ? queryContainer : null);
+                return DTUtils.getResultTableName(session, columns, resultIndex == 0 ? queryContainer : null, omitSchema);
             }
         }
         if (source instanceof SQLQueryContainer directQueryContainer) {
@@ -221,52 +215,6 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
         return queryContainer.getQuery() instanceof SQLQuery query
             && !query.representsOneStatement()
             && SQLScriptParser.parseScript(dataSource, query.getOriginalText()).size() > 1;
-    }
-
-    @Nullable
-    private String getResultTableName(@NotNull DBCSession session, @Nullable SQLQueryContainer firstResultQuery) {
-        DBCEntityMetaData resultTable = null;
-        for (DBDAttributeBinding column : columns) {
-            DBCAttributeMetaData attribute = column.getMetaAttribute();
-            DBCEntityMetaData table = attribute == null ? null : attribute.getEntityMetaData();
-            if (table == null || CommonUtils.isEmpty(table.getEntityName())) {
-                continue;
-            }
-            if (resultTable != null && !resultTable.equals(table)) {
-                return null;
-            }
-            resultTable = table;
-        }
-        if (resultTable == null) {
-            // an earlier update count can precede the first result set
-            if (firstResultQuery != null
-                && firstResultQuery.getQuery() instanceof SQLQuery query
-                && query.getType() == SQLQueryType.SELECT
-            ) {
-                return DTUtils.getTableNameFromQuery(session.getDataSource(), firstResultQuery, omitSchema);
-            }
-            return null;
-        }
-        DBPDataSource dataSource = session.getDataSource();
-        if (omitSchema) {
-            return DBUtils.getQuotedIdentifier(dataSource, resultTable.getEntityName());
-        }
-        try {
-            DBSEntity entity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), resultTable);
-            if (entity != null) {
-                return DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML);
-            }
-        } catch (DBException e) {
-            log.debug("Could not resolve the result table for SQL export", e);
-        }
-        String catalog = CommonUtils.nullIfEmpty(resultTable.getCatalogName());
-        String schema = CommonUtils.nullIfEmpty(resultTable.getSchemaName());
-        DBCExecutionContextDefaults<?, ?> defaults = session.getExecutionContext().getContextDefaults();
-        DBSCatalog defaultCatalog = defaults == null ? null : defaults.getDefaultCatalog();
-        if (schema != null && defaultCatalog != null && defaultCatalog.getName().equals(catalog)) {
-            catalog = null;
-        }
-        return DBUtils.getFullyQualifiedName(dataSource, catalog, schema, resultTable.getEntityName());
     }
 
     private String transformTableNameCase(DBPDataSource dataSource, String tableIdentifier) {
