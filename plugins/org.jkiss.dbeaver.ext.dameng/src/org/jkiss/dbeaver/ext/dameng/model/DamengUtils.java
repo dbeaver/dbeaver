@@ -108,7 +108,9 @@ public class DamengUtils {
             }
             StringBuilder ddl = new StringBuilder(tableDDL.length());
             DBStructUtils.addDDLLine(ddl, tableDDL);
-            appendTableComments(session, table, schema, options, ddl);
+            if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
+                appendTableComments(session, table, schema, options, ddl);
+            }
             if (!CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_INDEXES)) {
                 appendTableIndexes(session, table.getName(), schema, options, ddl);
             }
