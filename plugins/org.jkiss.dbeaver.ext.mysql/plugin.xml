@@ -174,7 +174,7 @@
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
                         databaseDocumentationSuffixURL="Database-driver-MySQL"
-                        description="Legacy MySQL Connector/J 5.1 JDBC driver for MySQL 5.x relational databases."
+                        description="%driver.mysql5.description"
                         categories="sql">
 
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]" bundle="!drivers.mysql"/>
@@ -205,7 +205,7 @@
                         webURL="https://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                         databaseDocumentationSuffixURL="Database-driver-MySQL"
-                        description="MySQL Connector/J JDBC driver for MySQL 8 and later relational databases."
+                        description="%driver.mysql8.description"
                         promoted="1"
                         categories="sql">
                     <replace provider="mysql" driver="mysql3"/>
@@ -237,7 +237,7 @@
                     webURL="https://dev.mysql.com/doc/ndbapi/en/mccj-using-connectorj.html"
                     propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                     databaseDocumentationSuffixURL="Database-driver-MySQL"
-                    description="MySQL Connector/J JDBC driver for MySQL NDB Cluster, with load-balanced SQL access."
+                    description="%driver.mysql_ndb.description"
                     categories="sql">
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>
@@ -263,7 +263,7 @@
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     propertiesURL="https://mariadb.com/kb/en/library/about-mariadb-connector-j/#optional-url-parameters"
                     databaseDocumentationSuffixURL="Database-driver-MariaDB"
-                    description="MariaDB Connector/J JDBC driver for MariaDB relational databases."
+                    description="%driver.mariaDB.description"
                     promoted="1"
                     categories="sql">
                     <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.5.11]" bundle="!drivers.mariadb"/>
