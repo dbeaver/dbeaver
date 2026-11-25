@@ -70,7 +70,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String USE_PROJECT_PASSWORD = "useProjectPassword"; //$NON-NLS-1$
     private static final String CONFIGURATION_FOLDERS = "folders"; //$NON-NLS-1$
-    private static final String ENCRYPTED_CONFIGURATION = "secureProject"; //$NON-NLS-1$
 
     protected static final Gson CONFIG_GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
@@ -378,7 +377,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         // process projectConfiguration
         if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()
             && DBWorkbench.getPlatform().getApplication().isCommunity()
-            && CommonUtils.toBoolean(registry.getProject().getProjectProperty(ENCRYPTED_CONFIGURATION))
+            && CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT))
         ) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
                 RegistryMessages.project_open_cannot_read_configuration_title,

@@ -41,7 +41,7 @@ class LocalNetworkProfileUsageProviderTest {
     void skipsUnreadableEncryptedProjectOnlyForCreation() throws Exception {
         DBPProject readable = project("readable", "Readable", "{\"network-profiles\":{\"shared\":{}}}");
         DBPProject encrypted = project("encrypted", "Encrypted", "\"encrypted configuration\"");
-        Mockito.when(encrypted.getProjectProperty("secureProject")).thenReturn(true);
+        Mockito.when(encrypted.getProjectProperty(DBPProject.PROP_SECURE_PROJECT)).thenReturn(true);
         LocalNetworkProfileUsageProvider provider = provider(readable, encrypted);
 
         Assertions.assertTrue(provider(encrypted).findLocalProfileConflicts("shared").isEmpty());
@@ -54,7 +54,7 @@ class LocalNetworkProfileUsageProviderTest {
     void checksEncryptedProjectsWhenDecryptionIsAvailable() throws Exception {
         DBPProject encrypted = project("encrypted", "Encrypted", "encrypted configuration");
         DBSValueEncryptor encryptor = Mockito.mock(DBSValueEncryptor.class);
-        Mockito.when(encrypted.getProjectProperty("secureProject")).thenReturn(true);
+        Mockito.when(encrypted.getProjectProperty(DBPProject.PROP_SECURE_PROJECT)).thenReturn(true);
         Mockito.when(encrypted.isEncryptedProject()).thenReturn(true);
         Mockito.when(encrypted.getValueEncryptor()).thenReturn(encryptor);
         Mockito.when(encryptor.decryptValue(ArgumentMatchers.any())).thenReturn(

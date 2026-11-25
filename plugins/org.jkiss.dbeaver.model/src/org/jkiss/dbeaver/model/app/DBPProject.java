@@ -38,6 +38,7 @@ import java.util.UUID;
  */
 public interface DBPProject extends DBFFileSystemContainer, SMAuthSpace, DBAPermissionRealm {
     String METADATA_FOLDER = ".dbeaver";
+    String PROP_SECURE_PROJECT = "secureProject";
 
     @NotNull
     DBPWorkspace getWorkspace();
