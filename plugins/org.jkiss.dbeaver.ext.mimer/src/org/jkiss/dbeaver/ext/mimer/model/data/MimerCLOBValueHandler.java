@@ -183,14 +183,25 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
                 // MimerSpilledCharsStorage's javadoc.
                 String preview = MimerLobUtil.extractPreview(chunks, MimerContentCLOB.PREVIEW_LENGTH);
                 // Keep tallying the character count ourselves rather than via
-                // ContentUtils.copyStreams, which doesn't report one back.
-                long[] totalHolder = {total};
+                // ContentUtils.copyStreams, which doesn't report one back. Starts at 0, not
+                // `total` - the prefix-flush loop below can now stop early on cancellation, so
+                // the real on-disk count has to be built up from what's actually written, not
+                // assumed to always equal the full in-memory count.
+                long[] totalHolder = {0};
                 Path tempFile = MimerLobUtil.spoolToTempFile(
                     monitor, platform, "mimer_clob" + TEMP_FILE_SEQUENCE.incrementAndGet(),
                     tempFilePath -> {
                         try (Writer os = Files.newBufferedWriter(tempFilePath, Charset.forName(encoding))) {
+                            // Checked per chunk, same as the read loop right below - without
+                            // this, canceling mid-flush is ignored until the whole buffered
+                            // prefix (up to MEMORY_CONTENT_MAX_SIZE, configurable to 1 GiB) has
+                            // been written to disk.
                             for (char[] chunk : chunks) {
+                                if (monitor.isCanceled()) {
+                                    break;
+                                }
                                 os.write(chunk);
+                                totalHolder[0] += chunk.length;
                             }
                             char[] spillBuffer = new char[8192];
                             int spillCount;

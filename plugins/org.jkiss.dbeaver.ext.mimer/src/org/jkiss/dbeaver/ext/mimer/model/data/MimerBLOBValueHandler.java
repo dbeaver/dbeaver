@@ -156,7 +156,14 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
                     monitor, platform, "mimer_blob" + TEMP_FILE_SEQUENCE.incrementAndGet(),
                     tempFilePath -> {
                         try (OutputStream os = Files.newOutputStream(tempFilePath)) {
+                            // Checked per chunk, same as the copyStreams call right below -
+                            // without this, canceling mid-flush is ignored until the whole
+                            // buffered prefix (up to MEMORY_CONTENT_MAX_SIZE, configurable to
+                            // 1 GiB) has been written to disk.
                             for (byte[] chunk : chunks) {
+                                if (monitor.isCanceled()) {
+                                    break;
+                                }
                                 os.write(chunk);
                             }
                             ContentUtils.copyStreams(stream, -1, os, monitor);

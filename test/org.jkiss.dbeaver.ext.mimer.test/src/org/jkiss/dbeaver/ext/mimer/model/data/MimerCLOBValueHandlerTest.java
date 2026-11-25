@@ -347,6 +347,48 @@ public class MimerCLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void cancelingMidFlushReportsTheRealOnDiskCountNotTheFullInMemoryTotal() throws Exception {
+        // Regression test for a bug the cancellation fix itself introduced: the prefix-flush
+        // loop can now stop early (monitor.isCanceled()), but totalHolder[0] used to be
+        // pre-seeded with the full in-memory `total` rather than built up from what's actually
+        // written - so canceling mid-flush left the storage reporting more characters than the
+        // temp file actually holds. Rather than pin down exactly which chunk a cancellation
+        // lands on (an implementation detail of buffer/chunk sizing), this verifies the
+        // invariant that matters: getContentLength() must always match what's actually
+        // readable back out of the storage.
+        Mockito.when(type.getTypeID()).thenReturn(Types.CLOB);
+        int memoryLimit = DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
+        String value = "x".repeat(memoryLimit + 1000);
+        Mockito.when(resultSet.getCharacterStream(1)).thenReturn(new StringReader(value));
+        // False long enough to clear the in-memory read loop and the spill-vs-chunked decision,
+        // then canceled from that point on - landing mid-flush, before every buffered chunk
+        // reaches the temp file.
+        Mockito.when(progressMonitor.isCanceled()).thenReturn(false, false, false, false, true);
+
+        JDBCContentCLOB result = (JDBCContentCLOB) MimerCLOBValueHandler.INSTANCE.fetchValueObject(session, resultSet, type, 0);
+        try {
+            DBDContentStorage storage = result.getContents(progressMonitor);
+            Assertions.assertInstanceOf(MimerSpilledCharsStorage.class, storage,
+                "This value is well over the memory limit, so it must have spilled to disk");
+
+            long actualCharsOnDisk;
+            try (Reader reader = storage.getContentReader()) {
+                long count = 0;
+                while (reader.read() >= 0) {
+                    count++;
+                }
+                actualCharsOnDisk = count;
+            }
+            Assertions.assertTrue(actualCharsOnDisk < value.length(),
+                "The cancellation must have actually cut the flush short, or this test proves nothing");
+            Assertions.assertEquals(actualCharsOnDisk, storage.getContentLength(),
+                "getContentLength() must match what actually reached the temp file, not the full in-memory total");
+        } finally {
+            result.release();
+        }
+    }
+
+    @Test
     public void displayStringShowsTruncatedPreviewPlusSizeWhenThePreviewIsShorterThanTheRealValue() {
         // The preview comes straight from a MimerChunkedCharsStorage's own first chunk now - not a
         // separately-tracked field - precisely so it can never go stale (see that class's own
