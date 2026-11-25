@@ -40,7 +40,8 @@ ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-header-border {
 }
 
 ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-header-background {
-    color: #394248;
+    /* Matches Eclipse's DARK_BACKGROUND used by dialogs and toolbars. */
+    color: #48484c;
 }
 
 ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-header-foreground {

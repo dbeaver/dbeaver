@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -47,7 +49,7 @@ public class DataSourceRollbackHandler extends AbstractDataSourceHandler {
     }
 
     public static void execute(@NotNull Shell shell, DBCExecutionContext context) {
-        TasksJob.runTask("Rollback transaction", monitor -> {
+        TasksJob.runTask(CoreMessages.task_transaction_rollback_title, monitor -> {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
             if (txnManager != null) {
                 QMTransactionState txnInfo = QMUtils.getTransactionState(context);
@@ -62,10 +64,8 @@ public class DataSourceRollbackHandler extends AbstractDataSourceHandler {
                     DBeaverNotifications.showNotification(
                         context.getDataSource(),
                         DBeaverNotifications.NT_ROLLBACK,
-                        "Transaction has been rolled back\n\n" +
-                            "Query count: " + txnInfo.getUpdateCount() + "\n" +
-                            "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime())
-                            + "\n",
+                        NLS.bind(CoreMessages.notification_transaction_rolled_back, txnInfo.getUpdateCount(),
+                            RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime())),
                         DBPMessageType.ERROR,
                         () -> TransactionLogDialog.showDialog(shell, context, true)
                     );

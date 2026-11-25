@@ -178,7 +178,8 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             }
             if (childrenClass == null) {
                 DBWorkbench.getPlatformUI().showMessageBox(
-                    "Bad node", "Cannot use node '" + originalNode.getNodeUri() + "' for filters", true);
+                    UINavigatorMessages.error_filter_node_title,
+                    NLS.bind(UINavigatorMessages.error_filter_node_message, originalNode.getNodeUri()), true);
                 return;
             }
             DBPDataSourceContainer dataSourceContainer = originalNode.getDataSourceContainer();

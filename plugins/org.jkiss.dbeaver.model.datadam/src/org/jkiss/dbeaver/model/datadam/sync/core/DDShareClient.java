@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.datadam.DDClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.utils.GsonUtils;
 import org.jkiss.utils.Pair;
 
@@ -122,7 +122,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
             }
         }""".formatted(REVISION_FIELDS.indent(8));
 
-    public DDShareClient(@NotNull String url, @NotNull DDDesktopAccessService accessService) {
+    public DDShareClient(@NotNull String url, @NotNull DBDamAccessService accessService) {
         super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of(), HttpClient.Redirect.NEVER, accessService);
         this.gson = GsonUtils.gsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeIsoAdapter())

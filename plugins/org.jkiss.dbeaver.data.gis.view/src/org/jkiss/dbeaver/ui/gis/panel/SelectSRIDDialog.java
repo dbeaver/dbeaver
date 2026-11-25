@@ -110,7 +110,7 @@ public class SelectSRIDDialog extends BaseDialog {
                 crsNameText.setText(CommonUtils.notEmpty(crs.getName()) +  " (" + crs.getCoordinateSystem() + ")");
                 detailsButton.setEnabled(true);
             } catch (Throwable e) {
-                DBWorkbench.getPlatformUI().showError("Bad CRS", "Error reading CRS info", e);
+                DBWorkbench.getPlatformUI().showError(GISMessages.gis_crs_invalid_title, GISMessages.gis_crs_read_error, e);
             }
         } else {
             selectedSRID = 0;

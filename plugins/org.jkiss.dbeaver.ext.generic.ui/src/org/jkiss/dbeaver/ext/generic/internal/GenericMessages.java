@@ -22,6 +22,10 @@ import org.eclipse.osgi.util.NLS;
 public class GenericMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.generic.internal.GenericResources"; //$NON-NLS-1$
 
+    public static String create_database_error;
+    public static String create_database_confirm_title;
+    public static String create_database_confirm_message;
+
     public static String dialog_connection_advanced_tab;
     public static String dialog_connection_advanced_tab_tooltip;
     public static String dialog_connection_browse_button;

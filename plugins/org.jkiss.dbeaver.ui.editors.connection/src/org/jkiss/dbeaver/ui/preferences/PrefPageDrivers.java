@@ -219,7 +219,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         try {
             GlobalProxyAuthenticator.saveCredentials(proxyUserText.getText(), proxyPasswordText.getText());
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Unable to save proxy credentials", e.getMessage(), e);
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.pref_page_drivers_proxy_save_error, e.getMessage(), e);
             return false;
         }
 

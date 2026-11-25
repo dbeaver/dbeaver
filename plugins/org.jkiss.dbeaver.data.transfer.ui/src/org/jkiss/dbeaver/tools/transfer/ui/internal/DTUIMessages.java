@@ -21,6 +21,30 @@ import org.eclipse.osgi.util.NLS;
 public class DTUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages"; //$NON-NLS-1$
 
+    public static String sql_script_resource_open_error_title;
+    public static String sql_script_resource_open_error_message;
+    public static String data_transfer_handler_unrecognized_objects_message;
+    public static String data_import_container_error_title;
+    public static String data_import_container_error_message;
+    public static String data_transfer_configuration_load_error_title;
+    public static String data_transfer_configuration_load_error_message;
+    public static String data_transfer_configuration_multiple_errors_message;
+    public static String data_transfer_settings_load_error_title;
+    public static String data_transfer_settings_load_error_message;
+    public static String database_sql_panel_create_error_title;
+    public static String database_sql_panel_create_error_message;
+    public static String stream_producer_file_not_found_message;
+    public static String stream_producer_file_resolve_error_message;
+    public static String stream_producer_settings_update_error_title;
+    public static String stream_producer_settings_update_error_message;
+    public static String data_transfer_stream_settings_unsupported_message;
+    public static String columns_mapping_error_title;
+    public static String columns_mapping_error_message;
+    public static String columns_mapping_value_error_title;
+    public static String columns_mapping_target_column_error_message;
+    public static String columns_mapping_target_error_message;
+    public static String database_container_init_error_title;
+
     public static String data_transfer_wizard_name;
     public static String data_transfer_wizard_format_group;
     public static String data_transfer_wizard_migration_group;

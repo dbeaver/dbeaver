@@ -38,7 +38,7 @@ public class SQLQueryRowsTableProcModel extends SQLQueryRowsSourceModel {
     private final SQLQueryValueFunctionExpression callExpr;
 
     public SQLQueryRowsTableProcModel(@NotNull SQLQueryValueFunctionExpression callExpr) {
-        super(callExpr.getSyntaxNode());
+        super(callExpr.getSyntaxNode(), callExpr);
         this.callExpr = callExpr;
     }
 
@@ -62,6 +62,12 @@ public class SQLQueryRowsTableProcModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         if (!this.callExpr.tryResolveValueRelations(context, statistics)) {
+            return this.getRowsSources().makeEmptyTuple();
+        }
+
+        // ARRAY(query) is a value, not a table function. Keep its query model for editor navigation,
+        // but do not interpret its array elements as rows in the surrounding FROM clause.
+        if (this.callExpr.isArraySubqueryConstructor()) {
             return this.getRowsSources().makeEmptyTuple();
         }
 

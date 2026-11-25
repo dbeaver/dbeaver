@@ -500,7 +500,8 @@ class FilterSettingsDialog extends AbstractPopupPanel {
             }
         }
         if (!hasVisibleColumns) {
-            UIUtils.showMessageBox(getShell(), "Bad filter", "You have to set at least one column visible", SWT.ICON_WARNING);
+            UIUtils.showMessageBox(getShell(), ResultSetMessages.error_bad_filter_title,
+                ResultSetMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ICON_WARNING);
             return;
         }
         if (!CommonUtils.isEmpty(orderText.getText())) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,8 @@ public class ERDUIUtils {
                 propsView.setFocus();
             }
         } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Object open", "Can't open property view", e);
+            DBWorkbench.getPlatformUI().showError(ERDUIMessages.erd_object_open_title,
+                ERDUIMessages.erd_property_view_open_error, e);
         }
     }
 
@@ -90,7 +91,8 @@ public class ERDUIUtils {
                 propsView.setFocus();
             }
         } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Object open", "Can't open outline view", e);
+            DBWorkbench.getPlatformUI().showError(ERDUIMessages.erd_object_open_title,
+                ERDUIMessages.erd_outline_view_open_error, e);
         }
     }
 

@@ -35,6 +35,7 @@ import org.mockito.Mockito;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 class AIAssistantParallelCallsTest {
     @Test
@@ -120,10 +121,8 @@ class AIAssistantParallelCallsTest {
         AIConfigurationProfile profile = Mockito.mock(AIConfigurationProfile.class);
         Mockito.when(profile.getEngineDescriptor()).thenReturn(descriptor);
         Mockito.doReturn(engine).when(descriptor).createEngineInstance(profile);
-        AIChatConversation conversation = Mockito.mock(AIChatConversation.class);
-        Mockito.when(conversation.getProfile()).thenReturn(profile);
-        Mockito.when(conversation.isActive()).thenReturn(true);
-        Mockito.when(conversation.getPromptGenerator()).thenReturn(Mockito.mock(AIPromptGenerator.class));
+        AIChatConversation conversation = new AIChatConversation(
+            UUID.randomUUID(), "Inspect database", Mockito.mock(AIPromptGenerator.class), List.of(), null, 0, profile);
         AIChatSession session = Mockito.mock(AIChatSession.class);
         Mockito.when(session.getAssistant()).thenReturn(assistant);
         AIChatResponseConsumer listener = Mockito.mock(AIChatResponseConsumer.class);
@@ -133,11 +132,10 @@ class AIAssistantParallelCallsTest {
             assistant.generateTextStream(Mockito.mock(DBRProgressMonitor.class), session, conversation,
                 new AIChatRequest(null, List.of(AIMessage.userMessage("Inspect database")), null), listener);
         }
-        ArgumentCaptor<AIMessage> confirmation = ArgumentCaptor.forClass(AIMessage.class);
-        Mockito.verify(conversation).addMessage(confirmation.capture());
-        Assertions.assertInstanceOf(AIFunctionCallConfirmation.class, confirmation.getValue().getConfirmation());
+        AIMessage confirmation = conversation.getMessages().getLast().message();
+        Assertions.assertInstanceOf(AIFunctionCallConfirmation.class, confirmation.getConfirmation());
         Assertions.assertEquals(List.of(first, second),
-            ((AIFunctionCallConfirmation) confirmation.getValue().getConfirmation()).getFunctionCalls());
+            ((AIFunctionCallConfirmation) confirmation.getConfirmation()).getFunctionCalls());
         Mockito.verify(listener).complete(Mockito.anyList(), Mockito.eq(false), Mockito.eq(false));
         Mockito.verify(listener, Mockito.never()).error(Mockito.any());
     }

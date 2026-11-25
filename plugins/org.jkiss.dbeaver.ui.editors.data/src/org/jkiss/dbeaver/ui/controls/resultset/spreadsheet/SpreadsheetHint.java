@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridController;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridHint;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.DBDValueHintActionHandler;
 import org.jkiss.utils.CommonUtils;
 
@@ -90,7 +91,7 @@ public class SpreadsheetHint implements IGridHint {
                 throw new DBCException("Hint doesn't support action");
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Hint error", "Error execution hint action", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_hint_title, ResultSetMessages.error_hint_message, e);
         }
     }
 

@@ -311,7 +311,7 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
         try {
             registry.saveConfiguration();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Unable to save Maven repositories", e.getMessage(), e);
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.pref_page_drivers_maven_save_error, e.getMessage(), e);
             return false;
         }
 

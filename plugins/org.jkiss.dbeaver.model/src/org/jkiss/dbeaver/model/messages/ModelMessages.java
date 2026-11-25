@@ -21,6 +21,19 @@ import org.eclipse.osgi.util.NLS;
 public class ModelMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.messages.ModelResources"; //$NON-NLS-1$
 
+    public static String process_execute_error_title;
+    public static String fs_copy_resources_title;
+    public static String fs_move_resources_title;
+    public static String fs_copy_resources_message;
+    public static String fs_move_resources_message;
+    public static String forced_disconnect_title;
+    public static String forced_disconnect_message;
+    public static String forced_disconnect_unknown_error;
+    public static String notification_disconnect_idle;
+    public static String notification_rollback_idle;
+    public static String notification_invalidate_success;
+    public static String notification_invalidate_failure;
+
     public static String error_not_connected_to_database;
     public static String dialog_web_download_text_known;
     public static String dialog_web_download_text_unknown;
@@ -147,6 +160,7 @@ public class ModelMessages extends NLS {
     public static String dialog_user_password_change_question_label;
     public static String dialog_user_password_change_question_message;
     public static String dialog_user_password_change_error_message;
+    public static String dialog_user_password_change_save_error_message;
 
     public static String dbutils_type_name_unknown;
 
