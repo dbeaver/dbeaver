@@ -22,6 +22,13 @@ public class FireBirdConstants  {
     public static final String TYPE_FIELD_SUB_TYPE = "RDB$FIELD_SUB_TYPE";
     public static final String TYPE_CHARACTER_SET_NAME = "RDB$CHARACTER_SET_NAME";
 
+    /** RDB$USER_TYPE / RDB$OBJECT_TYPE of a role in RDB$USER_PRIVILEGES */
+    public static final int OBJECT_TYPE_ROLE = 13;
+    /** RDB$FIELD_NAME of a role membership granted as default role (GRANT DEFAULT, Firebird 4+) */
+    public static final String DEFAULT_ROLE_FLAG = "D";
+    /** Grantee that stands for all users */
+    public static final String GRANTEE_PUBLIC = "PUBLIC";
+
     public static final String CHARSET_OCTETS = "OCTETS";
     public static final String CHARSET_BINARY = "BINARY";
 }
