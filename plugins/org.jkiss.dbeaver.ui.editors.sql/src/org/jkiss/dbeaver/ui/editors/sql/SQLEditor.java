@@ -220,7 +220,7 @@ public class SQLEditor extends SQLEditorBase implements
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<>();
     private QueryResultsContainer curResultsContainer;
-    private Image baseEditorImage;
+    private DBPImage baseEditorIcon;
     private Image editorImage;
     private Image tmpImage;
     private ToolBarManager topBarMan;
@@ -2704,11 +2704,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         setPartName(getEditorName());
-        if (isNonPersistentEditor() && isDetectTitleImageFromInput()) {
-            setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
+        if (isDetectTitleImageFromInput()) {
+            baseEditorIcon = isNonPersistentEditor() ? UIIcon.SQL_CONSOLE : DBIcon.TREE_SCRIPT;
+            setTitleImage(DBeaverIcons.getImage(baseEditorIcon));
+        } else {
+            baseEditorIcon = new DBIconBinary(null, getTitleImage());
         }
-        baseEditorImage = getTitleImage();
-        editorImage = baseEditorImage;
+        editorImage = getTitleImage();
     }
 
     private void accomplishEditorInputInitialization(@NotNull IEditorInput editorInput) {
@@ -3757,15 +3759,15 @@ public class SQLEditor extends SQLEditorBase implements
             bottomLeft = DBIcon.OVER_RED_LAMP;
         }
 
-        if (baseEditorImage == null) {
-            baseEditorImage = getTitleImage();
+        if (baseEditorIcon == null) {
+            baseEditorIcon = new DBIconBinary(null, getTitleImage());
         }
         if (bottomLeft != null || bottomRight != null) {
-            DBPImage image = new DBIconComposite(new DBIconBinary(null, baseEditorImage), false, null, null, bottomLeft, bottomRight);
+            DBPImage image = new DBIconComposite(baseEditorIcon, false, null, null, bottomLeft, bottomRight);
             editorImage = DBeaverIcons.getImage(image, false);
             tmpImage = editorImage;
         } else {
-            editorImage = baseEditorImage;
+            editorImage = DBeaverIcons.getImage(baseEditorIcon);
         }
         setTitleImage(editorImage);
     }
@@ -3819,7 +3821,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         UIUtils.dispose(tmpImage);
         tmpImage = null;
-        baseEditorImage = null;
+        baseEditorIcon = null;
         editorImage = null;
     }
 
