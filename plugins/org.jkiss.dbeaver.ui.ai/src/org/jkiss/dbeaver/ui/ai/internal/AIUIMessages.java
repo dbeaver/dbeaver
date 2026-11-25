@@ -23,6 +23,7 @@ public class AIUIMessages extends NLS {
 
     public static String ai_mcp_connections_info;
     public static String ai_mcp_connections_connection;
+    public static String ai_mcp_connections_filter;
     public static String ai_mcp_connections_driver;
     public static String ai_mcp_connections_save_error_message;
     public static String ai_mcp_connections_ungrouped;
