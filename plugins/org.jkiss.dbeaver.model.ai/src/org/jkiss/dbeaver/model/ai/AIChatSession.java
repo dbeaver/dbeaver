@@ -33,11 +33,14 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.qm.QMUnavailableException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -45,6 +48,7 @@ import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
 import java.util.zip.CRC32;
 
 /**
@@ -60,12 +64,11 @@ public class AIChatSession {
     private final List<AIChatListener> listeners = new ArrayList<>();
     private final DBPWorkspace workspace;
     private final AIChatContextProvider contextProvider;
-    private final AIChatStorage storage;
-    private final SessionIdProvider sessionIdProvider;
-    private final UserTokenQuotaService quotaService;
+    private final BooleanSupplier canUseInMemoryChatStorage;
     private final Object initializationLock = new Object();
     private final Object conversationsLock = new Object();
     private volatile Map<UUID, AIChatConversation> conversations = new LinkedHashMap<>();
+    private volatile ChatBackend backend;
     private boolean busy;
     private AIAssistant assistant;
     private volatile boolean initialized = false;
@@ -78,14 +81,22 @@ public class AIChatSession {
         @NotNull SessionIdProvider sessionIdProvider,
         @NotNull UserTokenQuotaService quotaService
     ) {
+        this(workspace, contextProvider, storage, sessionIdProvider, quotaService, () -> false);
+    }
+
+    public AIChatSession(
+        @NotNull DBPWorkspace workspace,
+        @NotNull AIChatContextProvider contextProvider,
+        @NotNull AIChatStorage storage,
+        @NotNull SessionIdProvider sessionIdProvider,
+        @NotNull UserTokenQuotaService quotaService,
+        @NotNull BooleanSupplier canUseInMemoryChatStorage
+    ) {
         this.workspace = workspace;
         this.contextProvider = contextProvider;
-        this.storage = storage;
-        this.sessionIdProvider = sessionIdProvider;
-        this.quotaService = quotaService;
-
-        this.addListener(quotaService);
-        this.addListener(new ChatSessionListener(storage));
+        this.backend = new ChatBackend(storage, sessionIdProvider, quotaService, false);
+        this.canUseInMemoryChatStorage = canUseInMemoryChatStorage;
+        this.addListener(new ChatSessionListener());
     }
 
     public boolean isClosed() {
@@ -115,10 +126,13 @@ public class AIChatSession {
             log.warn("Error creating database context for conversation save", e);
         }
 
-        saveConversation(sessionIdProvider.getSessionId(monitor), conversation, contextSettings, databaseContext);
+        ChatBackend currentBackend = backend;
+        String sessionId = currentBackend.sessionIdProvider().getSessionId(monitor);
+        saveConversation(currentBackend.storage(), sessionId, conversation, contextSettings, databaseContext);
     }
 
     private void saveConversation(
+        @NotNull AIChatStorage storage,
         @NotNull String sessionId,
         @NotNull AIChatConversation conversation,
         @Nullable AIContextSettings settings,
@@ -135,7 +149,11 @@ public class AIChatSession {
 
     @NotNull
     public AIChatStorage getStorage() {
-        return storage;
+        return backend.storage();
+    }
+
+    public boolean isUsingInMemoryFallback() {
+        return backend.inMemoryFallback();
     }
 
     @Nullable
@@ -187,9 +205,7 @@ public class AIChatSession {
                 return;
             }
             Map<UUID, AIChatConversation> loadedConversations = new LinkedHashMap<>();
-            List<QMAIConversationHistory> conversationsHistory = storage.findConversationSummaries(
-                sessionIdProvider.getSessionId(monitor)
-            );
+            List<QMAIConversationHistory> conversationsHistory = loadConversationSummaries(monitor);
             for (QMAIConversationHistory history : conversationsHistory) {
                 DBPDataSourceContainer dataSourceContainer = getContainer(history.getDataSource());
                 AIChatConversation conversation = QMAIChatHistoryMapper.toAIChatConversation(
@@ -215,6 +231,25 @@ public class AIChatSession {
         }
     }
 
+    @NotNull
+    private List<QMAIConversationHistory> loadConversationSummaries(@NotNull DBRProgressMonitor monitor) throws DBException {
+        ChatBackend currentBackend = backend;
+        try {
+            return currentBackend.storage().findConversationSummaries(currentBackend.sessionIdProvider().getSessionId(monitor));
+        } catch (DBException e) {
+            if (monitor.isCanceled() || CommonUtils.getCauseOfType(e, QMUnavailableException.class) == null
+                || !canUseInMemoryChatStorage.getAsBoolean()) {
+                throw e;
+            }
+            AIChatStorage fallbackStorage = new QMAIChatStorageInMemory();
+            String fallbackSessionId = UUID.randomUUID().toString();
+            backend = new ChatBackend(
+                fallbackStorage, ignored -> fallbackSessionId, new UserTokenQuotaService(Clock.systemUTC(), fallbackStorage), true
+            );
+            return List.of();
+        }
+    }
+
     public void loadConversationImages(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIChatConversation conversation
@@ -225,8 +260,9 @@ public class AIChatSession {
                 return;
             }
             try {
-                conversation.restoreImages(storage.findConversationImages(
-                    sessionIdProvider.getSessionId(monitor), conversation.getId()));
+                ChatBackend currentBackend = backend;
+                conversation.restoreImages(currentBackend.storage().findConversationImages(
+                    currentBackend.sessionIdProvider().getSessionId(monitor), conversation.getId()));
             } catch (IllegalArgumentException exception) {
                 throw new DBException("Cannot load image attachments for conversation '" + conversation.getCaption() + "'.", exception);
             }
@@ -261,7 +297,7 @@ public class AIChatSession {
 
         synchronized (conversation.getPersistenceLock()) {
             if (!conversation.isTemporary()) {
-                storage.deleteConversation(conversation.getId().toString());
+                getStorage().deleteConversation(conversation.getId().toString());
             }
             conversation.markRemoved();
         }
@@ -464,14 +500,15 @@ public class AIChatSession {
         } catch (DBException exception) {
             return finishConversationWithError(conversation, chatListener, exception);
         }
-        String sessionId = sessionIdProvider.getSessionId(monitor);
+        ChatBackend currentBackend = backend;
+        String sessionId = currentBackend.sessionIdProvider().getSessionId(monitor);
         AIConfigurationProfile configurationProfile = conversation.getProfile();
         if (configurationProfile == null) {
             configurationProfile = AISettingsManager.getStaticSettings().getDefaultConfiguration();
         }
         configurationProfile.getEngineDescriptor();
         String engineId = configurationProfile.getEngineId();
-        QuotaStatus quotaStatus = quotaService.getUserQuotaStatus(
+        QuotaStatus quotaStatus = currentBackend.quotaService().getUserQuotaStatus(
             sessionId,
             engineId
         );
@@ -493,7 +530,7 @@ public class AIChatSession {
             return finishConversationWithError(conversation, chatListener, e);
         }
         if (isContextChanged(conversation.getId(), context) && !conversation.isTemporary()) {
-            saveConversation(sessionId, conversation, settings, context);
+            saveConversation(currentBackend.storage(), sessionId, conversation, settings, context);
         }
 
         List<AIMessage> messages = new ArrayList<>(conversation.getMessages().stream()
@@ -665,6 +702,14 @@ public class AIChatSession {
         String getSessionId(@NotNull DBRProgressMonitor monitor) throws DBException;
     }
 
+    private record ChatBackend(
+        @NotNull AIChatStorage storage,
+        @NotNull SessionIdProvider sessionIdProvider,
+        @NotNull UserTokenQuotaService quotaService,
+        boolean inMemoryFallback
+    ) {
+    }
+
     private static boolean isStatsLoggingEnabled() {
         return AISettingsManager.getInstance()
             .getSettings()
@@ -672,7 +717,7 @@ public class AIChatSession {
     }
 
     private void logConversationStats(@NotNull UUID conversationId) throws DBException {
-        List<QMAIMessageMeta> conversationHistoryMeta = storage
+        List<QMAIMessageMeta> conversationHistoryMeta = getStorage()
             .getConversationHistoryMeta(conversationId);
         if (conversationHistoryMeta.isEmpty()) {
             return;
@@ -735,15 +780,9 @@ public class AIChatSession {
     }
 
     private class ChatSessionListener implements AIChatListener {
-        @NotNull
-        private final AIChatStorage storage;
-
-        public ChatSessionListener(@NotNull AIChatStorage storage) {
-            this.storage = storage;
-        }
-
         @Override
         public void messageAdded(@NotNull AIChatConversation conversation, @NotNull AIChatMessage message) {
+            backend.quotaService().messageAdded(conversation, message);
             RuntimeUtils.runTask(
                 monitor -> {
                     try {
@@ -765,7 +804,7 @@ public class AIChatSession {
             }
 
             try {
-                storage.deleteMessage(conversation.getId().toString(), message.id());
+                getStorage().deleteMessage(conversation.getId().toString(), message.id());
             } catch (DBException e) {
                 log.error("Error appending message to chat storage", e);
             }
@@ -778,7 +817,7 @@ public class AIChatSession {
             }
 
             try {
-                storage.renameConversation(conversation.getId().toString(), newName);
+                getStorage().renameConversation(conversation.getId().toString(), newName);
             } catch (DBException e) {
                 log.error("Error renaming conversation", e);
             }
@@ -791,7 +830,7 @@ public class AIChatSession {
             }
 
             try {
-                storage.changeConversationProfile(
+                getStorage().changeConversationProfile(
                     conversation.getId().toString(),
                     conversation.getProfile() == null ? null : conversation.getProfile().getProfileId(),
                     conversation.getProfile() == null ? null : conversation.getProfile().getEngineId()

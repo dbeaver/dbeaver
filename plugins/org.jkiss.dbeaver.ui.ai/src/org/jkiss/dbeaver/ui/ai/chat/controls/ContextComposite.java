@@ -526,7 +526,7 @@ public class ContextComposite extends Composite {
         changeScopeAction.setEnabled(!busy);
         addConversationAction.setEnabled(!busy);
         if (deleteConversationAction != null) {
-            deleteConversationAction.setEnabled(!busy);
+            deleteConversationAction.setEnabled(!busy && chat.getChatSession().getStorage().canPersist());
         }
     }
 

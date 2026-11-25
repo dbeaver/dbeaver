@@ -73,4 +73,8 @@ public interface AIAssistant {
 
     @NotNull
     AIChatStorage createChatStorage();
+
+    default boolean canUseInMemoryChatStorage() {
+        return false;
+    }
 }

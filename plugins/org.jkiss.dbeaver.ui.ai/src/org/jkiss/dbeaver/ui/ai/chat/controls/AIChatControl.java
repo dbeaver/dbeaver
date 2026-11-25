@@ -36,6 +36,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -115,7 +116,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             this,
             chatStorage,
             chatSessionProvider,
-            new UserTokenQuotaService(Clock.systemUTC(), chatStorage)
+            new UserTokenQuotaService(Clock.systemUTC(), chatStorage),
+            assistant::canUseInMemoryChatStorage
         );
 
         setBackgroundMode(SWT.INHERIT_FORCE);
@@ -682,6 +684,13 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                     selectDataSource(requestedDataSource);
                 } else {
                     isDataSourceInitialized = true;
+                }
+                if (chatSession.isUsingInMemoryFallback()) {
+                    Label warning = new Label(this, SWT.WRAP);
+                    warning.setText(AIChatMessagesUI.ai_chat_history_unavailable);
+                    warning.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                    warning.moveAbove(null);
+                    layout(true, true);
                 }
             }
         } catch (DBException e) {
