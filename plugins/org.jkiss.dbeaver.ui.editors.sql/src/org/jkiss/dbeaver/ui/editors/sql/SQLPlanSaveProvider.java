@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
@@ -75,7 +76,8 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
                 try (Writer w = Files.newBufferedWriter(filePath)) {
                     qps.serialize(w, plan);
                 } catch (IOException | InvocationTargetException e) {
-                    DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        SQLEditorMessages.save_execution_plan, SQLEditorMessages.sql_plan_save_error_message, e);
                 }
             } else {
                 saveAction.setEnabled(false);
@@ -124,4 +126,3 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
         }
     }
 }
-

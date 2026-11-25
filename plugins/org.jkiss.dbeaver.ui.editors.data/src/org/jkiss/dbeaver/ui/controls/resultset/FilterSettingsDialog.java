@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -282,7 +283,7 @@ class FilterSettingsDialog extends AbstractPopupPanel {
             treeEditor = new FilterSettingsTreeEditor(columnsTree);
 
             {
-                Composite tph = UIUtils.createComposite(columnsGroup, 2);
+                Composite tph = UIUtils.createComposite(columnsGroup, 1);
                 tph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 ToolBar toolbar = new ToolBar(tph, SWT.HORIZONTAL | SWT.FLAT);
                 toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -336,15 +337,6 @@ class FilterSettingsDialog extends AbstractPopupPanel {
                     whereText.setText(""); //$NON-NLS-1$
                 });
                 columnsViewer.addSelectionChangedListener(event -> updateButtons());
-
-                ToolBar applyToolbar = new ToolBar(tph, SWT.FLAT | SWT.RIGHT);
-                applyToolbar.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
-                UIUtils.createToolItem(
-                    applyToolbar,
-                    UIStandardLabel.APPLY.getLabel(),
-                    ResultSetMessages.sql_editor_resultset_filter_panel_btn_apply.replace("&", ""),
-                    UIIcon.FILTER_APPLY,
-                    SelectionListener.widgetSelectedAdapter(event -> okPressed()));
             }
             CTabItem libsTab = new CTabItem(tabFolder, SWT.NONE);
             libsTab.setText(ResultSetMessages.controls_resultset_filter_group_columns);
@@ -480,9 +472,13 @@ class FilterSettingsDialog extends AbstractPopupPanel {
     }
 
     @Override
-    @NotNull
-    protected Control createButtonBar(@NotNull Composite parent) {
-        return parent;
+    protected boolean needsButtonBar() {
+        return true;
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, UIStandardLabel.APPLY.getLabel(), true);
     }
 
     @Override
@@ -500,7 +496,8 @@ class FilterSettingsDialog extends AbstractPopupPanel {
             }
         }
         if (!hasVisibleColumns) {
-            UIUtils.showMessageBox(getShell(), "Bad filter", "You have to set at least one column visible", SWT.ICON_WARNING);
+            UIUtils.showMessageBox(getShell(), ResultSetMessages.error_bad_filter_title,
+                ResultSetMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ICON_WARNING);
             return;
         }
         if (!CommonUtils.isEmpty(orderText.getText())) {

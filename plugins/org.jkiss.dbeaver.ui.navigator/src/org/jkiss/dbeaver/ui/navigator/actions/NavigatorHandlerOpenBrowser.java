@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView;
 
 public class NavigatorHandlerOpenBrowser extends NavigatorHandlerObjectBase {
@@ -45,7 +46,8 @@ public class NavigatorHandlerOpenBrowser extends NavigatorHandlerObjectBase {
                 String secondaryId = DatabaseBrowserView.getSecondaryIdFromNode(node);
                 workbenchWindow.getActivePage().showView(DatabaseBrowserView.VIEW_ID, secondaryId, IWorkbenchPage.VIEW_ACTIVATE);
             } catch (Throwable e) {
-                DBWorkbench.getPlatformUI().showError("Database browser", "Error opening database browser", e);
+                DBWorkbench.getPlatformUI().showError(
+                    UINavigatorMessages.error_open_browser_title, UINavigatorMessages.error_open_browser_message, e);
             }
         }
         return null;

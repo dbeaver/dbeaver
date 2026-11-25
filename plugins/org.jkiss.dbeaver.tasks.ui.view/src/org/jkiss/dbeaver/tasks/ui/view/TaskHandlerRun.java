@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -32,6 +33,8 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.tasks.ui.wizard.EditTaskVariablesDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskProcessorUI;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -76,7 +79,9 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
             TaskProcessorUI listener = new TaskProcessorUI(UIUtils.getDialogRunnableContext(), task);
             task.getProject().getTaskManager().scheduleTask(task, listener);
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Task run", "Error running task '" + task.getName() + "'", e);
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIViewMessages.task_run_error_title,
+                NLS.bind(TaskUIViewMessages.task_run_error_message, task.getName()), e);
         }
     }
 
@@ -105,7 +110,8 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
                 variables
             );
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Task variables", "Error collecting task variables", e);
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIMessages.edit_task_variabl_dialog_title_task_variables, TaskUIViewMessages.task_variables_error_message, e);
             return true;
         }
 

@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -88,7 +89,8 @@ public class ResultSetReferenceMenu
                 UIUtils.runInProgressService(refCollector);
             }
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Table References", "Error reading referencing tables for '" + singleSource.getName() + "'", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_table_references_title,
+                NLS.bind(ResultSetMessages.error_table_references_message, singleSource.getName()), e.getTargetException());
             return;
         } catch (InterruptedException e) {
             return;

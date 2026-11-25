@@ -20,6 +20,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceColors;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -175,7 +176,9 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
                     try {
                         UIUtils.getActiveWorkbenchWindow().getActivePage().showView(uri.getHost());
                     } catch (PartInitException e1) {
-                        DBWorkbench.getPlatformUI().showError("Open view", "Error opening view " + uri.getHost(), e1);
+                        DBWorkbench.getPlatformUI().showError(
+                            TipOfTheDayMessages.tip_of_the_day_open_view_title,
+                            NLS.bind(TipOfTheDayMessages.tip_of_the_day_open_view_error, uri.getHost()), e1);
                     }
                 });
                 break;

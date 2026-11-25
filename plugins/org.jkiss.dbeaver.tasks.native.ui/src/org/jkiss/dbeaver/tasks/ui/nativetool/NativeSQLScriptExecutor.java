@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,27 @@ import java.nio.file.Path;
 public abstract class NativeSQLScriptExecutor<CONTAINER extends DBSObject> implements SQLScriptExecutor<CONTAINER> {
 
     public void execute(@NotNull CONTAINER container, @Nullable Path file) throws DBException {
+        openWizard(createTaskConfigurationWizard(container, file));
+    }
+
+    @Override
+    public void execute(
+        @NotNull CONTAINER container,
+        @Nullable Path file,
+        @NotNull String resourceProjectId,
+        @NotNull String resourcePath
+    ) throws DBException {
+        TaskConfigurationWizard<?> wizard = createTaskConfigurationWizard(container, file);
+        if (wizard instanceof AbstractNativeScriptExecuteWizard<?, ?, ?> scriptWizard) {
+            scriptWizard.getSettings().setInputResource(resourceProjectId, resourcePath);
+        }
+        openWizard(wizard);
+    }
+
+    private void openWizard(@NotNull TaskConfigurationWizard<?> wizard) {
         NativeToolWizardDialog dialog = new NativeToolWizardDialog(
             UIUtils.getActiveWorkbenchWindow(),
-            createTaskConfigurationWizard(container, file));
+            wizard);
         dialog.open();
     }
 

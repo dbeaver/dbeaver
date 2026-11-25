@@ -21,6 +21,7 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -247,9 +248,8 @@ public class PrefPageGeneral extends AbstractPrefPage implements IWorkbenchPrefe
                 }
                 if (UIUtils.confirmAction(
                     getShell(),
-                    "Restart " + GeneralUtils.getProductName(),
-                    "You need to restart " + GeneralUtils.getProductName()
-                        + " to perform actual language change.\nDo you want to restart?"
+                    NLS.bind(CoreMessages.pref_page_ui_language_restart_title, GeneralUtils.getProductName()),
+                    NLS.bind(CoreMessages.pref_page_ui_language_restart_message, GeneralUtils.getProductName())
                 )) {
                     restartWorkbenchOnPrefChange();
                 }

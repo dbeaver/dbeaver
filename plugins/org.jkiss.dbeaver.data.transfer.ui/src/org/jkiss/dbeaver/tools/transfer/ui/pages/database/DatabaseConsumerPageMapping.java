@@ -288,7 +288,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             settings.setContainer(DBUtils.getAdapter(DBSObjectContainer.class, node.getObject()));
                         });
                     } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Container init failed", null, e);
+                        DBWorkbench.getPlatformUI().showError(DTUIMessages.database_container_init_error_title, null, e);
                     }
                     loadSettings(false);
                     setContainerInfo(node);
