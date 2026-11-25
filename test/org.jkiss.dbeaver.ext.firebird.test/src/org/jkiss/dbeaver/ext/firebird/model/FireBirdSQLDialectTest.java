@@ -20,13 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -38,6 +39,7 @@ import org.mockito.Mockito;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FireBirdSQLDialectTest extends DBeaverUnitTest {
 
@@ -50,7 +52,7 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
 
     @Test
     public void generatesExecutableProcedureCallWithOnlyInputArguments() {
-        List<DBSProcedureParameter> parameters = List.of(
+        List<GenericProcedureParameter> parameters = List.of(
             parameter("RET1", DBSProcedureParameterKind.OUT),
             parameter("ARG1", DBSProcedureParameterKind.IN),
             parameter("ARG2", DBSProcedureParameterKind.IN)
@@ -60,7 +62,7 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
 
     @Test
     public void generatesSelectableProcedureCallWithCastsOnlyForInputArguments() {
-        List<DBSProcedureParameter> parameters = List.of(
+        List<GenericProcedureParameter> parameters = List.of(
             parameter("ARG1", DBSProcedureParameterKind.IN),
             parameter("RET1", DBSProcedureParameterKind.OUT),
             parameter("RET2", DBSProcedureParameterKind.OUT)
@@ -70,30 +72,65 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
 
     @Test
     public void omitsParenthesesWhenProcedureHasNoInputArguments() {
-        List<DBSProcedureParameter> parameters = List.of(parameter("RET1", DBSProcedureParameterKind.OUT));
+        List<GenericProcedureParameter> parameters = List.of(parameter("RET1", DBSProcedureParameterKind.OUT));
         Assertions.assertEquals("execute procedure TEST_PROC;", generateCall(true, false, parameters));
         Assertions.assertEquals("select * from TEST_PROC;", generateCall(false, false, parameters));
     }
 
     @Test
-    public void reloadsCachedProcedureParametersAfterRefresh() throws DBException {
+    public void refreshKeepsThePreviousSnapshotUsable() throws DBException {
         GenericStructContainer container = Mockito.mock(GenericStructContainer.class);
-        FireBirdProcedure procedure = Mockito.spy(new FireBirdProcedure(
-            container, "TEST_PROC", "TEST_PROC", null, DBSProcedureType.PROCEDURE, null));
-        VoidProgressMonitor monitor = new VoidProgressMonitor();
-        Mockito.doNothing().when(procedure).loadProcedureColumns(monitor);
+        AtomicInteger loads = new AtomicInteger();
+        FireBirdProcedure procedure = new FireBirdProcedure(container, "TEST_PROC", null, null, DBSProcedureType.PROCEDURE, null) {
+            @NotNull
+            @Override
+            ProcedureParameters readParameters(@NotNull DBRProgressMonitor monitor) {
+                return new ProcedureParameters(List.of(), loads.incrementAndGet() == 1);
+            }
 
-        procedure.getParameters(monitor);
-        procedure.getParameters(monitor);
-        Mockito.verify(procedure).loadProcedureColumns(monitor);
+            @NotNull
+            @Override
+            public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+                return getName();
+            }
+        };
+        VoidProgressMonitor monitor = new VoidProgressMonitor();
+        var beforeRefresh = procedure.getParameters(monitor);
+        Assertions.assertSame(beforeRefresh, procedure.getParameters(monitor));
 
         procedure.refreshObject(monitor);
-        procedure.getParameters(monitor);
-        Mockito.verify(procedure, Mockito.times(2)).loadProcedureColumns(monitor);
+        var afterRefresh = procedure.getParameters(monitor);
+        StringBuilder sql = new StringBuilder();
+        dialect.generateStoredProcedureCall(sql, procedure, beforeRefresh, false);
+        dialect.generateStoredProcedureCall(sql, procedure, afterRefresh, false);
+        Assertions.assertEquals("execute procedure TEST_PROC;\n\nselect * from TEST_PROC;", sql.toString().stripTrailing());
+        Assertions.assertEquals(2, loads.get());
+    }
+
+    @Test
+    public void refreshDuringLoadDoesNotCacheTheOldSnapshot() throws DBException {
+        GenericStructContainer container = Mockito.mock(GenericStructContainer.class);
+        AtomicInteger loads = new AtomicInteger();
+        FireBirdProcedure procedure = new FireBirdProcedure(container, "TEST_PROC", null, null, DBSProcedureType.PROCEDURE, null) {
+            @NotNull
+            @Override
+            ProcedureParameters readParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
+                if (loads.incrementAndGet() == 1) {
+                    refreshObject(monitor);
+                }
+                return new ProcedureParameters(List.of(), false);
+            }
+        };
+        VoidProgressMonitor monitor = new VoidProgressMonitor();
+        var oldSnapshot = procedure.getParameters(monitor);
+        var newSnapshot = procedure.getParameters(monitor);
+        Assertions.assertNotSame(oldSnapshot, newSnapshot);
+        Assertions.assertSame(newSnapshot, procedure.getParameters(monitor));
+        Assertions.assertEquals(2, loads.get());
     }
 
     @NotNull
-    private String generateCall(boolean executable, boolean castParams, @NotNull List<DBSProcedureParameter> parameters) {
+    private String generateCall(boolean executable, boolean castParams, @NotNull List<GenericProcedureParameter> parameters) {
         GenericDataSource dataSource = Mockito.mock(GenericDataSource.class);
         DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
         DBPPreferenceStore preferences = Mockito.mock(DBPPreferenceStore.class);
@@ -104,11 +141,6 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
         Mockito.when(preferences.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)).thenReturn(":");
 
         FireBirdProcedure procedure = new FireBirdProcedure(structContainer, "TEST_PROC", null, null, DBSProcedureType.PROCEDURE, null) {
-            @Override
-            boolean isExecutable() {
-                return executable;
-            }
-
             @NotNull
             @Override
             public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
@@ -116,13 +148,13 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
             }
         };
         StringBuilder sql = new StringBuilder();
-        dialect.generateStoredProcedureCall(sql, procedure, parameters, castParams);
+        dialect.generateStoredProcedureCall(sql, procedure, new FireBirdProcedure.ProcedureParameters(parameters, executable), castParams);
         return sql.toString().stripTrailing();
     }
 
     @NotNull
-    private static DBSProcedureParameter parameter(@NotNull String name, @NotNull DBSProcedureParameterKind kind) {
-        DBSProcedureParameter parameter = Mockito.mock(DBSProcedureParameter.class);
+    private static GenericProcedureParameter parameter(@NotNull String name, @NotNull DBSProcedureParameterKind kind) {
+        GenericProcedureParameter parameter = Mockito.mock(GenericProcedureParameter.class);
         DBSTypedObject type = Mockito.mock(DBSTypedObject.class);
         Mockito.when(parameter.getName()).thenReturn(name);
         Mockito.when(parameter.getParameterKind()).thenReturn(kind);

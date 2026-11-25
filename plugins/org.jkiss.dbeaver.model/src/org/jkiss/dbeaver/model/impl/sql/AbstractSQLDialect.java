@@ -918,10 +918,20 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public void generateStoredProcedureCall(
-        StringBuilder sql, 
-        DBSProcedure proc, 
-        Collection<? extends DBSProcedureParameter> parameters, 
+        @NotNull StringBuilder sql,
+        @NotNull DBSProcedure proc,
+        @Nullable Collection<? extends DBSProcedureParameter> parameters,
         boolean castParams
+    ) {
+        generateStoredProcedureCall(sql, proc, parameters, castParams, getStoredProcedureCallInitialClause(proc));
+    }
+
+    protected void generateStoredProcedureCall(
+        @NotNull StringBuilder sql,
+        @NotNull DBSProcedure proc,
+        @Nullable Collection<? extends DBSProcedureParameter> parameters,
+        boolean castParams,
+        @NotNull String initialClause
     ) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         if (parameters != null) {
@@ -938,7 +948,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         String namedParameterPrefix = prefStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);        
         boolean useBrackets = useBracketsForExec(proc);
         if (useBrackets) sql.append("{ ");
-        sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
+        sql.append(initialClause).append("(");
         if (!inParameters.isEmpty()) {
             boolean first = true;
             for (DBSProcedureParameter parameter : inParameters) {

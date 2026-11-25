@@ -347,9 +347,6 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     @NotNull
     @Override
     protected String getStoredProcedureCallInitialClause(@NotNull DBSProcedure proc) {
-        if (proc instanceof FireBirdProcedure procedure && procedure.isExecutable()) {
-            return "execute procedure " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
-        }
         return "select * from " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
     }
 
@@ -367,10 +364,13 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
         List<? extends DBSProcedureParameter> inputParameters = CommonUtils.safeCollection(parameters).stream()
             .filter(parameter -> parameter.getParameterKind() == DBSProcedureParameterKind.IN)
             .toList();
+        String initialClause = parameters instanceof FireBirdProcedure.ProcedureParameters snapshot && snapshot.isExecutable()
+            ? "execute procedure " + proc.getFullyQualifiedName(DBPEvaluationContext.DML)
+            : getStoredProcedureCallInitialClause(proc);
         if (inputParameters.isEmpty()) {
-            sql.append(getStoredProcedureCallInitialClause(proc)).append(";\n\n");
+            sql.append(initialClause).append(";\n\n");
         } else {
-            super.generateStoredProcedureCall(sql, proc, inputParameters, castParams);
+            super.generateStoredProcedureCall(sql, proc, inputParameters, castParams, initialClause);
         }
     }
 

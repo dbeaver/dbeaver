@@ -35,21 +35,19 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FireBirdProcedure extends GenericProcedure implements DBSObjectWithScript {
 
     private static final int LEGACY_PROCEDURE_TYPE = 0;
     private static final int EXECUTABLE_PROCEDURE_TYPE = 2;
 
-    private boolean executable;
-
-    boolean isExecutable() {
-        return executable;
-    }
+    private volatile AtomicReference<ProcedureParameters> parameterCache = new AtomicReference<>();
 
     @Override
     public GenericCatalog getCatalog() {
@@ -77,22 +75,35 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
         return super.getObjectDefinitionText(monitor, options);
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public synchronized Collection<GenericProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return super.getParameters(monitor);
+    public Collection<GenericProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
+        AtomicReference<ProcedureParameters> cache = parameterCache;
+        ProcedureParameters cached = cache.get();
+        if (cached != null) {
+            return cached;
+        }
+        ProcedureParameters loaded = readParameters(monitor);
+        cached = cache.compareAndExchange(null, loaded);
+        return cached == null ? loaded : cached;
     }
 
     @Nullable
     @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        clearProcedureColumns();
-        executable = false;
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        // in-flight loads can only populate the previous cache
+        parameterCache = new AtomicReference<>();
         return super.refreshObject(monitor);
     }
 
     @Override
-    public synchronized void loadProcedureColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public void loadProcedureColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
+        AtomicReference<ProcedureParameters> cache = parameterCache;
+        cache.set(readParameters(monitor));
+    }
+
+    @NotNull
+    ProcedureParameters readParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<GenericProcedureParameter> parameters = new ArrayList<>();
         boolean executableProcedure = false;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
@@ -250,13 +261,36 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
         } catch (SQLException e) {
             throw new DBDatabaseException(e, getDataSource());
         }
-        clearProcedureColumns();
-        parameters.forEach(this::addColumn);
-        executable = executableProcedure;
+        return new ProcedureParameters(parameters, executableProcedure);
     }
 
     @Override
     public void setObjectDefinitionText(String source) {
         setSource(source);
+    }
+
+    static final class ProcedureParameters extends AbstractList<GenericProcedureParameter> {
+        private final List<GenericProcedureParameter> parameters;
+        private final boolean executable;
+
+        ProcedureParameters(@NotNull List<GenericProcedureParameter> parameters, boolean executable) {
+            this.parameters = List.copyOf(parameters);
+            this.executable = executable;
+        }
+
+        boolean isExecutable() {
+            return executable;
+        }
+
+        @NotNull
+        @Override
+        public GenericProcedureParameter get(int index) {
+            return parameters.get(index);
+        }
+
+        @Override
+        public int size() {
+            return parameters.size();
+        }
     }
 }
