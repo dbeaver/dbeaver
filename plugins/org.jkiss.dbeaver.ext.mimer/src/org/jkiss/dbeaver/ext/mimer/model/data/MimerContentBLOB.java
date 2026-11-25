@@ -60,6 +60,12 @@ class MimerContentBLOB extends JDBCContentBLOB {
     @Nullable
     @Override
     public String getDisplayString(@NotNull DBDDisplayFormat format) {
+        if (format != DBDDisplayFormat.UI && storage instanceof DBDContentCached) {
+            // EDIT (cell editor, Copy)/NATIVE want the real bytes, never the size placeholder
+            // below - the base class already formats a cached value correctly for any format (see
+            // JDBCContentBLOB#getDisplayString), so just let it through unconditionally here.
+            return super.getDisplayString(format);
+        }
         if (storage == null || (storage instanceof DBDContentCached && !(storage instanceof MimerChunkedBytesStorage))) {
             // null = SQL NULL; any other DBDContentCached that isn't the lazy chunked kind is
             // cheap to preview - see this class's own javadoc.

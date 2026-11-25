@@ -337,6 +337,23 @@ public class MimerBLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void displayStringReturnsTheRealBytesForEditFormatNotTheSizePlaceholder() {
+        // Regression test: Copy (Ctrl+C) and the cell editor both request DBDDisplayFormat.EDIT,
+        // which must never return the bounded "[BLOB, size]" placeholder below - doing so would
+        // silently replace whatever gets copied or edited with a size label. Only UI format shows
+        // the placeholder.
+        byte[] data = {0x01, 0x02, 0x03};
+        MimerChunkedBytesStorage storage = new MimerChunkedBytesStorage(List.of(data), data.length, "UTF-8");
+        MimerContentBLOB content = new MimerContentBLOB(executionContext);
+        content.setStorage(storage);
+
+        String expected = org.jkiss.dbeaver.model.DBValueFormatting.formatBinaryString(dataSource, data, DBDDisplayFormat.EDIT);
+        Assertions.assertEquals(expected, content.getDisplayString(DBDDisplayFormat.EDIT));
+        Assertions.assertEquals("[BLOB, 3]", content.getDisplayString(DBDDisplayFormat.UI),
+            "UI format should still show the bounded size placeholder, not the real bytes");
+    }
+
+    @Test
     public void displayStringShowsSizeForInMemoryChunkedStorageTooWithoutMaterializingIt() {
         // The whole point of MimerChunkedBytesStorage (see its own javadoc) is that browsing a
         // table full of BLOBs never has to flatten any of them just to render a grid cell's text -
