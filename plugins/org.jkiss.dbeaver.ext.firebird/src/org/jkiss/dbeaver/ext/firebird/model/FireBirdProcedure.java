@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.AbstractList;
@@ -84,8 +85,7 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
             return cached;
         }
         ProcedureParameters loaded = readParameters(monitor);
-        cached = cache.compareAndExchange(null, loaded);
-        return cached == null ? loaded : cached;
+        return CommonUtils.notNull(cache.compareAndExchange(null, loaded), loaded);
     }
 
     @Nullable

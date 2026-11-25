@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -87,12 +86,6 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
             ProcedureParameters readParameters(@NotNull DBRProgressMonitor monitor) {
                 return new ProcedureParameters(List.of(), loads.incrementAndGet() == 1);
             }
-
-            @NotNull
-            @Override
-            public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-                return getName();
-            }
         };
         VoidProgressMonitor monitor = new VoidProgressMonitor();
         var beforeRefresh = procedure.getParameters(monitor);
@@ -137,16 +130,11 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
         GenericStructContainer structContainer = Mockito.mock(GenericStructContainer.class);
         Mockito.when(structContainer.getDataSource()).thenReturn(dataSource);
         Mockito.when(dataSource.getContainer()).thenReturn(container);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
         Mockito.when(container.getPreferenceStore()).thenReturn(preferences);
         Mockito.when(preferences.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)).thenReturn(":");
 
-        FireBirdProcedure procedure = new FireBirdProcedure(structContainer, "TEST_PROC", null, null, DBSProcedureType.PROCEDURE, null) {
-            @NotNull
-            @Override
-            public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-                return getName();
-            }
-        };
+        FireBirdProcedure procedure = new FireBirdProcedure(structContainer, "TEST_PROC", null, null, DBSProcedureType.PROCEDURE, null);
         StringBuilder sql = new StringBuilder();
         dialect.generateStoredProcedureCall(sql, procedure, new FireBirdProcedure.ProcedureParameters(parameters, executable), castParams);
         return sql.toString().stripTrailing();
