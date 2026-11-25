@@ -171,16 +171,19 @@ public class FireBirdDataSource extends GenericDataSource
         return DBCPlanStyle.PLAN;
     }
 
+    @Nullable
     @Override
     public List<FireBirdTable> getPhysicalTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdTable>) super.getPhysicalTables(monitor);
     }
 
+    @Nullable
     @Override
     public List<FireBirdTable> getTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdTable>) super.getTables(monitor);
     }
 
+    @Nullable
     @Override
     public List<FireBirdProcedure> getProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdProcedure>) super.getProcedures(monitor);

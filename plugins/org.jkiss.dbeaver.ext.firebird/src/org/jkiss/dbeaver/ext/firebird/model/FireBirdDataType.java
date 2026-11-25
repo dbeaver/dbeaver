@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -36,12 +37,26 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
     private String charsetName;
     private boolean notNull;
 
-    public FireBirdDataType(FireBirdDataSource genericDataSource, FireBirdFieldType fieldType, int subType, String name, String remarks,
-        boolean unsigned, boolean searchable, int precision, int minScale, int maxScale,
-        int fieldLength, int charLength,
-        String computedSource, String validationSource, String defaultSource, String charsetName, boolean notNull,
-        boolean systemDomain)
-    {
+    public FireBirdDataType(
+        @NotNull FireBirdDataSource genericDataSource,
+        @NotNull FireBirdFieldType fieldType,
+        int subType,
+        @NotNull String name,
+        @Nullable String remarks,
+        boolean unsigned,
+        boolean searchable,
+        int precision,
+        int minScale,
+        int maxScale,
+        int fieldLength,
+        int charLength,
+        @Nullable String computedSource,
+        @Nullable String validationSource,
+        @Nullable String defaultSource,
+        @Nullable String charsetName,
+        boolean notNull,
+        boolean systemDomain
+    ) {
         super(genericDataSource, fieldType.getValueType(), name, remarks, unsigned, searchable, precision, minScale, maxScale);
 
         this.fieldType = fieldType;
@@ -57,7 +72,7 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
         this.notNull = notNull;
     }
 
-    public FireBirdDataType(FireBirdDataSource dataSource, FireBirdFieldType fieldType) {
+    public FireBirdDataType(@NotNull FireBirdDataSource dataSource, @NotNull FireBirdFieldType fieldType) {
         super(dataSource, fieldType.getValueType(), fieldType.getName(), null, false, true, 0, 0, 0);
 
         this.fieldType = fieldType;
