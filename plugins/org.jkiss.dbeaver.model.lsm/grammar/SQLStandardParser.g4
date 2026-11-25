@@ -478,7 +478,7 @@ constraintAttributes: (constraintCheckTime ((NOT)? DEFERRABLE)?|(NOT)? DEFERRABL
 constraintCheckTime: (INITIALLY DEFERRED|INITIALLY IMMEDIATE);
 tableConstraintDefinition: (constraintNameDefinition)? tableConstraint (constraintCheckTime)?;
 tableConstraint: (uniqueConstraintDefinition|referentialConstraintDefinition|checkConstraintDefinition);
-uniqueConstraintDefinition: (UNIQUE|PRIMARY KEY) LeftParen uniqueColumnList RightParen;
+uniqueConstraintDefinition: (UNIQUE (INDEX|KEY)? identifier?|PRIMARY KEY) LeftParen uniqueColumnList RightParen;
 uniqueColumnList: columnNameList;
 referentialConstraintDefinition: FOREIGN KEY LeftParen referencingColumns RightParen referencesSpecification;
 referencingColumns: referenceColumnList;

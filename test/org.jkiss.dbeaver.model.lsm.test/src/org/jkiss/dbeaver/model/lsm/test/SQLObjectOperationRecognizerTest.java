@@ -50,10 +50,8 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
         assertOperation("ALTER VIEW sch.view_name AS SELECT 2", SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.VIEW, "sch", "view_name");
         assertOperation("DROP MATERIALIZED VIEW sch.view_name", SQLObjectOperation.Operation.DROP, SQLObjectOperation.ObjectKind.VIEW, "sch", "view_name");
 
-        assertOperation("CREATE INDEX idx ON cat.sch.tab(id)", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.INDEX, "cat", "sch", "idx");
         assertOperation("DROP INDEX cat.sch.idx", SQLObjectOperation.Operation.DROP, SQLObjectOperation.ObjectKind.INDEX, "cat", "sch", "idx");
         assertOperation("DROP INDEX CONCURRENTLY IF EXISTS cat.sch.idx", SQLObjectOperation.Operation.DROP, SQLObjectOperation.ObjectKind.INDEX, "cat", "sch", "idx");
-        assertOperation("DROP INDEX idx ON cat.sch.tab", SQLObjectOperation.Operation.DROP, SQLObjectOperation.ObjectKind.INDEX, "cat", "sch", "idx");
 
         assertOperation("CREATE FUNCTION sch.func() RETURNS INT RETURN 1", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.FUNCTION, "sch", "func");
         assertOperation("DROP FUNCTION sch.func", SQLObjectOperation.Operation.DROP, SQLObjectOperation.ObjectKind.FUNCTION, "sch", "func");
@@ -93,6 +91,22 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
     }
 
     @Test
+    void recognizesIndexOwners() {
+        for (var operation : List.of(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.Operation.DROP)) {
+            String sql = operation == SQLObjectOperation.Operation.CREATE ?
+                "CREATE UNIQUE INDEX idx ON cat.sch.tab(id)" : "DROP INDEX idx ON cat.sch.tab";
+            Assertions.assertEquals(
+                List.of(new SQLObjectOperation(
+                    operation, SQLObjectOperation.ObjectKind.INDEX, List.of("cat", "sch", "idx"),
+                    false, false, List.of(), List.of("cat", "sch", "tab")
+                )),
+                recognizeAll(BasicSQLDialect.INSTANCE, sql)
+            );
+        }
+        Assertions.assertEquals(List.of("`temp_table`"), parse("DROP INDEX `uk` ON `temp_table`").tableNameParts());
+    }
+
+    @Test
     void recognizesTemporaryTableOperations() {
         Assertions.assertEquals(
             List.of(new SQLObjectOperation(
@@ -104,6 +118,8 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
             recognizeAll(BasicSQLDialect.INSTANCE, "CREATE TEMPORARY TABLE IF NOT EXISTS `test`.`temp_table` (id INT PRIMARY KEY)")
         );
         for (String sql : List.of(
+            "CREATE TEMPORARY TABLE example (id INT NOT NULL, UNIQUE KEY uk(id))",
+            "CREATE TEMPORARY TABLE example (id INT NOT NULL, UNIQUE INDEX uk(id))",
             "CREATE TEMPORARY TABLE example LIKE original",
             "CREATE TEMPORARY TABLE example (LIKE original)",
             "CREATE TEMPORARY TABLE example AS SELECT 1 AS id",

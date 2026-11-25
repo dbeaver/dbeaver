@@ -20,11 +20,14 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -59,6 +62,25 @@ public class MySQLTemporaryTableTest extends DBeaverUnitTest {
         Assertions.assertSame(renamed, context.findTemporaryTable(metadata("renamed")));
         Assertions.assertFalse(context.isCurrentTemporaryTable((MySQLTemporaryTable) original));
         Assertions.assertTrue(context.isCurrentTemporaryTable((MySQLTemporaryTable) renamed));
+    }
+
+    @Test
+    void rejectsOldGridWritesAfterKeyChanges() throws Exception {
+        MySQLExecutionContext context = createContext();
+        JDBCSession session = Mockito.mock(JDBCSession.class);
+        Mockito.when(session.getExecutionContext()).thenReturn(context);
+        List<String> name = List.of("test", "temp_table");
+        MySQLTemporaryTable original = (MySQLTemporaryTable) context.registerTemporaryTable(session, name, false);
+        var other = context.registerTemporaryTable(session, List.of("test", "other"), false);
+        var changed = context.temporaryTableChanged(session, name, false, List.of());
+
+        Assertions.assertNotSame(original, changed);
+        Assertions.assertSame(changed, context.findTemporaryTable(metadata("temp_table")));
+        Assertions.assertSame(other, context.findTemporaryTable(metadata("other")));
+        Assertions.assertTrue(changed.getConstraints(new VoidProgressMonitor()).isEmpty());
+        Assertions.assertThrows(DBCException.class, () -> original.deleteData(
+            session, new DBSAttributeBase[0], Mockito.mock(DBCExecutionSource.class)
+        ));
     }
 
     @Test

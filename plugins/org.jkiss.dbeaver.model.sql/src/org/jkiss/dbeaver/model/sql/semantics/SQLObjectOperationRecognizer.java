@@ -327,7 +327,7 @@ public final class SQLObjectOperationRecognizer {
             indexName = List.copyOf(qualifiedIndexName);
         }
         return indexName.isEmpty() ? null :
-            new SQLObjectOperation(operation, SQLObjectOperation.ObjectKind.INDEX, indexName);
+            new SQLObjectOperation(operation, SQLObjectOperation.ObjectKind.INDEX, indexName, false, false, List.of(), tableName);
     }
 
     @Nullable

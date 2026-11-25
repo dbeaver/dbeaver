@@ -4590,20 +4590,21 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull SQLObjectOperation operation,
             @NotNull SQLPreferenceConstants.MetadataRefreshBehavior refreshBehavior
         ) {
-            if (operation.objectKind() != SQLObjectOperation.ObjectKind.TABLE ||
-                (operation.operation() == SQLObjectOperation.Operation.CREATE && !operation.temporary()) ||
+            boolean indexOperation = operation.objectKind() == SQLObjectOperation.ObjectKind.INDEX && !operation.tableNameParts().isEmpty();
+            if ((!indexOperation && operation.objectKind() != SQLObjectOperation.ObjectKind.TABLE) ||
+                (!indexOperation && operation.operation() == SQLObjectOperation.Operation.CREATE && !operation.temporary()) ||
                 !(session.getExecutionContext() instanceof DBCTemporaryTableManager temporaryTables)) {
                 return false;
             }
             SQLDialect dialect = session.getDataSource().getSQLDialect();
-            List<String> name = operation.qualifiedNameParts().stream()
+            List<String> name = (indexOperation ? operation.tableNameParts() : operation.qualifiedNameParts()).stream()
                 .map(part -> SQLUtils.identifierToCanonicalForm(dialect, part, true, false))
                 .toList();
             List<String> newName = operation.newName().stream()
                 .map(part -> SQLUtils.identifierToCanonicalForm(dialect, part, true, false))
                 .toList();
-            boolean removed = operation.operation() == SQLObjectOperation.Operation.DROP ||
-                operation.operation() == SQLObjectOperation.Operation.RENAME;
+            boolean removed = !indexOperation && (operation.operation() == SQLObjectOperation.Operation.DROP ||
+                operation.operation() == SQLObjectOperation.Operation.RENAME);
             try {
                 DBCTemporaryTableManager.TemporaryTable table = operation.temporary() ?
                     temporaryTables.registerTemporaryTable(session, name, operation.ifNotExists()) :
