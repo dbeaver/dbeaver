@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.datadam.project;
+package org.jkiss.dbeaver.ui.datadam.project.keys;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -31,20 +31,20 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamEncryptionKeyService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DBDamTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
-import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -66,7 +66,7 @@ public final class DDProjectKeyUIManager {
         return INSTANCE;
     }
 
-    boolean isCleanupInProgress() {
+    public boolean isCleanupInProgress() {
         return cleanupInProgress.get();
     }
 
@@ -98,13 +98,59 @@ public final class DDProjectKeyUIManager {
         job.schedule();
     }
 
-    /** Invoked from a progress operation after the user confirms local project deletion. */
+    /** Invoked after the user confirms local project deletion. */
     public void forgetKeys() throws DBException {
         var access = DBDamAccessService.getInstance();
         changeAccessAndRemoveProjects(access.getKeyBundle(), access::forgetKeys);
     }
 
-    /** Invoked from a progress operation after the user confirms sign-out and project deletion. */
+    @NotNull
+    public String generateKeys(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
+        return DBDamEncryptionKeyService.getInstance().generateNewKey(monitor);
+    }
+
+    /** Imports the current server key, removing local projects before replacing a different saved key. */
+    public void importKeys(@NotNull String phrase, @NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
+        if (monitor.isCanceled()) {
+            throw new InterruptedException("DataDam encryption key import was canceled");
+        }
+        var access = DBDamAccessService.getInstance();
+        DDKeyBundle previous = access.getKeyBundle();
+        if (previous == null) {
+            access.importKeys(phrase);
+            return;
+        }
+        DDKeyBundle replacement = access.prepareKeyImport(phrase);
+        if (!previous.accountId().equals(replacement.accountId())) {
+            throw new DBException("DataDam account changed during encryption key import");
+        }
+        if (Objects.equals(previous.apiKeyId(), replacement.apiKeyId())
+            && previous.signingKey().equals(replacement.signingKey()) && previous.dataKey().equals(replacement.dataKey())) {
+            if (monitor.isCanceled()) {
+                throw new InterruptedException("DataDam encryption key import was canceled");
+            }
+            access.importKeys(phrase);
+            return;
+        }
+
+        if (monitor.isCanceled()) {
+            throw new InterruptedException("DataDam encryption key import was canceled");
+        }
+        Boolean confirmed = UIUtils.syncExec(new RunnableWithResult<>() {
+            @NotNull
+            @Override
+            public Boolean runWithResult() {
+                return UIUtils.confirmAction(UIUtils.getActiveShell(), DDTrackingUIMessages.project_keys_mismatch_title,
+                    DDTrackingUIMessages.sync_preference_page_project_deletion_confirm_message);
+            }
+        });
+        if (!Boolean.TRUE.equals(confirmed) || monitor.isCanceled()) {
+            throw new InterruptedException("DataDam encryption key import was canceled");
+        }
+        replaceKeysAndRemoveProjects(access, previous, replacement);
+    }
+
+    /** Invoked after the user confirms sign-out and project deletion. */
     public void signOut() throws DBException {
         signOut(DBDamAccessService.getInstance().getKeyBundle());
     }
@@ -133,32 +179,6 @@ public final class DDProjectKeyUIManager {
     private void finishProjectCleanup() {
         cleanupInProgress.set(false);
         DDProjectUIManager.getInstance().refreshProjectVisibility();
-    }
-
-    public void signOutWithProgress() {
-        runWithProgress(this::signOut, DDTrackingUIMessages.sync_preference_page_logout_failed);
-    }
-
-    public void forgetKeysWithProgress() {
-        runWithProgress(this::forgetKeys, DDTrackingUIMessages.sync_preference_page_cannot_forget_keys);
-    }
-
-    private void runWithProgress(@NotNull AccessOperation operation, @NotNull String errorMessage) {
-        // Keep queued navigator updates outside the progress dialog's nested event loop.
-        UIExecutionQueue.blockQueue();
-        try {
-            UIUtils.runInProgressDialog(monitor -> {
-                try {
-                    operation.run();
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DDUIUtils.showError(DDTrackingUIMessages.sync_preference_page_title, errorMessage, e.getTargetException());
-        } finally {
-            UIExecutionQueue.unblockQueue();
-        }
     }
 
     @FunctionalInterface
@@ -218,6 +238,14 @@ public final class DDProjectKeyUIManager {
         if (monitor.isCanceled() || !bundle.equals(access.getKeyBundle())) {
             return false;
         }
+        replaceKeysAndRemoveProjects(access, bundle, replacement);
+        // Callers may already hold project objects that were removed during recovery.
+        return false;
+    }
+
+    private void replaceKeysAndRemoveProjects(
+        @NotNull DBDamAccessService access, @NotNull DDKeyBundle previous, @Nullable DDKeyBundle replacement
+    ) throws DBException {
         if (!cleanupInProgress.compareAndSet(false, true)) {
             throw new DBException("DataDam project cleanup is already in progress");
         }
@@ -225,14 +253,12 @@ public final class DDProjectKeyUIManager {
         try {
             DDProjectManager manager = DDProjectManager.getInstance();
             // Activate the replacement before acquiring the access lock: this step needs the UI thread.
-            prepareProjectDeletion(manager, bundle.accountId());
-            access.recoverProjectKeys(bundle, replacement, () -> manager.deleteAccountProjects(bundle.accountId()));
+            prepareProjectDeletion(manager, previous.accountId());
+            access.recoverProjectKeys(previous, replacement, () -> manager.deleteAccountProjects(previous.accountId()));
         } finally {
             projectOperationLock.unlock();
             finishProjectCleanup();
         }
-        // Callers may already hold project objects that were removed during recovery.
-        return false;
     }
 
     private void prepareProjectDeletion(@NotNull DDProjectManager manager, @NotNull UUID accountId) throws DBException {

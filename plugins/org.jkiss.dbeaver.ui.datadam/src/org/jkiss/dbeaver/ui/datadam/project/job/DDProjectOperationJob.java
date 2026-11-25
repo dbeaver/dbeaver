@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.datadam.DBDamTokenUIManager;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.keys.DDProjectKeyUIManager;
 
 /** Runs a DataDam project operation off the UI thread. Callers handle completion and presentation. */
 public abstract class DDProjectOperationJob<T> extends AbstractJob {

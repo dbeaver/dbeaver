@@ -83,6 +83,11 @@ public final class DBDamEncryptionKeyService {
         return account.hasPermission(DDPermissionIds.STORAGE_KEY_MANAGE);
     }
 
+    /** Checks both permissions required to reset the server key and shared projects. */
+    public boolean canResetKeys() throws DBException {
+        return canManageKeys() && account.hasPermission(DDPermissionIds.PROJECT_MANAGE);
+    }
+
     /**
      * Registers new keys and returns the phrase only after registration or recovery is confirmed.
      * The caller owns the monitor's task lifecycle, with {@link #GENERATION_WORK_UNITS} work units.

@@ -43,6 +43,21 @@ class DBDamEncryptionKeyGenerationTest {
         "public-key", "encrypted-bundle", "salt", 600_000, "PBKDF2-HMAC-SHA256");
 
     @Test
+    void resettingServerKeysRequiresBothPermissions() throws Exception {
+        try (Fixture fixture = new Fixture()) {
+            Mockito.when(fixture.account.hasPermission(DDPermissionIds.STORAGE_KEY_MANAGE))
+                .thenReturn(false, true, true);
+            Mockito.when(fixture.account.hasPermission(DDPermissionIds.PROJECT_MANAGE))
+                .thenReturn(false, true);
+
+            Assertions.assertFalse(fixture.service.canResetKeys());
+            Assertions.assertFalse(fixture.service.canResetKeys());
+            Assertions.assertTrue(fixture.service.canResetKeys());
+            Mockito.verify(fixture.account, Mockito.times(2)).hasPermission(DDPermissionIds.PROJECT_MANAGE);
+        }
+    }
+
+    @Test
     void returnsThePhraseAfterConfirmedRegistrationWithoutDownloadingTheBundle() throws Exception {
         try (Fixture fixture = new Fixture()) {
             Mockito.when(fixture.remote.registerKey(MATERIAL)).thenReturn(DDGatewayKeyRegistrationStatus.REGISTERED);

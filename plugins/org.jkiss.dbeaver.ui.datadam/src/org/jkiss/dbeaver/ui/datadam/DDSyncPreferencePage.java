@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.management.DDManagementActions;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.keys.DDProjectKeyUIManager;
 import org.jkiss.dbeaver.ui.forms.UIAlignX;
 import org.jkiss.dbeaver.ui.forms.UIGrowX;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
@@ -282,8 +282,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             DDTrackingUIMessages.sync_preference_page_project_deletion_confirm_message)) {
             return;
         }
-        DDProjectKeyUIManager.getInstance().signOutWithProgress();
-        refresh();
+        runOperation(DDTrackingUIMessages.sync_preference_page_logout_failed,
+            monitor -> DDProjectKeyUIManager.getInstance().signOut());
     }
 
     private void refresh() {
