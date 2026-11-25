@@ -111,7 +111,7 @@ public class PromptComposite extends Composite {
                     if (!busy) {
                         sendButton.setToolTipText(AIChatMessagesUI.ai_chat_send_button_tip);
                         sendButton.setImage(DBeaverIcons.getImage(AIChatIcons.SEND));
-                        if (getShell() == getDisplay().getActiveShell()) {
+                        if (getShell() == getDisplay().getActiveShell() && site.getPage().getActivePart() == site.getPart()) {
                             setFocusOnPrompt();
                         }
                     } else {

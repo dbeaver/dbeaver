@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.source.ISharedTextColors;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -102,7 +103,7 @@ public class TransactionMonitorToolbar {
         private final MonitorPanel monitorPanel;
 
         RefreshJob(MonitorPanel monitorPanel) {
-            super("Refresh transaction monitor");
+            super(CoreMessages.monitor_panel_transaction_monitor_refresh);
             setSystem(true);
             setUser(false);
             this.monitorPanel = monitorPanel;
@@ -205,13 +206,13 @@ public class TransactionMonitorToolbar {
             e.gc.fillRectangle(bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height - 2);
             String count;
             if (txnState == null) {
-                count = "N/A";
+                count = CoreMessages.monitor_panel_transaction_monitor_not_available;
             } else if (!txnState.isTransactionMode()) {
-                count = "Auto";
+                count = CoreMessages.monitor_panel_transaction_monitor_auto;
             } else if (updateCount > 0) {
                 count = String.valueOf(updateCount);
             } else {
-                count = "None";
+                count = CoreMessages.monitor_panel_transaction_monitor_none;
             }
             final Point textSize = e.gc.textExtent(count);
             e.gc.setForeground(UIStyles.getDefaultTextForeground());
@@ -222,8 +223,8 @@ public class TransactionMonitorToolbar {
             refreshJob.schedule(MONITOR_UPDATE_DELAY);
         }
 
-        void updateTransactionsInfo(DBRProgressMonitor monitor) {
-            monitor.beginTask("Extract active transaction info", 1);
+        void updateTransactionsInfo(@NotNull DBRProgressMonitor monitor) {
+            monitor.beginTask(CoreMessages.monitor_panel_transaction_monitor_extract, 1);
 
             DBCExecutionContext executionContext = getActiveExecutionContext();
 
@@ -260,10 +261,10 @@ public class TransactionMonitorToolbar {
             } else if (txnState.isTransactionMode()) {
                 final long txnUptime = txnState.getTransactionStartTime() > 0 ?
                     ((System.currentTimeMillis() - txnState.getTransactionStartTime()) / 1000) + 1 : 0;
-                String toolTip = String.valueOf(txnState.getExecuteCount()) + " total statements\n" +
-                    String.valueOf(txnState.getUpdateCount()) + " modifying statements";
+                String toolTip = NLS.bind(CoreMessages.monitor_panel_transaction_monitor_total_statements, txnState.getExecuteCount()) + "\n" +
+                    NLS.bind(CoreMessages.monitor_panel_transaction_monitor_modifying_statements, txnState.getUpdateCount());
                 if (txnUptime > 0) {
-                    toolTip += "\n" + String.valueOf(txnUptime) + " seconds uptime";
+                    toolTip += "\n" + NLS.bind(CoreMessages.monitor_panel_transaction_monitor_uptime, txnUptime);
                 }
                 setToolTipText(toolTip);
             } else {

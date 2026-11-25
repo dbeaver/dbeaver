@@ -20,6 +20,7 @@ import org.cts.crs.CRSException;
 import org.cts.crs.CoordinateReferenceSystem;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -80,7 +81,7 @@ public class ShowSRIDDialog extends BaseDialog {
             gd.widthHint = UIUtils.getFontHeight(wktText) * 40;
             wktText.setLayoutData(gd);
         } catch (CRSException e) {
-            DBWorkbench.getPlatformUI().showError("CRS error", "Error reading SRID " + selectedSRID + " details", e);
+            DBWorkbench.getPlatformUI().showError(GISMessages.gis_crs_error_title, NLS.bind(GISMessages.gis_srid_details_error, selectedSRID), e);
         }
 
         return dialogArea;

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tasks.ui.wizard;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -143,7 +144,8 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                 for (DBSObject databaseObject : ((AbstractNativeToolSettings<?>) settings).getDatabaseObjects()) {
                     objects.add(databaseObject.getName());
                 }
-                completeMessage.append("\nObject(s) processed: ").append(String.join(",", objects));
+                completeMessage.append("\n").append(NLS.bind(
+                    TaskUIMessages.task_processor_ui_objects_processed, String.join(",", objects)));
             }
             String notificationMessage = error == null ? completeMessage.toString() : GeneralUtils.getExceptionMessage(error);
             UIServiceSystemAgent serviceSystemAgent = DBWorkbench.getService(UIServiceSystemAgent.class);
@@ -166,7 +168,8 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                     theTask == null ? this.task.getName() : theTask.getName(),
                     notificationMessage,
                     DBPMessageType.ERROR,
-                    () -> DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error)
+                    () -> DBWorkbench.getPlatformUI().showError(
+                        TaskUIMessages.task_processor_ui_error_title, TaskUIMessages.task_processor_ui_error_message, error)
                 );
             }
         });

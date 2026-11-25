@@ -56,6 +56,13 @@ public interface DBPWorkspace extends DBFFileSystemContainer, SMAuthSpace, DBAPe
 
     @NotNull
     List<? extends DBPProject> getProjects();
+
+    /** Projects available in user-facing lists. Internal project management uses {@link #getProjects()}. */
+    @NotNull
+    default List<? extends DBPProject> getVisibleProjects() {
+        return getProjects();
+    }
+
     @Nullable
     DBPProject getActiveProject();
     @Nullable

@@ -202,7 +202,8 @@ public class EditTaskConfigurationDialog extends BaseDialog
             task.setMaxExecutionTime(maxExecutionTime);
             taskManager.updateTaskConfiguration(task);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIMessages.edit_task_config_dialog_title_create_task, TaskUIMessages.task_create_transfer_error_message, e);
             return;
         }
 

@@ -21,6 +21,33 @@ import org.eclipse.osgi.util.NLS;
 public class UIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIMessages"; //$NON-NLS-1$
 
+    public static String task_error_title;
+    public static String task_error_message;
+    public static String command_execute_error_title;
+    public static String command_execute_error_message;
+    public static String external_program_open_error_title;
+    public static String external_program_open_error_message;
+    public static String file_open_error_title;
+    public static String file_read_error_title;
+    public static String file_read_error_message;
+    public static String container_path_error_title;
+    public static String container_path_error_message;
+    public static String wizard_task_error_title;
+    public static String wizard_task_error_message;
+    public static String wizard_page_switch_error_title;
+    public static String wizard_page_switch_error_message;
+    public static String property_value_error_title;
+    public static String property_value_error_message;
+    public static String file_name_error_title;
+    public static String directory_not_exists_message;
+    public static String devtools_notification_title;
+    public static String devtools_notification_message;
+    public static String devtools_notification_prompt;
+    public static String devtools_warning_title;
+    public static String devtools_redshift_connection_message;
+    public static String devtools_forms_hello_title;
+    public static String devtools_forms_hello_message;
+
     public static String output_label_directory;
 
     public static String pref_page_connections_tool_tip_text_allowed_variables;

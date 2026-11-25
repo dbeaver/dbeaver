@@ -47,6 +47,7 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
         STMKnownRuleNames.sqlQuery,
         STMKnownRuleNames.sqlQueryBody,
         STMKnownRuleNames.directSqlDataStatement,
+        STMKnownRuleNames.directSubqueryExpression,
         STMKnownRuleNames.selectStatement,
         STMKnownRuleNames.withClause,
         STMKnownRuleNames.cteList,
@@ -77,67 +78,73 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
         STMKnownRuleNames.explicitTable
     );
 
+    @Nullable
+    private static SQLQueryRowsSourceModel translateQueryWithCtes(
+        @NotNull STMTreeNode node,
+        @NotNull List<SQLQueryRowsSourceModel> children,
+        @NotNull SQLQueryModelRecognizer recognizer
+    ) {
+        if (children.isEmpty()) {
+            return null;
+        } else if (children.size() == 1) {
+            return children.getFirst();
+        } else {
+            List<SQLQueryRowsSourceModel> subqueries = children.subList(0, children.size() - 1);
+            SQLQueryRowsSourceModel resultQuery = children.getLast();
+            if (findImmediateChild(node, resultQuery.getSyntaxNode()) != node.findLastNonErrorChild()) {
+                resultQuery = makeEmptyRowsModel(node.findLastNonErrorChild());
+            }
+
+            STMTreeNode withNode = node.findFirstChildOfName(STMKnownRuleNames.withClause);
+            if (withNode != null) {
+                List<SQLQueryRowsCteSubqueryModel> cteSubqueries = new ArrayList<>();
+                STMTreeNode cteListNode = withNode.findLastChildOfName(STMKnownRuleNames.cteList);
+                if (cteListNode != null) {
+                    SubsourcesMap subsources = new SubsourcesMap(subqueries, cteListNode);
+
+                    for (STMTreeNode cteSubqueryNode : cteListNode.findChildrenOfName(STMKnownRuleNames.with_list_element)) {
+                        STMTreeNode subqueryNameNode = cteSubqueryNode.findFirstChildOfName(STMKnownRuleNames.queryName);
+                        SQLQuerySymbolEntry subqueryName = subqueryNameNode == null ? null : recognizer.collectIdentifier(subqueryNameNode, null);
+
+                        STMTreeNode columnListNode = cteSubqueryNode.findFirstChildOfName(STMKnownRuleNames.columnNameList);
+                        List<SQLQuerySymbolEntry> columnList = columnListNode == null
+                            ? Collections.emptyList()
+                            : recognizer.collectColumnNameList(columnListNode);
+
+                        SQLQueryRowsSourceModel subquerySource = subsources.getOrEmpty(cteSubqueryNode);
+                        SQLQueryLexicalScope subqueryTailScope = null;
+
+                        STMTreeNode subqueryNode = cteSubqueryNode.findLastChildOfName(STMKnownRuleNames.subquery);
+                        if (subqueryNode != null) {
+                            STMTreeNode subqueryTrailingNode = subqueryNode.findLastChildOfName(STMKnownRuleNames.RIGHT_PAREN_TERM);
+                            if (subqueryTrailingNode != null) {
+                                subqueryTailScope = new SQLQueryLexicalScope();
+                                subqueryTailScope.setInterval(
+                                    Interval.of(subquerySource.getInterval().b + 1, subqueryTrailingNode.getRealInterval().a - 1)
+                                );
+                            }
+                        }
+                        cteSubqueries.add(new SQLQueryRowsCteSubqueryModel(
+                            cteSubqueryNode,
+                            subqueryName,
+                            columnList,
+                            subquerySource,
+                            subqueryTailScope
+                        ));
+                    }
+                }
+                return new SQLQueryRowsCteModel(node, cteSubqueries, resultQuery);
+            } else {
+                return new SQLQueryRowsCteModel(node, Collections.emptyList(), resultQuery);
+            }
+        }
+    }
+
     @NotNull
     private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>> translations =
         Map.<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>>ofEntries(
-        Map.entry(STMKnownRuleNames.directSqlDataStatement, (n, cc, r) -> {
-            if (cc.isEmpty()) {
-                return null;
-            } else if (cc.size() == 1) {
-                return cc.get(0);
-            } else {
-                List<SQLQueryRowsSourceModel> subqueries = cc.subList(0, cc.size() - 1);
-                SQLQueryRowsSourceModel resultQuery = cc.get(cc.size() - 1);
-                if (findImmediateChild(n, resultQuery.getSyntaxNode()) != n.findLastNonErrorChild()) {
-                    resultQuery = makeEmptyRowsModel(n.findLastNonErrorChild());
-                }
-
-                STMTreeNode withNode = n.findFirstChildOfName(STMKnownRuleNames.withClause);
-                if (withNode != null) {
-                    List<SQLQueryRowsCteSubqueryModel> cteSubqueries = new ArrayList<>();
-
-                    STMTreeNode cteListNode = withNode.findLastChildOfName(STMKnownRuleNames.cteList);
-                    if (cteListNode != null) {
-
-                        SubsourcesMap subsources = new SubsourcesMap(subqueries, cteListNode);
-
-                        for (STMTreeNode cteSubqueryNode : cteListNode.findChildrenOfName(STMKnownRuleNames.with_list_element)) {
-                            STMTreeNode subqueryNameNode = cteSubqueryNode.findFirstChildOfName(STMKnownRuleNames.queryName);
-                            SQLQuerySymbolEntry subqueryName = subqueryNameNode == null ? null : r.collectIdentifier(subqueryNameNode, null);
-
-                            STMTreeNode columnListNode = cteSubqueryNode.findFirstChildOfName(STMKnownRuleNames.columnNameList);
-                            List<SQLQuerySymbolEntry> columnList = columnListNode == null
-                                ? Collections.emptyList()
-                                : r.collectColumnNameList(columnListNode);
-
-                            SQLQueryRowsSourceModel subquerySource = subsources.getOrEmpty(cteSubqueryNode);
-                            SQLQueryLexicalScope subqueryTailScope = null;
-
-                            STMTreeNode subqueryNode = cteSubqueryNode.findLastChildOfName(STMKnownRuleNames.subquery);
-                            if (subqueryNode != null){
-                                STMTreeNode subqueryTrailingNode = subqueryNode.findLastChildOfName(STMKnownRuleNames.RIGHT_PAREN_TERM);
-                                if (subqueryTrailingNode != null) {
-                                    subqueryTailScope = new SQLQueryLexicalScope();
-                                    subqueryTailScope.setInterval(
-                                        Interval.of(subquerySource.getInterval().b + 1, subqueryTrailingNode.getRealInterval().a - 1)
-                                    );
-                                }
-                            }
-                            cteSubqueries.add(new SQLQueryRowsCteSubqueryModel(
-                                cteSubqueryNode,
-                                subqueryName,
-                                columnList,
-                                subquerySource,
-                                subqueryTailScope
-                            ));
-                        }
-                    }
-                    return new SQLQueryRowsCteModel(n, cteSubqueries, resultQuery);
-                } else {
-                    return new SQLQueryRowsCteModel(n, Collections.emptyList(), resultQuery);
-                }
-            }
-        }),
+        Map.entry(STMKnownRuleNames.directSqlDataStatement, SQLQueryExpressionMapper::translateQueryWithCtes),
+        Map.entry(STMKnownRuleNames.directSubqueryExpression, SQLQueryExpressionMapper::translateQueryWithCtes),
         Map.entry(STMKnownRuleNames.selectStatement, (n, cc, r) -> {
             if (cc.isEmpty()) {
                 return makeEmptyRowsModel(n);

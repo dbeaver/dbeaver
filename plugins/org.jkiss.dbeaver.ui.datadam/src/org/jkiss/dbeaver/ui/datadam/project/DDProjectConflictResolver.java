@@ -23,13 +23,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.sync.project.ConflictResolution;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.ProjectRevisions;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
+import org.jkiss.dbeaver.ui.datadam.DBDamTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 
 import java.time.LocalDateTime;
@@ -64,7 +64,7 @@ public class DDProjectConflictResolver {
     public ConflictDetails loadConflictDetails(@NotNull DBPProject project, @NotNull DBRProgressMonitor monitor) throws DBException {
         monitor.beginTask(DDTrackingUIMessages.project_sync_revisions_job, 1);
         try {
-            if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+            if (!DBDamTokenUIManager.getInstance().ensureTokenReady(monitor)) {
                 return null;
             }
             DDProjectManager manager = uiManager.getProjectManager();
@@ -108,7 +108,7 @@ public class DDProjectConflictResolver {
                 manager.unbindProject(project);
                 return monitor.isCanceled() ? null : ProjectStatus.NOT_SYNC;
             }
-            if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+            if (!DBDamTokenUIManager.getInstance().ensureTokenReady(monitor)) {
                 return null;
             }
             ConflictResolution resolution = choice == Choice.USE_LOCAL

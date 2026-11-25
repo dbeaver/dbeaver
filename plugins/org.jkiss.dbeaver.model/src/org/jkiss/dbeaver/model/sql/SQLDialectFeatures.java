@@ -89,6 +89,14 @@ public abstract class SQLDialectFeatures {
     }
 
     /**
+     * Returns how ARRAY(subquery) is typed. DEFAULT leaves ARRAY as an ordinary function call.
+     */
+    @NotNull
+    public ArraySubquerySemantics getArraySubquerySemantics() {
+        return ArraySubquerySemantics.DEFAULT;
+    }
+
+    /**
      * Whether RETURNS TABLE column names are visible as variables in the routine body.
      */
     public boolean areRoutineTableResultColumnsBodyVisible() {
@@ -237,6 +245,38 @@ public abstract class SQLDialectFeatures {
         NONE,
         PROCEDURAL,
         ANY
+    }
+
+    /**
+     * Interpretation of {@code ARRAY(query)} when the query supplies exactly one result column.
+     * For example, {@code SELECT ARRAY(SELECT CAST(v AS INTEGER) FROM t)} collects the
+     * {@code INTEGER} values of the result rows into an integer array in the non-default modes.
+     * The behavior for an array-valued result column depends on the mode below.
+     */
+    public enum ArraySubquerySemantics {
+        /**
+         * Treat {@code ARRAY(SELECT CAST(v AS INTEGER) FROM t)} as an ordinary function call.
+         * The query argument has scalar type {@code INTEGER}; the call's result type comes from
+         * function metadata (or is unknown), rather than being inferred as {@code INTEGER[]}.
+         */
+        DEFAULT,
+        /**
+         * PostgreSQL: an {@code INTEGER} result column produces {@code INTEGER[]}.
+         * An {@code INTEGER[]} result column produces the same SQL array type with one more
+         * dimension at runtime (not a distinct array-of-arrays SQL type).
+         */
+        MULTIDIMENSIONAL,
+        /**
+         * BigQuery/CockroachDB: an {@code INTEGER} result column produces an integer array;
+         * an array-valued result column cannot be an element, so no valid result type is inferred.
+         */
+        NO_NESTED_ARRAY,
+        /**
+         * Single-column constructor: an {@code INTEGER} result column produces an integer array.
+         * For an array-valued column, the model represents the result as an array of that column's
+         * array type; this mode imposes no dialect-specific rule about nested arrays.
+         */
+        SQL_STANDARD_SINGLE_COLUMN
     }
 
     public record GlobalVariableInfo(String name, String description, DBPDataKind type) {

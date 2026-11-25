@@ -342,7 +342,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                         }
                     });
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Table list", "Can't read table list", e);
+                    DBWorkbench.getPlatformUI().showError(PostgreMessages.table_list_title, PostgreMessages.table_list_error, e);
                 } finally {
                     monitor.done();
                     UIUtils.syncExec(() -> {

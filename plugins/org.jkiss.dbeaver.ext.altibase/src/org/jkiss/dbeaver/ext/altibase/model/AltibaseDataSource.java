@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
+import org.jkiss.dbeaver.ext.altibase.internal.AltibaseMessages;
 import org.jkiss.dbeaver.ext.altibase.model.plan.AltibaseQueryPlanner;
 import org.jkiss.dbeaver.ext.altibase.model.session.AltibaseServerSessionManager;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -227,10 +228,10 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
         if ((warning != null) && (warning.getErrorCode() == AltibaseConstants.EC_PASSWORD_WILL_EXPIRE)) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
-                    AltibaseConstants.SQL_WARNING_TITILE,
+                    AltibaseMessages.sql_warning_title,
                     warning.getMessage() + 
                     AltibaseConstants.NEW_LINE + 
-                    AltibaseConstants.PASSWORD_WILL_EXPIRE_WARN_DESCRIPTION);
+                    AltibaseMessages.password_expire_warning);
 
             return true;
         }

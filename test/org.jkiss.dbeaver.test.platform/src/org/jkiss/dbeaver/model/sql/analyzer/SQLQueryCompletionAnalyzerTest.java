@@ -619,6 +619,117 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
             Assertions.assertTrue(proposals.contains("col2"));
             Assertions.assertTrue(proposals.contains("col3"));
         }
+        {
+            final Set<String> proposals = request.requestNewStrings("UPDATE db.sch.tbl t SET t.|");
+            Assertions.assertTrue(proposals.contains("col1"));
+            Assertions.assertTrue(proposals.contains("col2"));
+            Assertions.assertTrue(proposals.contains("col3"));
+        }
+        {
+            final Set<String> sources = request.requestNewStrings("UPDATE db.sch.tbl t SET col1 = |");
+            Assertions.assertTrue(sources.contains("t.col2"), sources.toString());
+            final Set<String> nextTargets = request.requestNewStrings("UPDATE db.sch.tbl t SET col1 = 1, |");
+            Assertions.assertTrue(nextTargets.contains("col2"), nextTargets.toString());
+            Assertions.assertFalse(nextTargets.contains("t.col2"), nextTargets.toString());
+        }
+    }
+
+    @Test
+    public void testColumnsCompletionInMultiTableUpdate() throws DBException {
+        RequestResult request = RequestBuilder.tables(tables -> {
+            tables.table("first_table", table -> {
+                table.attribute("id");
+                table.attribute("first_only");
+            });
+            tables.table("second_table", table -> {
+                table.attribute("id");
+                table.attribute("second_only");
+            });
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings(
+            "UPDATE first_table a JOIN second_table b ON a.id = b.id SET |");
+        Assertions.assertTrue(proposals.contains("a.first_only"), proposals.toString());
+        Assertions.assertTrue(proposals.contains("b.second_only"), proposals.toString());
+        Assertions.assertTrue(proposals.contains("a.id"), proposals.toString());
+        Assertions.assertTrue(proposals.contains("b.id"), proposals.toString());
+        Assertions.assertFalse(proposals.contains("id"), proposals.toString());
+        Assertions.assertFalse(proposals.contains("first_only"), proposals.toString());
+        Assertions.assertFalse(proposals.contains("second_only"), proposals.toString());
+
+        Set<String> sources = request.requestNewStrings(
+            "UPDATE first_table a SET first_only = | FROM second_table b");
+        Assertions.assertTrue(sources.contains("a.first_only"), sources.toString());
+
+        Set<String> nextTargets = request.requestNewStrings(
+            "UPDATE first_table a SET first_only = 1,|  FROM second_table b");
+        Assertions.assertTrue(nextTargets.contains("a.first_only"), nextTargets.toString());
+        Assertions.assertFalse(nextTargets.contains("second_only"), nextTargets.toString());
+
+        String trailingComma = "UPDATE first_table a JOIN second_table b ON a.id = b.id "
+            + "SET a.id = 1, b.id = 2,";
+        Set<String> targetProposals = request.requestNewStrings(trailingComma + "|   WHERE a.id = 3");
+        Assertions.assertTrue(targetProposals.contains("a.first_only"), targetProposals.toString());
+        Assertions.assertTrue(targetProposals.contains("b.second_only"), targetProposals.toString());
+        Assertions.assertEquals(targetProposals, request.requestNewStrings(trailingComma + " |  WHERE a.id = 3"));
+        Set<String> keywordProposals = request.requestNewStrings(trailingComma + " | WHERE a.id = 3");
+        Assertions.assertTrue(keywordProposals.contains("WHERE"), keywordProposals.toString());
+        Assertions.assertTrue(keywordProposals.contains("a.first_only"), keywordProposals.toString());
+        Set<String> atWhere = request.requestNewStrings(trailingComma + "  |WHERE a.id = 3");
+        Assertions.assertTrue(atWhere.contains("WHERE"), atWhere.toString());
+        Assertions.assertFalse(atWhere.contains("a.first_only"), atWhere.toString());
+
+        Set<String> beforeComma = request.requestNewStrings(
+            "UPDATE first_table a JOIN second_table b ON a.id = b.id SET a.id =   |, b.id = 3");
+        Assertions.assertTrue(beforeComma.contains("a.first_only"), beforeComma.toString());
+        Assertions.assertTrue(beforeComma.contains("b.second_only"), beforeComma.toString());
+
+        Set<String> emptyTarget = request.requestNewStrings(
+            "UPDATE first_table a JOIN second_table b ON a.id = b.id SET a.id = 1, |, b.id = 3");
+        Assertions.assertTrue(emptyTarget.stream().anyMatch(s -> s.endsWith("first_only")), emptyTarget.toString());
+        Assertions.assertTrue(emptyTarget.stream().anyMatch(s -> s.endsWith("second_only")), emptyTarget.toString());
+    }
+
+    @Test
+    public void testSeparatorBoundaryCompletion() throws DBException {
+        RequestResult request = RequestBuilder.tables(tables -> tables.table("tbl", table -> {
+            table.attribute("id");
+            table.attribute("amount");
+        })).prepare();
+
+        Set<String> updateEquals = request.requestNewStrings("UPDATE tbl SET id=|");
+        Set<String> updateEqualsSpace = request.requestNewStrings("UPDATE tbl SET id= |");
+        Assertions.assertEquals(updateEqualsSpace, updateEquals);
+        Assertions.assertTrue(updateEquals.contains("amount"));
+        Assertions.assertTrue(updateEquals.contains("CAST"));
+        Set<String> updateBeforeWhere = request.requestNewStrings("UPDATE tbl SET id=|  WHERE id=1");
+        Set<String> updateBeforeWhereSpace = request.requestNewStrings("UPDATE tbl SET id= | WHERE id=1");
+        Assertions.assertEquals(updateBeforeWhereSpace, updateBeforeWhere);
+        Assertions.assertTrue(updateBeforeWhereSpace.contains("amount"));
+        Set<String> selectComma = request.requestNewStrings("SELECT id,| FROM tbl");
+        Set<String> selectCommaSpace = request.requestNewStrings("SELECT id, | FROM tbl");
+        Assertions.assertEquals(selectCommaSpace, selectComma);
+        Assertions.assertTrue(selectComma.contains("CAST"));
+        Assertions.assertTrue(selectComma.contains("amount"));
+
+        Assertions.assertEquals(request.requestNewStrings("SELECT COALESCE(id,|amount) FROM tbl"),
+            request.requestNewStrings("SELECT COALESCE(id, |amount) FROM tbl"));
+
+        Set<String> predicateEquals = request.requestNewStrings("SELECT id FROM tbl WHERE id=|");
+        Set<String> predicateEqualsSpace = request.requestNewStrings("SELECT id FROM tbl WHERE id= |");
+        Assertions.assertEquals(predicateEqualsSpace, predicateEquals);
+        Assertions.assertTrue(predicateEquals.contains("CAST"));
+        Assertions.assertTrue(predicateEquals.contains("DEFAULT"));
+
+        Set<String> plus = request.requestNewStrings("SELECT id +| amount FROM tbl");
+        Set<String> plusSpace = request.requestNewStrings("SELECT id + | amount FROM tbl");
+        Assertions.assertEquals(plusSpace, plus);
+        Assertions.assertTrue(plus.contains("CAST"));
+
+        Set<String> semicolon = request.requestNewStrings("SELECT id FROM tbl;|");
+        Assertions.assertEquals(semicolon, request.requestNewStrings("SELECT id FROM tbl; |"));
+        Assertions.assertTrue(semicolon.contains("GROUP"));
+        Assertions.assertFalse(semicolon.contains("SELECT"));
     }
     
     @Test

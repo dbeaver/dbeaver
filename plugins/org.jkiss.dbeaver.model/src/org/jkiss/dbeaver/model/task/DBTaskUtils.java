@@ -237,7 +237,7 @@ public class DBTaskUtils {
         String messageOrNull = task.getType().confirmationMessageIfNeeded();
         if (messageOrNull != null) {
             Optional<String> inputFileKey = task.getProperties().keySet().stream().filter(k -> k.contains("inputFile")).findFirst();
-            String inputFile = inputFileKey.isPresent() ? task.getProperties().get(inputFileKey.get()).toString() : "file";
+            String inputFile = inputFileKey.isPresent() ? task.getProperties().get(inputFileKey.get()).toString() : ModelMessages.fs_file;
             String dbObjectNames = "";
             String connectionInfo = "";
             Object dbObjectIdsObj = task.getProperties().get("databaseObjects");

@@ -75,7 +75,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(3).create());
 
         DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
-        List<? extends DBPProject> projects = workspace.getProjects();
+        List<? extends DBPProject> projects = workspace.getVisibleProjects();
 
         Combo projectCombo = UIUtils.createLabelCombo(
             composite,
@@ -213,7 +213,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
 
     @NotNull
     private List<? extends DBPProject> getProjects() {
-        return DBWorkbench.getPlatform().getWorkspace().getProjects();
+        return DBWorkbench.getPlatform().getWorkspace().getVisibleProjects();
     }
 
     private class PrefPageGlobalNetworkProfiles extends PrefPageManagedNetworkProfiles {

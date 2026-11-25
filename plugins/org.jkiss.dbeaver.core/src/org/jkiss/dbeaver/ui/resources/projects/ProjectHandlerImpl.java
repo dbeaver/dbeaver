@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ui.resources.projects;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
@@ -61,7 +63,9 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
     public void openResource(@NotNull IResource resource) {
         DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject((IProject) resource);
         if (!(project instanceof RCPProject rcpProject)) {
-            DBWorkbench.getPlatformUI().showError("No project", "Can't get project metadata for resource " + resource.getName());
+            DBWorkbench.getPlatformUI().showError(
+                CoreMessages.resource_project_missing_title,
+                NLS.bind(CoreMessages.resource_project_missing_message, resource.getName()));
             return;
         }
         MultiPageWizardDialog dialog = new MultiPageWizardDialog(

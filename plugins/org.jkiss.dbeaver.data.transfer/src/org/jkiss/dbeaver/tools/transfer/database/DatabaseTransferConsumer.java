@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -789,8 +790,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 log.error("Error executing post-transfer actions", e);
                 if (!headlessMode) {
                     DBWorkbench.getPlatformUI().showError(
-                        "Post-transfer actions",
-                        "Error executing post-transfer actions",
+                        DTMessages.database_transfer_post_actions_error_title,
+                        DTMessages.database_transfer_post_actions_error_message,
                         e);
                 }
             }
@@ -869,8 +870,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI()
                         .showError(
-                            "Transfer event processor",
-                            "Error executing data transfer event processor '" + descriptor.getLabel() + "'",
+                            DTMessages.data_transfer_event_processor_error_title,
+                            NLS.bind(DTMessages.data_transfer_event_processor_error_message, descriptor.getLabel()),
                             e
                         );
                 }

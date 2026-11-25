@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -254,7 +255,8 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                 monitor.done();
                             });
                         } catch (InvocationTargetException e) {
-                            DBWorkbench.getPlatformUI().showError("Objects refresh", "Error refreshing navigator objects", e);
+                            DBWorkbench.getPlatformUI().showError(
+                                SQLEditorMessages.sql_objects_refresh_title, SQLEditorMessages.sql_objects_refresh_error, e);
                         }
                     });
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ public class TipOfTheDayMessages extends NLS {
 
     public static String tip_of_the_day_title;
     public static String show_tips_on_startup;
+    public static String tip_of_the_day_open_view_title;
+    public static String tip_of_the_day_open_view_error;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, TipOfTheDayMessages.class);
