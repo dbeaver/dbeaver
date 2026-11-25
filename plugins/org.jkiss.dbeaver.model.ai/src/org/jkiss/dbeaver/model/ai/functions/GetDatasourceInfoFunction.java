@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai.functions;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -31,9 +34,16 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class GetDatasourceInfoFunction implements AIFunction {
+    private static final Gson GSON = new GsonBuilder().serializeNulls().create();
+    private static final Pattern CREDENTIAL_PARAMETER = Pattern.compile(
+        "(?i)(?:password|passwd|pwd|secret|token|key|credential|authorization|user(?:name)?)\\s*=");
+
     @NotNull
     @Override
     public AIFunctionResult callFunction(
@@ -42,36 +52,64 @@ public class GetDatasourceInfoFunction implements AIFunction {
     ) throws DBException {
         AIDatabaseContext aiDatabaseContext = context.getContext();
         if (aiDatabaseContext == null) {
-            return new AIFunctionResult(
-                AIFunctionType.INFORMATION,
-                ""
-            );
+            throw new DBException("No database connection");
         }
 
         DBPDataSource dataSource = aiDatabaseContext.getExecutionContext().getDataSource();
         DBPDataSourceInfo info = dataSource.getInfo();
-        DBCExecutionContextDefaults<?, ?> defaults = aiDatabaseContext.getExecutionContext().getContextDefaults();
+        boolean connected = dataSource.getContainer().isConnected();
+        DBCExecutionContextDefaults<?, ?> defaults = connected ? aiDatabaseContext.getExecutionContext().getContextDefaults() : null;
         boolean supportsCatalogs = defaults != null && (defaults.getDefaultCatalog() != null || defaults.supportsCatalogChange());
         boolean supportsSchemas = defaults != null && (defaults.getDefaultSchema() != null || defaults.supportsSchemaChange());
-        if (dataSource instanceof DBSObjectContainer container) {
+        if (connected && dataSource instanceof DBSObjectContainer container) {
             Class<? extends DBSObject> childType = container.getPrimaryChildType(context.getMonitor());
             supportsCatalogs |= DBSCatalog.class.isAssignableFrom(childType);
             supportsSchemas |= DBSSchema.class.isAssignableFrom(childType);
         }
-        String responseText = """
-            Database Driver: %s %s
-            Supports Catalogs: %s
-            Supports Schemas: %s
-            """.formatted(
-            info.getDriverName(), info.getDriverVersion(),
+        var response = new DDMcpDatasourceInfo(
+            dataSource.getContainer().getId(),
+            dataSource.getContainer().getName(),
+            publicConnectionURL(dataSource.getContainer().getConnectionConfiguration().getUrl()),
+            info.getDriverName(),
+            info.getDriverVersion(),
+            connected ? info.getDatabaseProductName() : null,
+            connected ? info.getDatabaseProductVersion() : null,
+            dataSource.getSQLDialect().getDialectName(),
             supportsCatalogs,
-            supportsSchemas
-        );
-
-
+            supportsSchemas,
+            connected);
         return new AIFunctionResult(
             AIFunctionType.INFORMATION,
-            responseText
+            GSON.toJsonTree(response)
         );
+    }
+
+    @Nullable
+    private static String publicConnectionURL(@Nullable String url) {
+        if (url == null) {
+            return null;
+        }
+        try {
+            String decoded = URLDecoder.decode(url, StandardCharsets.UTF_8);
+            // Omit credential-bearing URLs rather than trying to parse each driver's credential syntax.
+            return decoded.indexOf('@') >= 0 || CREDENTIAL_PARAMETER.matcher(decoded).find() ? null : url;
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private record DDMcpDatasourceInfo(
+        @NotNull String dataSourceId,
+        @NotNull String dataSourceName,
+        @Nullable String connectionURL,
+        @Nullable String driverName,
+        @Nullable String driverVersion,
+        @Nullable String databaseServerName,
+        @Nullable String databaseServerVersion,
+        @NotNull String sqlDialectName,
+        boolean supportsCatalogs,
+        boolean supportsSchemas,
+        boolean isConnected
+    ) {
     }
 }

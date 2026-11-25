@@ -1185,8 +1185,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         try (Connection connection = super.openConnection(monitor, null, "Change expired password")) {
             try (Statement stmt = connection.createStatement()) {
                 if (isMariaDB()) {
-                    stmt.execute("SET PASSWORD FOR %s = PASSWORD(%s)".formatted(
-                        SQLUtils.quoteString(this, userName),
+                    // Do not pass the account name here: the connection is already authenticated as this account,
+                    // while "SET PASSWORD FOR '<user>'" does not match host-limited accounts (e.g. user@host)
+                    stmt.execute("SET PASSWORD = PASSWORD(%s)".formatted(
                         SQLUtils.quoteString(this, newPassword)
                     ));
                 } else {

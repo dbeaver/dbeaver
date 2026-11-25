@@ -23,6 +23,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.TreeEditor;
@@ -1406,7 +1407,9 @@ public class PropertyTreeViewer extends TreeViewer {
                     handlePropertyChange(prop);
                 }
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + prop.property.getDisplayName() + "' value", e);
+                DBWorkbench.getPlatformUI().showError(
+                    UIMessages.property_value_error_title,
+                    NLS.bind(UIMessages.property_value_error_message, prop.property.getDisplayName()), e);
             } finally {
                 if (cellEditor == curCellEditor) {
                     disposeOldEditor();

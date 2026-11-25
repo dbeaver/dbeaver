@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 public class DatabaseEditorListener implements INavigatorListener {
     private final IDatabaseEditor databaseEditor;
     private DBPDataSourceContainer dataSourceContainer;
+    private boolean disposed;
 
     DatabaseEditorListener(IDatabaseEditor databaseEditor) {
         this.databaseEditor = databaseEditor;
@@ -51,6 +52,10 @@ public class DatabaseEditorListener implements INavigatorListener {
     }
 
     public void dispose() {
+        if (disposed) {
+            return;
+        }
+        disposed = true;
         // Release datasource
         if (dataSourceContainer != null) {
             dataSourceContainer.release(databaseEditor);
@@ -62,7 +67,10 @@ public class DatabaseEditorListener implements INavigatorListener {
     }
 
     @Override
-    public void nodeChanged(final DBNEvent event) {
+    public void nodeChanged(@NotNull final DBNEvent event) {
+        if (disposed) {
+            return;
+        }
         if (isValuableNode(event.getNode())) {
             Strategy strategy = Strategy.DO_NOTHING;
             if (event.getAction() == DBNEvent.Action.REMOVE) {

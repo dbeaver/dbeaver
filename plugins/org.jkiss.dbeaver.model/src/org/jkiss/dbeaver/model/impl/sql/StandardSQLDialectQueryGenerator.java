@@ -275,6 +275,8 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
             query.append(orderString);
             if (co.isOrderDescending()) {
                 query.append(" DESC"); //$NON-NLS-1$
+            } else if (dataSource.getSQLDialect().requiresExplicitOrderByAsc()) {
+                query.append(" ASC"); //$NON-NLS-1$
             }
             hasOrder = true;
         }

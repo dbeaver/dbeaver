@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
+import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -110,7 +112,7 @@ public class JobRunHandler extends OracleTaskHandler
                     return null;
                 }
                 if (error != null) {
-                    DBWorkbench.getPlatformUI().showError("Unexpected run schedule error", null, error);
+                    DBWorkbench.getPlatformUI().showError(OracleUIMessages.schedule_unexpected_error, null, error);
                 } else if (!CommonUtils.isEmpty(compileLog.getErrorStack())) {
                     // Show compile errors
                     int line = -1, position = -1;
@@ -123,11 +125,11 @@ public class JobRunHandler extends OracleTaskHandler
                         }
                     }
 
-                    String errorTitle = job.getName() + " run schedule failed";
+                    String errorTitle = NLS.bind(OracleUIMessages.schedule_failed, job.getName());
                     DBWorkbench.getPlatformUI().showError(errorTitle, fullMessage.toString());
                 } else {
-                    String message = job.getName() + " successfully scheduled to run";
-                    UIUtils.showMessageBox(activeShell, "Done", message, SWT.ICON_INFORMATION);
+                    String message = NLS.bind(OracleUIMessages.schedule_success, job.getName());
+                    UIUtils.showMessageBox(activeShell, OracleUIMessages.action_done, message, SWT.ICON_INFORMATION);
                 }
             }
         }
