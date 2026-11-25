@@ -18,7 +18,7 @@ Label.dbeaverFormHint,
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-icons-default {
-    color: #C0C0C4;
+    color: #A1A1A9;
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-icons-secondary {
@@ -26,7 +26,7 @@ ColorDefinition#org-jkiss-dbeaver-ui-icons-secondary {
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-icons-accent {
-    color: #6BB6F2;
+    color: #4489BF;
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-icons-tip {
@@ -34,11 +34,11 @@ ColorDefinition#org-jkiss-dbeaver-ui-icons-tip {
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-icons-attention {
-    color: #E69250;
+    color: #DC8B4A;
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-icons-positive {
-    color: #69C45C;
+    color: #62A858;
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-icons-important {
@@ -46,9 +46,9 @@ ColorDefinition#org-jkiss-dbeaver-ui-icons-important {
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-icons-danger {
-    color: #EF967F;
+    color: #E17A60;
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-icons-background {
-    color: #707070;
+    color: #434349;
 }
