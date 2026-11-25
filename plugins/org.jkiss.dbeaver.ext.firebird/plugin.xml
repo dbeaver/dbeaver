@@ -28,6 +28,12 @@
                 label="Firebird"
                 icon="icons/firebird_icon.png"
                 dialect="firebird">
+            <!-- Firebird exceptions (CREATE EXCEPTION) -->
+            <treeInjection path="generic/catalog/schema" after="sequence">
+                <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdException" label="%tree.exceptions.node.name" icon="#folder" description="%tree.exceptions.node.tip">
+                    <items label="%tree.exception.node.name" path="exception" property="exceptions" icon="#small_warning"/>
+                </folder>
+            </treeInjection>
             <drivers managable="true">
 
                 <driver
