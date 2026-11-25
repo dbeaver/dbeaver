@@ -33,4 +33,9 @@ public class ManticoreSQLDialect extends GenericSQLDialect {
     public boolean supportsAliasInConditions() {
         return false;
     }
+
+    @Override
+    public boolean requiresExplicitOrderByAsc() {
+        return true;
+    }
 }

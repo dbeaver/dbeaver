@@ -26,7 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSettingsStore;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.BindingStatus;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -59,7 +59,7 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
                 return false;
             }
             if (PROP_CAN_IMPORT.equals(property)) {
-                DDRemoteDamSettings settings = DDRemoteDamSettingsStore.getInstance().getSettings();
+                DDRemoteDamSettings settings = DBDamSettingsStore.getInstance().getSettings();
                 return settings == null || !settings.isDamEnabled(DDRemoteDamSettingKeys.PROJECTS_STREAM_SYNC, false);
             }
             return PROP_ENABLED.equals(property);

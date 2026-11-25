@@ -117,7 +117,7 @@ class ProjectExportWizardPage extends WizardPage {
         projectsTable.setLayoutData(gd);
         projectsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateState()));
 
-        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
+        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getVisibleProjects()) {
             final TableItem item = new TableItem(projectsTable, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
             item.setText(project.getName());
