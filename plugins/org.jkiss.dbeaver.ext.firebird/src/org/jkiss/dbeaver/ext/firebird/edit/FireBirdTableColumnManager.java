@@ -224,6 +224,8 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         if (!typeSizeChanged) {
             return DBUtils.getQuotedIdentifier(column.getDataSource(), domainName);
         }
+        // No CHARACTER SET is appended on purpose: without it, ALTER COLUMN ... TYPE keeps the column's current
+        // character set and collation (it does not fall back to the database default)
         String baseTypeName = column.getBaseTypeName();
         // Pass the sizes without the column itself: the dialect omits sizes equal to those of the column's
         // data type (here the domain), but they are needed once the column no longer uses the domain
