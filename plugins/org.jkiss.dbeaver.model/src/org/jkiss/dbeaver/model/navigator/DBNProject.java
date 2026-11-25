@@ -48,6 +48,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     private final DBPProject project;
     private List<DBNNode> extraNodes;
     private DBNNode[] children;
+    private boolean disposed;
 
     public DBNProject(DBNNode parentNode, DBPProject project) {
         super(parentNode);
@@ -110,7 +111,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = DBIcon.PROJECT;
-        if (getProject().isPrivateProject()) {
+        if (DBWorkbench.isDistributed() && getProject().isPrivateProject()) {
             image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LAMP);
         } else if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
             image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LOCK);
@@ -155,12 +156,11 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
             project.ensureOpen();
         }
 
+        List<DBNNode> children = new ArrayList<>();
         try {
             DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
 
             dataSourceRegistry.checkForErrors();
-
-            List<DBNNode> children = new ArrayList<>();
 
             children.add(new DBNProjectDatabases(this, dataSourceRegistry));
             addProjectNodes(monitor, children);
@@ -168,6 +168,14 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
             filterChildren(children);
             return children.toArray(DBNNode[]::new);
         } catch (Throwable e) {
+            // These nodes have not been published in the cache yet.
+            for (DBNNode child : children) {
+                try {
+                    DBNUtils.disposeNode(child, false);
+                } catch (Throwable disposeError) {
+                    e.addSuppressed(disposeError);
+                }
+            }
             project.dispose();
             if (e instanceof DBException) {
                 throw e;
@@ -272,7 +280,11 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @Override
-    protected void dispose(boolean reflect) {
+    protected synchronized void dispose(boolean reflect) {
+        if (disposed) {
+            return;
+        }
+        disposed = true;
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
                 DBNUtils.disposeNode(node, reflect);
@@ -289,6 +301,11 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
         }
         super.dispose(reflect);
+    }
+
+    @Override
+    public synchronized boolean isDisposed() {
+        return disposed;
     }
 
     @NotNull
@@ -324,25 +341,62 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
 
     @NotNull
     private DBNNode[] getRegularChildNodes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (children != null) {
+        synchronized (this) {
+            if (disposed) {
+                throw new DBException("Project navigator node is disposed");
+            }
+            if (children != null) {
+                return children;
+            }
+        }
+
+        // Registry initialization can synchronously request a password on the UI thread.
+        // Do not hold the navigator lock: the UI may query this node while loading.
+        try {
+            if (getModel().isGlobal() && !project.isOpen()) {
+                project.ensureOpen();
+            }
+            project.getDataSourceRegistry();
+        } catch (Throwable e) {
+            project.dispose();
+            throw new DBException("Internal error", e);
+        }
+
+        synchronized (this) {
+            if (disposed) {
+                throw new DBException("Project navigator node is disposed");
+            }
+            if (children != null) {
+                return children;
+            }
+            DBNNode[] childNodes = readChildNodes(monitor);
+            // Loading can invoke callbacks which dispose this node reentrantly.
+            if (disposed) {
+                for (DBNNode child : childNodes) {
+                    DBNUtils.disposeNode(child, false);
+                }
+                throw new DBException("Project navigator node is disposed");
+            }
+            children = childNodes;
             return children;
         }
-        children = readChildNodes(monitor);
-        return children;
     }
 
     @Override
-    public boolean needsInitialization() {
+    public synchronized boolean needsInitialization() {
         return children == null;
     }
 
     @Override
-    public DBNNode[] getCachedChildren() {
+    @Nullable
+    public synchronized DBNNode[] getCachedChildren() {
         return children;
     }
 
     @Override
-    public void setCachedChildren(DBNNode[] children) {
-        this.children = children;
+    public synchronized void setCachedChildren(@Nullable DBNNode[] children) {
+        if (!disposed) {
+            this.children = children;
+        }
     }
 }

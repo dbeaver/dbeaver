@@ -20,9 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -74,21 +72,24 @@ public class AIPromptUtils {
                 }
             }
 
-            String currentCatalog = dataSource.getCurrentCatalog();
-            if (!CommonUtils.isEmpty(currentCatalog)) {
-                String catalogTerm = (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()).toLowerCase();
-                lines.add("Default " + catalogTerm + ": " + currentCatalog);
-            }
-            String currentSchema = dataSource.getCurrentSchema();
-            if (!CommonUtils.isEmpty(currentSchema)) {
-                String schemaTerm = (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()).toLowerCase();
-                lines.add("Default " + schemaTerm + ": " + currentSchema);
+            AIContextSettingsDataSource settings = new AIContextSettingsDataSource(dataSource.getDataSourceContainer());
+            if (settings.getScope() != AIDatabaseScope.CUSTOM) {
+                String currentCatalog = dataSource.getCurrentCatalog();
+                if (!CommonUtils.isEmpty(currentCatalog)) {
+                    String catalogTerm = (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()).toLowerCase();
+                    lines.add("Default " + catalogTerm + ": " + currentCatalog);
+                }
+                String currentSchema = dataSource.getCurrentSchema();
+                if (!CommonUtils.isEmpty(currentSchema)) {
+                    String schemaTerm = (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()).toLowerCase();
+                    lines.add("Default " + schemaTerm + ": " + currentSchema);
+                }
             }
             if (dataSource.getDataSourceContainer().isConnectionReadOnly()) {
                 lines.add("The database connection is read-only. Data modification is restricted. Database structure cannot be changed.");
             }
         }
-        lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
+        lines.add("Current date: " + DateTimeFormatter.ISO_LOCAL_DATE.format(ZonedDateTime.now()));
 
         return lines.toArray(String[]::new);
     }
@@ -103,7 +104,7 @@ public class AIPromptUtils {
         List<String> instructions = new ArrayList<>();
         instructions.add("By default generate SQL queries according to user requests. Also answer to general database related questions.");
         if (isInAIChat) {
-            instructions.add("If user wants to see table data then show it in markdown table format by default.");
+            instructions.add("If user explicitly wants to see table data instead of SQL then show it in markdown table format by default.");
         }
         instructions.add("Stick strictly to SQL dialect syntax.");
         instructions.add("Do not invent columns, tables, or data that aren't explicitly defined.");

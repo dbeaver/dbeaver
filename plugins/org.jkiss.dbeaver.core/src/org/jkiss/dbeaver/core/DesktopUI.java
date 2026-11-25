@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.ModalContext;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
@@ -45,7 +46,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.model.exec.DBCDriverLicenseException;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
@@ -72,8 +75,11 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -108,7 +114,7 @@ public class DesktopUI extends ConsoleUserInterface {
         }
     }
 
-    // This method is called during startup thru @ComponentReference in workbench
+    // Called when the application initializes its platform UI.
     public void initialize() {
         new AbstractJob("Workbench listener") {
             @NotNull
@@ -168,7 +174,7 @@ public class DesktopUI extends ConsoleUserInterface {
             // Display the dialog
             StandardErrorDialog dialog = new StandardErrorDialog(
                 UIUtils.getActiveWorkbenchShell(),
-                CommonUtils.notNull(title, "Error"),
+                CommonUtils.notNull(title, CoreMessages.dialog_error_title),
                 message,
                 status,
                 IStatus.ERROR);
@@ -354,10 +360,18 @@ public class DesktopUI extends ConsoleUserInterface {
         return ExecutionQueueErrorJob.showError(task, error, queue);
     }
 
-    private static UserResponse showDatabaseError(String message, DBException error)
-    {
+    @Nullable
+    private static UserResponse showDatabaseError(@Nullable String message, @NotNull DBException error) {
+        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (Throwable cause = error; cause != null && visited.add(cause); cause = cause.getCause()) {
+            if (cause instanceof DBCDriverLicenseException licenseError) {
+                showDriverLicenseError(licenseError);
+                return UserResponse.OK;
+            }
+        }
         DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
-        DBPErrorAssistant.ErrorType errorType = dataSource == null ? DBPErrorAssistant.ErrorType.NORMAL : DBExecUtils.discoverErrorType(dataSource, error);
+        DBPErrorAssistant.ErrorType errorType = dataSource == null
+            ? DBPErrorAssistant.ErrorType.NORMAL : DBExecUtils.discoverErrorType(dataSource, error);
         switch (errorType) {
             case CONNECTION_LOST:
                 if (dataSource.getContainer().getDataSource() == null) {
@@ -369,9 +383,27 @@ public class DesktopUI extends ConsoleUserInterface {
             case DRIVER_CLASS_MISSING:
                 DriverEditHelpers.showBadConfigDialog(null, message, error);
                 return UserResponse.OK;
+            default:
+                return null;
         }
+    }
 
-        return null;
+    private static void showDriverLicenseError(@NotNull DBCDriverLicenseException error) {
+        UIUtils.syncExec(() -> {
+            new StandardErrorDialog(
+                UIUtils.getActiveWorkbenchShell(),
+                CoreMessages.driver_license_required_title,
+                NLS.bind(CoreMessages.driver_license_required_message, error.getContainer().getDriver().getName()),
+                GeneralUtils.makeExceptionStatus(error),
+                IStatus.ERROR
+            ) {
+                @NotNull
+                @Override
+                public DBPImage getImage() {
+                    return DBIcon.SMALL_ERROR;
+                }
+            }.open();
+        });
     }
 
     @Nullable
@@ -549,7 +581,7 @@ public class DesktopUI extends ConsoleUserInterface {
         try {
             processDescriptor.execute();
         } catch (DBException e) {
-            showError("Execute process", processDescriptor.getName(), e);
+            showError(ModelMessages.process_execute_error_title, processDescriptor.getName(), e);
         }
         if (processDescriptor.getCommand().isShowProcessPanel()) {
             UIUtils.asyncExec(() -> {
@@ -738,7 +770,8 @@ public class DesktopUI extends ConsoleUserInterface {
         String[] filterExt,
         String defaultValue
     ) {
-        showMessageBox("Not supported", "External file system are not supported", true);
+            showMessageBox(CoreMessages.external_file_system_not_supported_title,
+                CoreMessages.external_file_system_not_supported_message, true);
         return null;
     }
 

@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -35,8 +36,8 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSaveReport;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.DetailsViewDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
@@ -171,7 +172,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
                     false,
                     "");
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Can't create SQL panel", "Error creating SQL panel", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_sql_panel_title, ResultSetMessages.error_sql_panel_message, e);
             }
         }
         populateSQL();
@@ -206,7 +207,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
                 }
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Can't generate SQL script", "Error generating SQL script from changes", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_generate_script_title, ResultSetMessages.error_generate_changes_script, e);
         }
     }
 

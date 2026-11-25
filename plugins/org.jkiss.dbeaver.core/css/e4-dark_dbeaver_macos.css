@@ -1,0 +1,4 @@
+Combo[style~='SWT.READ_ONLY'] {
+    /* let Cocoa choose text colors for the native popup menu and its selection */
+    color: unset;
+}

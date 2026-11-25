@@ -32,7 +32,9 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -53,6 +55,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -371,22 +374,33 @@ public class ActionUtils {
     }
 
     public static void runCommand(String commandId, ISelection selection, Map<String, Object> parameters, IServiceLocator serviceLocator) {
+        runCommand(commandId, selection, parameters, null, serviceLocator);
+    }
+
+    public static void runCommand(
+        @Nullable String commandId,
+        @Nullable ISelection selection,
+        @Nullable Map<String, Object> parameters,
+        @Nullable Map<String, Object> contextVariables,
+        @NotNull IServiceLocator serviceLocator
+    ) {
         if (commandId != null) {
             try {
                 ICommandService commandService = serviceLocator.getService(ICommandService.class);
                 IHandlerService handlerService = serviceLocator.getService(IHandlerService.class);
                 if (commandService != null) {
                     Command command = commandService.getCommand(commandId);
-                    boolean needContextPatch = false;
+                    boolean needContextPatch = !CommonUtils.isEmpty(contextVariables);
                     if (selection != null) {
                         needContextPatch = true;
                         if (serviceLocator instanceof IWorkbenchPartSite) {
-                            final ISelection curSelection = ((IWorkbenchSite) serviceLocator).getSelectionProvider().getSelection();
+                            final ISelectionProvider selectionProvider = ((IWorkbenchSite) serviceLocator).getSelectionProvider();
+                            final ISelection curSelection = selectionProvider == null ? null : selectionProvider.getSelection();
                             if (curSelection instanceof IStructuredSelection && selection instanceof IStructuredSelection) {
                                 if (((IStructuredSelection) curSelection).size() == ((IStructuredSelection) selection).size() &&
                                     ((IStructuredSelection) curSelection).getFirstElement() == ((IStructuredSelection) selection).getFirstElement()) {
                                     // The same selection
-                                    needContextPatch = false;
+                                    needContextPatch = !CommonUtils.isEmpty(contextVariables);
                                 }
                             }
                         }
@@ -409,14 +423,20 @@ public class ActionUtils {
                         }
                     }
 
-                    if (selection != null && needContextPatch) {
+                    if (needContextPatch) {
                         // Create new eval context
+                        IEvaluationContext parentContext = handlerService.createContextSnapshot(false);
                         IEvaluationContext context = new EvaluationContext(
-                            handlerService.createContextSnapshot(false), selection);
+                            parentContext, selection == null ? parentContext.getDefaultVariable() : selection);
                         if (serviceLocator instanceof IWorkbenchPartSite) {
                             context.addVariable(ISources.ACTIVE_PART_NAME, ((IWorkbenchPartSite) serviceLocator).getPart());
                         }
-                        context.addVariable(ISources.ACTIVE_CURRENT_SELECTION_NAME, selection);
+                        if (selection != null) {
+                            context.addVariable(ISources.ACTIVE_CURRENT_SELECTION_NAME, selection);
+                        }
+                        if (contextVariables != null) {
+                            contextVariables.forEach(context::addVariable);
+                        }
 
                         ParameterizedCommand pc = new ParameterizedCommand(command, parametrization);
                         handlerService.executeCommandInContext(pc, null, context);
@@ -432,7 +452,8 @@ public class ActionUtils {
                     }
                 }
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Error running command", "Can't execute command '" + commandId + "'", e);
+                DBWorkbench.getPlatformUI().showError(
+                    UIMessages.command_execute_error_title, NLS.bind(UIMessages.command_execute_error_message, commandId), e);
             }
         }
     }

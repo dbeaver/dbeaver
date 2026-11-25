@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ public class PostgresUserPasswordManager implements DBAUserPasswordManager {
             // User can set new empty password, but then we will get an error when connecting with an empty password
             throw new DBException("Password change error for user: " + userName + ". New password can not be empty.");
         }
+        dataSource.validateUserPassword(monitor, userName, oldPassword);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
             JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " WITH PASSWORD " + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)));

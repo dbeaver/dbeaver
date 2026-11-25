@@ -17,14 +17,12 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -225,10 +223,6 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
     }
 
     protected void showAuthModelSettings() {
-        Composite parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, CTabFolder.class);
-        if (parentFolder == null) {
-            parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, Shell.class);
-        }
         modelConfigPlaceholder.setRedraw(false);
 
         UIUtils.disposeChildControls(modelConfigPlaceholder);
@@ -257,7 +251,6 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
                         ? ""
                         : CommonUtils.notEmpty(selectedAuthModel.getDescription()));
                 }
-                UIUtils.resizeShell(authModelCombo.getShell());
             }));
         UIUtils.createEmptyLabel(authModelComp, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (sharedConfigurator != null) {
@@ -328,8 +321,8 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
         }
 
         modelConfigPlaceholder.setRedraw(true);
-        if (modelConfigPlaceholder.getSize().x > 0 && parentFolder != null) {
-            parentFolder.layout(true, true);
+        if (modelConfigPlaceholder.getSize().x > 0) {
+            UIUtils.updateDialogSize(modelConfigPlaceholder);
         }
     }
 

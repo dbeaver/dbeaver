@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatResponseLegacy;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
@@ -33,6 +35,16 @@ public final class CopilotUtils {
     public static final Gson GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .create();
+
+    @NotNull
+    static String serializeChatRequest(@NotNull CopilotChatRequest request) {
+        JsonObject json = GSON.toJsonTree(request).getAsJsonObject();
+        json.remove("useServerDefaultTemperature");
+        if (request.useServerDefaultTemperature()) {
+            json.remove("temperature");
+        }
+        return GSON.toJson(json);
+    }
 
     @NotNull
     public static AIFunctionCall createFunctionCall(

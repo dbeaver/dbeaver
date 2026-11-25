@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * JDBCUtils
@@ -57,6 +58,22 @@ public class JDBCUtils {
     private static final Log log = Log.getLog(JDBCUtils.class);
 
     private static final Map<String, Integer> badColumnNames = new HashMap<>();
+
+    public static boolean matchesSQLException(
+        @NotNull Throwable error,
+        @NotNull Predicate<SQLException> predicate
+    ) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLException sqlException) {
+                for (SQLException current = sqlException; current != null; current = current.getNextException()) {
+                    if (predicate.test(current)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     @Nullable
     public static String safeGetString(ResultSet dbResult, String columnName) {
@@ -478,7 +495,8 @@ public class JDBCUtils {
                     }
                 } else {
                     try {
-                        isValid[0] = connection.isValid(invalidateTimeout);
+                        // isValid takes seconds, the preference is in milliseconds (rounded up, at least 1 s)
+                        isValid[0] = connection.isValid(Math.max(1, (int) ((invalidateTimeout + 999L) / 1000)));
                     } catch (Throwable e) {
                         // isValid may be unsupported by driver
                         // Let's try to read table list
@@ -946,7 +964,7 @@ public class JDBCUtils {
     public static DBPDataKind getDataKindByTypeID(int typeId, @Nullable String typeName) {
         return switch (typeId) {
             case Types.BOOLEAN -> DBPDataKind.BOOLEAN;
-            case Types.CHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR -> DBPDataKind.STRING;
+            case Types.CHAR, Types.NCHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR -> DBPDataKind.STRING;
             case Types.BIGINT, Types.DECIMAL, Types.DOUBLE, Types.FLOAT, Types.INTEGER, Types.NUMERIC, Types.REAL, Types.SMALLINT ->
                 DBPDataKind.NUMERIC;
             case Types.BIT, Types.TINYINT -> {

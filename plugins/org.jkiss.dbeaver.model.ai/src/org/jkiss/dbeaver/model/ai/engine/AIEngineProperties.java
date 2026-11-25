@@ -17,18 +17,71 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
+
+import java.util.List;
 
 public interface AIEngineProperties {
 
     int DEFAULT_TIMEOUT = 30;
 
+    boolean isGlobal();
+
+    void setGlobal(boolean global);
+
+    @Nullable
     String getModel();
 
+    @Nullable
+    default String getEffectiveModel() {
+        return getModel();
+    }
+
+    default boolean isUseEnvVariables() {
+        return false;
+    }
+
+    default void setUseEnvVariables(boolean useEnvVariables) {
+    }
+
+    @NotNull
+    default List<String> getEnvironmentVariables() {
+        return List.of();
+    }
+
+    @Nullable
+    default String getModelDisplayName() {
+        return getEffectiveModel();
+    }
+
+    default boolean isModelSelectionSupported() {
+        return true;
+    }
+
+    default void setModel(@NotNull String model) throws DBException {
+        throw new DBException("This AI engine does not support model selection");
+    }
+
+    default void selectModel(@NotNull AIModel model) throws DBException {
+        setModel(model.name());
+    }
+
+    @Nullable
     Integer getContextWindowSize();
 
+    @Nullable
+    default Integer getEffectiveContextWindowSize() {
+        return getContextWindowSize();
+    }
+
     double getTemperature();
+
+    @Nullable
+    default Double getRequestTemperature() {
+        return getTemperature();
+    }
 
     // Checks that properties have all required values
     boolean isValidConfiguration();
@@ -40,6 +93,9 @@ public interface AIEngineProperties {
     int getTimeout();
 
     void setTimeout(int timeout);
+
+    default void clearUserCredentials() {
+    }
 
     void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException;
 

@@ -21,6 +21,103 @@ import org.eclipse.osgi.util.NLS;
 public class ResultSetMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages"; //$NON-NLS-1$
 
+    public static String controls_resultset_filter_saved_message;
+    public static String error_activate_presentation_title;
+    public static String error_apply_changes_title;
+    public static String error_bad_filter_title;
+    public static String error_cell_editor_message;
+    public static String error_cell_editor_title;
+    public static String error_copy_as_title;
+    public static String error_copy_value_message;
+    public static String error_copy_value_title;
+    public static String error_create_panel;
+    public static String error_data_formats_message;
+    public static String error_data_formats_title;
+    public static String error_data_title;
+    public static String error_duplicate_constraint;
+    public static String error_edit_cell_title;
+    public static String error_edit_value;
+    public static String error_empty_data_title;
+    public static String error_execute_query_message;
+    public static String error_execute_query_title;
+    public static String error_extract_value_message;
+    public static String error_extract_value_title;
+    public static String error_file_message;
+    public static String error_file_title;
+    public static String error_generate_changes_script;
+    public static String error_generate_script_message;
+    public static String error_generate_script_title;
+    public static String error_hint_message;
+    public static String error_hint_title;
+    public static String error_insert_uuid_message;
+    public static String error_insert_uuid_title;
+    public static String error_instantiate_presentation;
+    public static String error_load_content_file;
+    public static String error_load_content_file_message;
+    public static String error_load_content_message;
+    public static String error_load_content_title;
+    public static String error_navigate_null;
+    public static String error_navigator_node_not_found;
+    public static String error_no_active_connection;
+    public static String error_no_printers_message;
+    public static String error_no_printers_title;
+    public static String error_null_raw_value;
+    public static String error_object_info_message;
+    public static String error_object_info_title;
+    public static String error_open_app_file;
+    public static String error_open_app_title;
+    public static String error_open_content_editor;
+    public static String error_open_content_title;
+    public static String error_open_file_message;
+    public static String error_open_in_title;
+    public static String error_open_link_title;
+    public static String error_open_value_message;
+    public static String error_open_value_unexpected;
+    public static String error_paste_multiple_ranges;
+    public static String error_read_content_message;
+    public static String error_read_content_title;
+    public static String error_read_data_title;
+    public static String error_refresh_content_editor;
+    public static String error_refresh_grouping_message;
+    public static String error_replace_cell_value;
+    public static String error_report_message;
+    public static String error_report_title;
+    public static String error_resolve_type_message;
+    public static String error_resolve_type_title;
+    public static String error_restore_cell_message;
+    public static String error_save_changes_message;
+    public static String error_save_content_database;
+    public static String error_save_content_file;
+    public static String error_save_filter_title;
+    public static String error_save_null_value;
+    public static String error_save_value_message;
+    public static String error_save_value_title;
+    public static String error_set_filter_message;
+    public static String error_set_filter_title;
+    public static String error_show_panel_title;
+    public static String error_smart_commit_message;
+    public static String error_smart_commit_title;
+    public static String error_sql_panel_message;
+    public static String error_sql_panel_title;
+    public static String error_stream_editor_message;
+    public static String error_stream_editor_title;
+    public static String error_switch_presentation_message;
+    public static String error_switch_presentation_title;
+    public static String error_synchronize_data_message;
+    public static String error_table_references_message;
+    public static String error_table_references_title;
+    public static String error_target_not_data_container;
+    public static String error_transform_message;
+    public static String error_transform_title;
+    public static String error_update_value_message;
+    public static String error_value_panel_title;
+    public static String error_viewer_detached;
+    public static String error_virtual_key_title;
+
+    public static String controls_resultset_reset_colors_confirm_message;
+    public static String virtual_column_delete_confirm_title;
+    public static String virtual_column_delete_confirm_message;
+
     public static String confirm_modifying_query_message;
     public static String confirm_modifying_query_title;
 
@@ -92,12 +189,10 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_panels;
     public static String controls_resultset_viewer_action_options;
     public static String controls_resultset_viewer_add_new_row_context_name;
-    public static String controls_resultset_check_autocommit_state;
-    public static String controls_resultset_viewer_job_update;
     public static String controls_resultset_viewer_action_navigate;
     public static String controls_resultset_viewer_action_layout;
-    public static String controls_resultset_viewer_monitor_aply_changes;
     public static String controls_resultset_viewer_status_inserted_;
+    public static String controls_resultset_viewer_status_save_zero_rows;
     public static String controls_resultset_viewer_status_empty;
     public static String controls_resultset_viewer_status_no_data;
     public static String controls_resultset_viewer_status_row;
@@ -115,6 +210,8 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_unpin_columns;
     public static String controls_resultset_viewer_hide_column_x;
     public static String controls_resultset_viewer_hide_columns_x;
+    public static String controls_resultset_viewer_hide_null_columns;
+    public static String controls_resultset_viewer_hide_empty_string_columns;
     public static String controls_resultset_viewer_hide_columns_error_title;
     public static String controls_resultset_viewer_hide_columnss_error_text;
     public static String controls_resultset_viewer_show_hidden_columns;
@@ -141,7 +238,6 @@ public class ResultSetMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_label;
     public static String sql_editor_resultset_filter_panel_btn_open_console;
     public static String sql_editor_resultset_filter_panel_control_no_data;
-    public static String sql_editor_resultset_filter_panel_control_execute_to_see_result;
     public static String sql_editor_resultset_filter_panel_show_sql_label;
 
     public static String actions_name_color_by;
@@ -202,6 +298,7 @@ public class ResultSetMessages extends NLS {
 
     public static String dialog_filter_value_edit_title;
     public static String dialog_filter_value_edit_label_choose_values;
+    public static String dialog_filter_value_edit_dialog_title;
     public static String dialog_filter_value_edit_label_define_description;
     public static String dialog_filter_value_edit_text_hint;
     public static String dialog_filter_value_edit_table_value_label;
@@ -262,6 +359,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_content_editor_checkbox_string_editor_for_datetime;
     public static String pref_page_content_editor_checkbox_string_editor_for_datetime_tip;
     public static String pref_page_content_editor_group_editing;
+    public static String pref_page_content_editor_group_history;
+    public static String pref_page_content_editor_label_undo_history_size;
     public static String pref_page_content_editor_checkbox_keys_always_use_all_columns;
     public static String pref_page_content_editor_checkbox_disable_editing_if_key_missing;
     public static String pref_page_content_editor_checkbox_new_rows_after;
@@ -483,6 +582,10 @@ public class ResultSetMessages extends NLS {
     public static String find_and_replace_overlay_label;
     public static String find_and_replace_overlay_tooltip;
     public static String find_and_replace_find_all_tooltip;
+
+    public static String dialog_policy_data_copy_title;
+    public static String dialog_policy_data_copy_msg;
+    public static String dialog_policy_data_edit_msg;
 
     static {
         // initialize resource bundle

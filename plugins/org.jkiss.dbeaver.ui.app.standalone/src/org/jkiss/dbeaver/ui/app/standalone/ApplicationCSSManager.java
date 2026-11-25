@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
-
-import org.eclipse.e4.ui.css.core.dom.ExtendedDocumentCSS;
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
 import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.Log;
-import org.w3c.dom.stylesheets.StyleSheet;
-import org.w3c.dom.stylesheets.StyleSheetList;
 
-import java.io.Reader;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
 class ApplicationCSSManager {
 
@@ -42,21 +35,8 @@ class ApplicationCSSManager {
             log.error("No CSSEngine");
             return;
         }
-        ExtendedDocumentCSS doc = (ExtendedDocumentCSS) engine.getDocumentCSS();
-        List<StyleSheet> sheets = new ArrayList<>();
-        StyleSheetList list = doc.getStyleSheets();
-        for (int i = 0; i < list.getLength(); i++) {
-            sheets.add(list.item(i));
-        }
-
         try {
-            Reader reader = new StringReader(TABBED_FOLDER_STYLE);
-            sheets.add(engine.parseStyleSheet(reader));
-            doc.removeAllStyleSheets();
-            for (StyleSheet sheet : sheets) {
-                doc.addStyleSheet(sheet);
-            }
-            //engine.reapply();
+            engine.parseStyleSheet(new StringReader(TABBED_FOLDER_STYLE));
         } catch (Exception e) {
             log.error(e);
         }

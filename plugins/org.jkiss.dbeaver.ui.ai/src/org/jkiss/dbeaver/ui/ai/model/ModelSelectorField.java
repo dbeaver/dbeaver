@@ -42,12 +42,14 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class ModelSelectorField {
     private static final Log log = Log.getLog(ModelSelectorField.class);
@@ -60,11 +62,16 @@ public class ModelSelectorField {
     private final ModelListProvider modelListProvider;
     @NotNull
     private final List<RequiredSetting> requiredSettings;
+    @Nullable
+    private final Consumer<Boolean> modelChangeListener;
 
     private volatile String selectedModelName;
     private volatile AIModel selectedModel;
     private boolean disableModifyListener = false;
     private List<AIModel> loadedModels;
+    private boolean fieldEnabled = true;
+    @Nullable
+    private String environmentModel;
     private boolean refreshEnabled = true;
     @Nullable
     private String refreshDisabledMessage;
@@ -72,18 +79,22 @@ public class ModelSelectorField {
     private ModelSelectorField(@NotNull Builder builder) {
         this.modelListProvider = builder.modelListSupplier;
         this.requiredSettings = List.copyOf(builder.requiredSettings);
+        this.modelChangeListener = builder.modelChangeListener;
 
         this.combo = UIUtils.createLabelCombo(builder.parent, builder.modelLabel, SWT.DROP_DOWN);
         this.combo.setLayoutData(builder.gridData);
         this.combo.addModifyListener(e -> {
             String newText = combo.getText();
-            if (disableModifyListener || newText.equals(selectedModelName)) {
+            if (disableModifyListener || environmentModel != null || newText.equals(selectedModelName)) {
                 return;
             }
             selectedModelName = newText;
             selectedModel = getModel(newText);
             if (builder.onModify != null) {
                 builder.onModify.run();
+            }
+            if (modelChangeListener != null) {
+                modelChangeListener.accept(true);
             }
         });
 
@@ -129,14 +140,28 @@ public class ModelSelectorField {
     }
 
     public void setSelectedModel(@Nullable String model) {
-        if (model == null || model.isBlank()) {
+        if (environmentModel != null) {
+            selectedModelName = model;
+            selectedModel = model == null ? null : getModel(model);
             return;
         }
-        combo.setText(model);
+        combo.setText(model == null ? "" : model);
+    }
+
+    public void setEnvironmentModel(@Nullable String model) {
+        environmentModel = model;
+        disableModifyListener = true;
+        try {
+            // display overrides without changing the model saved in the profile
+            combo.setText(model == null ? CommonUtils.notEmpty(selectedModelName) : model);
+        } finally {
+            disableModifyListener = false;
+        }
+        setEnabled(model == null);
     }
 
     public void refreshModelListSilently(boolean refresh) {
-        if (!refreshEnabled || findMissingSetting() != null) {
+        if (!fieldEnabled || !refreshEnabled || findMissingSetting() != null) {
             return;
         }
         new AbstractJob("Refreshing model list silently") {
@@ -160,34 +185,48 @@ public class ModelSelectorField {
         updateRefreshButtonState();
     }
 
-    public int refreshModelList(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
-        loadedModels = modelListProvider.getModels(monitor, refresh);
+    public void setEnabled(boolean enabled) {
+        fieldEnabled = enabled;
+        combo.setEnabled(enabled);
+        updateRefreshButtonState();
+    }
 
-        if (loadedModels.isEmpty()) {
-            return 0;
-        }
+    public int refreshModelList(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
+        List<AIModel> models = modelListProvider.getModels(monitor, refresh);
 
         UIUtils.syncExec(() -> {
             if (combo.isDisposed()) {
                 return;
             }
+            loadedModels = models;
             String selectedItem = combo.getText();
-            Set<String> models = new LinkedHashSet<>(loadedModels.stream().map(AIModel::name).toList());
+            Set<String> modelNames = new LinkedHashSet<>(models.stream().map(AIModel::name).toList());
             if (!selectedItem.isEmpty()) {
-                models.add(selectedItem);
+                modelNames.add(selectedItem);
             }
 
-            List<String> sortedModels = models.stream()
+            List<String> sortedModels = modelNames.stream()
                 .sorted(String::compareToIgnoreCase)
                 .toList();
 
             disableModifyListener = true;
-            combo.setItems(sortedModels.toArray(new String[0]));
-            disableModifyListener = false;
-            combo.select(sortedModels.indexOf(selectedItem));
+            try {
+                combo.setItems(sortedModels.toArray(new String[0]));
+                // select() can leave an editable combo empty after replacing its items on macOS
+                combo.setText(selectedItem);
+                if (environmentModel == null) {
+                    selectedModelName = combo.getText();
+                    selectedModel = getModel(selectedModelName);
+                }
+            } finally {
+                disableModifyListener = false;
+            }
+            if (modelChangeListener != null) {
+                modelChangeListener.accept(false);
+            }
         });
 
-        return loadedModels.size();
+        return models.size();
     }
 
     private void refreshModelListWithProgress() {
@@ -261,7 +300,7 @@ public class ModelSelectorField {
         if (refreshButton.isDisposed()) {
             return;
         }
-        if (!refreshEnabled) {
+        if (!fieldEnabled || !refreshEnabled) {
             refreshButton.setEnabled(false);
             refreshButton.setToolTipText(refreshDisabledMessage);
             return;
@@ -294,6 +333,8 @@ public class ModelSelectorField {
 
         @Nullable
         private Runnable onModify;
+        @Nullable
+        private Consumer<Boolean> modelChangeListener;
 
         @NotNull
         private ModelListProvider modelListSupplier;
@@ -313,6 +354,12 @@ public class ModelSelectorField {
 
         public Builder withModifyListener(@NotNull Runnable onModify) {
             this.onModify = onModify;
+            return this;
+        }
+
+        @NotNull
+        public Builder withModelChangeListener(@NotNull Consumer<Boolean> listener) {
+            this.modelChangeListener = listener;
             return this;
         }
 

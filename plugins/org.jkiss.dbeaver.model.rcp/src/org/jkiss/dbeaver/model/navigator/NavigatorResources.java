@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,12 +83,16 @@ public class NavigatorResources {
             return null;
         }
         final DBNProject projectNode = getProjectNode(root, project);
-        if (projectNode == null) {
+        if (projectNode == null || !(projectNode.getProject() instanceof RCPProject rcpProject)) {
             return null;
         }
         List<IResource> path = new ArrayList<>();
-        for (IResource parent = resource; parent != null && parent != project; parent = parent.getParent()) {
-            path.add(0, parent);
+        for (
+            IResource parent = resource;
+            isBelowProjectResourceRoot(rcpProject, parent, project);
+            parent = parent.getParent()
+        ) {
+            path.addFirst(parent);
         }
         DBNNode curResNode = projectNode;
         for (IResource res : path) {
@@ -98,6 +102,16 @@ public class NavigatorResources {
             }
         }
         return curResNode instanceof DBNResource dbnResource ? dbnResource : null;
+    }
+
+    private static boolean isBelowProjectResourceRoot(
+        @NotNull RCPProject rcpProject,
+        @Nullable IResource resource,
+        @NotNull IProject eclipseProject
+    ) {
+        return resource != null
+            && resource != eclipseProject
+            && !CommonUtils.equalObjects(resource, rcpProject.getRootResource());
     }
 
     public static void refreshNavigatorResource(@NotNull DBPProject project, @NotNull IResource resource, Object source) {

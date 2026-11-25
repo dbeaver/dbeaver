@@ -1,84 +1,42 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.ext.generic" xmlns="http://www.w3.org/2001/XMLSchema">
-<annotation>
-      <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.ext.generic" id="org.jkiss.dbeaver.generic.meta" name="Generic meta model retrieval"/>
-      </appInfo>
-      <documentation>
-         [Enter description of this extension point.]
-      </documentation>
-   </annotation>
-
+   <annotation><appInfo><meta.schema plugin="org.jkiss.dbeaver.ext.generic" id="org.jkiss.dbeaver.generic.meta" name="Generic meta model retrieval"/></appInfo></annotation>
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
-         <attribute name="point" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="id" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="name" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appInfo>
-                  <meta.attribute translatable="true"/>
-               </appInfo>
-            </annotation>
-         </attribute>
+         <sequence><element ref="meta" minOccurs="0" maxOccurs="unbounded"/></sequence>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
+         <attribute name="name" type="string"/>
       </complexType>
    </element>
-
-   <annotation>
-      <appInfo>
-         <meta.section type="since"/>
-      </appInfo>
-      <documentation>
-         [Enter the first release in which this extension point appears.]
-      </documentation>
-   </annotation>
-
-   <annotation>
-      <appInfo>
-         <meta.section type="examples"/>
-      </appInfo>
-      <documentation>
-         [Enter extension point usage example here.]
-      </documentation>
-   </annotation>
-
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
-
-   <annotation>
-      <appInfo>
-         <meta.section type="implementation"/>
-      </appInfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
-
-
+   <element name="meta">
+      <complexType>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="object"/>
+            <element ref="replace"/>
+         </choice>
+         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
+         <attribute name="driverClass" type="string"/>
+         <attribute name="class" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel:"/></appInfo></annotation></attribute>
+         <attribute name="dialect" type="string"/>
+      </complexType>
+   </element>
+   <element name="object">
+      <complexType>
+         <sequence><element ref="column" minOccurs="0" maxOccurs="unbounded"/></sequence>
+         <attribute name="type" type="string" use="required"/>
+         <attribute name="read-query" type="string"/>
+      </complexType>
+   </element>
+   <element name="column">
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="name" type="string"/>
+         <attribute name="index" type="int"/>
+         <attribute name="supported" type="boolean" use="default" value="true"/>
+      </complexType>
+   </element>
+   <element name="replace"><complexType><attribute name="model" type="string" use="required"/></complexType></element>
 </schema>

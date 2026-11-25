@@ -20,11 +20,13 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.Workbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public final class ProductConfigWizardHandler extends AbstractHandler {
@@ -33,7 +35,8 @@ public final class ProductConfigWizardHandler extends AbstractHandler {
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         var dialog = new ProductConfigWizardDialog(
             HandlerUtil.getActiveWorkbenchWindow(event),
-            ProductConfigWizard.Origin.BY_USER
+            ProductConfigWizard.Origin.BY_USER,
+            HandlerUtil.getActiveShell(event)
         );
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
@@ -41,8 +44,8 @@ public final class ProductConfigWizardHandler extends AbstractHandler {
         if (dialog.isRestartRequired()) {
             if (UIUtils.confirmAction(
                 HandlerUtil.getActiveShell(event),
-                "Restart " + GeneralUtils.getProductName(),
-                "You need to restart " + GeneralUtils.getProductName() + " to apply some of the changes.\nDo you want to restart now?"
+                NLS.bind(ProductConfigMessages.preferences_restart_title, GeneralUtils.getProductName()),
+                NLS.bind(ProductConfigMessages.preferences_restart_message, GeneralUtils.getProductName())
             )) {
                 UIUtils.asyncExec(() -> Workbench.getInstance().restart());
             }

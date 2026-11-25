@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -36,7 +37,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.EmptyAction;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.DoubleClickMouseAdapter;
 import org.jkiss.utils.CommonUtils;
 
 final class BreadcrumbItem extends Item {
@@ -89,6 +89,7 @@ final class BreadcrumbItem extends Item {
         elementText = new Label(textComposite, SWT.NONE);
         elementText.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
 
+        addElementListener(elementArrow);
         addElementListener(detailComposite);
         addElementListener(imageComposite);
         addElementListener(textComposite);
@@ -232,18 +233,19 @@ final class BreadcrumbItem extends Item {
     }
 
     private void addElementListener(@NotNull Control control) {
-        control.addMenuDetectListener(e -> showMenu());
-        control.addMouseListener(new DoubleClickMouseAdapter() {
-            @Override
-            public void onMouseSingleClick(@NotNull MouseEvent e) {
+        control.addMenuDetectListener(e -> {
+            if (viewer.showContextMenu(this, e.x, e.y)) {
+                e.doit = false;
+            } else {
                 showMenu();
             }
-
+        });
+        control.addMouseListener(new MouseAdapter() {
             @Override
-            public void onMouseDoubleClick(@NotNull MouseEvent e) {
-                BreadcrumbViewer viewer = getViewer();
-                viewer.selectItem(BreadcrumbItem.this);
-                viewer.fireDoubleClick();
+            public void mouseDown(MouseEvent e) {
+                if (e.button == 1) {
+                    showMenu();
+                }
             }
         });
     }

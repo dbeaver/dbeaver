@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
@@ -226,6 +227,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public Collection<String> getFunctions() {
         return functions.values();
+    }
+
+    @Override
+    public boolean isFunction(@NotNull String name) {
+        return functions.containsKey(name.toUpperCase(DEF_LOCALE));
     }
 
     @NotNull
@@ -535,10 +541,13 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (ArrayUtils.isEmpty(quoteStrings)) {
             quoteStrings = BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
         }
-        for (int i = 0; i < quoteStrings.length; i++) {
-            identifier = DBUtils.getUnQuotedIdentifier(identifier, quoteStrings[i][0], quoteStrings[i][1]);
-            if (unescapeQuotesInsideIdentifier) {
-                identifier = identifier.replace(quoteStrings[i][0] + quoteStrings[i][0], quoteStrings[i][0]);
+        for (String[] quoteString : quoteStrings) {
+            if (identifier.startsWith(quoteString[0]) && identifier.endsWith(quoteString[1])) {
+                identifier = DBUtils.getUnQuotedIdentifier(identifier, quoteString[0], quoteString[1]);
+                if (unescapeQuotesInsideIdentifier) {
+                    identifier = identifier.replace(quoteString[1] + quoteString[1], quoteString[1]);
+                }
+                return identifier;
             }
         }
         return identifier;
@@ -1028,6 +1037,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public boolean hasCaseSensitiveFiltration() {
         return false;
+    }
+
+    @NotNull
+    @Override
+    public SQLDialectFeatures getDialectFeatures() {
+        return SQLDialectFeatures.Default.getInstance();
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -61,9 +62,12 @@ public class OraclePackage extends OracleSchemaObject
     private boolean valid;
     private Date created;
     private Date lastDDLTime;
+    @Nullable
+    private volatile Date bodyLastDDLTime;
+    private volatile boolean bodyLastDDLTimeLoaded;
     private boolean temporary;
-    private String sourceDeclaration;
-    private String sourceDefinition;
+    protected String sourceDeclaration;
+    protected String sourceDefinition;
 
     public OraclePackage(OracleSchema schema, ResultSet dbResult) {
         super(schema, JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME), true);
@@ -88,12 +92,56 @@ public class OraclePackage extends OracleSchemaObject
         return lastDDLTime;
     }
 
+    /**
+     * Package body DDL time is loaded on demand. Joining ALL_OBJECTS with itself
+     * to include this value in the package list makes metadata loading too slow.
+     */
+    @Nullable
     @Property(viewable = true, order = 5)
+    public Date getBodyLastDDLTime(@Nullable DBRProgressMonitor monitor) throws DBException {
+        if (!isPersisted()) {
+            // New packages do not exist in ALL_OBJECTS yet, and the property viewer passes a null monitor
+            // for non-persisted objects.
+            return null;
+        }
+        if (monitor == null) {
+            // Loading requires a progress monitor. Return whatever was cached; it stays null if not loaded yet.
+            return bodyLastDDLTime;
+        }
+        if (!bodyLastDDLTimeLoaded) {
+            loadBodyLastDDLTime(monitor);
+        }
+        return bodyLastDDLTime;
+    }
+
+    private void loadBodyLastDDLTime(@NotNull DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load package body DDL time")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) +
+                    " LAST_DDL_TIME AS " + OracleConstants.COLUMN_BODY_LAST_DDL_TIME + " FROM " +
+                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") +
+                    " WHERE OWNER=? AND OBJECT_NAME=? AND OBJECT_TYPE='PACKAGE BODY'"
+            )) {
+                dbStat.setString(1, getSchema().getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    bodyLastDDLTime = dbResult.next()
+                        ? JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_BODY_LAST_DDL_TIME)
+                        : null;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Error reading package body DDL time", e);
+        }
+        bodyLastDDLTimeLoaded = true;
+    }
+
+    @Property(viewable = true, order = 6)
     public boolean isTemporary() {
         return temporary;
     }
 
-    @Property(viewable = true, order = 6)
+    @Property(viewable = true, order = 7)
     public boolean isValid()
     {
         return valid;
@@ -196,10 +244,7 @@ public class OraclePackage extends OracleSchemaObject
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        this.proceduresCache.clearCache();
-        this.sourceDeclaration = null;
-        this.sourceDefinition = null;
-        return this;
+        return getSchema().getPackageCache().refreshObject(monitor, getSchema(), this);
     }
 
     @Override
@@ -252,7 +297,8 @@ public class OraclePackage extends OracleSchemaObject
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT P.*,CASE WHEN A.DATA_TYPE IS NULL THEN 'PROCEDURE' ELSE 'FUNCTION' END as PROCEDURE_TYPE FROM ALL_PROCEDURES P\n" +
-                "LEFT OUTER JOIN ALL_ARGUMENTS A ON A.OWNER=P.OWNER AND A.PACKAGE_NAME=P.OBJECT_NAME AND A.OBJECT_NAME=P.PROCEDURE_NAME AND A.ARGUMENT_NAME IS NULL AND A.DATA_LEVEL=0\n" +
+                "LEFT OUTER JOIN ALL_ARGUMENTS A ON A.OWNER=P.OWNER AND A.PACKAGE_NAME=P.OBJECT_NAME AND A.OBJECT_NAME=P.PROCEDURE_NAME" +
+                    " AND A.SUBPROGRAM_ID=P.SUBPROGRAM_ID AND A.ARGUMENT_NAME IS NULL AND A.DATA_LEVEL=0\n" +
                 "WHERE P.OWNER=? AND P.OBJECT_NAME=?\n" +
                 "ORDER BY P.PROCEDURE_NAME");
             dbStat.setString(1, owner.getSchema().getName());

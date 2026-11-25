@@ -43,6 +43,23 @@ public interface DBDValueHint {
 
     int OPTION_READ_ONLY = 1;
 
+    /**
+     * The hint is displayed when:
+     * <pre>{@code
+     * fullTextProvider == null
+     *     || fullText == null
+     *     || !fullTextFitsAvailableWidth
+     * }</pre>
+     * The hint is hidden when:
+     * <pre>{@code
+     * fullTextProvider != null
+     *     && fullText != null
+     *     && fullTextFitsAvailableWidth
+     * }</pre>
+     * In other words, the hint is hidden only when the full array preview is actually rendered.
+     */
+    int OPTION_HIDE_WITH_FULL_ARRAY_PREVIEW = 1 << 1;
+
     @NotNull
     HintType getHintType();
 

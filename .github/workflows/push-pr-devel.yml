@@ -21,7 +21,7 @@ jobs:
     with:
       project-directory: ./dbeaver/product/aggregate
       project-deps: ./dbeaver/project.deps
-      timeout-minutes: 5
+      timeout-minutes: 10
       mvn-args: -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce
 
   lint-java:

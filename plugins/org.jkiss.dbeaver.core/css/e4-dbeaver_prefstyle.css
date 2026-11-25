@@ -7,6 +7,10 @@
         'org.eclipse.gef.color.line.foreground=192,192,192'
 }
 
+Text.readOnlyConnectionUrl {
+    background-color: COLOR-WIDGET-BACKGROUND;
+}
+
 .View Composite,
 .View Composite Tree,
 .View Composite Label,

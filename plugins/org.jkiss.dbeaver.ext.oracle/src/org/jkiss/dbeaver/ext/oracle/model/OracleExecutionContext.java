@@ -130,7 +130,7 @@ public class OracleExecutionContext extends JDBCExecutionContext implements DBCE
         return true;
     }
 
-    void setCurrentSchema(DBRProgressMonitor monitor, OracleSchema object) throws DBCException {
+    public void setCurrentSchema(DBRProgressMonitor monitor, OracleSchema object) throws DBCException {
         if (object == null) {
             log.debug("Null current schema");
             return;

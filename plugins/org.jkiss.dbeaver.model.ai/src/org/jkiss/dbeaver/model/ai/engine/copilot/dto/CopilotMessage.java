@@ -23,15 +23,17 @@ import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotConstants;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatMessageContent;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public record CopilotMessage(
     @Nullable String role,
-    @Nullable String content,
+    @Nullable Object content,
     @Nullable
     @SerializedName("tool_calls")
     List<CopilotChatResponseLegacy.ToolCall> toolCalls,
@@ -43,6 +45,12 @@ public record CopilotMessage(
     private static final String ASSISTANT_ROLE = "assistant";
     private static final String TOOL_ROLE = "tool";
     private static final String SYSTEM_ROLE = "system";
+
+    public boolean hasImages() {
+        return content instanceof List<?> parts && parts.stream().anyMatch(
+            part -> part instanceof Map<?, ?> block && "image_url".equals(block.get("type"))
+        );
+    }
 
     @NotNull
     public static List<CopilotMessage> from(@NotNull AIMessage message) {
@@ -78,7 +86,7 @@ public record CopilotMessage(
                 return result;
             }
         }
-        return List.of(new CopilotMessage(mapRole(message.getRole()), message.getContent(), null, null));
+        return List.of(new CopilotMessage(mapRole(message.getRole()), ChatMessageContent.from(message), null, null));
     }
 
     @Nullable

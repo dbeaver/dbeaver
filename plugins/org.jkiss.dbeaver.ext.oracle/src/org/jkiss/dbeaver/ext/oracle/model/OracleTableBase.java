@@ -54,7 +54,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     private static final Log log = Log.getLog(OracleTableBase.class);
 
     public static class TableAdditionalInfo {
-        volatile boolean loaded = false;
+        public volatile boolean loaded = false;
 
         boolean isLoaded() { return loaded; }
     }
@@ -63,7 +63,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         @Override
         public boolean isPropertyCached(@NotNull OracleTableBase object, @NotNull Object propertyId) {
             return object.getAdditionalInfo().isLoaded() // for isLazy() check when property already loaded in the cache returns true
-                || object.getDataSource().dataTypeCache.isFullyCached();
+                || object.getDataSource().getDataTypeCache().isFullyCached();
         }
     }
 
@@ -112,7 +112,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     @Override
     public JDBCStructCache<OracleSchema, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
     {
-        return getContainer().tableCache;
+        return getContainer().getTableCache();
     }
 
     @Override
@@ -257,23 +257,23 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public List<OracleTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().tableCache.getChildren(monitor, getContainer(), this);
+        return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
     @Override
     public OracleTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
         throws DBException
     {
-        return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
+        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().constraintCache.clearObjectCache(this);
-        getContainer().tableTriggerCache.clearObjectCache(this);
+        getContainer().getConstraintCache().clearObjectCache(this);
+        getContainer().getTableTriggerCache().clearObjectCache(this);
 
-        return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
+        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
     @Nullable
@@ -281,7 +281,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public List<OracleTableTrigger> getTriggers(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getSchema().tableTriggerCache.getObjects(monitor, getSchema(), this);
+        return getSchema().getTableTriggerCache().getObjects(monitor, getSchema(), this);
     }
 
     @Override
@@ -307,13 +307,13 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public Collection<OracleTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().constraintCache.getObjects(monitor, getContainer(), this);
+        return getContainer().getConstraintCache().getObjects(monitor, getContainer(), this);
     }
 
     public OracleTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return getContainer().constraintCache.getObject(monitor, getContainer(), this, ukName);
+        return getContainer().getConstraintCache().getObject(monitor, getContainer(), this, ukName);
     }
 
     public DBSTableForeignKey getForeignKey(DBRProgressMonitor monitor, String ukName) throws DBException
@@ -353,7 +353,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             log.warn("Referenced schema '" + ownerName + "' not found");
             return null;
         } else {
-            OracleTableBase refTable = refSchema.tableCache.getObject(monitor, refSchema, tableName);
+            OracleTableBase refTable = refSchema.getTableCache().getObject(monitor, refSchema, tableName);
             if (refTable == null) {
                 log.warn("Referenced table '" + tableName + "' not found in schema '" + ownerName + "'");
             }

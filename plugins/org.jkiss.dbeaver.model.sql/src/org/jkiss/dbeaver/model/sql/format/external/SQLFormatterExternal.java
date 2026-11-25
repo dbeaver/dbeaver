@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArgumentTokenizer;
 import org.jkiss.utils.CommonUtils;
@@ -47,6 +48,9 @@ public class SQLFormatterExternal implements SQLFormatter {
 
     @Override
     public String format(String source, SQLFormatterConfiguration configuration) {
+        if (DBWorkbench.isMultiuserOrDistributed()) {
+            return source;
+        }
         final DBPPreferenceStore store = configuration.getSyntaxManager().getPreferenceStore();
         final String command = store.getString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD);
         int timeout = store.getInt(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT);

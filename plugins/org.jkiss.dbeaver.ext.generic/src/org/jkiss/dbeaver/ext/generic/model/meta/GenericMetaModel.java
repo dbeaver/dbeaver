@@ -387,7 +387,10 @@ public class GenericMetaModel {
                         }
                     }
                 } catch (Throwable e) {
-                    log.debug("Can't read generic functions", e);
+                    // Drivers may execute functions without supporting function metadata.
+                    if (!CommonUtils.hasCause(e, SQLFeatureNotSupportedException.class)) {
+                        log.debug("Can't read generic functions", e);
+                    }
                 }
             }
 
@@ -951,6 +954,20 @@ public class GenericMetaModel {
 
     //////////////////////////////////////////////////////
     // Indexes
+
+    @NotNull
+    public JDBCStatement prepareIndexesLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forParent
+    ) throws SQLException {
+        return session.getMetaData().getIndexInfo(
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
+            forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName(),
+            false,
+            true).getSourceStatement();
+    }
 
     @NotNull
     public GenericTableIndex createIndexImpl(

@@ -2,8 +2,8 @@
 <?eclipse version="3.2"?>
 
 <plugin>
-    <extension-point id="org.jkiss.dbeaver.dataSourceConfigurator" name="%extension-point.org.jkiss.dbeaver.dataSourceConfigurator.name" schema="schema/org.jkiss.dbeaver.dataSourceConfigurator.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.connectionPageConfigurator" name="%extension-point.org.jkiss.dbeaver.connectionPageConfigurator.name" schema="schema/org.jkiss.dbeaver.connectionPageConfigurator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceConfigurator" name="Data source configurators" schema="schema/org.jkiss.dbeaver.dataSourceConfigurator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.connectionPageConfigurator" name="Connection page configurators" schema="schema/org.jkiss.dbeaver.connectionPageConfigurator.exsd"/>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
@@ -123,7 +123,7 @@
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="%page.org.jkiss.dbeaver.preferences.connectionTypes.name">
             <enabledWhen>
                 <or>
-                    <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
+                    <adapt type="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
                     <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
                 </or>
             </enabledWhen>
@@ -133,7 +133,9 @@
     <extension point="org.eclipse.ui.newWizards">
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
-             class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
+             class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizardLauncher"
+             hasPages="false"
+             canFinishEarly="true"
              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database.svg"
              id="org.jkiss.dbeaver.core.wizard.new.connection"
              name="%wizard.org.jkiss.dbeaver.core.wizard.new.connection.name">
@@ -184,6 +186,15 @@
                 message="%confirm.reconnect_txn.message"
                 toggleMessage="default"
                 group="Connections"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.errors" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.errors.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.client" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.client.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.transactions" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.transactions.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.maven" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.maven.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.classpath" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.classpath.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.connection.types" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.connection.types.label"/>
     </extension>
 
 </plugin>

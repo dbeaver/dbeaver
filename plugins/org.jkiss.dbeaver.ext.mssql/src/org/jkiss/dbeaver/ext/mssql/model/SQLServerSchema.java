@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -455,35 +456,47 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             }
         }
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase forTable)
-            throws SQLException
-        {
+        protected JDBCStatement prepareChildrenStatement(
+            @NotNull JDBCSession session,
+            @NotNull SQLServerSchema owner,
+            @Nullable SQLServerTableBase forTable
+        ) throws SQLException {
+            SQLServerDatabase database = owner.getDatabase();
+            SQLServerDataSource dataSource = owner.getDataSource();
+            boolean supportsColumnProperty = dataSource.supportsColumnProperty();
+            boolean useCatalogScopedQuery = supportsColumnProperty && SQLServerUtils.supportsCrossDatabaseQueries(dataSource);
+
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT c.*,t.name as table_name,t.schema_id,cc.is_persisted,cc.definition as computed_definition");
-            if (owner.getDataSource().supportsColumnProperty()) {
+            if (supportsColumnProperty) {
                 sql.append(", COLUMNPROPERTY(c.object_id, c.name, 'charmaxlen') as char_max_length");
             }
             sql.append(", dc.definition as default_definition,dc.name as default_constraint_name,ep.value as description\nFROM ")
-                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_columns")).append(" c")
-                .append("\nJOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t ON t.object_id=c.object_id")
-                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "default_constraints")).append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id")
-                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=t.object_id AND ep.minor_id=c.column_id AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'")
-                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "computed_columns")).append(" cc ON cc.object_id=t.object_id AND cc.column_id=c.column_id")
-                .append("\nWHERE ");
-            if (forTable != null) {
-                sql.append("t.object_id=?");
-            } else {
-                sql.append("t.schema_id=?");
-            }
-            sql.append("\nORDER BY c.object_id,c.column_id");
+                .append(SQLServerUtils.getSystemTableName(database, "all_columns")).append(" c")
+                .append("\nJOIN ").append(SQLServerUtils.getSystemTableName(database, "all_objects"))
+                .append(" t ON t.object_id=c.object_id")
+                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(database, "default_constraints"))
+                .append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id")
+                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(database))
+                .append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId())
+                .append(" AND ep.major_id=t.object_id AND ep.minor_id=c.column_id AND ep.name='")
+                .append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'")
+                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(database, "computed_columns"))
+                .append(" cc ON cc.object_id=t.object_id AND cc.column_id=c.column_id")
+                .append("\nWHERE ").append(forTable != null ? "t.object_id=" : "t.schema_id=")
+                .append(useCatalogScopedQuery ? "@parent_id" : "?")
+                .append("\nORDER BY c.object_id,c.column_id");
 
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            if (forTable != null) {
-                dbStat.setLong(1, forTable.getObjectId());
-            } else {
-                dbStat.setLong(1, owner.getObjectId());
+            String query = sql.toString();
+            if (useCatalogScopedQuery) {
+                // columnproperty resolves object ids in the database context of the query
+                query = "EXEC " + SQLServerUtils.getSystemTableName(database, "sp_executesql") + " "
+                    + SQLUtils.quoteString(dataSource, query) + ", N'@parent_id bigint', ?";
             }
+            JDBCPreparedStatement dbStat = session.prepareStatement(query);
+            dbStat.setLong(1, forTable != null ? forTable.getObjectId() : owner.getObjectId());
             return dbStat;
         }
 
@@ -615,8 +628,21 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @Override
         protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerTableIndex index, @NotNull List<SQLServerTableIndexColumn> rows)
         {
+            SQLServerSchema.sortIndexColumns(rows);
             index.setColumns(rows);
         }
+    }
+
+    /**
+     * Order key columns before included columns without changing SQL Server ordinal metadata.
+     * Public for regression tests running in a separate OSGi test bundle.
+     */
+    public static void sortIndexColumns(@NotNull List<SQLServerTableIndexColumn> rows) {
+        // Included columns have key_ordinal = 0, but follow the index key columns.
+        // Keep the SQL Server ordinal metadata intact and use index_column_id to order includes.
+        rows.sort(Comparator.comparing(SQLServerTableIndexColumn::isIncluded)
+            .thenComparingInt(SQLServerTableIndexColumn::getOrdinalPosition)
+            .thenComparingLong(SQLServerTableIndexColumn::getObjectId));
     }
 
     /**

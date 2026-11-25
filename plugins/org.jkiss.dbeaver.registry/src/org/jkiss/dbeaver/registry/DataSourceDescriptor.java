@@ -132,6 +132,8 @@ public class DataSourceDescriptor
     private transient List<DBSSecretValue> availableSharedCredentials;
     @Nullable
     private transient DBSSecretValue selectedSharedCredentials;
+    // Keep revocation state until the connection is closed and its cached credentials can be safely cleared.
+    transient boolean sharedCredentialsRevoked;
 
     private boolean connectionReadOnly;
     private boolean forceUseSingleConnection;
@@ -251,6 +253,7 @@ public class DataSourceDescriptor
         this.description = source.description;
         this.savePassword = source.savePassword;
         this.sharedCredentials = source.sharedCredentials;
+        this.sharedCredentialsRevoked = source.sharedCredentialsRevoked;
         this.originalShareCredentials = this.sharedCredentials;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
         if (navigatorSettings.isUserSettings()) {
@@ -266,6 +269,9 @@ public class DataSourceDescriptor
         this.connectionModifyRestrictions = source.connectionModifyRestrictions == null ? null : new ArrayList<>(source.connectionModifyRestrictions);
 
         this.connectionInfo = new DBPConnectionConfiguration(source.connectionInfo);
+        if (sharedCredentialsRevoked) {
+            clearRevokedSharedCredentials();
+        }
         for (Map.Entry<String, FilterMapping> fe : source.filterMap.entrySet()) {
             this.filterMap.put(fe.getKey(), new FilterMapping(fe.getValue()));
         }
@@ -466,14 +472,30 @@ public class DataSourceDescriptor
         return sharedCredentials;
     }
 
+    @Override
+    public boolean isSharedCredentialsRevoked() {
+        return sharedCredentialsRevoked;
+    }
+
     //ignore changed store type
     public void forceSetSharedCredentials(boolean sharedCredentials) {
+        if (sharedCredentials) {
+            sharedCredentialsRevoked = false;
+        }
         this.sharedCredentials = sharedCredentials;
         this.originalShareCredentials = sharedCredentials;
     }
 
     @Override
     public void setSharedCredentials(boolean sharedCredentials) {
+        if (sharedCredentials) {
+            sharedCredentialsRevoked = false;
+        } else if (this.sharedCredentials) {
+            sharedCredentialsRevoked = true;
+            if (!isConnected()) {
+                clearRevokedSharedCredentials();
+            }
+        }
         this.sharedCredentials = sharedCredentials;
     }
 
@@ -536,27 +558,37 @@ public class DataSourceDescriptor
         this.selectedSharedCredentials = null;
         // we need to reset username and password for connection that are not connected to database
         // in some cases, when connection is established, username is needed (e.g. retrieving current user info in Cubrid)
-        if (sharedCredentials && !isConnected()) {
+        if ((sharedCredentials || sharedCredentialsRevoked) && !isConnected()) {
             // For shared credentials reset cache also
-            connectionInfo.setUserName(null);
-            connectionInfo.setUserPassword(null);
+            if (sharedCredentialsRevoked) {
+                clearRevokedSharedCredentials();
+            } else {
+                connectionInfo.setUserName(null);
+                connectionInfo.setUserPassword(null);
+            }
         }
+    }
+
+    private void clearRevokedSharedCredentials() {
+        connectionInfo.setUserName(null);
+        connectionInfo.setUserPassword(null);
+        connectionInfo.setAuthProperties(null);
+        savePassword = false;
+        sharedCredentialsRevoked = false;
     }
 
     @Nullable
     @Override
     public DBPTransactionIsolation getActiveTransactionsIsolation() {
-        if (dataSource != null) {
+        if (dataSource != null && dataSource.hasDefaultInstance()) {
             DBSInstance defaultInstance = dataSource.getDefaultInstance();
-            if (defaultInstance != null) {
-                DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(defaultInstance, false));
-                if (txnManager != null) {
-                    try {
-                        return txnManager.getTransactionIsolation();
-                    } catch (DBCException e) {
-                        log.debug("Can't determine isolation level", e);
-                        return null;
-                    }
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(defaultInstance, false));
+            if (txnManager != null) {
+                try {
+                    return txnManager.getTransactionIsolation();
+                } catch (DBCException e) {
+                    log.debug("Can't determine isolation level", e);
+                    return null;
                 }
             }
         }
@@ -866,13 +898,15 @@ public class DataSourceDescriptor
         try {
             registry.updateDataSource(this, forcePersistSecrets);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Datasource update error", "Error updating datasource", e);
+            DBWorkbench.getPlatformUI().showError(
+                RegistryMessages.data_source_update_error_title, RegistryMessages.data_source_update_error_message, e);
             return false;
         }
 
         Throwable lastError = registry.getLastError();
         if (lastError != null) {
-            DBWorkbench.getPlatformUI().showError("Save error", "Error saving datasource configuration", lastError);
+            DBWorkbench.getPlatformUI().showError(
+                RegistryMessages.data_source_save_error_title, RegistryMessages.data_source_save_error_message, lastError);
             return false;
         }
 
@@ -1204,6 +1238,12 @@ public class DataSourceDescriptor
 
                 openDataSource(monitor, initialize);
 
+                if (monitor.isCanceled()) {
+                    // A driver may return successfully after ignoring interruption during initialization.
+                    // Throw so the connection failure path releases the partially initialized data source.
+                    throw new DBException("Connection has been canceled");
+                }
+
                 if (dataSource != null) {
                     DBPDataSourceInfo info = dataSource.getInfo();
                     log.debug(
@@ -1248,7 +1288,9 @@ public class DataSourceDescriptor
             }
             proxyHandler = null;
             // Failed
-            connectFailed = true;
+            if (!CommonUtils.hasCause(e, DBCDriverLicenseException.class)) {
+                connectFailed = true;
+            }
             if (e instanceof DBException) {
                 throw (DBException) e;
             } else {
@@ -2091,6 +2133,9 @@ public class DataSourceDescriptor
 
         if (networkHandler == null) {
             DBAAuthModel<?> authModel = actualConfig.getAuthModel();
+            if (!authModel.isCredentialsPromptRequired()) {
+                return true;
+            }
             if (authModel.getClass() != AuthModelDatabaseNative.class) {
                 boolean savedPasswordState = dataSourceContainer.isSavePassword();
                 DBPConnectionConfiguration savedConnectionInfo = new DBPConnectionConfiguration(connConfig);
@@ -2102,15 +2147,16 @@ public class DataSourceDescriptor
                 if (actualConfig != connConfig || !dataSourceContainer.isSavePassword()) {
                     dataSourceContainer.resolvedConnectionInfo = promptConnectionInfo;
                 }
-                if (dataSourceContainer.isSavePassword()) {
+                if (!dataSourceContainer.isSavePassword()) {
+                    dataSourceContainer.setConnectionInfo(savedConnectionInfo);
+                    dataSourceContainer.setSavePassword(savedPasswordState);
+                } else if (!dataSourceContainer.isTemporary()) {
+                    // Updating an unregistered test connection would add it to the registry and navigator.
                     try {
                         dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
                     } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Error saving datasource", null, e);
+                        DBWorkbench.getPlatformUI().showError(RegistryMessages.data_source_save_error, null, e);
                     }
-                } else {
-                    dataSourceContainer.setConnectionInfo(savedConnectionInfo);
-                    dataSourceContainer.setSavePassword(savedPasswordState);
                 }
                 return true;
             }
@@ -2169,7 +2215,7 @@ public class DataSourceDescriptor
                 // Update connection properties
                 dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Error saving datasource", null, e);
+                DBWorkbench.getPlatformUI().showError(RegistryMessages.data_source_save_error, null, e);
             }
         }
 
@@ -2215,7 +2261,8 @@ public class DataSourceDescriptor
     public String saveToSecret() {
         Map<String, Object> props = new LinkedHashMap<>();
 
-        if (isSavePassword()) {
+        // Do not convert cached credentials awaiting revocation into a private secret.
+        if (isSavePassword() && !sharedCredentialsRevoked) {
             // Primary props
             if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
                 props.put(RegistryConstants.ATTR_USER, connectionInfo.getUserName());

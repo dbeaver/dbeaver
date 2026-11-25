@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,10 +81,9 @@ public class ERDResourceHandler extends AbstractResourceHandler {
 
     @NotNull
     @Override
-    public String getTypeName(@NotNull IResource resource)
-    {
+    public String getTypeName(@NotNull IResource resource) {
         if (resource instanceof IFolder) {
-            return "diagram folder";
+            return "erd_folder";
         } else {
             return "diagram";
         }

@@ -62,21 +62,21 @@ function createAttachmentCard(args) {
         files = parseAttachmentContent(args.content);
 
         if (!Array.isArray(files)) {
-            return '<div class="attachment-card"><div class="attachment-error">Error: Invalid attachment data</div></div>';
+            return `<div class="attachment-card"><div class="attachment-error">${escapeHtml(chatStrings.invalidAttachmentData)}</div></div>`;
         }
 
         items = files.map((f, index) => {
-            const iconSrc = `file://${f.icon}`;
-            const name = f.name || (f.path ? f.path.split('/').pop() : 'Unknown');
+            const iconSrc = f.icon;
+            const name = f.name || (f.path ? f.path.split('/').pop() : chatStrings.unknownFile);
             return `
-        <div class="attachment-item" role="button" tabindex="-1" onclick="window.openFileInExplorer(${args.id}, ${index});" style="cursor: pointer;" title="Click to show in file explorer">
-            <img src="${iconSrc}" class="attachment-icon" alt="File"/>
+        <div class="attachment-item" role="button" tabindex="-1" onclick="window.openFileInExplorer(${args.id}, ${index});" style="cursor: pointer;" title="${escapeHtml(chatStrings.showInExplorer)}">
+            <img src="${iconSrc}" class="attachment-icon" alt=""/>
             <div class="attachment-name" title="${escapeHtml(f.path)}">${escapeHtml(name)}</div>
         </div>`;
         }).join('');
 
     } catch (error) {
-        return '<div class="attachment-card"><div class="attachment-error">Error creating attachment: ' + error.message + '</div></div>';
+        return `<div class="attachment-card"><div class="attachment-error">${escapeHtml(formatChatString(chatStrings.attachmentError, error.message))}</div></div>`;
     }
 
     const canCreateConnection = args.canCreateConnection === true;
@@ -100,14 +100,14 @@ function createAttachmentCard(args) {
                 const entries = window.getFileTypeHandlerExtensions();
 
                 listItems = entries.map(e => {
-                    return `<button class="attachment-btn" title="Choose ${e} type"
+                    return `<button class="attachment-btn" title="${escapeHtml(formatChatString(chatStrings.chooseTypeTip, e))}"
                         onclick="window.onSetFileType(${args.id}, '${e}');">${e}</button>`;
                 }).join('');
             } catch (e) {
                 listItems = '';
             }
 
-            const headerText = 'Choose type:';
+            const headerText = escapeHtml(chatStrings.chooseType);
 
             actionsHtml = listItems ? `
                 <div id="attachment-actions-${args.id}" class="attachment-actions-response">
@@ -117,35 +117,35 @@ function createAttachmentCard(args) {
                     </div>
                 </div>
             ` : `
-                <div class="attachment-actions-response">No handlers available</div>`;
+                <div class="attachment-actions-response">${escapeHtml(chatStrings.noHandlers)}</div>`;
         } else {
-            actionsHtml = `<div class="attachment-actions-response">There are no available actions for that file(s)</div>`;
+            actionsHtml = `<div class="attachment-actions-response">${escapeHtml(chatStrings.noActions)}</div>`;
         }
     }
 
     if (isCreateConnectionWasExecuted) {
         actionsHtml = `
             <div id="attachment-actions-${args.id}" class="attachment-status">
-                Open as table was completed
+                ${escapeHtml(chatStrings.openCompleted)}
             </div>
         `;
     } else if (isImportDataWasExecuted) {
         actionsHtml = `
             <div id="attachment-actions-${args.id}" class="attachment-status">
-                Import data from file was completed
+                ${escapeHtml(chatStrings.importCompleted)}
             </div>
         `;
     }
-    const closeIconSrc = `file://${closeIcon}`;
+    const closeIconSrc = closeIcon;
     return `
         <div class="attachment-card">
             <img src="${closeIconSrc}"
                  class="attachment-close-icon"
-                 alt="Close"
-                 title="${closeTooltip}"
+                 alt=""
+                 title="${escapeHtml(closeTooltip)}"
                  role="button"
                  tabindex="-1"
-                 aria-label="${closeTooltip}"
+                 aria-label="${escapeHtml(closeTooltip)}"
                  onclick="deleteMessage(${args.id});" />
             <div class="attachment-files">
                 ${items}
@@ -166,17 +166,16 @@ function escapeHtml(str) {
 
 function getCreateButton(canCreate, messageId) {
     if (!canCreate) return '';
-    return `<button class="attachment-btn" title="Open as table" onclick="window.attachmentCreateConnection(${messageId}); showActionCompleted(${messageId}, 'Open as table');">Open as table</button>`;
+    const label = escapeHtml(chatStrings.openAsTable);
+    return `<button class="attachment-btn" title="${label}" onclick="window.attachmentCreateConnection(${messageId}); showActionCompleted(${messageId}, 'open');">${label}</button>`;
 }
 
 function getImportButton(canImport, messageId, filesCount = 1) {
     if (!canImport) return '';
 
-    const fileWord = filesCount > 1 ? 'files' : 'file';
-    const title = `Import data from ${fileWord}`;
-    const actionText = `Import data from ${fileWord}`;
+    const label = escapeHtml(filesCount > 1 ? chatStrings.importFiles : chatStrings.importFile);
 
-    return `<button class="attachment-btn" title="${title}" onclick="window.attachmentExportToTable(${messageId}); showActionCompleted(${messageId}, '${actionText}');">Import data from ${fileWord}</button>`;
+    return `<button class="attachment-btn" title="${label}" onclick="window.attachmentExportToTable(${messageId}); showActionCompleted(${messageId}, 'import');">${label}</button>`;
 }
 
 function onSetFileType(messageId, extensionId) {
@@ -193,7 +192,7 @@ function renderAttachmentActions(messageId, canCreate, canImport) {
     const container = document.getElementById(`attachment-actions-${messageId}`);
     if (!container) return;
     if (!canCreate && !canImport) {
-        container.innerHTML = '<div>No actions available for this type</div>';
+        container.innerHTML = `<div>${escapeHtml(chatStrings.noTypeActions)}</div>`;
         return;
     }
 
@@ -203,7 +202,7 @@ function renderAttachmentActions(messageId, canCreate, canImport) {
     container.innerHTML = `${getCreateButton(canCreate, messageId)} ${getImportButton(canImport, messageId, filesCount)}`;
 }
 
-function showActionCompleted(messageId, actionName) {
+function showActionCompleted(messageId, action) {
     const messageElement = document.getElementById(messageId);
     if (!messageElement) {
         return;
@@ -226,7 +225,7 @@ function showActionCompleted(messageId, actionName) {
 
     const statusDiv = document.createElement('div');
     statusDiv.className = 'attachment-status';
-    statusDiv.textContent = actionName + ' was completed';
+    statusDiv.textContent = action === 'open' ? chatStrings.openCompleted : chatStrings.importCompleted;
 
     attachmentCard.appendChild(statusDiv);
 }

@@ -49,9 +49,13 @@ parts:
     override-build: |
       set -e
       snapcraftctl build
-      VERSION=$(echo $SNAPCRAFT_PART_INSTALL/usr/share/dbeaver-ce/plugins/org.jkiss.dbeaver.core_*.jar)
-      VERSION="${VERSION##*_}"
-      VERSION="${VERSION%.*}"
+      # The DEB version includes the hotfix part, which is not an OSGi bundle version component.
+      case "$SNAPCRAFT_TARGET_ARCH" in
+        amd64) DEB_ARCH=x86_64 ;;
+        arm64) DEB_ARCH=aarch64 ;;
+        *) echo "Unsupported architecture: $SNAPCRAFT_TARGET_ARCH" >&2; exit 1 ;;
+      esac
+      VERSION=$(dpkg-deb --field "$SNAPCRAFT_PROJECT_DIR/dbeaver-ce-latest-linux-$DEB_ARCH.deb" Version)
       snapcraftctl set-version "$VERSION"
       LD_BIND_NOW=1
     override-prime: |

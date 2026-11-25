@@ -126,7 +126,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         } else if (!params.isGlobalSearch()) {
             // Limit object search with search path
             for (String sn : executionContext.computeSearchPath()) {
-                PostgreSchema schema = database.getSchema(monitor, PostgreUtils.getRealSchemaName(database, sn));
+                PostgreSchema schema = database.getSchema(monitor, PostgreUtils.getRealSchemaName(executionContext, sn));
                 if (schema != null) {
                     nsList.add(schema);
                 }
@@ -148,6 +148,8 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         }
 
         if (executionContext.getDefaultCatalog() != database) {
+            // A database selected as the search scope may not have been opened in the navigator yet.
+            database.checkInstanceConnection(monitor);
             executionContext = database.getMetaContext();
         }
 
@@ -339,6 +341,9 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                             PostgreTableBase table = tableSchema.getTable(monitor, tableId);
                             if (table == null) {
                                 throw new DBException("Table '" + tableName + "' not found in schema '" + tableSchema.getName() + "'");
+                            }
+                            if (table instanceof PostgreTablePartition partition) {
+                                partition.resolveParentTable(monitor);
                             }
                             return table;
                         }

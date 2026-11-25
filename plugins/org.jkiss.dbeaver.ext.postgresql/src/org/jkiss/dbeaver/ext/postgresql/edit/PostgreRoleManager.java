@@ -63,6 +63,21 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     }
 
     @Override
+    public boolean canEditObject(@NotNull PostgreRole object) {
+        return !object.isPublicRole() && super.canEditObject(object);
+    }
+
+    @Override
+    public boolean canDeleteObject(@NotNull PostgreRole object) {
+        return !object.isPublicRole() && super.canDeleteObject(object);
+    }
+
+    @Override
+    public boolean canRenameObject(@NotNull PostgreRole object) {
+        return !object.isPublicRole();
+    }
+
+    @Override
     protected PostgreRole createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,

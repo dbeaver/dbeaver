@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
+import org.jkiss.dbeaver.ext.altibase.internal.AltibaseMessages;
 import org.jkiss.dbeaver.ext.altibase.model.plan.AltibaseQueryPlanner;
 import org.jkiss.dbeaver.ext.altibase.model.session.AltibaseServerSessionManager;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -108,9 +109,10 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
 
     @Override
     protected void initializeContextState(
-            @NotNull DBRProgressMonitor monitor, 
-            @NotNull JDBCExecutionContext context, 
-            JDBCExecutionContext initFrom) throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
 
         super.initializeContextState(monitor, context, initFrom);
 
@@ -226,10 +228,10 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
         if ((warning != null) && (warning.getErrorCode() == AltibaseConstants.EC_PASSWORD_WILL_EXPIRE)) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
-                    AltibaseConstants.SQL_WARNING_TITILE,
+                    AltibaseMessages.sql_warning_title,
                     warning.getMessage() + 
                     AltibaseConstants.NEW_LINE + 
-                    AltibaseConstants.PASSWORD_WILL_EXPIRE_WARN_DESCRIPTION);
+                    AltibaseMessages.password_expire_warning);
 
             return true;
         }

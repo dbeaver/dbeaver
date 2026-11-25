@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -103,7 +104,6 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         final String tableName = DBUtils.getEntityScriptName(table, options);
 
         final SQLDialect sqlDialect = SQLUtils.getDialectFromObject(table);
-        final String slComment = sqlDialect.getSingleLineComments()[0];
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append(beginCreateTableStatement(monitor, table, tableName, options));
@@ -123,7 +123,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
 
                 if (isCompact) {
-                    int commentPos = findCommentPos(nestedDeclaration, slComment);
+                    int commentPos = SQLUtils.findLineCommentPos(sqlDialect, nestedDeclaration, 0);
                     if (commentPos != -1) {
                         nestedDeclaration = nestedDeclaration.substring(0, commentPos - 1);
                     }
@@ -132,7 +132,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 if (hasNestedDeclarations) {
                     if (!isCompact) {
                         // Check for embedded comment
-                        lastComment = appendCommaBeforeLastComment(createQuery, slComment, lastComment);
+                        lastComment = appendCommaBeforeLastComment(createQuery, sqlDialect, lastComment);
                         createQuery.append(lineSeparator);
                     } else {
                         createQuery.append(","); //$NON-NLS-1$
@@ -238,6 +238,23 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         @NotNull OBJECT_TYPE table,
         @NotNull Map<String, Object> options
     ) throws DBException {
+        return getTableDDL(monitor, table, options, null);
+    }
+
+    @NotNull
+    public DBEPersistAction[] getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OBJECT_TYPE table,
+        @NotNull Map<String, Object> options,
+        @Nullable DBSObjectDDLFilter filter
+    ) throws DBException {
+        if (filter != null && !filter.includeObject(monitor, table)) {
+            return new DBEPersistAction[0];
+        }
+        if (filter != null) {
+            options = new HashMap<>(options);
+            options.put(DBPScriptObject.OPTION_DDL_OBJECT_FILTER, filter);
+        }
 
         List<DBEPersistAction> actions = new ArrayList<>();
 
@@ -262,10 +279,11 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 try {
                     for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
                         if (!(foreignKey instanceof DBSTableForeignKey) ||
-                            skipObject(foreignKey)) {
+                            skipObject(foreignKey) || filter != null && !filter.includeObject(monitor, foreignKey)) {
                             continue;
                         }
-                        DBEPersistAction[] cmdActions = fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options).getPersistActions(monitor, executionContext, options);
+                        DBEPersistAction[] cmdActions = fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options)
+                            .getPersistActions(monitor, executionContext, options);
                         if (cmdActions != null) {
                             Collections.addAll(actions, cmdActions);
                         }
@@ -300,7 +318,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (tcm != null) {
             // Aggregate nested column, constraint and index commands
             for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-                if (skipObject(column)) {
+                if (skipObject(column) || filter != null && !filter.includeObject(monitor, column)) {
                     // Do not include hidden (pseudo?) and inherited columns in DDL
                     continue;
                 }
@@ -310,7 +328,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (pkm != null && !CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_UNIQUE_KEYS)) {
             try {
                 for (DBSEntityConstraint constraint : CommonUtils.safeCollection(table.getConstraints(monitor))) {
-                    if (!isIncludeConstraintInDDL(monitor, constraint)) {
+                    if (!isIncludeConstraintInDDL(monitor, constraint)
+                        || filter != null && !filter.includeObject(monitor, constraint)) {
                         continue;
                     }
                     command.aggregateCommand(pkm.makeCreateCommand(constraint, options));
@@ -322,9 +341,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
         if (ccm != null) {
             try {
-                if (table instanceof DBSCheckConstraintContainer) {
-                    for (DBSTableCheckConstraint constraint : CommonUtils.safeCollection(((DBSCheckConstraintContainer)table).getCheckConstraints(monitor))) {
-                        if (skipObject(constraint)) {
+                if (table instanceof DBSCheckConstraintContainer container) {
+                    for (DBSTableCheckConstraint constraint : CommonUtils.safeCollection(container.getCheckConstraints(monitor))) {
+                        if (skipObject(constraint) || filter != null && !filter.includeObject(monitor, constraint)) {
                             continue;
                         }
                         command.aggregateCommand(ccm.makeCreateCommand(constraint, options));
@@ -338,7 +357,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (fkm != null && !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS)) {
             try {
                 for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
-                    if (!(foreignKey instanceof DBSTableForeignKey) || skipObject(foreignKey)) {
+                    if (!(foreignKey instanceof DBSTableForeignKey) || skipObject(foreignKey)
+                        || filter != null && !filter.includeObject(monitor, foreignKey)) {
                         continue;
                     }
                     command.aggregateCommand(fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options));
@@ -350,8 +370,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
         if (im != null && table instanceof DBSTable && !CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_INDEXES)) {
             try {
-                for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable)table).getIndexes(monitor))) {
-                    if (!isIncludeIndexInDDL(monitor, index)) {
+                for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable) table).getIndexes(monitor))) {
+                    if (!isIncludeIndexInDDL(monitor, index) || filter != null && !filter.includeObject(monitor, index)) {
                         continue;
                     }
                     command.aggregateCommand(im.makeCreateCommand(index, options));
@@ -395,56 +415,16 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         return isCompact(options) ? " " : GeneralUtils.getDefaultLineSeparator();
     }
 
-    public static int findCommentPos(CharSequence cs, String slComment) {
-        return findCommentPos(cs, slComment, 0, true);
-    }
-
     /**
-     * Finds the position of a single-line comment marker, ignoring string literals.
-     *
-     * @param cs          the character sequence to search
-     * @param slComment   the comment prefix (e.g., "--")
-     * @param start       the index to start searching from
-     * @param findFirst   if true, returns the first match; if false, returns the last
-     * @return the position of the comment, or -1 if not found
-     */
-    public static int findCommentPos(CharSequence cs, String slComment, int start, boolean findFirst) {
-        boolean inString = false;
-        int result = -1;
-
-        for (int i = start; i <= cs.length() - slComment.length(); i++) {
-            char ch = cs.charAt(i);
-
-            if (ch == '\'') {
-                if (inString && i + 1 < cs.length() && cs.charAt(i + 1) == '\'') {
-                    i++; // skip escaped quote ''
-                    continue;
-                }
-                inString = !inString;
-            }
-
-            if (!inString && startsWith(cs, slComment, i)) {
-                if (findFirst) {
-                    return i;
-                } else {
-                    result = i;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Inserts a comma before the last single-line comment (if needed).
+     * Inserts a comma before the inline comment of the preceding declaration (if needed).
      *
      * @param query       the current SQL buffer
-     * @param slComment   the single-line comment marker (e.g., "--")
+     * @param dialect     the dialect providing the comment marker and the quoting rules
      * @param startFrom   the position from which to start searching for a comment
      * @return updated index to be used for the next comment insertion pass
      */
-    public static int appendCommaBeforeLastComment(StringBuilder query, String slComment, int startFrom) {
-        int commentPos = findCommentPos(query, slComment, startFrom, false);
+    public static int appendCommaBeforeLastComment(@NotNull StringBuilder query, @NotNull SQLDialect dialect, int startFrom) {
+        int commentPos = SQLUtils.findLineCommentPos(dialect, query, startFrom);
         if (commentPos != -1) {
             int insertPos = commentPos;
             while (insertPos > 0 && Character.isWhitespace(query.charAt(insertPos - 1))) {
@@ -457,25 +437,12 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 query.insert(insertPos, ","); //$NON-NLS-1$
             }
 
-            // Return position after " --" so that the next search skips this comment
-            return commentPos + 3;
+            // Resume at the buffer end so that the next search never starts inside this comment
+            return query.length();
         } else {
             query.append(","); //$NON-NLS-1$
             return query.length();
         }
-    }
-
-    private static boolean startsWith(CharSequence sb, String prefix, int toffset) {
-        if (toffset < 0 || toffset > sb.length() - prefix.length()) {
-            return false;
-        }
-
-        for (int j = 0; j < prefix.length(); j++) {
-            if (sb.charAt(toffset + j) != prefix.charAt(j)) {
-                return false;
-            }
-        }
-        return true;
     }
 }
 

@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
@@ -28,12 +30,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.exec.DBCDDLTransactionBehavior;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -47,6 +51,14 @@ public class PrefPageTransactions extends TargetPrefPage {
     private Button autoCloseTransactionsCheck;
     private Text autoCloseTransactionsTtlText;
     private Button showTransactionNotificationsCheck;
+    private Combo ddlBehaviorCombo;
+
+    private static final List<DBCDDLTransactionBehavior> DDL_BEHAVIORS = List.of(
+        DBCDDLTransactionBehavior.AUTO,
+        DBCDDLTransactionBehavior.IMMEDIATE,
+        DBCDDLTransactionBehavior.TRANSACTIONAL,
+        DBCDDLTransactionBehavior.IGNORED
+    );
 
     public PrefPageTransactions()
     {
@@ -62,7 +74,8 @@ public class PrefPageTransactions extends TargetPrefPage {
             store.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER) ||
             store.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED) ||
             store.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL) ||
-            store.contains(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS)
+            store.contains(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS) ||
+            store.contains(ModelPreferences.TRANSACTIONS_DDL_BEHAVIOR)
             ;
     }
 
@@ -133,8 +146,21 @@ public class PrefPageTransactions extends TargetPrefPage {
                 PrefPageConnectionTypes.PAGE_ID,
                 wpc,
                 null
+            ).setLayoutData(GridDataFactory.swtDefaults().span(2, 1).create());
+        }
+
+        {
+            Composite ddlBehaviorRow = UIUtils.createComposite(txnNameGroup, 2);
+            ddlBehaviorRow.setLayoutData(GridDataFactory.swtDefaults().span(2, 1).create());
+
+            ddlBehaviorCombo = UIUtils.createLabelCombo(
+                ddlBehaviorRow,
+                UIConnectionMessages.pref_page_transactions_ddl_behavior_label,
+                UIConnectionMessages.pref_page_transactions_ddl_behavior_tip,
+                SWT.READ_ONLY | SWT.DROP_DOWN
             );
-            }
+            ddlBehaviorCombo.setItems(DDL_BEHAVIORS.stream().map(behavior -> behavior.displayName).toArray(String[]::new));
+        }
 
         {
             Composite notifyNameGroup = UIUtils.createTitledComposite(
@@ -147,6 +173,7 @@ public class PrefPageTransactions extends TargetPrefPage {
                 2
             );
         }
+
         return composite;
     }
 
@@ -194,6 +221,9 @@ public class PrefPageTransactions extends TargetPrefPage {
             //autoCloseTransactionsTtlText.setEnabled(autoCloseTransactionsCheck.getSelection());
 
             showTransactionNotificationsCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS));
+            ddlBehaviorCombo.select(DDL_BEHAVIORS.indexOf(DBCDDLTransactionBehavior.parse(
+                store.getString(ModelPreferences.TRANSACTIONS_DDL_BEHAVIOR)
+            )));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -215,6 +245,10 @@ public class PrefPageTransactions extends TargetPrefPage {
             }
 
             store.setValue(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS, showTransactionNotificationsCheck.getSelection());
+            store.setValue(
+                ModelPreferences.TRANSACTIONS_DDL_BEHAVIOR,
+                DDL_BEHAVIORS.get(ddlBehaviorCombo.getSelectionIndex()).name()
+            );
         } catch (Exception e) {
             log.warn(e);
         }
@@ -230,12 +264,16 @@ public class PrefPageTransactions extends TargetPrefPage {
         store.setToDefault(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
 
         store.setToDefault(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS);
+        store.setToDefault(ModelPreferences.TRANSACTIONS_DDL_BEHAVIOR);
     }
 
     @Override
     protected void performDefaults() {
         showTransactionNotificationsCheck.setSelection(
             DBWorkbench.getPlatform().getPreferenceStore().getDefaultBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS));
+        ddlBehaviorCombo.select(DDL_BEHAVIORS.indexOf(DBCDDLTransactionBehavior.parse(
+            DBWorkbench.getPlatform().getPreferenceStore().getDefaultString(ModelPreferences.TRANSACTIONS_DDL_BEHAVIOR)
+        )));
         super.performDefaults();
     }
 

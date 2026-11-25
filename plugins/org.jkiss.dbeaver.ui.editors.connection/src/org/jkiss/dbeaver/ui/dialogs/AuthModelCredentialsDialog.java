@@ -20,6 +20,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -84,7 +85,7 @@ public class AuthModelCredentialsDialog extends BaseDialog implements BlockingPo
             Composite authPanel = new Composite(composite, SWT.NONE);
             authPanel.setLayout(new GridLayout(2, false));
             authPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            configurator.createControl(authPanel, authModel, () -> {});
+            configurator.createControl(authPanel, authModel, this::updateButtons);
             configurator.loadSettings(dataSource);
         } else {
             log.debug("No UI configurator found for auth model: " + authModel);
@@ -94,9 +95,27 @@ public class AuthModelCredentialsDialog extends BaseDialog implements BlockingPo
     }
 
     @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        super.createButtonsForButtonBar(parent);
+        updateButtons();
+    }
+
+    private void updateButtons() {
+        Button okButton = getButton(IDialogConstants.OK_ID);
+        if (okButton != null && !okButton.isDisposed()) {
+            okButton.setEnabled(configurator != null && configurator.isComplete());
+        }
+    }
+
+    @Override
     protected void okPressed() {
-        if (configurator != null) {
-            configurator.saveSettings(dataSource);
+        if (configurator == null || !configurator.isComplete()) {
+            return;
+        }
+        configurator.saveSettings(dataSource);
+        if (!configurator.isComplete()) {
+            updateButtons();
+            return;
         }
         super.okPressed();
     }

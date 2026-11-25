@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.search.internal.UISearchMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -84,7 +85,7 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
             saveState(DBWorkbench.getPlatform().getPreferenceStore());
             NewSearchUI.runQueryInBackground(createQuery());
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Search error", "Can't perform search", e);
+            DBWorkbench.getPlatformUI().showError(UISearchMessages.search_error_title, UISearchMessages.search_error_message, e);
             return false;
         }
         return true;

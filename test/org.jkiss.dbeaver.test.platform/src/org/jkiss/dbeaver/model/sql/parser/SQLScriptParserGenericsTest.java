@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.Document;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -27,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
@@ -367,6 +370,27 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void parseAnonymousParametersOnlyWhenEnabled() throws DBException {
+        String query = "SELECT '?', ? -- ?";
+        SQLParserContext disabled = createParameterParserContext(query, false);
+        Assertions.assertNull(SQLScriptParser.parseParametersAndVariables(disabled, 0, query.length()));
+
+        SQLParserContext enabled = createParameterParserContext(query, true);
+        List<SQLQueryParameter> parameters = SQLScriptParser.parseParametersAndVariables(enabled, 0, query.length());
+        Assertions.assertNotNull(parameters);
+        Assertions.assertEquals(1, parameters.size());
+        Assertions.assertEquals(query.indexOf(", ?") + 2, parameters.get(0).getTokenOffset());
+        Assertions.assertFalse(parameters.get(0).isNativeBinding());
+    }
+
+    @Test
+    public void skipParametersInDDL() throws DBException {
+        String query = "CREATE TABLE t (id INT DEFAULT :value, other_id INT DEFAULT ?)";
+        SQLParserContext context = createParameterParserContext(query, true);
+        Assertions.assertNull(SQLScriptParser.parseParametersAndVariables(context, 0, query.length()));
+    }
+
+    @Test
     public void parseVariables() throws DBException {
         List<String> inputParamNames = List.of("aBc", "PrE#%&@T", "a@c=");
         StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
@@ -506,6 +530,37 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     }
 
 
+    @Test
+    public void nestedProcedureTemporaryTablesStayInOneScriptElement() {
+        String sql = """
+            CREATE PROCEDURE qa_temps AS BEGIN
+                CREATE TEMP TABLE removed (id INT);
+                CREATE TEMP TABLE replaced (id INT);
+                CREATE TEMP TABLE retained (id INT);
+                BEGIN
+                    DROP TABLE removed, replaced;
+                    CREATE TEMP TABLE replaced (id TEXT);
+                END;
+                SELECT id FROM removed;
+                SELECT id FROM replaced;
+                SELECT id FROM retained;
+            END;
+            """;
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(BasicSQLDialect.INSTANCE);
+        SQLParserContext context = createParserContext(BasicSQLDialect.INSTANCE, sql);
+        List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
+            context, 0, sql.length(), false, false, false
+        );
+        Assertions.assertEquals(1, elements.size());
+        for (String name : List.of("removed", "replaced", "retained")) {
+            int caret = sql.lastIndexOf("FROM " + name) + "FROM ".length() + 1;
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, sql.length(), caret, false, false);
+            Assertions.assertNotNull(element);
+            Assertions.assertTrue(element.getText().startsWith("CREATE PROCEDURE qa_temps"), name);
+            Assertions.assertTrue(element.getText().contains("SELECT id FROM retained"), name);
+        }
+    }
+
     private void assertParse(String dialectName, String[] expected) throws DBException {
         String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
         List<String> expectedParts = new ArrayList<>(expected.length);
@@ -545,6 +600,18 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         Assertions.assertEquals(2, elements.size(), statement);
         Assertions.assertEquals(statement, elements.get(0).getText().replaceFirst(";$", ""), statement);
         Assertions.assertEquals(sentinel, elements.get(1).getText(), statement);
+    }
+
+    @NotNull
+    private SQLParserContext createParameterParserContext(@NotNull String query, boolean anonymousEnabled) throws DBException {
+        DBPPreferenceStore preferences = Mockito.mock(DBPPreferenceStore.class);
+        Mockito.when(preferences.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)).thenReturn(true);
+        Mockito.when(preferences.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED)).thenReturn(anonymousEnabled);
+        Mockito.when(preferences.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)).thenReturn(":");
+        Mockito.when(dataSourceContainer.getPreferenceStore()).thenReturn(preferences);
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        context.setPreferenceStore(preferences);
+        return context;
     }
 
     private SQLParserContext createParserContext(SQLDialect dialect, String query) {

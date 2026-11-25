@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.colors;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -35,7 +36,7 @@ public class ResetAllColorAction extends ColorAction {
         final DBVEntity vEntity = getColorsVirtualEntity();
         if (!UIUtils.confirmAction(
             ResultSetMessages.controls_resultset_viewer_action_reset_all_colors,
-            "Are you sure you want to reset all color settings for '" + vEntity.getName() + "'?")) {
+            NLS.bind(ResultSetMessages.controls_resultset_reset_colors_confirm_message, vEntity.getName()))) {
             return;
         }
         vEntity.removeAllColorOverride();

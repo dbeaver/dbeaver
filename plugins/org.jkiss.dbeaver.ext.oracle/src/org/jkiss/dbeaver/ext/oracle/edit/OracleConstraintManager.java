@@ -46,7 +46,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTableConstraint> getObjectsCache(OracleTableConstraint object)
     {
-        return object.getParentObject().getSchema().constraintCache;
+        return object.getParentObject().getSchema().getConstraintCache();
     }
 
     @Override

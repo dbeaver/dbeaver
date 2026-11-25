@@ -4,6 +4,14 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="mariadb"
+            label="MariaDB"
+            description="MariaDB database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/mariadb_icon.png"
+            iconBig="icons/mariadb_icon_big.png"
+            logoImage="icons/mariadb_logo.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
             description="MySQL connector"
@@ -153,12 +161,11 @@
                 </propertyGroup>
             </driver-properties>
             <drivers managable="true">
-                <driver id="mysql3"/>
+                <driver id="mysql3" dataSourceType="mysql"/>
                 <driver
                         id="mysql5"
+                        dataSourceType="mysql"
                         label="MySQL 5 (Legacy)"
-                        icon="icons/mysql_icon.png"
-                        iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
@@ -167,13 +174,17 @@
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
                         databaseDocumentationSuffixURL="Database-driver-MySQL"
-                        description="Driver for MySQL 5.x+"
+                        description="Legacy MySQL Connector/J 5.1 JDBC driver for MySQL 5.x relational databases."
                         categories="sql">
 
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/lgpl-2.0.txt"/>
                     <file type="jar" path="drivers/mysql/mysql5" bundle="drivers.mysql"/>
 
+                    <property name="autoDeserialize" value="false"/>
+                    <property name="allowLocalInfile" value="false"/>
+                    <property name="allowLoadLocalInfile" value="false"/>
+                    <property name="allowUrlInLocalInfile" value="false"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="rewriteBatchedStatements" value="true"/>
                     <property name="enabledTLSProtocols" value="TLSv1,TLSv1.1,TLSv1.2,TLSv1.3"/>
@@ -184,9 +195,8 @@
 
                 <driver
                         id="mysql8"
+                        dataSourceType="mysql"
                         label="MySQL"
-                        icon="icons/mysql_icon.png"
-                        iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
@@ -195,7 +205,7 @@
                         webURL="https://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                         databaseDocumentationSuffixURL="Database-driver-MySQL"
-                        description="Driver for MySQL 8 and later"
+                        description="MySQL Connector/J JDBC driver for MySQL 8 and later relational databases."
                         promoted="1"
                         categories="sql">
                     <replace provider="mysql" driver="mysql3"/>
@@ -203,6 +213,10 @@
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <property name="autoDeserialize" value="false"/>
+                    <property name="allowLocalInfile" value="false"/>
+                    <property name="allowLoadLocalInfile" value="false"/>
+                    <property name="allowUrlInLocalInfile" value="false"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="rewriteBatchedStatements" value="true"/>
                     <!-- https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html -->
@@ -213,9 +227,8 @@
                 </driver>
                 <driver
                     id="mysql_ndb"
+                    dataSourceType="mysql"
                     label="NDB Cluster"
-                    icon="icons/mysql_icon.png"
-                    iconBig="icons/mysql_icon_big.png"
                     class="com.mysql.jdbc.Driver"
                     sampleURL="jdbc:mysql:loadbalance://{host}[:{port}]/[{database}]"
                     useURL="false"
@@ -224,11 +237,15 @@
                     webURL="https://dev.mysql.com/doc/ndbapi/en/mccj-using-connectorj.html"
                     propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                     databaseDocumentationSuffixURL="Database-driver-MySQL"
-                    description="Driver for MySQL NDB cluster"
+                    description="MySQL Connector/J JDBC driver for MySQL NDB Cluster, with load-balanced SQL access."
                     categories="sql">
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <property name="autoDeserialize" value="false"/>
+                    <property name="allowLocalInfile" value="false"/>
+                    <property name="allowLoadLocalInfile" value="false"/>
+                    <property name="allowUrlInLocalInfile" value="false"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
@@ -237,9 +254,8 @@
 
                 <driver
                     id="mariaDB"
+                    dataSourceType="mariadb"
                     label="MariaDB"
-                    icon="icons/mariadb_icon.png"
-                    iconBig="icons/mariadb_icon_big.png"
                     class="org.mariadb.jdbc.Driver"
                     sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
                     defaultPort="3306"
@@ -247,18 +263,22 @@
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     propertiesURL="https://mariadb.com/kb/en/library/about-mariadb-connector-j/#optional-url-parameters"
                     databaseDocumentationSuffixURL="Database-driver-MariaDB"
-                    description="MariaDB JDBC driver"
+                    description="MariaDB Connector/J JDBC driver for MariaDB relational databases."
                     promoted="1"
                     categories="sql">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.5.2]" bundle="!drivers.mariadb"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.5.11]" bundle="!drivers.mariadb"/>
                     <file type="license" path="licenses/external/lgpl-2.1.txt"/>
                     <file type="jar" path="drivers/mariadb" bundle="drivers.mariadb"/>
 
+                    <property name="autoDeserialize" value="false"/>
+                    <property name="allowLocalInfile" value="false"/>
+                    <property name="allowLoadLocalInfile" value="false"/>
+                    <property name="allowUrlInLocalInfile" value="false"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
                 </driver>
-                <driver id="starRocks"/>
+                <driver id="starRocks" dataSourceType="starrocks"/>
                 <provider-properties drivers="*">
                     <propertyGroup label="Advanced">
                         <property id="@dbeaver-show-all-dbs@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only." defaultValue="false"/>
@@ -270,17 +290,17 @@
             <nativeClients>
                 <client id="mariadb_client" label="MariaDB Binaries">
                     <dist os="win32" targetPath="clients/mariadb/win" remotePath="repo:/drivers/mariadb/client/win" resourcePath="clients/mariadb/win">
-                        <driver id="mariaDB"/>
+                        <driver id="mariaDB" dataSourceType="mariadb"/>
                         <file type="exec" name="mariadb.exe"/>
                         <file type="exec" name="mariadb-dump.exe"/>
                     </dist>
                 </client>
                 <client id="mysql_client" label="MySQL Binaries">
-                    <dist os="win32" targetPath="clients/mysql_8/win" remotePath="repo:/drivers/mysql/client_8/win" resourcePath="clients/mysql_8/win">
+                    <dist os="win32" targetPath="clients/mysql_8/win/8.0.46" remotePath="repo:/drivers/mysql/client_8/win/8.0.46" resourcePath="clients/mysql_8/win/8.0.46">
                         <file type="exec" name="mysql.exe"/>
                         <file type="exec" name="mysqldump.exe"/>
-                        <file type="lib" name="libssl-1_1-x64.dll"/>
-                        <file type="lib" name="libcrypto-1_1-x64.dll"/>
+                        <file type="lib" name="libssl-3-x64.dll"/>
+                        <file type="lib" name="libcrypto-3-x64.dll"/>
                     </dist>
                 </client>
                 <client id="mysql5_client" label="MySQL 5 Binaries">
@@ -377,10 +397,6 @@
             </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"/>
         </handler>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.sqlCommand">
-        <command id="mysql.source" class="org.jkiss.dbeaver.ui.editors.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlInsertMethod">

@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
@@ -54,15 +55,16 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportPropertyTester;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -224,9 +226,30 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             containerPanel = new ObjectContainerSelectorPanel(composite,
                 getWizard().getProject(),
                 "container.data-transfer.database-consumer",
-                DTMessages.data_transfer_db_consumer_target_container,
-                DTMessages.data_transfer_db_consumer_choose_container)
-            {
+                DTUIMessages.data_transfer_db_consumer_target_container,
+                DTUIMessages.data_transfer_db_consumer_choose_container) {
+                @Nullable
+                @Override
+                protected DBNNode selectContainer(@NotNull DBNNode rootNode, @Nullable DBNNode selectedNode) {
+                    return ObjectBrowserDialog.selectObject(
+                        getShell(),
+                        DTUIMessages.data_transfer_db_consumer_choose_container,
+                        rootNode,
+                        selectedNode,
+                        new Class[] {DBSInstance.class, DBSObjectContainer.class},
+                        new Class[] {DBSObjectContainer.class},
+                        new Class[] {DBSSchema.class},
+                        null,
+                        this::isContainerSelectable
+                    );
+                }
+
+                @Override
+                protected boolean isContainerSelectable(@NotNull DBNNode node) {
+                    return !(node instanceof DBNDatabaseNode databaseNode)
+                        || DataImportPropertyTester.supportsImport(databaseNode.getDataSource());
+                }
+
                 @Nullable
                 @Override
                 protected DBNNode getSelectedNode() {
@@ -255,10 +278,17 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             if (!status.isOK()) {
                                 return;
                             }
+                            if (!isContainerSelectable(node)) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    DTUIMessages.database_consumer_page_mapping_title_mapping_error,
+                                    DTUIMessages.database_consumer_page_mapping_error_message_import_not_supported
+                                );
+                                return;
+                            }
                             settings.setContainer(DBUtils.getAdapter(DBSObjectContainer.class, node.getObject()));
                         });
                     } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Container init failed", null, e);
+                        DBWorkbench.getPlatformUI().showError(DTUIMessages.database_container_init_error_title, null, e);
                     }
                     loadSettings(false);
                     setContainerInfo(node);
@@ -294,9 +324,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             configureButton = UIUtils.createDialogButton(
                 buttonsPanel,
-                DTMessages.data_transfer_db_consumer_button_customise,
+                DTUIMessages.data_transfer_db_consumer_button_customise,
                 DBIcon.TREE_COLUMNS,
-                DTMessages.data_transfer_db_consumer_button_customise_description,
+                DTUIMessages.data_transfer_db_consumer_button_customise_description,
                 SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                     DatabaseMappingObject selectedMapping = getSelectedMapping();
                     mapColumnsAndTable(
@@ -307,16 +337,16 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             previewButton = UIUtils.createDialogButton(
                 buttonsPanel,
-                DTMessages.data_transfer_wizard_page_preview_name,
+                DTUIMessages.data_transfer_wizard_page_preview_name,
                 UIIcon.SQL_PREVIEW,
-                DTMessages.data_transfer_wizard_page_preview_description,
+                DTUIMessages.data_transfer_wizard_page_preview_description,
                 SelectionListener.widgetSelectedAdapter(e -> {
                     DBPDataSourceContainer dataSourceContainer = getDatabaseConsumerSettings().getContainer().getDataSource().getContainer();
                     if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
                         UIUtils.showMessageBox(
                             getShell(),
-                            DTMessages.data_transfer_wizard_restricted_title,
-                            NLS.bind(DTMessages.data_transfer_wizard_restricted_description, dataSourceContainer.getName()),
+                            DTUIMessages.data_transfer_wizard_restricted_title,
+                            NLS.bind(DTUIMessages.data_transfer_wizard_restricted_description, dataSourceContainer.getName()),
                             SWT.ICON_WARNING
                         );
                         return;
@@ -334,9 +364,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             mappingRules = UIUtils.createDialogButton(
                 buttonsPanel,
-                DTMessages.data_transfer_db_consumer_mapping_rules_button,
+                DTUIMessages.data_transfer_db_consumer_mapping_rules_button,
                 UIIcon.CONFIGURATION,
-                DTMessages.data_transfer_db_consumer_mapping_rules_button_tip,
+                DTUIMessages.data_transfer_db_consumer_mapping_rules_button_tip,
                 SelectionListener.widgetSelectedAdapter(selectionEvent -> updateMappingRules()));
             mappingRules.setEnabled(false);
 
@@ -479,7 +509,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 upButton = UIUtils.createPushButton(
                     bottomBar,
                     null,
-                    DTMessages.data_transfer_db_consumer_up_tooltip,
+                    DTUIMessages.data_transfer_db_consumer_up_tooltip,
                     UIIcon.ARROW_UP,
                     SelectionListener.widgetSelectedAdapter(e -> {
                         DataTransferPipe pipe = getPipeFromCurrentSelection();
@@ -497,7 +527,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 downButton = UIUtils.createPushButton(
                     bottomBar,
                     null,
-                    DTMessages.data_transfer_db_consumer_down_tooltip,
+                    DTUIMessages.data_transfer_db_consumer_down_tooltip,
                     UIIcon.ARROW_DOWN,
                     SelectionListener.widgetSelectedAdapter(e -> {
                         DataTransferPipe pipe = getPipeFromCurrentSelection();
@@ -1276,8 +1306,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
         // Check name conflict in namespace
         DBSNamespaceContainer namespaceContainer = DBUtils.getAdapter(DBSNamespaceContainer.class, container);
+        DBSNamespace ns = null;
         if (namespaceContainer != null) {
-            DBSNamespace ns = namespaceContainer.getNamespaceForObjectType(RelationalObjectType.TYPE_TABLE);
+            ns = namespaceContainer.getNamespaceForObjectType(RelationalObjectType.TYPE_TABLE);
             if (ns != null) {
                 DBSObject existingObject = ns.getObjectByName(monitor, unQuotedNameForSearch);
                 if (existingObject != null) {
@@ -1300,8 +1331,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             }
         }
 
-        if (targetDataContainer == null) {
-            // Search for existing data manipulator (writable table)
+        if (targetDataContainer == null && ns == null) {
+            // Without a namespace, search for an existing data manipulator (writable table).
+            // A namespace lookup already covers a missing name without loading every child in the container.
             for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
                 if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
                     targetDataContainer = (DBSDataManipulator) child;
@@ -1531,13 +1563,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             }
         }
 
-        if (firstInit) {
-            firstInit = false;
-            UIUtils.asyncExec(() -> {
-                updateTreeColumnWidths();
-                this.autoAssignMappings();
-            });
-        }
+        UIUtils.asyncExec(this::updateTreeColumnWidths);
     }
 
     private void updateTreeColumnWidths() {
@@ -1612,6 +1638,16 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         }
 
         loadAndUpdateColumnsModel();
+        // loading may be deferred until the user explicitly connects to the target database
+        if (firstInit && getDatabaseConsumerSettings().getContainer() != null && !model.isEmpty()) {
+            firstInit = false;
+            UIUtils.asyncExec(() -> {
+                if (!mappingViewer.getTree().isDisposed()) {
+                    updateTreeColumnWidths();
+                    autoAssignMappings();
+                }
+            });
+        }
         updatePageCompletion();
     }
 
@@ -1755,7 +1791,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         boolean present = chooseContainerButton != null && !chooseContainerButton.isDisposed();
         if (needed && !present) {
             chooseContainerButton = new Button(mappingViewer.getTree(), SWT.PUSH);
-            chooseContainerButton.setText(DTMessages.data_transfer_db_consumer_choose_container);
+            chooseContainerButton.setText(DTUIMessages.data_transfer_db_consumer_choose_container);
             chooseContainerButton.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
             chooseContainerButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(
                 e -> containerPanel.browseContainer()));

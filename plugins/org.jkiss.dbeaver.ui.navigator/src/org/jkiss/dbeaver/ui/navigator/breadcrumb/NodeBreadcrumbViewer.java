@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.navigator.breadcrumb;
 
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,14 +43,29 @@ import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.breadcrumb.BreadcrumbViewer;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * A {@link DBNNode}-oriented specialization of {@link BreadcrumbViewer}.
  */
 public class NodeBreadcrumbViewer extends BreadcrumbViewer {
     private static final Log log = Log.getLog(NodeBreadcrumbViewer.class);
+    private static final String CONTEXT_MENU_ID = "entityBreadcrumbsMenu"; //$NON-NLS-1$
+
+    private final Map<IWorkbenchSite, MenuManager> contextMenuManagers = new IdentityHashMap<>();
+    private IWorkbenchSite contextMenuSite;
+    private Supplier<? extends IWorkbenchPartSite> selectionSiteSupplier;
+    private IWorkbenchPartSite selectionSite;
+    private ISelectionProvider savedSelectionProvider;
+    private IWorkbenchPartSite navigatorContextSite;
 
     public NodeBreadcrumbViewer(@NotNull Composite parent, int style) {
         super(parent, style);
@@ -51,7 +75,106 @@ public class NodeBreadcrumbViewer extends BreadcrumbViewer {
         setDropDownContentProvider(new BreadcrumbNodeContentProvider(true));
 
         addOpenListener(e -> openEditor(e.getSelection()));
-        addDoubleClickListener(e -> openEditor(e.getSelection()));
+    }
+
+    public void setContextMenuSite(@Nullable IWorkbenchSite site) {
+        if (contextMenuSite == site) {
+            return;
+        }
+        contextMenuSite = site;
+        setContextMenu(null);
+        if (site == null) {
+            getControl().setMenu(null);
+            return;
+        }
+
+        MenuManager manager = contextMenuManagers.computeIfAbsent(site, this::createContextMenu);
+        getControl().setMenu(manager.getMenu());
+        setContextMenu(manager.getMenu());
+    }
+
+    public void setSelectionSiteSupplier(@Nullable Supplier<? extends IWorkbenchPartSite> selectionSiteSupplier) {
+        this.selectionSiteSupplier = selectionSiteSupplier;
+    }
+
+    public void disposeContextMenuSite(@NotNull IWorkbenchSite site) {
+        MenuManager manager = contextMenuManagers.remove(site);
+        if (manager != null) {
+            if (contextMenuSite == site) {
+                restoreSelectionProvider();
+                contextMenuSite = null;
+                setContextMenu(null);
+                if (!getControl().isDisposed()) {
+                    getControl().setMenu(null);
+                }
+            }
+            manager.dispose();
+        }
+    }
+
+    @Override
+    protected void handleDispose(@NotNull DisposeEvent event) {
+        restoreSelectionProvider();
+        setContextMenu(null);
+        for (MenuManager manager : contextMenuManagers.values()) {
+            manager.dispose();
+        }
+        contextMenuManagers.clear();
+        super.handleDispose(event);
+    }
+
+    @Override
+    protected void contextMenuAboutToShow() {
+        restoreSelectionProvider();
+        if (contextMenuSite instanceof IWorkbenchPartSite contextPartSite) {
+            contextPartSite.getPage().activate(contextPartSite.getPart());
+            setNavigatorContextSite(contextPartSite);
+            selectionSite = selectionSiteSupplier != null ? selectionSiteSupplier.get() : contextPartSite;
+            if (selectionSite == null) {
+                selectionSite = contextPartSite;
+            }
+            savedSelectionProvider = selectionSite.getSelectionProvider();
+            selectionSite.setSelectionProvider(this);
+            fireSelectionChanged(new SelectionChangedEvent(this, getSelection()));
+        }
+    }
+
+    @NotNull
+    private MenuManager createContextMenu(@NotNull IWorkbenchSite site) {
+        MenuManager manager = NavigatorUtils.createContextMenu(site, this, this, null);
+        if (site instanceof IWorkbenchPartSite partSite) {
+            partSite.registerContextMenu(CONTEXT_MENU_ID, manager, this);
+        }
+        manager.getMenu().addMenuListener(new MenuAdapter() {
+            @Override
+            public void menuHidden(@NotNull MenuEvent e) {
+                UIUtils.asyncExec(NodeBreadcrumbViewer.this::restoreSelectionProvider);
+            }
+        });
+        return manager;
+    }
+
+    private void restoreSelectionProvider() {
+        if (selectionSite != null) {
+            selectionSite.setSelectionProvider(savedSelectionProvider);
+            selectionSite = null;
+            savedSelectionProvider = null;
+        }
+        setNavigatorContextSite(null);
+    }
+
+    private void setNavigatorContextSite(@Nullable IWorkbenchPartSite site) {
+        IWorkbenchPartSite oldSite = navigatorContextSite;
+        navigatorContextSite = site;
+        NavigatorPropertyTester.setBreadcrumbContextMenuPart(site != null ? site.getPart() : null);
+
+        IWorkbenchPartSite evaluationSite = site != null ? site : oldSite;
+        if (evaluationSite != null) {
+            IEvaluationService service = evaluationSite.getService(IEvaluationService.class);
+            if (service != null) {
+                service.requestEvaluation(NavigatorPropertyTester.NAMESPACE + "." + NavigatorPropertyTester.PROP_FOCUSED);
+            }
+        }
     }
 
     private static void openEditor(@NotNull ISelection selection) {

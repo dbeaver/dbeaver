@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -685,7 +685,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
                 // strip prefix if any
                 if (prefix.length() > 0) {
                     int length = document.getLineDelimiter(line).length() + prefix.length();
-                    document.replace(c.offset, length, null);
+                    document.replace(c.offset, length, "");
 
                     c.doit = false;
                     c.length = 0;
@@ -699,7 +699,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
                 lineDelimiter = document.getLineDelimiter(line - 1);
                 String prefix = commentExtractLinePrefix(document, line);
                 int length = (lineDelimiter != null ? lineDelimiter.length() : 0) + prefix.length();
-                document.replace(c.offset - length + 1, length, null);
+                document.replace(c.offset - length + 1, length, "");
 
                 c.doit = false;
                 c.offset -= length - 1;
@@ -707,7 +707,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
                 return;
 
             } else {
-                document.replace(c.offset, c.length, null);
+                document.replace(c.offset, c.length, "");
                 c.doit = false;
                 c.length = 0;
             }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.IRevertableEditor;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,7 +36,7 @@ import java.io.IOException;
 /**
  * DatabaseDataEditor
  */
-public class DatabaseDataEditor extends AbstractDataEditor<DBSDataContainer> implements ISmartTransactionManager, IRevertableEditor
+public class DatabaseDataEditor extends AbstractDataEditor<DBSDataContainer> implements DBCSmartTransactionManager, IRevertableEditor
 {
     public static final String ATTR_SUSPEND_QUERY = "suspendQuery";
     public static final String ATTR_DATA_FILTER = "dataFilter";
@@ -89,7 +90,7 @@ public class DatabaseDataEditor extends AbstractDataEditor<DBSDataContainer> imp
         try {
             getActivePreferenceStore().save();
         } catch (IOException e) {
-            DBWorkbench.getPlatformUI().showError("Smart commit", "Error saving smart auto-commit option", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_smart_commit_title, ResultSetMessages.error_smart_commit_message, e);
         }
     }
 

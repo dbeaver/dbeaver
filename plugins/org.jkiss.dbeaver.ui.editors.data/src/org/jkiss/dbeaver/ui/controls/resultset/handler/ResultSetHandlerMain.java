@@ -46,7 +46,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -86,8 +90,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -148,6 +152,12 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
         IResultSetPresentation presentation = rsv.getActivePresentation();
         DBPDataSource dataSource = rsv.getDataSource();
         switch (actionId) {
+            case IWorkbenchCommandConstants.EDIT_UNDO:
+                rsv.undoCellEdit();
+                break;
+            case IWorkbenchCommandConstants.EDIT_REDO:
+                rsv.redoCellEdit();
+                break;
             case IWorkbenchCommandConstants.FILE_REFRESH:
                 rsv.refreshData(null);
                 break;
@@ -275,12 +285,13 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                                 }
                             }
                         } else {
-                            rsv.resetCellValue(attr, row, selection.getElementRowIndexes(cell));
+                            rsv.resetCellValue(attr, row, selection.getElementRowIndexes(cell), selection.getElementValuePath(cell));
                         }
                     }
                 }
                 rsv.redrawData(false, false);
                 rsv.updatePanelsContent(false);
+                rsv.updateEditControls();
                 break;
             }
             case IResultSetCommands.CMD_APPLY_CHANGES:
@@ -387,8 +398,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)) {
                     UIUtils.showMessageBox(
                         HandlerUtil.getActiveShell(event),
-                        UIMessages.dialog_policy_data_copy_title,
-                        UIMessages.dialog_policy_data_copy_msg,
+                        ResultSetMessages.dialog_policy_data_copy_title,
+                        ResultSetMessages.dialog_policy_data_copy_msg,
                         SWT.ICON_WARNING
                     );
                 } else {
@@ -676,7 +687,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
 
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Script generation", "Can't generate changes script", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                ResultSetMessages.error_generate_script_title, ResultSetMessages.error_generate_changes_script, e.getTargetException());
         }
 */
         return null;

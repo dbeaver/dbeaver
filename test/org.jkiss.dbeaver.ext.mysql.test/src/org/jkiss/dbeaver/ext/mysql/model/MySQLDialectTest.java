@@ -16,13 +16,23 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 public class MySQLDialectTest extends DBeaverUnitTest {
 
     private final MySQLDialect dialect = new MySQLDialect();
+
+    @Test
+    public void builtInFunctionsIncludeConditionalAndComparisonFunctions() {
+        dialect.initDriverSettings(null, null, Mockito.mock(JDBCDatabaseMetaData.class));
+
+        Assertions.assertTrue(dialect.getFunctions().contains("IF"));
+        Assertions.assertTrue(dialect.getFunctions().contains("GREATEST"));
+    }
 
     @Test
     public void quoteStringTest() {

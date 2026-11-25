@@ -210,15 +210,16 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return getClass() != GenericDataSource.class;
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) throws DBCException {
         return new GenericExecutionContext(instance, type);
     }
 
     protected void initializeContextState(
         @NotNull DBRProgressMonitor monitor,
         @NotNull JDBCExecutionContext context,
-        JDBCExecutionContext initFrom
+        @Nullable JDBCExecutionContext initFrom
     ) throws DBException {
         super.initializeContextState(monitor, context, initFrom);
         if (initFrom != null) {
@@ -243,9 +244,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return metaModel.getMetaObject(id);
     }
 
+    @NotNull
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(
-        DBRProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull JDBCDatabaseMetaData metaData
     ) {
         return new GenericDataSourceInfo(container.getDriver(), metaData);
@@ -835,6 +837,14 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return dataTypeCache;
     }
 
+    /**
+     * Controls navigator folder visibility without affecting data type metadata.
+     */
+    public boolean isDataTypesVisible() {
+        return true;
+    }
+
+    @NotNull
     public Collection<? extends DBSDataType> getDataTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return dataTypeCache.getAllObjects(monitor, this);
     }

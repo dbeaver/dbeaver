@@ -16,30 +16,28 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.observable.value.IValueChangeListener;
-import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
-import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.bindings.ObservableValue;
 
 import java.util.function.BiConsumer;
 
 @SuppressWarnings("CheckStyle")
-record UIObservableImpl<T>(@NotNull IObservableValue<T> delegate, @NotNull Class<T> type) implements UIObservable<T> {
+record UIObservableImpl<T>(@NotNull ObservableValue<T> delegate, @NotNull Class<T> type) implements UIObservable<T> {
     @NotNull
     static <T> UIObservableImpl<T> of(@Nullable T value, @NotNull Class<T> type) {
-        return new UIObservableImpl<>(new WritableValue<>(value, type), type);
+        return new UIObservableImpl<>(ObservableValue.writable(value), type);
     }
 
+    @Nullable
     @Override
     public T get() {
-        return delegate.getValue();
+        return delegate.get();
     }
 
     @Override
-    public void set(T value) {
-        delegate.setValue(value);
+    public void set(@Nullable T value) {
+        delegate.set(value);
     }
 
     @NotNull
@@ -50,29 +48,17 @@ record UIObservableImpl<T>(@NotNull IObservableValue<T> delegate, @NotNull Class
 
     @Override
     public void addChangeListener(@NotNull BiConsumer<T, T> listener) {
-        // TODO currently used to listen to changes in multiple controls.
-        //  Would be nice to introduce a generic "validation" callback
-        //  that gets invoked recursively when let's say a panel's widget
-        //  changes its validation state. Or at least gets modified without
-        //  validating anything.
-        delegate.addValueChangeListener(new ValueChangeAdapter<>(listener));
+        delegate.addListener(listener);
     }
 
     @Override
     public void removeChangeListener(@NotNull BiConsumer<T, T> listener) {
-        delegate.removeValueChangeListener(new ValueChangeAdapter<>(listener));
+        delegate.removeListener(listener);
     }
 
     @NotNull
     @Override
     public String toString() {
         return String.format("UIObservableImpl[value=%s, type=%s]", get(), type.getName());
-    }
-
-    private record ValueChangeAdapter<T>(@NotNull BiConsumer<T, T> listener) implements IValueChangeListener<T> {
-        @Override
-        public void handleValueChange(@NotNull ValueChangeEvent<? extends T> event) {
-            listener.accept(event.diff.getOldValue(), event.diff.getNewValue());
-        }
     }
 }

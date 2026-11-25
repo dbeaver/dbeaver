@@ -18,6 +18,11 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
+import org.jkiss.dbeaver.model.data.DBDVoid;
+import org.jkiss.dbeaver.model.data.ResultSetValuePath;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -25,9 +30,11 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithStructuralParent;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
@@ -35,6 +42,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class DBUtilsTest extends DBeaverUnitTest {
 
@@ -140,6 +150,95 @@ public class DBUtilsTest extends DBeaverUnitTest {
         Mockito.lenient().<Class<?>>when(mockSchema.getPrimaryChildType(monitor)).thenReturn(DBSTable.class);
         Mockito.lenient().when(mockSchema.getChild(monitor, "table_test")).thenReturn(mockEntity);
         Mockito.lenient().when(mockSchemaDBO.getChild(monitor, "table_test")).thenReturn(mockEntityDBO);
+    }
+
+    @Test
+    public void testObjectPathUsesStructuralParent() {
+        DBSObject root = Mockito.mock(DBSObject.class, Mockito.CALLS_REAL_METHODS);
+        DBSObject owner = Mockito.mock(DBSObject.class, Mockito.CALLS_REAL_METHODS);
+        DBSObject object = Mockito.mock(DBSObject.class, Mockito.CALLS_REAL_METHODS);
+        Mockito.when(owner.getParentObject()).thenReturn(root);
+        Mockito.when(object.getParentObject()).thenReturn(owner);
+
+        Assertions.assertArrayEquals(new DBSObject[] {root, owner, object}, DBUtils.getObjectPath(object, true));
+        DBSObjectWithStructuralParent structuralObject = Mockito.mock(DBSObjectWithStructuralParent.class);
+        Mockito.when(structuralObject.getStructuralParent()).thenReturn(root);
+        Assertions.assertArrayEquals(new DBSObject[] {root, structuralObject}, DBUtils.getObjectPath(structuralObject, true));
+        Assertions.assertArrayEquals(new DBSObject[] {root}, DBUtils.getObjectPath(structuralObject, false));
+        Assertions.assertArrayEquals(new DBSObject[0], DBUtils.getObjectPath(root, false));
+    }
+
+    @Test
+    public void testPartitionObjectPath() {
+        DBSObject schema = Mockito.mock(DBSObject.class, Mockito.CALLS_REAL_METHODS);
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.CALLS_REAL_METHODS);
+        DBSTablePartition partition = Mockito.mock(DBSTablePartition.class, Mockito.CALLS_REAL_METHODS);
+        DBSTablePartition subPartition = Mockito.mock(DBSTablePartition.class, Mockito.CALLS_REAL_METHODS);
+        Mockito.when(table.getParentObject()).thenReturn(schema);
+        Mockito.when(partition.getParentObject()).thenReturn(schema);
+        Mockito.when(partition.getParentTable()).thenReturn(table);
+        Mockito.when(subPartition.isSubPartition()).thenReturn(true);
+        Mockito.when(subPartition.getPartitionParent()).thenReturn(partition);
+
+        Assertions.assertArrayEquals(new DBSObject[] {schema, table, partition}, DBUtils.getObjectPath(partition, true));
+        Assertions.assertArrayEquals(new DBSObject[] {schema, table}, DBUtils.getObjectPath(partition, false));
+        Assertions.assertArrayEquals(
+            new DBSObject[] {schema, table, partition, subPartition}, DBUtils.getObjectPath(subPartition, true));
+        Assertions.assertArrayEquals(
+            new DBSObject[] {schema, table, partition}, DBUtils.getObjectPath(subPartition, false));
+
+        Mockito.when(partition.needFullPath()).thenReturn(false);
+        Assertions.assertArrayEquals(new DBSObject[] {schema, partition}, DBUtils.getObjectPath(partition, true));
+        Assertions.assertArrayEquals(new DBSObject[] {schema}, DBUtils.getObjectPath(partition, false));
+    }
+
+    @Test
+    public void testArrayIndexesDoNotResolveToSiblingCollection() {
+        DBDAttributeBinding attribute = Mockito.mock(DBDAttributeBinding.class);
+        Mockito.when(attribute.getTopParent()).thenReturn(attribute);
+        Mockito.when(attribute.getOrdinalPosition()).thenReturn(0);
+
+        DBDCollection outer = Mockito.mock(DBDCollection.class);
+        DBDCollection inner = Mockito.mock(DBDCollection.class);
+        Mockito.when(outer.getItemCount()).thenReturn(1);
+        Mockito.when(outer.get(0)).thenReturn(inner);
+        Mockito.when(inner.getItemCount()).thenReturn(1);
+        Mockito.when(inner.get(0)).thenReturn(42);
+
+        Object[] values = { outer };
+        DBDAttributeBinding[] attributes = { attribute };
+        Assertions.assertSame(outer, DBUtils.getAttributeValue(attribute, attributes, values, null, false));
+        Assertions.assertSame(inner, DBUtils.getAttributeValue(attribute, attributes, values, new int[] { 0 }, false));
+        Assertions.assertEquals(42, DBUtils.getAttributeValue(attribute, attributes, values, new int[] { 0, 0 }, false));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getAttributeValue(attribute, attributes, values, new int[] { 0, 0, 0 }, false));
+
+        // A shallower array in another column must not reappear at deeper row levels.
+        Mockito.when(outer.get(0)).thenReturn(42);
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getAttributeValue(attribute, attributes, values, new int[] { 0, 0 }, false));
+    }
+
+    @Test
+    public void testRowValuePathDistinguishesMissingArrayPositionFromNullElement() {
+        DBDAttributeBinding attribute = Mockito.mock(DBDAttributeBinding.class);
+        Mockito.when(attribute.getOrdinalPosition()).thenReturn(0);
+        DBDValueRow row = Mockito.mock(DBDValueRow.class);
+        Mockito.when(row.getValues()).thenReturn(new Object[] { Arrays.asList("present", null) });
+
+        ResultSetValuePath.PathAttributeItem root = new ResultSetValuePath.PathAttributeItem(attribute);
+        Assertions.assertEquals("present", DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(0)))));
+        Assertions.assertNull(DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(1)))));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(2)))));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(2), new ResultSetValuePath.PathIndexItem(0)))));
+
+        Mockito.when(row.getValues()).thenReturn(new Object[] { List.of(List.of("nested")) });
+        Assertions.assertEquals("nested", DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(0), new ResultSetValuePath.PathIndexItem(0)))));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(0), new ResultSetValuePath.PathIndexItem(1)))));
     }
 
     @Test
@@ -296,6 +395,17 @@ public class DBUtilsTest extends DBeaverUnitTest {
 
         // All nulls should produce empty string
         Assertions.assertEquals("", DBUtils.getSimpleQualifiedName(null, null, null));
+    }
+
+    @Test
+    public void testConvertArrayStringToList() {
+        Assertions.assertEquals(List.of("a", "b"), DBUtils.convertArrayStringToList("[a, b]"));
+        Assertions.assertEquals(List.of("a", "b c"), DBUtils.convertArrayStringToList("[\"a\", \"b c\"]"));
+        Assertions.assertEquals(List.of(), DBUtils.convertArrayStringToList("[]"));
+        // A quoted element ending with a comma is split into tokens, one of which is a single quote character
+        Assertions.assertEquals(
+            List.of("\"FROM AAAA", "\""),
+            DBUtils.convertArrayStringToList("[\"FROM AAAA,\"]"));
     }
 
 }

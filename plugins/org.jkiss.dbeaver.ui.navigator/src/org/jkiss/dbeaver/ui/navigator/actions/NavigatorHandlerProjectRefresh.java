@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -50,13 +51,14 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
                 }
                 DBeaverNotifications.showNotification(
                     DBeaverNotifications.NT_GENERIC,
-                    "Projects refresh",
-                    "Project list was synchronized with local file system",
+                    UINavigatorMessages.projects_refresh_title,
+                    UINavigatorMessages.projects_refresh_message,
                     DBPMessageType.INFORMATION,
                     null);
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Refresh workspace", "Can't refresh workspace", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_refresh_workspace_title,
+                UINavigatorMessages.error_refresh_workspace_message, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }

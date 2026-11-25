@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -47,8 +49,12 @@ public class NewConnectionDialog extends ActiveWizardDialog {
 
     private Button testButton;
 
-    private NewConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard) {
-        super(window, wizard);
+    private NewConnectionDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull ConnectionWizard wizard,
+        @Nullable IStructuredSelection selection
+    ) {
+        super(window, wizard, selection);
         setAdaptContainerSizeToPages(true);
     }
 
@@ -62,7 +68,7 @@ public class NewConnectionDialog extends ActiveWizardDialog {
         parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
         testButton = createButton(parent, TEST_BUTTON_ID, UIConnectionMessages.dialog_connection_button_test, false);
-        testButton.setEnabled(false);
+        testButton.setVisible(false);
         testButton.moveAbove(getButton(IDialogConstants.BACK_ID));
 
         Label spacer = new Label(parent, SWT.NONE);
@@ -86,7 +92,10 @@ public class NewConnectionDialog extends ActiveWizardDialog {
     public void updateButtons() {
         ConnectionWizard wizard = (ConnectionWizard) getWizard();
         ConnectionPageSettings settings = wizard.getPageSettings();
-        testButton.setEnabled(settings != null && settings.isPageComplete());
+        IWizardPage currentPage = getCurrentPage();
+        boolean showTestButton = currentPage instanceof ConnectionPageSettings;
+        testButton.setVisible(showTestButton);
+        testButton.setEnabled(showTestButton && settings != null && settings.isPageComplete());
         super.updateButtons();
     }
 
@@ -98,19 +107,25 @@ public class NewConnectionDialog extends ActiveWizardDialog {
     @Override
     public int open() {
         if (DBWorkbench.getPlatform().getWorkspace().getActiveProject() == null) {
-            DBWorkbench.getPlatformUI().showError("No active project", "No active project, can't create new connection.\nActivate or create new project.");
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_no_project_title,
+                UIConnectionMessages.dialog_connection_no_project_message);
             return IDialogConstants.CANCEL_ID;
         }
         try {
             return super.open();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Internal error", "Internal error when opening new connection wizard", e);
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_internal_error_title,
+                UIConnectionMessages.dialog_connection_wizard_open_error, e);
             return IDialogConstants.CANCEL_ID;
         }
     }
 
     public static boolean openNewConnectionDialog(@NotNull IWorkbenchWindow window) {
         return openNewConnectionDialog(window, null, null);
+    }
+
+    public static boolean openNewConnectionDialog(@NotNull IWorkbenchWindow window, @NotNull IStructuredSelection selection) {
+        return openNewConnectionDialog(window, null, null, null, selection);
     }
 
     public static boolean openNewConnectionDialog(
@@ -127,6 +142,16 @@ public class NewConnectionDialog extends ActiveWizardDialog {
         @Nullable DBPConnectionConfiguration initialConfiguration,
         @Nullable Consumer<NewConnectionWizard> wizardConfigurer
     ) {
+        return openNewConnectionDialog(window, initialDriver, initialConfiguration, wizardConfigurer, null);
+    }
+
+    private static boolean openNewConnectionDialog(
+        @NotNull IWorkbenchWindow window,
+        @Nullable DBPDriver initialDriver,
+        @Nullable DBPConnectionConfiguration initialConfiguration,
+        @Nullable Consumer<NewConnectionWizard> wizardConfigurer,
+        @Nullable IStructuredSelection selection
+    ) {
         if (dialogInstance != null) {
             dialogInstance.getShell().forceActive();
             return true;
@@ -135,7 +160,7 @@ public class NewConnectionDialog extends ActiveWizardDialog {
             if (wizardConfigurer != null) {
                 wizardConfigurer.accept(wizard);
             }
-            dialogInstance = new NewConnectionDialog(window, wizard);
+            dialogInstance = new NewConnectionDialog(window, wizard, selection);
             try {
                 return dialogInstance.open() == IDialogConstants.OK_ID;
             } finally {

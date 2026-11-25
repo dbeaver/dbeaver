@@ -28,7 +28,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.w3c.dom.css.CSSValue;
@@ -58,9 +57,8 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
                 super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
             }
 
-            if (RuntimeUtils.isWindows()) {
-                // Fix of broken tool items bg color dbeaver/pro#10293
-                // Set items background to toolbar background
+            {
+                // Native tool items don't always inherit their toolbar's background.
                 Color tbBg = toolBar.getBackground();
                 for (ToolItem cc : toolBar.getItems()) {
                     cc.setBackground(tbBg);

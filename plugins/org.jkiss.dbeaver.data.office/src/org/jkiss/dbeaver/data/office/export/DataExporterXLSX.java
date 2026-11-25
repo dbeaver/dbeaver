@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -82,6 +83,9 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private static final String PROP_DATE_FORMAT = "dateFormat";
     private static final String PROP_APPEND_STRATEGY = "appendStrategy";
     private static final String PROP_USE_DEFAULT_SPREADSHEET_NAMES = "useDefaultSpreadsheetNames";
+    private static final String PROP_SHEET_NAME_PATTERN = "sheetNamePattern";
+
+    private static final String VARIABLE_SHEET_NUMBER = "n";
 
     private static final int EXCEL2007MAXROWS = 1048575;
     private static final int EXCEL_MAX_CELL_CHARACTERS = 32767; // Total number of characters that a cell can contain - 32,767 characters
@@ -111,6 +115,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private boolean splitSqlText = false;
     private AppendStrategy appendStrategy = AppendStrategy.CREATE_NEW_SHEETS;
     private String exportTableName = WorksheetUtils.DEFAULT_SHEET_NAME;
+    private String sheetNamePattern;
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
@@ -140,6 +145,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
         properties.put(DataExporterXLSX.PROP_APPEND_STRATEGY, AppendStrategy.CREATE_NEW_SHEETS.value);
         properties.put(DataExporterXLSX.PROP_USE_DEFAULT_SPREADSHEET_NAMES, true);
+        properties.put(DataExporterXLSX.PROP_SHEET_NAME_PATTERN, "");
         return properties;
     }
 
@@ -161,6 +167,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         splitByRowCount = CommonUtils.toInt(properties.get(PROP_SPLIT_BYROWCOUNT), EXCEL2007MAXROWS);
         splitByCol = CommonUtils.toInt(properties.get(PROP_SPLIT_BYCOL), 0);
         appendStrategy = AppendStrategy.of(CommonUtils.toString(properties.get(PROP_APPEND_STRATEGY)));
+        sheetNamePattern = CommonUtils.toString(properties.get(PROP_SHEET_NAME_PATTERN));
 
         if (wb == null) {
             wb = new SXSSFWorkbook(ROW_WINDOW);
@@ -394,7 +401,9 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             sheet = wb.getSheetAt(sheetIndex++);
             worksheet = new Worksheet(sheet, colValue, getPhysicalNumberOfRows(sheet));
         } else {
-            if (CommonUtils.toBoolean(getSite().getProperties().get(PROP_USE_DEFAULT_SPREADSHEET_NAMES), true)) {
+            if (CommonUtils.isNotEmpty(sheetNamePattern)) {
+                sheet = wb.createSheet(resolveSheetName());
+            } else if (CommonUtils.toBoolean(getSite().getProperties().get(PROP_USE_DEFAULT_SPREADSHEET_NAMES), true)) {
                 sheet = wb.createSheet();
             } else {
                 sheet = wb.createSheet(WorksheetUtils.makeUniqueSheetName(wb, exportTableName));
@@ -404,6 +413,20 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         }
         printHeader(resultSet, worksheet);
         return worksheet;
+    }
+
+    @NotNull
+    private String resolveSheetName() {
+        String sheetName = GeneralUtils.replaceVariables(sheetNamePattern, variableName -> {
+            if (VARIABLE_SHEET_NUMBER.equals(variableName)) {
+                return String.valueOf(wb.getNumberOfSheets() + 1);
+            }
+            if (StreamTransferConsumer.VARIABLE_TABLE.equals(variableName)) {
+                return exportTableName;
+            }
+            return null;
+        });
+        return WorksheetUtils.makeUniqueSheetName(wb, sheetName);
     }
 
     private Worksheet getWsh(DBCResultSet resultSet, Object[] row) throws DBException {

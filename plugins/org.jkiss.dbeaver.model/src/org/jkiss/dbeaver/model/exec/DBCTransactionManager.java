@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,4 +47,31 @@ public interface DBCTransactionManager {
     void rollback(@NotNull DBCSession session, @Nullable DBCSavepoint savepoint) throws DBCException;
 
     boolean isSupportsTransactions();
+
+    /**
+     * Returns when successful DDL becomes visible outside this transaction context.
+     */
+    @NotNull
+    default DBCDDLTransactionBehavior getDDLTransactionBehavior() {
+        return DBCDDLTransactionBehavior.AUTO;
+    }
+
+    /**
+     * Returns whether this manager emits successful transaction state changes to registered listeners.
+     */
+    default boolean supportsTransactionListeners() {
+        return false;
+    }
+
+    /**
+     * Registers a listener for successful transaction state changes when supported by this manager.
+     */
+    default void addTransactionListener(@NotNull DBCTransactionListener listener) {
+    }
+
+    /**
+     * Removes a previously registered transaction listener.
+     */
+    default void removeTransactionListener(@NotNull DBCTransactionListener listener) {
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ public class HANAUserPasswordManager implements DBAUserPasswordManager {
 
     @Override
     public void changeUserPassword(@NotNull DBRProgressMonitor monitor, @NotNull String userName, @NotNull String newPassword, @NotNull String oldPassword) throws DBException {
+        dataSource.validateUserPassword(monitor, userName, oldPassword);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
             JDBCUtils.executeSQL(session, "ALTER USER " + userName + " PASSWORD " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(newPassword)));

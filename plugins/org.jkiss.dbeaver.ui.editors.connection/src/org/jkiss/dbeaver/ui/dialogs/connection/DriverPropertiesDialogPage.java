@@ -70,6 +70,10 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             if (prevConnectionInfo == activeDataSource.getConnectionConfiguration()) {
                 return;
             }
+            propertySource = null;
+            prevConnectionInfo = null;
+            propsControl.loadProperties(new PropertySourceCustom());
+            setErrorMessage(null);
 
             final DBPConnectionConfiguration tmpConnectionInfo = new DBPConnectionConfiguration();
             final DataSourceDescriptor tempDataSource = site.getDataSourceRegistry()
@@ -103,9 +107,10 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
                 // ignore
             }
             if (propertySource != null) {
+                loadPropertyValues(propertySource);
                 propsControl.loadProperties(propertySource);
+                prevConnectionInfo = activeDataSource.getConnectionConfiguration();
             }
-            prevConnectionInfo = activeDataSource.getConnectionConfiguration();
 
             tempDataSource.dispose();
         }
@@ -122,26 +127,37 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
         if (propsControl != null) {
             propsControl.saveEditorValues();
         }
-        if (propertySource != null) {
-            final Map<String, String> properties = dataSource.getConnectionConfiguration().getProperties();
-            properties.clear();
-            for (Map.Entry<String, Object> entry : propertySource.getPropertyValues().entrySet()) {
-                String propName = CommonUtils.toString(entry.getKey());
-                if (!propName.isEmpty()) {
-                    properties.put(propName, CommonUtils.toString(entry.getValue()));
-                }
+        if (propertySource != null && prevConnectionInfo == site.getActiveDataSource().getConnectionConfiguration()) {
+            savePropertyValues(propertySource, dataSource.getConnectionConfiguration());
+        }
+    }
+
+    protected void loadPropertyValues(@NotNull PropertySourceCustom source) {
+    }
+
+    protected void savePropertyValues(@NotNull PropertySourceCustom source, @NotNull DBPConnectionConfiguration configuration) {
+        final Map<String, String> properties = configuration.getProperties();
+        properties.clear();
+        for (Map.Entry<String, Object> entry : source.getPropertyValues().entrySet()) {
+            String propName = CommonUtils.toString(entry.getKey());
+            if (!propName.isEmpty()) {
+                properties.put(propName, CommonUtils.toString(entry.getValue()));
             }
         }
     }
 
+    @NotNull
+    protected ConnectionPropertiesControl createPropertiesControl(@NotNull Composite parent) {
+        return new ConnectionPropertiesControl(parent, SWT.NONE);
+    }
+
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(@NotNull Composite parent) {
         Composite ph = UIUtils.createPlaceholder(parent, 1);
         if (parent.getLayout() instanceof GridLayout) {
             ph.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
-        propsControl = new ConnectionPropertiesControl(ph, SWT.NONE);
+        propsControl = createPropertiesControl(ph);
         Object layoutData = propsControl.getTree().getLayoutData();
         if (layoutData == null) {
             layoutData = new GridData(GridData.FILL_BOTH);

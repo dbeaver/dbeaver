@@ -65,7 +65,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
     private String programOwner;
     private String programName;
     private String jobType;
-    private String jobAction;
+    protected String jobAction;
     private long numberOfArguments;
     private String scheduleOwner;
     private String scheduleName;
@@ -817,7 +817,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         OracleSchema schema = getSchema();
         if (schema != null) {
-            schema.schedulerJobCache.removeObject(this, false);
+            schema.getSchedulerJobCache().removeObject(this, false);
         }
         return this;
     }

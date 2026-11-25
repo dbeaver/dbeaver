@@ -5,12 +5,22 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
+        <dataSourceType
+            id="google_cloud_spanner"
+            label="Google Cloud Spanner"
+            description="Google Cloud Spanner database"
+            dataSourceInformation="Cloud-native distributed data platform"
+            icon="icons/spanner_icon.png"
+            iconBig="icons/spanner_icon_big.png"
+            logoImage="icons/spanner_logo.png"/>
+
         <!-- Spanner -->
 
         <datasource
                 class="org.jkiss.dbeaver.ext.spanner.SpannerDataSourceProvider"
                 description="Google Spanner datasource"
                 id="google_spanner"
+                dataSourceType="google_cloud_spanner"
                 parent="generic"
                 label="Google Cloud Spanner"
                 icon="icons/spanner_icon.png"
@@ -20,13 +30,11 @@
                 <driver
                         id="spanner_jdbc_official"
                         label="Google Cloud Spanner"
-                        icon="icons/spanner_icon.png"
-                        iconBig="icons/spanner_icon_big.png"
                         class="com.google.cloud.spanner.jdbc.JdbcDriver"
                         sampleURL="jdbc:cloudspanner:/projects/my-project/instances/my-instance/databases/my-database"
                         supportedPageFields="host,database,server"
                         defaultPort=""
-                        description="Google Cloud Spanner Open Source JDBC Driver"
+                        description="Google open-source JDBC driver for Cloud Spanner distributed relational databases."
                         webURL="https://cloud.google.com/spanner/docs/use-oss-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Google-Cloud-Spanner"
                         categories="sql,bigdata,cloud,gcp"
@@ -44,12 +52,10 @@
                 <driver
                         id="spanner_jdbc"
                         label="Google Cloud Spanner (Deprecated)"
-                        icon="icons/spanner_icon.png"
-                        iconBig="icons/spanner_icon_big.png"
                         class="nl.topicus.jdbc.CloudSpannerDriver"
                         sampleURL="jdbc:cloudspanner://localhost"
                         defaultPort=""
-                        description="Google Spanner JDBC community (Topicus) driver (Deprecated, use the officially supported driver instead)"
+                        description="Deprecated Topicus community JDBC driver for Google Cloud Spanner relational databases."
                         webURL="https://github.com/olavloite/spanner-jdbc"
                         categories="sql,bigdata,cloud">
                     <parameter name="omit-catalog" value="true"/>

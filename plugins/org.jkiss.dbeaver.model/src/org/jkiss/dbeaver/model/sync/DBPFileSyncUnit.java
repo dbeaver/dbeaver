@@ -27,6 +27,7 @@ import java.util.Map;
 public class DBPFileSyncUnit implements DBPSyncUnit {
 
     private final String id;
+    private final String name;
     private final String path;
     private final DBPSyncScope scope;
     private final boolean enabledByDefault;
@@ -37,7 +38,18 @@ public class DBPFileSyncUnit implements DBPSyncUnit {
         @NotNull DBPSyncScope scope,
         boolean enabledByDefault
     ) {
+        this(id, id, path, scope, enabledByDefault);
+    }
+
+    public DBPFileSyncUnit(
+        @NotNull String id,
+        @NotNull String name,
+        @NotNull String path,
+        @NotNull DBPSyncScope scope,
+        boolean enabledByDefault
+    ) {
         this.id = id;
+        this.name = name;
         this.path = path;
         this.scope = scope;
         this.enabledByDefault = enabledByDefault;
@@ -47,6 +59,12 @@ public class DBPFileSyncUnit implements DBPSyncUnit {
     @Override
     public String getId() {
         return id;
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return name;
     }
 
     @NotNull

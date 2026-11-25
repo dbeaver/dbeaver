@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.ui.controls.resultset.virtual;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingCustom;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 public class VirtualAttributeDeleteAction extends Action {
     private ResultSetViewer resultSetViewer;
@@ -45,7 +47,9 @@ public class VirtualAttributeDeleteAction extends Action {
             return;
         }
         DBVEntityAttribute vAttr = ((DBDAttributeBindingCustom)attr).getEntityAttribute();
-        if (!UIUtils.confirmAction(resultSetViewer.getControl().getShell(), "Delete column '" + vAttr.getName() + "'", "Are you sure you want to delete virtual column '" + vAttr.getName() + "'?")) {
+        if (!UIUtils.confirmAction(resultSetViewer.getControl().getShell(),
+            NLS.bind(ResultSetMessages.virtual_column_delete_confirm_title, vAttr.getName()),
+            NLS.bind(ResultSetMessages.virtual_column_delete_confirm_message, vAttr.getName()))) {
             return;
         }
         DBVEntity vEntity = resultSetViewer.getModel().getVirtualEntity(false);

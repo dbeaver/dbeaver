@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ public final class SQLModelPreferences {
     public static final String SQL_EDITOR_PROPOSAL_ALWAYS_FQ = "SQLEditor.ContentAssistant.proposals.long.name";
 
     public static final String ADVANCED_HIGHLIGHTING_ENABLE = "SQLEditor.Highlighting.advanced.enable";
+    public static final String TRACK_SCRIPT_VARIABLES = "SQLEditor.Semantics.script.variables.tracking.enable";
     public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS = "SQLEditor.Semantics.metadata.read.enable";
     public static final String VALIDATE_FUNCTIONS = "SQLEditor.Semantics.validate.functions.enable";
     public static final String AUTOCOMPLETION_MODE = "SQLEditor.ContentAssistant.experimental.mode";

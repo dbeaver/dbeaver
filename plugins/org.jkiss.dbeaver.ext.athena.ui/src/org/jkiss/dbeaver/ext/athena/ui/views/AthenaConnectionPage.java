@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.ext.athena.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionListener;
@@ -30,12 +30,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
-import org.jkiss.dbeaver.ext.athena.ui.AthenaUIConstants;
 import org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -70,8 +68,6 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
     private Combo awsRegionCombo;
     private Text s3LocationText;
 
-    private static final ImageDescriptor logoImage = AbstractUIPlugin.imageDescriptorFromPlugin(
-        AthenaUIConstants.PLUGIN_ID, "icons/aws_athena_logo.png"); //$NON-NLS-1$
     private final DriverPropertiesDialogPage driverPropsPage;
     private Button showCatalogsCheck;
 
@@ -80,14 +76,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    public void dispose() {
-        super.dispose();
-    }
-
-    @Override
-    public void createControl(Composite composite) {
-        setImageDescriptor(logoImage);
-
+    public void createControl(@NotNull Composite composite) {
         Composite settingsGroup = new Composite(composite, SWT.NONE);
         settingsGroup.setLayout(new GridLayout(1, false));
         settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -128,7 +117,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                             DBNFileSystems fsRootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot()
                                 .getExtraNode(DBNFileSystems.class);
                             if (fsRootNode == null) {
-                                DBWorkbench.getPlatformUI().showMessageBox("Cloud support required", "Project file system node not found", true);
+                                DBWorkbench.getPlatformUI().showMessageBox(AthenaMessages.cloud_support_required, AthenaMessages.project_file_system_not_found, true);
                                 return;
                             }
                             DBNNode selectedNode = null;
@@ -173,7 +162,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                                                 URI patchedURI = new URI(uri.getScheme(), null, null, 0, uri.getPath(), uri.getQuery(), null);
                                                 s3LocationText.setText(patchedURI.toString());
                                             } catch (URISyntaxException ex) {
-                                                DBWorkbench.getPlatformUI().showError("Bad URI", "Bad URI '" + newS3Path + "'", ex);
+                                                DBWorkbench.getPlatformUI().showError(AthenaMessages.bad_uri_title, NLS.bind(AthenaMessages.bad_uri_message, newS3Path), ex);
                                             }
                                         }
                                     }
@@ -201,7 +190,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             return DBWorkbench.getPlatformUI().runWithProgress(monitor ->
                 fsRootNode.findNodeByPath(monitor, s3Path, true));
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Error opening file system", "Error while opening S3 file system", e);
+            DBWorkbench.getPlatformUI().showError(AthenaMessages.file_system_error_title, AthenaMessages.file_system_error_message, e);
             return null;
         }
     }

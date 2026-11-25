@@ -107,6 +107,12 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException;
 
+    default void updateDataSources(@NotNull List<? extends DBPDataSourceContainer> dataSources) throws DBException {
+        for (DBPDataSourceContainer dataSource : dataSources) {
+            updateDataSource(dataSource);
+        }
+    }
+
     default void updateDataSource(@NotNull DBPDataSourceContainer dataSource, boolean forcePersistSecrets) throws DBException {
         updateDataSource(dataSource);
     }

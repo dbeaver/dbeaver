@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.AIChatConversation;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.ai.chat.controls.AIChatControl;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -100,7 +102,7 @@ final class AIChatViewHandler {
             return;
         }
         IEditorPart activeEditor = window.getActivePage().getActiveEditor();
-        DBPDataSourceContainer container = null;
+        DBPDataSourceContainer container = activeEditor == null ? chat.getDataSourceContainer() : null;
         if (activeEditor instanceof DBPDataSourceContainerProvider dscp) {
             container = dscp.getDataSourceContainer();
             if (container != null && container == chat.getDataSourceContainer()) {
@@ -117,8 +119,17 @@ final class AIChatViewHandler {
                 container = activeContainer;
             }
         }
-        if (activeEditor != null && container == null) {
-            return;
+        if (container == null) {
+            container = chat.getDataSourceContainer();
+            if (container == null) {
+                DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+                if (project != null) {
+                    List<? extends DBPDataSourceContainer> dataSources = project.getDataSourceRegistry().getDataSources();
+                    if (dataSources.size() == 1) {
+                        container = dataSources.getFirst();
+                    }
+                }
+            }
         }
         final DBPDataSourceContainer finalContainer = container;
         UIUtils.syncExec(() -> {
@@ -126,8 +137,8 @@ final class AIChatViewHandler {
                 chat.setDataSource(finalContainer);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
-                    "AI Chat Error",
-                    "Cannot set data source for AI chat",
+                    AIChatMessagesUI.ai_chat_initialization_error,
+                    AIChatMessagesUI.ai_chat_set_data_source_error,
                     e
                 );
             }

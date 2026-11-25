@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.cubrid;
 
-public class CubridConstants
-{
+public class CubridConstants {
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.cubrid";
+
     public static final String OWNER_NAME = "owner_name";
     public static final String CLASS_NAME = "class_name";
     public static final String IS_SYSTEM_CLASS = "is_system_class";

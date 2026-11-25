@@ -54,7 +54,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTable> getObjectsCache(OracleTable object) {
-        return (DBSObjectCache) object.getSchema().tableCache;
+        return (DBSObjectCache) object.getSchema().getTableCache();
     }
 
     @Override
@@ -67,9 +67,14 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     ) {
         OracleSchema schema = (OracleSchema) container;
 
-        OracleTable table = new OracleTable(schema, ""); //$NON-NLS-1$
+        OracleTable table = createTable(schema);
         setNewObjectName(monitor, schema, table);
         return table;
+    }
+
+    @NotNull
+    protected OracleTable createTable(@NotNull OracleSchema schema) {
+        return new OracleTable(schema, ""); //$NON-NLS-1$
     }
 
     @Override

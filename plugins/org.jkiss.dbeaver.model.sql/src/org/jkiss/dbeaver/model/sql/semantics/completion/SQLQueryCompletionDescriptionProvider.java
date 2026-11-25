@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,5 +134,17 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
     @Override
     public String  visitSpecialText(@NotNull SQLSpecialTextCompletionItem specialText) {
         return specialText.description;
+    }
+
+    @Nullable
+    public String visitScriptVariable(@NotNull SQLScriptVariableCompletionItem scriptVariable) {
+        return "SQL script variable belonging to the " + scriptVariable.variableDefinition.scope() + " scope";
+    }
+
+    @Nullable
+    @Override
+    public String visitLocalVariable(@NotNull SQLLocalVariableCompletionItem localVariable) {
+        return localVariable.binding.parameter()
+            ? "Routine parameter" : "Procedural local variable";
     }
 }

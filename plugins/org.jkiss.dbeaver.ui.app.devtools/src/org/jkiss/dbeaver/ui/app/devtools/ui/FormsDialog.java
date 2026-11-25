@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.forms.*;
 
 import java.util.List;
@@ -112,6 +113,14 @@ public class FormsDialog extends TrayDialog {
                 .expandablePanel("An expandable panel", true, pb1 -> pb1
                     .align(UIAlignX.FILL)
                     .row(rb1 -> rb1.label("An expandable panel label"))))
+            .row(rb -> rb
+                .expandablePanel("A collapsed panel with shell resizing", false, control -> {
+                    Shell shell = control.getShell();
+                    UIUtils.resizeShell(shell);
+                    shell.layout(true, true);
+                }, pb1 -> pb1
+                    .align(UIAlignX.FILL)
+                    .row(rb1 -> rb1.label(lb -> lb.text("Expand and collapse without resizing the window").hint(400, 200)))))
             .row(rb -> rb
                 .titledPanel("A scrolled panel", pb1 -> pb1
                     .row(rb1 -> rb1.scrolledPanel(true, true, pb2 -> pb2
@@ -208,7 +217,8 @@ public class FormsDialog extends TrayDialog {
                     e -> enabled.set(!enabled.get()))
                 .button(
                     "Show message",
-                    e -> UIUtils.showMessageBox(UIUtils.getActiveShell(), "Hello", "Hello from forms", SWT.ICON_INFORMATION),
+                    e -> UIUtils.showMessageBox(UIUtils.getActiveShell(), UIMessages.devtools_forms_hello_title,
+                        UIMessages.devtools_forms_hello_message, SWT.ICON_INFORMATION),
                     bb -> bb.enabled(enabled)));
         // @formatter:on
     }

@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
@@ -63,7 +64,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -269,7 +269,7 @@ public class SQLQueryJob extends DataSourceJob {
                         log.error(lastError);
                         boolean isQueue = isQueue();
                         DBPPlatformUI.UserResponse response = ExecutionQueueErrorJob.showError(
-                            (isQueue ? "SQL script execution" : "SQL query execution") +
+                            (isQueue ? SQLEditorMessages.sql_script_execution_error_title : SQLEditorMessages.sql_query_execution_error_title) +
                                 "\n" +  GeneralUtils.getFirstMessage(lastError),
                             lastError,
                             isQueue);
@@ -593,7 +593,7 @@ public class SQLQueryJob extends DataSourceJob {
                     //statistics.setRowsUpdated(0);
 
                     // Toggle smart commit mode
-                    if (resultsConsumer instanceof ISmartTransactionManager && ((ISmartTransactionManager) resultsConsumer).isSmartAutoCommit()) {
+                    if (resultsConsumer instanceof DBCSmartTransactionManager && ((DBCSmartTransactionManager) resultsConsumer).isSmartAutoCommit()) {
                         changedToManualCommit = DBExecUtils.checkSmartAutoCommit(session, execStatement.getText());
                     }
                     long execStartTime = System.currentTimeMillis();
@@ -779,6 +779,9 @@ public class SQLQueryJob extends DataSourceJob {
                                         statistics.setError(e);
                                     }
                                 }
+                            } else {
+                                // The result is skipped without reading any rows, so the max rows check must not use a count left from the previous fetch
+                                rowsFetched = 0;
                             }
                         }
                     }
@@ -864,7 +867,8 @@ public class SQLQueryJob extends DataSourceJob {
         if (isShowExecutionResult()) { // Single statement with some stats
             SQLQuery query = new SQLQuery(session.getDataSource(), "", -1, -1);
             if (queries.size() == 1) {
-                query.setText(queries.get(0).getText());
+                SQLScriptElement source = queries.getFirst();
+                query.setText(source.getText(), source instanceof SQLQuery sqlQuery && sqlQuery.representsOneStatement());
             }
             query.setData(STATS_RESULTS); // It will set tab name to "Stats"
             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(query, resultSetNumber);

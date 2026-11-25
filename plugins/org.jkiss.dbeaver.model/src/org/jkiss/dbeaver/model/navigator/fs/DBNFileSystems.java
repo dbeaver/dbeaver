@@ -163,16 +163,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     ) throws DBException {
         monitor.beginTask("Read available file systems", 1);
         List<DBNFileSystem> result = new ArrayList<>();
-        DBFFileSystemContainer fsContainer = getOwnerProjectOrNull();
-        if (fsContainer == null) {
-            // Root - use workspace
-            fsContainer = getModel().getModelWorkspace();
-            if (fsContainer == null) {
-                // Global workspace
-                fsContainer = DBWorkbench.getPlatform().getWorkspace();
-            }
-        }
-        DBFFileSystemManager fileSystemManager = fsContainer.getFileSystemManager();
+        DBFFileSystemManager fileSystemManager = getFileSystemManager();
 
         for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems(monitor)) {
             DBNFileSystem newChild = null;
@@ -193,6 +184,20 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         result.sort((o1, o2) -> o1.getNodeDisplayName().compareToIgnoreCase(o2.getNodeDisplayName()));
         monitor.done();
         return result.toArray(new DBNFileSystem[0]);
+    }
+
+    @NotNull
+    private DBFFileSystemManager getFileSystemManager() {
+        DBFFileSystemContainer fsContainer = getOwnerProjectOrNull();
+        if (fsContainer == null) {
+            // Root - use workspace
+            fsContainer = getModel().getModelWorkspace();
+            if (fsContainer == null) {
+                // Global workspace
+                fsContainer = DBWorkbench.getPlatform().getWorkspace();
+            }
+        }
+        return fsContainer.getFileSystemManager();
     }
 
     private boolean equalsFS(DBFVirtualFileSystem fs1, DBFVirtualFileSystem fs2) {
@@ -268,8 +273,13 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     }
 
     private void refreshFileSystems(DBRProgressMonitor monitor) throws DBException {
-        if (children != null) {
-            children = readChildNodes(monitor, children);
+        boolean childrenLoaded = children != null;
+        if (childrenLoaded) {
+            disposeFileSystems();
+        }
+        getFileSystemManager().reloadFileSystems(monitor);
+        if (childrenLoaded) {
+            children = readChildNodes(monitor, null);
             getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
         }
     }

@@ -16,8 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.e4;
 
-import org.eclipse.e4.ui.internal.css.swt.ICTabRendering;
+import org.eclipse.e4.ui.internal.workbench.PartStackUtil;
 import org.eclipse.e4.ui.internal.workbench.swt.AbstractPartRenderer;
+import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering;
 import org.eclipse.swt.SWT;
@@ -25,37 +26,44 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.Field;
 
-public final class DBeaverCTabFolderRenderer extends CTabRendering implements ICTabRendering {
+public final class DBeaverCTabFolderRenderer extends CTabRendering {
     private static final Log log = Log.getLog(DBeaverCTabFolderRenderer.class);
 
     private static final Rectangle EMPTY_CLOSE_RECT = new Rectangle(0, 0, 0, 0);
 
-    private static final FieldReflection<CTabRendering, Color> tabOutlineColorField;
     private static final FieldReflection<CTabRendering, Color> selectedTabHighlightColorField;
     private static final FieldReflection<CTabRendering, Color[]> selectedTabFillColorsField;
-    private static final FieldReflection<CTabRendering, Color> hotUnselectedTabsColorBackgroundField;
     private static final FieldReflection<CTabItem, Integer> closeImageStateField;
     private static final FieldReflection<CTabItem, Rectangle> closeRectField;
+    private static final FieldReflection<CTabFolder, ToolBar> minMaxToolBarField;
+
+    @Nullable
+    private ToolBar minMaxToolBarWithOverriddenBackground;
+    @Nullable
+    private Color themeHotUnselectedTabsColorBackground;
 
     static {
-        tabOutlineColorField = FieldReflection.of(CTabRendering.class, "tabOutlineColor");
         selectedTabHighlightColorField = FieldReflection.of(CTabRendering.class, "selectedTabHighlightColor");
         selectedTabFillColorsField = FieldReflection.of(CTabRendering.class, "selectedTabFillColors");
-        hotUnselectedTabsColorBackgroundField = FieldReflection.of(CTabRendering.class, "hotUnselectedTabsColorBackground");
         closeImageStateField = FieldReflection.of(CTabItem.class, "closeImageState");
         closeRectField = FieldReflection.of(CTabItem.class, "closeRect");
+        minMaxToolBarField = FieldReflection.of(CTabFolder.class, "minMaxTb");
     }
 
     public DBeaverCTabFolderRenderer(@NotNull CTabFolder parent) {
@@ -63,14 +71,20 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     }
 
     @Override
+    public void setUnselectedHotTabsColorBackground(@Nullable Color color) {
+        themeHotUnselectedTabsColorBackground = color;
+        super.setUnselectedHotTabsColorBackground(color);
+    }
+
+    @Override
     protected void draw(int part, int state, Rectangle bounds, GC gc) {
+        updateMinMaxToolBarBackground();
+
         if (part >= 0 && part < parent.getItemCount()) {
             CTabItem item = parent.getItem(part);
             Color color = getConnectionColor(item);
 
             if (color != null) {
-                var oldTabOutlineColor = tabOutlineColorField.get(this);
-                var oldHotUnselectedTabsColorBackground = hotUnselectedTabsColorBackgroundField.get(this);
                 var oldSelectedTabHighlightColor = selectedTabHighlightColorField.get(this);
                 var oldSelectedTabFillColors = selectedTabFillColorsField.get(this);
                 var oldCloseRect = closeRectField.get(item);
@@ -87,36 +101,29 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
                     // Replaces unselected and selected tab colors
                     boolean isHot = (state & SWT.HOT) != 0;
-                    boolean isSelected = (state & SWT.SELECTED) != 0;
                     boolean isDarkTheme = UIStyles.isDarkTheme();
 
                     Color fillColor = oldSelectedTabFillColors != null && oldSelectedTabFillColors.length == 1
                         ? oldSelectedTabFillColors[0]
                         : parent.getSelectionBackground();
                     highlightColor = isDarkTheme ? UIStyles.lighten(color, 0.2f) : UIStyles.darken(color, 0.2f);
-                    unselectedColor = UIStyles.mix(highlightColor, fillColor, 0.15f); ///0.5?
+                    unselectedColor = UIStyles.mix(highlightColor, fillColor, isDarkTheme ? 0.3f : 0.2f);
                     hotColor = isDarkTheme
                         ? UIStyles.darken(unselectedColor, 0.05f)
                         : UIStyles.lighten(unselectedColor, 0.05f);
 
-                    hotUnselectedTabsColorBackgroundField.set(this, isHot ? hotColor : unselectedColor);
+                    super.setUnselectedHotTabsColorBackground(isHot ? hotColor : unselectedColor);
                     selectedTabFillColorsField.set(this, new Color[]{color});
                     selectedTabHighlightColorField.set(this, highlightColor);
 
-                    if (!isSelected) {
-                        // The outline bleeds over the hover tab. Since we're relying on SWT.HOT painting
-                        // logic, we need to override it to be the same color as the tab itself
-                        tabOutlineColorField.set(this, isHot ? hotColor : unselectedColor);
-                    }
-
                     super.draw(part, state | SWT.HOT, bounds, gc);
+                    drawTabSeparator(state, bounds, gc);
                 } finally {
                     // Restore whatever we have changed back to original values
                     closeRectField.set(item, oldCloseRect);
                     selectedTabHighlightColorField.set(this, oldSelectedTabHighlightColor);
                     selectedTabFillColorsField.set(this, oldSelectedTabFillColors);
-                    hotUnselectedTabsColorBackgroundField.set(this, oldHotUnselectedTabsColorBackground);
-                    tabOutlineColorField.set(this, oldTabOutlineColor);
+                    super.setUnselectedHotTabsColorBackground(themeHotUnselectedTabsColorBackground);
 
                     if (hotColor != null) {
                         hotColor.dispose();
@@ -134,16 +141,70 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
         }
 
         super.draw(part, state, bounds, gc);
+        if (part >= 0 && part < parent.getItemCount()) {
+            drawTabSeparator(state, bounds, gc);
+        }
     }
 
-    @Override
-    protected Rectangle computeTrim(int part, int state, int x, int y, int width, int height) {
-        return super.computeTrim(part, state, x, y, width, height);
+    private void drawTabSeparator(int state, @NotNull Rectangle bounds, @NotNull GC gc) {
+        if ((!isEditorStack() && !CSSUtils.isDatabaseColored(parent)) ||
+            (state & SWT.SELECTED) != 0 || bounds.width <= 0 || bounds.height <= 0) {
+            return;
+        }
+
+        Color oldForeground = gc.getForeground();
+        int oldLineWidth = gc.getLineWidth();
+        Color separatorColor = UIUtils.getColorRegistry().get(UIColors.INACTIVE_TAB_OUTLINE_COLOR);
+        gc.setForeground(separatorColor != null
+            ? separatorColor
+            : gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+        gc.setLineWidth(1);
+        boolean onBottom = parent.getTabPosition() == SWT.BOTTOM;
+        int x = bounds.x + bounds.width - 1;
+        gc.drawLine(x, bounds.y - (onBottom ? 1 : 0), x, bounds.y + bounds.height - (onBottom ? 1 : 0));
+        gc.setLineWidth(oldLineWidth);
+        gc.setForeground(oldForeground);
     }
 
-    @Override
-    protected Point computeSize(int part, int state, GC gc, int wHint, int hHint) {
-        return super.computeSize(part, state, gc, wHint, hHint);
+    private boolean isEditorStack() {
+        return parent.getData(AbstractPartRenderer.OWNING_ME) instanceof MUIElement element &&
+            PartStackUtil.isEditorStack(element);
+    }
+
+    private void updateMinMaxToolBarBackground() {
+        if (!RuntimeUtils.isWindows()) {
+            return;
+        }
+
+        ToolBar toolBar = minMaxToolBarField.get(parent);
+        if (toolBar == null || toolBar.isDisposed()) {
+            minMaxToolBarWithOverriddenBackground = null;
+            return;
+        }
+
+        if (!UIStyles.isDarkTheme()) {
+            // Restore SWT defaults when switching from dark to light theme.
+            if (toolBar == minMaxToolBarWithOverriddenBackground) {
+                toolBar.setBackground(null);
+                for (ToolItem item : toolBar.getItems()) {
+                    item.setBackground(null);
+                }
+            }
+            minMaxToolBarWithOverriddenBackground = null;
+            return;
+        }
+
+        // Fix the light hover background of CTabFolder minimize/maximize buttons in dark theme.
+        Color background = parent.getBackground();
+        if (!background.equals(toolBar.getBackground())) {
+            toolBar.setBackground(background);
+        }
+        for (ToolItem item : toolBar.getItems()) {
+            if (!background.equals(item.getBackground())) {
+                item.setBackground(background);
+            }
+        }
+        minMaxToolBarWithOverriddenBackground = toolBar;
     }
 
     @Nullable

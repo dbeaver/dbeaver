@@ -55,7 +55,7 @@ public class FindReplaceDialog extends Dialog {
     private static final String textCancel = BinaryEditorMessages.dialog_find_replace_cancel;
     private static final String textClose = WorkbenchMessages.WorkbenchWindow_close;
     private static final String textDirection = BinaryEditorMessages.dialog_find_replace_direction;
-    private static final String textError = BinaryEditorMessages.dialog_find_replace_error_;
+    private static final String textError = BinaryEditorMessages.dialog_find_replace_error_ + " ";
     private static final String textFind = BinaryEditorMessages.dialog_find_replace_find;
     private static final String textFindLiteral = BinaryEditorMessages.dialog_find_replace_find_literal;
     private static final String textFindReplace = BinaryEditorMessages.dialog_find_replace_find_replace;

@@ -4,19 +4,8 @@
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.expressions" name="Expression functions and namespaces"/>
       </appInfo>
-      <documentation>
-         [Enter description of this extension point.]
-      </documentation>
    </annotation>
 
 
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
 
 </schema>

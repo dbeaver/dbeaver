@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.navigator;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 
@@ -31,13 +33,32 @@ public class NavigatorPropertyTester extends PropertyTester
     public static final String PROP_ACTIVE = "active";
     public static final String PROP_FOCUSED = "focused";
 
+    // Breadcrumb popups use navigator handlers while their owning editor remains the active part.
+    private static IWorkbenchPart breadcrumbContextMenuPart;
+
     @Override
-    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        INavigatorModelView nmv = getActiveNavigator((IWorkbenchPart)receiver);
+    public boolean test(
+        @Nullable Object receiver,
+        @NotNull String property,
+        @NotNull Object[] args,
+        @Nullable Object expectedValue
+    ) {
+        if (PROP_FOCUSED.equals(property) && receiver == breadcrumbContextMenuPart) {
+            return true;
+        }
+        INavigatorModelView nmv = getActiveNavigator((IWorkbenchPart) receiver);
         return nmv != null && checkNavigatorProperty(nmv, property, expectedValue);
     }
 
-    private boolean checkNavigatorProperty(INavigatorModelView rsv, String property, Object expectedValue)
+    public static void setBreadcrumbContextMenuPart(@Nullable IWorkbenchPart part) {
+        breadcrumbContextMenuPart = part;
+    }
+
+    private boolean checkNavigatorProperty(
+        @NotNull INavigatorModelView rsv,
+        @NotNull String property,
+        @Nullable Object expectedValue
+    )
     {
         switch (property) {
             case PROP_ACTIVE:

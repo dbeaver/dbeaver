@@ -332,9 +332,13 @@ public class CustomTimeEditor {
         }
     }
 
+    public boolean isTextMode() {
+        return textEditor != null && !textEditor.isDisposed();
+    }
+
     @Nullable
     public String getValueAsString() {
-        if (textEditor != null && !textEditor.isDisposed()) {
+        if (isTextMode()) {
             return textEditor.getText();
         }
         return null;
@@ -423,7 +427,7 @@ public class CustomTimeEditor {
         } else {
             log.debug("Cannot adapt date and/or time value of the unexpected type " + value.getClass().getName());
             throw new DBCException("Value of the unsupported type, which cannot be represented with calendar."
-                + "Please report the issue on GitHub https://github.com/dbeaver/dbeaver/issues");
+                + "\nPlease <a href=\"https://github.com/dbeaver/dbeaver/issues\"> report the issue on GitHub</a>");
         }
     }
 }

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
@@ -41,7 +42,6 @@ import org.jkiss.dbeaver.model.sql.transformers.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
@@ -59,7 +59,7 @@ abstract class QueryResultsContainer implements
     IResultSetListener,
     IResultSetContainerExt,
     SQLQueryContainer,
-    ISmartTransactionManager,
+    DBCSmartTransactionManager,
     IQueryExecuteController,
     SQLEditor.QueryProcessingComponent {
 
@@ -70,6 +70,9 @@ abstract class QueryResultsContainer implements
     protected final boolean singleQuery;
     private SQLScriptElement query = null;
     private SQLScriptElement lastGoodQuery = null;
+    // Number of this container's result set among the results of its query.
+    // Remembered on execution because closed and detached tabs leave the list of result containers
+    private int queryResultIndex = 0;
     // Data container and filter are non-null only in case of associations navigation
     private DBSDataContainer dataContainer;
     private String tabName;
@@ -139,7 +142,7 @@ abstract class QueryResultsContainer implements
                 IWorkbenchPage.MATCH_NONE
             );
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Detached results", "Can't open results view", e);
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_results_detached_title, SQLEditorMessages.sql_results_detached_error, e);
             detached = false;
         }
     }
@@ -258,16 +261,19 @@ abstract class QueryResultsContainer implements
             }
         }
         try {
-            if (dataReceiver != viewer.getDataReceiver()) {
-                // Some custom receiver. Probably data export
-                queryProcessor.setCurDataReceiver(dataReceiver);
-            } else {
-                queryProcessor.setCurDataReceiver(null);
-            }
             // Count number of results for this query. If > 1 then we will refresh them all at once
             int resultCounts = getQueryResultCounts();
+            boolean customReceiver = dataReceiver != viewer.getDataReceiver();
+            // The result count doesn't tell anything about a detached container: it may have already left the list.
+            boolean readAllResults = resultCounts > 1 || (detached && customReceiver);
+            if (customReceiver) {
+                // Some custom receiver (data export or detached results). It must get only the results of this container
+                queryProcessor.setCurDataReceiver(dataReceiver, readAllResults ? queryResultIndex : -1);
+            } else {
+                queryProcessor.setCurDataReceiver(null, -1);
+            }
 
-            if (resultCounts <= 1 && resultSetNumber > 0) {
+            if (!readAllResults && resultSetNumber > 0) {
                 job.setFetchResultSetNumber(resultSetNumber);
             } else {
                 job.setFetchResultSetNumber(-1);
@@ -278,7 +284,7 @@ abstract class QueryResultsContainer implements
             job.setFetchFlags(flags);
 
             try {
-                job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber, !detached, !detached);
+                job.extractData(session, this.query, readAllResults ? 0 : resultSetNumber, !detached, !detached);
             } finally {
                 lastGoodQuery = job.getLastGoodQuery();
             }
@@ -286,7 +292,7 @@ abstract class QueryResultsContainer implements
             return job.getStatistics();
         } finally {
             // Nullify custom data receiver
-            queryProcessor.setCurDataReceiver(null);
+            queryProcessor.setCurDataReceiver(null, -1);
         }
     }
 
@@ -298,6 +304,22 @@ abstract class QueryResultsContainer implements
             }
         }
         return resultCounts;
+    }
+
+    /**
+     * Returns the number of this container's result set among the results of its query
+     */
+    private int getQueryResultIndex() {
+        int index = 0;
+        for (QueryResultsContainer qrc : queryProcessor.resultContainers) {
+            if (qrc == this) {
+                break;
+            }
+            if (qrc.query == query) {
+                index++;
+            }
+        }
+        return index;
     }
 
     @Override
@@ -421,6 +443,7 @@ abstract class QueryResultsContainer implements
 
     void setQuery(SQLScriptElement query) {
         this.query = query;
+        this.queryResultIndex = getQueryResultIndex();
     }
 
     @Override
@@ -489,6 +512,12 @@ abstract class QueryResultsContainer implements
             owner.getSelectionProvider().setSelection(new TextSelection(owner.getLastQueryErrorPosition(), 0));
             owner.setFocus();
         }
+    }
+
+    @NotNull
+    @Override
+    public String getTitle() {
+        return getResultsTab().getText();
     }
 
     @NotNull

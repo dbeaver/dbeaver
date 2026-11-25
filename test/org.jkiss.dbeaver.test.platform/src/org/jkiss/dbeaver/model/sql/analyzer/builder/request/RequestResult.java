@@ -28,21 +28,23 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
-import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentScriptItemSyntaxContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLScriptItemAtOffset;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionProposal;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.tracking.SQLScriptVariablesTracker;
 import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
 
@@ -89,6 +91,58 @@ public class RequestResult {
      */
     public Set<String> requestNewStrings(@NotNull String sql, boolean simpleMode) throws DBException {
         var r = this.requestNewInternal(sql, simpleMode);
+        return proposalStrings(r);
+    }
+
+    /** Semantic proposals for a caret in one query, including their item kinds. */
+    @NotNull
+    public List<? extends SQLQueryCompletionProposal> requestNewProposals(@NotNull String sql) throws DBException {
+        return this.requestNewInternal(sql, true).getSecond();
+    }
+
+    /** An unchanged query model can serve completion at multiple offsets without being parsed again. */
+    public record PreparedQuery(@NotNull String text, @NotNull SQLQueryModel model) {
+    }
+
+    @NotNull
+    public PreparedQuery prepareQuery(@NotNull String text) {
+        SQLCompletionRequest request = this.prepareCompletionRequest(text + "|", true);
+        return new PreparedQuery(text, this.recognizeQuery(request, new VoidProgressMonitor()));
+    }
+
+    @NotNull
+    public List<? extends SQLQueryCompletionProposal> requestNewProposals(@NotNull PreparedQuery query, int offset) throws DBException {
+        if (offset < 0 || offset > query.text().length()) {
+            throw new IllegalArgumentException("Completion offset is outside the prepared query");
+        }
+        String marked = query.text().substring(0, offset) + "|" + query.text().substring(offset);
+        SQLCompletionRequest request = this.prepareCompletionRequest(marked, true);
+        Assertions.assertEquals(query.text(), request.getActiveQuery().getText());
+        SQLQueryCompletionAnalyzer analyzer = getSqlQueryCompletionAnalyzer(query.text(), query.model(), request,
+            request.getContext().getDataSource().getSQLDialect());
+        try {
+            analyzer.run(new VoidProgressMonitor());
+        } catch (InvocationTargetException | InterruptedException e) {
+            throw new DBException("Error while preparing completion proposals", e);
+        }
+        return analyzer.getResult();
+    }
+
+    /** Semantic proposals for a caret in a script, preserving the active statement's document offset. */
+    @NotNull
+    public Set<String> requestNewScriptStrings(@NotNull String script) throws DBException {
+        return proposalStrings(this.requestNewScriptInternal(script));
+    }
+
+    @NotNull
+    public List<? extends SQLQueryCompletionProposal> requestNewScriptProposals(@NotNull String script) throws DBException {
+        return this.requestNewScriptInternal(script).getSecond();
+    }
+
+    @NotNull
+    private static Set<String> proposalStrings(
+        @NotNull Pair<SQLCompletionRequest, List<? extends SQLQueryCompletionProposal>> r
+    ) {
         return r.getSecond().stream().map(p -> {
             try {
                 if (p.getReplacementLength() > 0) {
@@ -109,6 +163,75 @@ public class RequestResult {
     }
 
     @NotNull
+    private Pair<SQLCompletionRequest, List<? extends SQLQueryCompletionProposal>> requestNewScriptInternal(
+        @NotNull String script
+    ) throws DBException {
+        SQLCompletionRequest request = prepareCompletionRequest(script, true);
+        SQLParserContext parserContext = new SQLParserContext(
+            this.dataSource, request.getContext().getSyntaxManager(), request.getContext().getRuleManager(), request.getDocument()
+        );
+        List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
+            parserContext, 0, request.getDocument().getLength(), false, false, false, true
+        );
+        SQLScriptElement active = SQLScriptParser.extractQueryAtPos(parserContext, request.getDocumentOffset(), false);
+        Assertions.assertInstanceOf(SQLQuery.class, active, "No active SQL query in script: " + script);
+        SQLQuery query = (SQLQuery) active;
+        SQLCompletionRequest scriptRequest = new SQLCompletionRequest(
+            request.getContext(), request.getDocument(), request.getDocumentOffset(), query, true
+        );
+
+        SQLDialect dialect = this.dataSource.getSQLDialect();
+        DBRProgressMonitor monitor = new VoidProgressMonitor();
+        SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(
+            monitor, request.getContext().getExecutionContext(), true, true,
+            request.getContext().getSyntaxManager(), dialect
+        );
+        SQLScriptVariablesTracker variablesTracker = SQLScriptVariablesTracker.create(dialect.getScriptVariableScope());
+        variablesTracker.trackElements(elements);
+        if (!variablesTracker.usesReconciledElements()) {
+            for (SQLScriptElement element : elements) {
+                if (element.getOffset() >= query.getOffset()) {
+                    break;
+                }
+                if (element instanceof SQLQuery earlier && earlier.hasVariableKeyword()) {
+                    var earlierVariables = variablesTracker.getVisibleVariablesAt(recognitionContext, earlier.getOffset());
+                    recognitionContext.reset();
+                    SQLQueryModel earlierModel = SQLQueryModelRecognizer.recognizeQuery(
+                        recognitionContext, earlier.getOriginalText(), earlierVariables
+                    );
+                    if (earlierModel != null) {
+                        variablesTracker.acceptAnalysisResult(earlier, earlierModel);
+                    }
+                }
+            }
+        }
+        var visibleVariables = variablesTracker.getVisibleVariablesAt(recognitionContext, query.getOffset());
+        recognitionContext.reset();
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(
+            recognitionContext, query.getOriginalText(), visibleVariables
+        );
+        Assertions.assertNotNull(model, script);
+        SQLDocumentSyntaxContext documentContext = new SQLDocumentSyntaxContext();
+        SQLDocumentScriptItemSyntaxContext item = documentContext.registerScriptItemContext(
+            query.getOriginalText(), model, query.getOffset(), query.getLength(), false
+        );
+        SQLQueryCompletionAnalyzer analyzer = new SQLQueryCompletionAnalyzer(
+            m -> SQLQueryCompletionContext.prepareCompletionContext(
+                new SQLScriptItemAtOffset(query.getOffset(), item), scriptRequest.getDocumentOffset(),
+                scriptRequest.getContext().getExecutionContext(), dialect
+            ),
+            scriptRequest,
+            scriptRequest::getDocumentOffset
+        );
+        try {
+            analyzer.run(monitor);
+        } catch (InvocationTargetException | InterruptedException e) {
+            throw new DBException("Error while preparing script completion proposals", e);
+        }
+        return Pair.of(scriptRequest, analyzer.getResult());
+    }
+
+    @NotNull
     private Pair<SQLCompletionRequest, List<? extends SQLQueryCompletionProposal>> requestNewInternal(
         @NotNull String sql,
         boolean simpleMode
@@ -117,19 +240,9 @@ public class RequestResult {
         final String queryText = request.getActiveQuery().getText();
         final DBRProgressMonitor monitor = new VoidProgressMonitor();
 
-        SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(
-            monitor,
-            request.getContext().getExecutionContext(),
-            true,
-            true,
-            request.getContext().getSyntaxManager(),
-            request.getContext().getDataSource().getSQLDialect()
-        );
-        recognitionContext.reset();
-        SQLQueryModel queryModel = SQLQueryModelRecognizer.recognizeQuery(recognitionContext, queryText);
-        Assertions.assertNotNull(queryModel);
-
-        final SQLQueryCompletionAnalyzer analyzer = getSqlQueryCompletionAnalyzer(queryText, queryModel, request);
+        SQLQueryModel queryModel = this.recognizeQuery(request, monitor);
+        SQLDialect dialect = request.getContext().getDataSource().getSQLDialect();
+        final SQLQueryCompletionAnalyzer analyzer = getSqlQueryCompletionAnalyzer(queryText, queryModel, request, dialect);
         try {
             analyzer.run(monitor);
         } catch (InvocationTargetException | InterruptedException e) {
@@ -139,25 +252,49 @@ public class RequestResult {
     }
 
     @NotNull
+    private SQLQueryModel recognizeQuery(@NotNull SQLCompletionRequest request, @NotNull DBRProgressMonitor monitor) {
+        String queryText = request.getActiveQuery().getText();
+        SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(
+            monitor,
+            request.getContext().getExecutionContext(),
+            true,
+            true,
+            request.getContext().getSyntaxManager(),
+            request.getContext().getDataSource().getSQLDialect()
+        );
+        recognitionContext.reset();
+        SQLDialect dialect = request.getContext().getDataSource().getSQLDialect();
+        SQLScriptVariablesTracker variablesTracker = SQLScriptVariablesTracker.create(dialect.getScriptVariableScope());
+        SQLQuery query = new SQLQuery(null, queryText);
+        variablesTracker.trackElements(List.of(query));
+        var visibleVariables = variablesTracker.getVisibleVariablesAt(recognitionContext, 0);
+        recognitionContext.reset();
+        SQLQueryModel queryModel = SQLQueryModelRecognizer.recognizeQuery(recognitionContext, queryText, visibleVariables);
+        Assertions.assertNotNull(queryModel);
+        return queryModel;
+    }
+
+    @NotNull
     private static SQLQueryCompletionAnalyzer getSqlQueryCompletionAnalyzer(
         String queryText,
         SQLQueryModel queryModel,
-        SQLCompletionRequest request
+        SQLCompletionRequest request,
+        SQLDialect dialect
     ) {
-        SQLDocumentScriptItemSyntaxContext scriptItemContext = new SQLDocumentScriptItemSyntaxContext(
-            0,
+        SQLDocumentSyntaxContext documentContext = new SQLDocumentSyntaxContext();
+        SQLDocumentScriptItemSyntaxContext scriptItemContext = documentContext.registerScriptItemContext(
             queryText,
             queryModel,
-            queryText.length()
+            0,
+            queryText.length(),
+            false
         );
-        scriptItemContext.setHasContextBoundaryAtLength(false);
-
         final SQLQueryCompletionAnalyzer analyzer = new SQLQueryCompletionAnalyzer(
             m -> SQLQueryCompletionContext.prepareCompletionContext(
                 new SQLScriptItemAtOffset(0, scriptItemContext),
                 request.getDocumentOffset(),
                 request.getContext().getExecutionContext(),
-                request.getContext().getDataSource().getSQLDialect()
+                dialect
             ),
             request,
             request::getDocumentOffset
@@ -213,7 +350,12 @@ public class RequestResult {
         private final SQLRuleManager ruleManager;
         private final DBCExecutionContext executionContext;
 
-        private CompletionContext(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLRuleManager ruleManager, DBCExecutionContext executionContext) {
+        private CompletionContext(
+            DBPDataSource dataSource,
+            SQLSyntaxManager syntaxManager,
+            SQLRuleManager ruleManager,
+            DBCExecutionContext executionContext
+        ) {
             this.dataSource = dataSource;
             this.syntaxManager = syntaxManager;
             this.ruleManager = ruleManager;
@@ -296,11 +438,33 @@ public class RequestResult {
         }
 
         @Override
-        public boolean isForceQualifiedColumnNames() { return false; }
+        public boolean isForceQualifiedColumnNames() {
+            return false;
+        }
 
         @Override
-        public SQLCompletionProposalBase createProposal(@NotNull SQLCompletionRequest request, @NotNull String displayString, @NotNull String replacementString, int cursorPosition, @Nullable DBPImage image, @NotNull DBPKeywordType proposalType, @Nullable String description, @Nullable DBPNamedObject object, @NotNull Map<String, Object> params) {
-            return new SQLCompletionProposalBase(request, displayString, replacementString, cursorPosition, image, proposalType, description, object, params);
+        public SQLCompletionProposalBase createProposal(
+            @NotNull SQLCompletionRequest request,
+            @NotNull String displayString,
+            @NotNull String replacementString,
+            int cursorPosition,
+            @Nullable DBPImage image,
+            @NotNull DBPKeywordType proposalType,
+            @Nullable String description,
+            @Nullable DBPNamedObject object,
+            @NotNull Map<String, Object> params
+        ) {
+            return new SQLCompletionProposalBase(
+                request,
+                displayString,
+                replacementString,
+                cursorPosition,
+                image,
+                proposalType,
+                description,
+                object,
+                params
+            );
         }
     }
 }

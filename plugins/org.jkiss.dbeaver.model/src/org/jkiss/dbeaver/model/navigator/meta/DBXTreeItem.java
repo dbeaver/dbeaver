@@ -43,7 +43,7 @@ public class DBXTreeItem extends DBXTreeNode {
     private final String label;
     private String itemLabel;
     private final String path;
-    private final String propertyName;
+    private String propertyName;
     private final boolean optional;
 
     private final Map<Class<?>, Method> propertyGettersCache = new IdentityHashMap<>();
@@ -111,6 +111,11 @@ public class DBXTreeItem extends DBXTreeNode {
     public String getPropertyName()
     {
         return propertyName;
+    }
+
+    public synchronized void setPropertyName(@NotNull String propertyName) {
+        this.propertyName = propertyName;
+        propertyGettersCache.clear();
     }
 
     public boolean isOptional()

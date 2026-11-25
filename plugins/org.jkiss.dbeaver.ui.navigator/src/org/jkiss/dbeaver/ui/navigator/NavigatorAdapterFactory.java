@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 
 /**
@@ -138,7 +139,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
                 if (props.isEmpty() && adaptableObject instanceof DBSObject meta) {
                     // Add default properties
                     props.addProperty(null, DBConstants.PROP_ID_NAME, ModelMessages.model_navigator_Name, meta.getName()); //$NON-NLS-1$
-                    props.addProperty(null, "desc", ModelMessages.model_navigator_Description, meta.getDescription()); //$NON-NLS-1$
+                    props.addProperty(null, "desc", UINavigatorMessages.model_navigator_Description, meta.getDescription()); //$NON-NLS-1$
                 }
                 return adapterType.cast(new PropertySourceDelegate(props));
             }

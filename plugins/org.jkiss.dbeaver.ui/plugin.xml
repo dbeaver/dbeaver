@@ -81,12 +81,90 @@
     </extension>
 
     <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-dbeaver.css"/>
+        <stylesheet uri="css/e4-dbeaver-widgets.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_default"/>
+        </stylesheet>
+        <stylesheet uri="css/e4-dark-dbeaver-widgets.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
+        </stylesheet>
         <stylesheet uri="css/e4-high_contrast_dbeaver_prefstyle.css">
             <themeid refid="org.eclipse.e4.ui.css.theme.high-contrast"/>
         </stylesheet>
     </extension>
 
     <extension point="org.eclipse.ui.themes">
+        <themeElementCategory id="org.jkiss.dbeaver.ui.icons" label="%themeElementCategory.org.jkiss.dbeaver.ui.icons.label"/>
+        <!-- Source paints in the SVG artwork are fixed, independent of the active theme. -->
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.default.source" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.default.label" value="113,113,122"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.secondary.source" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.secondary.label" value="183,177,173"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.accent.source" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.accent.label" value="51,135,197"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.tip.source" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.tip.label" value="20,184,166"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.attention.source" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.attention.label" value="237,128,0"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.positive.source" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.positive.label" value="79,161,67"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.important.source" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.important.label" value="183,120,244"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.danger.source" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.danger.label" value="244,77,32"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.background.source" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.background.label" value="255,255,255"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.accent.source.type" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.accent.label" value="51,142,204"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.accent.source.unknown" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.accent.label" value="51,139,201"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.accent.source.legacy" isEditable="false"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.accent.label" value="51,136,198"/>
+
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.default" categoryId="org.jkiss.dbeaver.ui.icons"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.default.label"
+                         defaultsTo="org.jkiss.dbeaver.ui.icons.default.source"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.secondary" categoryId="org.jkiss.dbeaver.ui.icons"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.secondary.label"
+                         defaultsTo="org.jkiss.dbeaver.ui.icons.secondary.source"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.accent" categoryId="org.jkiss.dbeaver.ui.icons"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.accent.label"
+                         defaultsTo="org.jkiss.dbeaver.ui.icons.accent.source"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.tip" categoryId="org.jkiss.dbeaver.ui.icons"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.tip.label"
+                         defaultsTo="org.jkiss.dbeaver.ui.icons.tip.source"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.attention" categoryId="org.jkiss.dbeaver.ui.icons"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.attention.label"
+                         defaultsTo="org.jkiss.dbeaver.ui.icons.attention.source"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.positive" categoryId="org.jkiss.dbeaver.ui.icons"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.positive.label"
+                         defaultsTo="org.jkiss.dbeaver.ui.icons.positive.source"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.important" categoryId="org.jkiss.dbeaver.ui.icons"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.important.label"
+                         defaultsTo="org.jkiss.dbeaver.ui.icons.important.source"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.danger" categoryId="org.jkiss.dbeaver.ui.icons"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.danger.label"
+                         defaultsTo="org.jkiss.dbeaver.ui.icons.danger.source"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.icons.background" categoryId="org.jkiss.dbeaver.ui.icons"
+                         label="%colorDefinition.org.jkiss.dbeaver.ui.icons.background.label"
+                         defaultsTo="org.jkiss.dbeaver.ui.icons.background.source"/>
+
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.general.color.blue.background.label"
+            categoryId="org.eclipse.ui.workbenchMisc"
+            id="org.jkiss.dbeaver.ui.general.color.blue.background"
+            value="214,232,245"/>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.general.color.yellow.background.label"
+            categoryId="org.eclipse.ui.workbenchMisc"
+            id="org.jkiss.dbeaver.ui.general.color.yellow.background"
+            value="255,240,204"/>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.general.color.green.background.label"
+            categoryId="org.eclipse.ui.workbenchMisc"
+            id="org.jkiss.dbeaver.ui.general.color.green.background"
+            value="223,238,219"/>
+
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.dbeaver.ui.fonts.label" id="org.jkiss.dbeaver.ui.fonts">
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.fonts.description</description>
         </themeElementCategory>

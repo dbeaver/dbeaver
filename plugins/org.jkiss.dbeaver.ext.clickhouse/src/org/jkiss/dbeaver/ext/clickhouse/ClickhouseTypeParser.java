@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,11 @@
 package org.jkiss.dbeaver.ext.clickhouse;
 
 import com.google.gson.Gson;
+import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -60,8 +63,62 @@ public class ClickhouseTypeParser {
         return ENABLE_COMPLEX_TYPE_PARSING && (
             typeName.startsWith(ClickhouseConstants.DATA_TYPE_MAP) ||
                 typeName.startsWith(ClickhouseConstants.DATA_TYPE_TUPLE) ||
-                typeName.startsWith(ClickhouseConstants.DATA_TYPE_ARRAY)
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_ARRAY) ||
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_NULLABLE) ||
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_LOW_CARDINALITY)
             );
+    }
+
+    /** Recognizes scalar JSON types, but not collections or LowCardinality(JSON). */
+    public static boolean isScalarJsonType(@NotNull String typeName) {
+        if ("JSON".equalsIgnoreCase(typeName)) {
+            return true;
+        }
+        if (!typeName.startsWith("JSON(") && !typeName.startsWith("Nullable(")) {
+            return false;
+        }
+        if (isParsedScalarJsonType(typeName)) {
+            return true;
+        }
+        // clickhouse-jdbc can omit the outer Nullable close when its inner type has parameters,
+        // including JSON. The driver bug is open: https://github.com/ClickHouse/clickhouse-java/issues/3382
+        // FIXME: Revisit this workaround when the driver issue is closed and the fix is available.
+        return typeName.startsWith("Nullable(JSON(") && typeName.endsWith(")")
+            && isParsedScalarJsonType(typeName + ")");
+    }
+
+    private static boolean isParsedScalarJsonType(@NotNull String typeName) {
+        final boolean[] lexerError = {false};
+        final var lexer = new ClickhouseDataTypesLexer(CharStreams.fromString(typeName));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(new BaseErrorListener() {
+            @Override
+            public void syntaxError(
+                Recognizer<?, ?> recognizer,
+                Object offendingSymbol,
+                int line,
+                int charPositionInLine,
+                String msg,
+                RecognitionException e
+            ) {
+                lexerError[0] = true;
+            }
+        });
+        final var parser = new ClickhouseDataTypesParser(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        final var root = parser.type();
+        if (lexerError[0] || parser.getNumberOfSyntaxErrors() > 0 || root.anyType() == null) {
+            return false;
+        }
+        final var type = root.anyType();
+        if (type.simpleType() != null) {
+            return type.simpleType().jsonType() != null;
+        }
+        final var marker = type.markerType();
+        return marker != null
+            && marker.markerTypePrefix() instanceof ClickhouseDataTypesParser.NullableMarkerContext
+            && marker.anyType().simpleType() != null
+            && marker.anyType().simpleType().jsonType() != null;
     }
 
     @Nullable
@@ -82,13 +139,26 @@ public class ClickhouseTypeParser {
         }
 
         if (type instanceof ClickhouseMapType mapType && ENABLE_COMPLEX_TYPE_PARSING) {
+            if (object instanceof ClickhouseMapValue) {
+                return object;
+            }
+            Map<Object, Object> entries = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
+                entries.put(
+                    makeValue(session, mapType.getKeyType(), entry.getKey()),
+                    makeValue(session, mapType.getValueType(), entry.getValue())
+                );
+            }
             return new ClickhouseMapValue(
                 (ClickhouseDataSource) session.getDataSource(),
                 mapType,
                 Objects.requireNonNull(mapType.getAttributes(session.getProgressMonitor())),
-                ((Map<?, ?>) object)
+                entries
             );
         } else if (type instanceof ClickhouseTupleType tuple && ENABLE_COMPLEX_TYPE_PARSING) {
+            if (object instanceof ClickhouseTupleValue) {
+                return object;
+            }
             final Object[] values;
             if (object instanceof Map) {
                 values = ((Map<?, ?>) object).entrySet().stream()
@@ -255,12 +325,25 @@ public class ClickhouseTypeParser {
 
     @NotNull
     public static String getTypeNameWithoutModifiers(@NotNull String fullTypeName) {
-        final int div = fullTypeName.indexOf('(');
-        if (div < 0) {
-            return fullTypeName;
-        } else {
-            return fullTypeName.substring(0, div);
+        String typeName = fullTypeName.trim();
+        while (true) {
+            final int div = typeName.indexOf('(');
+            if (div < 0) {
+                return typeName;
+            }
+
+            final String baseTypeName = typeName.substring(0, div).trim();
+            if (isMarkerType(baseTypeName) && typeName.endsWith(")")) {
+                typeName = typeName.substring(div + 1, typeName.length() - 1).trim();
+            } else {
+                return baseTypeName;
+            }
         }
+    }
+
+    private static boolean isMarkerType(@NotNull String typeName) {
+        return ClickhouseConstants.DATA_TYPE_NULLABLE.equals(typeName) ||
+            ClickhouseConstants.DATA_TYPE_LOW_CARDINALITY.equals(typeName);
     }
 
     private static boolean isEnum(@NotNull String type) {

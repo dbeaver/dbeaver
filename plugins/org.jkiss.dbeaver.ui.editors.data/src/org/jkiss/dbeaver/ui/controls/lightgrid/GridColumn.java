@@ -344,6 +344,8 @@ public class GridColumn implements IGridColumn {
         }
 
         x += gc.textExtent(cellText).x + rightMargin;
+        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(this, row, cellInfo.value, 0);
+        x += GridCellRenderer.getCellHintTextWidth(gc, cellHints);
         return x;
     }
 

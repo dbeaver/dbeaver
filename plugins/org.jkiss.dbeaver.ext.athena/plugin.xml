@@ -4,12 +4,21 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="athena"
+            label="Amazon Athena"
+            description="Amazon Athena analytics service"
+            dataSourceInformation="Serverless SQL analytics for object storage"
+            icon="icons/athena_icon.svg"
+            iconBig="icons/athena_icon_big.svg"
+            logoImage="icons/aws_athena_logo.png"/>
 
         <!-- Athena -->
         <datasource
                 class="org.jkiss.dbeaver.ext.athena.AthenaDataSourceProvider"
                 description="AWS Athena datasource"
                 id="athena"
+                dataSourceType="athena"
                 parent="generic"
                 label="Athena"
                 icon="icons/athena_icon.svg"
@@ -19,13 +28,11 @@
                 <driver
                         id="aws_athena_jdbc_amazon"
                         label="Athena"
-                        icon="icons/athena_icon.svg"
-                        iconBig="icons/athena_icon_big.svg"
                         class="com.amazon.athena.jdbc.AthenaDriver"
                         sampleURL="jdbc:athena://Region={region};"
                         defaultPort="444"
                         customEndpoint="true"
-                        description="AWS Athena JDBC driver"
+                        description="AWS JDBC driver for Amazon Athena, a serverless SQL query service for object storage."
                         category="AWS"
                         webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
                         databaseDocumentationSuffixURL="Database-driver-Amazon-Athena"
@@ -47,13 +54,11 @@
                 <driver
                     id="aws_athena_jdbc_legacy"
                     label="Athena (Legacy)"
-                    icon="icons/athena_icon.svg"
-                    iconBig="icons/athena_icon_big.svg"
                     class="com.simba.athena.jdbc.Driver"
                     sampleURL="jdbc:athena://AWSRegion={region};"
                     defaultPort="444"
                     customEndpoint="true"
-                    description="Legacy Athena driver (Simba). Relies on AWS SDK 1.x. Use it only if you are experiencing issues with the new driver."
+                    description="Legacy Simba JDBC driver for Amazon Athena with AWS SDK 1.x."
                     category="AWS"
                     webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
                     propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.25.1001/doc/Simba+Athena+JDBC+Connector+Install+and+Configuration+Guide.pdf"

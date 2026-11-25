@@ -8,10 +8,19 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="vertica"
+            label="Vertica"
+            description="Vertica database"
+            dataSourceInformation="Column-oriented analytical database system"
+            icon="icons/vertica_icon.png"
+            iconBig="icons/vertica_icon_big.png"
+            logoImage="icons/vertica_logo.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.vertica.VerticaDataSourceProvider"
             description="Vertica JDBC connector"
             id="vertica"
+            dataSourceType="vertica"
             parent="generic"
             label="Vertica"
             icon="icons/vertica_icon.png"
@@ -116,13 +125,11 @@
                 <driver
                     id="vertica-jdbc-8"
                     label="Vertica"
-                    icon="icons/vertica_icon.png"
-                    iconBig="icons/vertica_icon_big.png"
                     class="com.vertica.jdbc.Driver"
                     sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                     defaultPort="5433"
                     webURL="https://www.vertica.com/download/vertica/client-drivers/"
-                    description="JDBC driver for Vertica database"
+                    description="Vertica JDBC driver for column-oriented analytical databases and data warehouses."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic,columns">
                     <replace provider="generic" driver="vertica"/>

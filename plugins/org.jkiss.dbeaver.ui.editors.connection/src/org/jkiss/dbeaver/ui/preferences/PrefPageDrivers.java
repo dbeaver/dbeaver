@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DataSourceTypeViewer;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
@@ -52,6 +53,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.drivers"; //$NON-NLS-1$
 
     private Button versionUpdateCheck;
+    private Button showCommercialDrivers;
 
     private List sourceList;
 
@@ -87,6 +89,14 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
                 UIConnectionMessages.pref_page_ui_general_check_new_driver_versions_tip,
                 store.getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE), 1
             );
+            if (DataSourceTypeViewer.isCommercialDriversEnabled()) {
+                showCommercialDrivers = UIUtils.createCheckbox(
+                    settings,
+                    UIConnectionMessages.dialog_connection_show_commercial_drivers,
+                    store.getBoolean(UIPreferences.DRIVER_SELECTOR_SHOW_COMMERCIAL_DRIVERS)
+                );
+                showCommercialDrivers.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+            }
         }
 
         {
@@ -187,6 +197,9 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         versionUpdateCheck.setSelection(store.getDefaultBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE));
+        if (showCommercialDrivers != null) {
+            showCommercialDrivers.setSelection(store.getDefaultBoolean(UIPreferences.DRIVER_SELECTOR_SHOW_COMMERCIAL_DRIVERS));
+        }
 
         proxyHostText.setText(store.getDefaultString(ModelPreferences.UI_PROXY_HOST));
         proxyPortSpinner.setSelection(store.getDefaultInt(ModelPreferences.UI_PROXY_PORT));
@@ -206,12 +219,15 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         try {
             GlobalProxyAuthenticator.saveCredentials(proxyUserText.getText(), proxyPasswordText.getText());
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Unable to save proxy credentials", e.getMessage(), e);
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.pref_page_drivers_proxy_save_error, e.getMessage(), e);
             return false;
         }
 
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(ModelPreferences.UI_DRIVERS_VERSION_UPDATE, versionUpdateCheck.getSelection());
+        if (showCommercialDrivers != null) {
+            store.setValue(UIPreferences.DRIVER_SELECTOR_SHOW_COMMERCIAL_DRIVERS, showCommercialDrivers.getSelection());
+        }
         store.setValue(ModelPreferences.UI_PROXY_HOST, proxyHostText.getText());
         store.setValue(ModelPreferences.UI_PROXY_PORT, proxyPortSpinner.getSelection());
         store.setValue(ModelPreferences.UI_DRIVERS_HOME, customDriversHome.getText());

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ public interface ConnectionPreferences {
 
     String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
     String CONFIRM_TXN_RECONNECT = "reconnect_txn"; //$NON-NLS-1$
-    String CONFIRM_DISABLE_NETWORK_HANDLER = "disable_network_handler"; //$NON-NLS-1$
     String CONFIRM_TEST_CONNECTION_PERSIST = "test_connection_persist"; //$NON-NLS-1$
 
 }

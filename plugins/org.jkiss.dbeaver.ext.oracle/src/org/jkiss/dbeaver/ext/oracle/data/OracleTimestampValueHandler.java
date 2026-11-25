@@ -46,9 +46,9 @@ import java.text.SimpleDateFormat;
  */
 public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
 
-    private static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new ExtendedDateFormat("'TIMESTAMP '''yyyy-MM-dd HH:mm:ss.ffffff''");
-    private static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("'DATE '''yyyy-MM-dd''");
-    private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("'TIME '''HH:mm:ss.SSS''");
+    private static final ThreadLocal<SimpleDateFormat> DEFAULT_DATETIME_FORMAT = ThreadLocal.withInitial(() -> new ExtendedDateFormat("'TIMESTAMP '''yyyy-MM-dd HH:mm:ss.ffffff''"));
+    private static final ThreadLocal<SimpleDateFormat> DEFAULT_DATE_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("'DATE '''yyyy-MM-dd''"));
+    private static final ThreadLocal<SimpleDateFormat> DEFAULT_TIME_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("'TIME '''HH:mm:ss.SSS''"));
 
     @NotNull
     private DBPDataSource dataSource;
@@ -112,17 +112,17 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     public Format getNativeValueFormat(DBSTypedObject type) {
         switch (type.getTypeID()) {
             case Types.TIMESTAMP:
-                return DEFAULT_DATETIME_FORMAT;
+                return DEFAULT_DATETIME_FORMAT.get();
             case Types.TIMESTAMP_WITH_TIMEZONE:
             case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE:
             case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_LOCAL_TIMEZONE:
-                return DEFAULT_DATETIME_FORMAT;
+                return DEFAULT_DATETIME_FORMAT.get();
             case Types.TIME:
-                return DEFAULT_TIME_FORMAT;
+                return DEFAULT_TIME_FORMAT.get();
             case Types.TIME_WITH_TIMEZONE:
-                return DEFAULT_TIME_FORMAT;
+                return DEFAULT_TIME_FORMAT.get();
             case Types.DATE:
-                return DEFAULT_DATE_FORMAT;
+                return DEFAULT_DATE_FORMAT.get();
         }
         // Have to revert DATE format. I can't realize what is difference between TIMESTAMP and DATE without time part.
         // Column types and lengths are the same. Data type name is the same. Oh, Oracle...

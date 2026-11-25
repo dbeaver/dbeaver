@@ -22,7 +22,6 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
@@ -72,7 +71,7 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage implements IHelpC
     @Override
     protected Composite createPageContents(@NotNull Composite parent) {
         ConComposite panel = new ConComposite(parent);
-        panel.setLayout(new GridLayout(1, false));
+        panel.setGridLayout(1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         attrTable = new Table(panel, SWT.FULL_SELECTION | SWT.BORDER);

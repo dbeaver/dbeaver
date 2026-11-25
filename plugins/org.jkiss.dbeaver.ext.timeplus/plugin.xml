@@ -11,10 +11,18 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="timeplus"
+            label="Timeplus"
+            description="Timeplus database"
+            dataSourceInformation="High-performance analytical database platform"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
+            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.timeplus.TimeplusDataSourceProvider"
                 description="Timeplus"
                 id="timeplus"
+                dataSourceType="timeplus"
                 parent="generic"
                 label="Timeplus"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
@@ -25,12 +33,11 @@
                 <driver
                     id="timeplus_native"
                     label="Timeplus"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
-                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"
+                    threadSafe="false"
                     class="com.timeplus.jdbc.TimeplusDriver"
                     sampleURL="jdbc:timeplus://{host}:{port}[/{database}]"
                     defaultPort="8463"
-                    description="Timeplus Native JDBC driver (TCP). For streaming and batch queries; recommended for Timeplus Enterprise."
+                    description="Native TCP JDBC driver for Timeplus Enterprise, with streaming and batch SQL queries."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.timeplus.com/jdbc"
                     categories="sql,analytic,streaming"
@@ -49,14 +56,12 @@
                 <driver
                     id="timeplus_proton"
                     label="Timeplus Proton"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
-                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"
                     class="com.timeplus.proton.jdbc.ProtonDriver"
                     sampleURL="jdbc:proton://{host}:{port}/{database}"
                     defaultPort="8123"
                     defaultDatabase="default"
                     defaultUser="default"
-                    description="Timeplus Proton JDBC driver (HTTP). For batch queries; use LIMIT or table(stream) for historical data."
+                    description="HTTP JDBC driver for Timeplus Proton, with batch SQL queries."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.timeplus.com/jdbc"
                     categories="sql,analytic,streaming"

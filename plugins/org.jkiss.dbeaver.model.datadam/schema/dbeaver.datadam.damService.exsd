@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<schema targetNamespace="org.jkiss.dbeaver.model.datadam" xmlns="http://www.w3.org/2001/XMLSchema">
+    <annotation>
+        <appInfo>
+            <meta.schema plugin="org.jkiss.dbeaver.model.datadam" id="dbeaver.datadam.damService" name="DataDam RPC services"/>
+        </appInfo>
+        <documentation>Services registered on authorized DataDam RPC endpoints.</documentation>
+    </annotation>
+
+    <element name="extension">
+        <annotation><appInfo><meta.element/></appInfo></annotation>
+        <complexType>
+            <sequence>
+                <element ref="service" minOccurs="0" maxOccurs="unbounded"/>
+            </sequence>
+        </complexType>
+    </element>
+
+    <element name="service">
+        <complexType>
+            <attribute name="id" type="string" use="required">
+                <annotation>
+                    <documentation>Unique service registration identifier.</documentation>
+                </annotation>
+            </attribute>
+            <attribute name="class" type="string" use="required">
+                <annotation>
+                    <documentation>Implementation of DBDamRpcRegistration. The constructor receives the registrations listed in dependsOn, in the declared order. Each authorized RPC endpoint owns and closes its service registrations.</documentation>
+                    <appInfo>
+                        <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.datadam.rpc.DBDamRpcRegistration"/>
+                    </appInfo>
+                </annotation>
+            </attribute>
+            <attribute name="dependsOn" type="string">
+                <annotation>
+                    <documentation>Comma-separated service registration IDs that must be instantiated first and supplied as constructor arguments. IDs must exist and dependencies must not contain cycles or duplicates.</documentation>
+                </annotation>
+            </attribute>
+            <attribute name="registerAfter" type="string">
+                <annotation>
+                    <documentation>Comma-separated service registration IDs to register before this service on each endpoint. Registration order is independent of constructor dependencies. IDs must exist and ordering must not contain cycles or duplicates.</documentation>
+                </annotation>
+            </attribute>
+        </complexType>
+    </element>
+</schema>

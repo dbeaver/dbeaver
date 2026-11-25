@@ -57,6 +57,9 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
             // This results in scenarios where some JDBC APIs return nulls in unexpected places. For example, here.
             return PostgreUnknownValueHandler.INSTANCE;
         }
+        if (PostgreConstants.TYPE_RECORD.equals(typeName)) {
+            return PostgreStructValueHandler.INSTANCE;
+        }
         switch (typeID) {
             case Types.ARRAY:
                 return PostgreArrayValueHandler.INSTANCE;

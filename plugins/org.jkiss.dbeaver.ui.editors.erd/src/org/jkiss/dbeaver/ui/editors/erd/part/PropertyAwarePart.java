@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,14 @@ import java.util.List;
  * @author Serge Rider
  */
 public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implements PropertyChangeListener, DBPNamedObject {
+
+    public void refreshTheme() {
+        for (Object child : getChildren()) {
+            if (child instanceof PropertyAwarePart part) {
+                part.refreshTheme();
+            }
+        }
+    }
 
     @NotNull
     @Override

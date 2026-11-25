@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
@@ -31,13 +30,16 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.services.UIServiceApplicationVersionUpdater;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.io.IOException;
-import java.util.Calendar;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 
 /**
  * Version checker job
@@ -45,12 +47,18 @@ import java.util.Calendar;
 public class DBeaverVersionChecker extends AbstractJob {
 
     private static final Log log = Log.getLog(DBeaverVersionChecker.class);
+    private static final String PROP_OVERRIDE_PRODUCT_VERSION = "dbeaver.debug.override-product-version";
+    private static final String PROP_OVERRIDE_PRODUCT_PATCH = "dbeaver.debug.override-product-patch";
+    private static final String PROP_SKIP_VERSION_CHECK = "dbeaver.debug.skip-version-check";
+    private static final String PROP_VERSION_DESCRIPTOR = "dbeaver.debug.version-descriptor";
+    private static final String PROP_VERSION_UPDATE_URL = "versionUpdateURL";
+    private static final String PREF_SUPPRESS_UPDATE_CHECK_PREFIX = "suppressUpdateCheck.";
 
     private static final boolean SKIP_VERSION_CHECK;
     private static final Version OVERRIDE_PRODUCT_VERSION;
 
     static {
-        String versionProperty = CommonUtils.toString(System.getProperty("dbeaver.debug.override-product-version"));
+        String versionProperty = System.getProperty(PROP_OVERRIDE_PRODUCT_VERSION);
         Version version = null;
 
         if (CommonUtils.isNotEmpty(versionProperty)) {
@@ -62,7 +70,7 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
 
         OVERRIDE_PRODUCT_VERSION = version;
-        SKIP_VERSION_CHECK = CommonUtils.toBoolean(System.getProperty("dbeaver.debug.skip-version-check"));
+        SKIP_VERSION_CHECK = CommonUtils.toBoolean(System.getProperty(PROP_SKIP_VERSION_CHECK));
     }
 
     private final boolean showAlways;
@@ -86,37 +94,18 @@ public class DBeaverVersionChecker extends AbstractJob {
         if (!showUpdateDialog) {
             // Check for auto-update settings
             showUpdateDialog = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK);
-            if (showUpdateDialog) {
-
-                long lastVersionCheckTime = DBWorkbench.getPlatform().getPreferenceStore().getLong(DBeaverPreferences.UI_UPDATE_CHECK_TIME);
-                if (lastVersionCheckTime > 0) {
-                    // Do not check more often than daily
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTimeInMillis(lastVersionCheckTime);
-                    int checkMonth = cal.get(Calendar.MONTH);
-                    int checkDay = cal.get(Calendar.DAY_OF_MONTH);
-                    cal.setTimeInMillis(System.currentTimeMillis());
-                    int curMonth = cal.get(Calendar.MONTH);
-                    int curDay = cal.get(Calendar.DAY_OF_MONTH);
-                    if (curMonth == checkMonth && curDay == checkDay) {
-                        // Already checked today
-                        return Status.OK_STATUS;
-                    }
-                }
-            }
         }
         if (!showAlways && !showUpdateDialog) {
             return Status.OK_STATUS;
         }
 
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(DBeaverPreferences.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
         IProduct product = Platform.getProduct();
         if (product == null) {
             // No product!
             log.error("No Eclipse product found. Installation is corrupted");
             return Status.OK_STATUS;
         }
-        final String updateURL = product.getProperty("versionUpdateURL");
+        final String updateURL = product.getProperty(PROP_VERSION_UPDATE_URL);
         if (updateURL == null) {
             return Status.OK_STATUS;
         }
@@ -125,19 +114,31 @@ public class DBeaverVersionChecker extends AbstractJob {
         final VersionDescriptor newVersion;
 
         try {
-            newVersion = new VersionDescriptor(DBWorkbench.getPlatform(), updateURL);
-        } catch (IOException e) {
+            String descriptorFile = System.getProperty(PROP_VERSION_DESCRIPTOR);
+            if (CommonUtils.isNotEmpty(descriptorFile)) {
+                try (var input = Files.newInputStream(Path.of(descriptorFile))) {
+                    newVersion = new VersionDescriptor(input);
+                }
+            } else {
+                newVersion = new VersionDescriptor(DBWorkbench.getPlatform(), updateURL);
+            }
+        } catch (IOException | InvalidPathException e) {
             if (showAlways) {
                 // Show error dialog only if fired by user
-                DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_version_update_title, CoreMessages.dialog_version_update_error_cannot_check_version, e);
+                DBWorkbench.getPlatformUI().showError(CoreApplicationMessages.dialog_version_update_title, CoreApplicationMessages.dialog_version_update_error_cannot_check_version, e);
             }
             return Status.CANCEL_STATUS;
         }
 
-        if (showAlways || (!isSuppressed(newVersion) && (SKIP_VERSION_CHECK || newVersion.getProgramVersion().compareTo(currentVersion) > 0))) {
-            UIServiceApplicationVersionUpdater updater = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
+        boolean newVersionAvailable = newVersion.isNewerThan(currentVersion, getProductPatchNumber());
+        boolean suppressed = isSuppressed(newVersion);
+        UIServiceApplicationVersionUpdater updater = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
+        boolean showToolbarNotification = updater == null && newVersionAvailable && !showAlways;
+        if (showAlways || (!suppressed && (SKIP_VERSION_CHECK || newVersionAvailable))) {
             if (updater != null) {
                 UIUtils.asyncExec(updater::handleVersionUpdate);
+            } else if (showToolbarNotification) {
+                UIUtils.asyncExec(() -> VersionUpdateHandler.showNotification(currentVersion, newVersion));
             } else {
                 showUpdaterDialog(currentVersion, newVersion);
             }
@@ -153,9 +154,21 @@ public class DBeaverVersionChecker extends AbstractJob {
         });
     }
 
-    private static boolean isSuppressed(@NotNull VersionDescriptor version) {
-        CoreApplicationActivator activator = CoreApplicationActivator.getDefault();
-        return activator != null && activator.getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
+    static boolean isSuppressed(@NotNull VersionDescriptor version) {
+        return CoreApplicationActivator.getDefault().getPreferenceStore().getBoolean(getSuppressionKey(version));
+    }
+
+    @NotNull
+    static String getSuppressionKey(@NotNull VersionDescriptor version) {
+        return PREF_SUPPRESS_UPDATE_CHECK_PREFIX + version.getUpdateVersion();
+    }
+
+    static int getProductPatchNumber() {
+        if (OVERRIDE_PRODUCT_VERSION != null) {
+            // The override is an OSGi version; its qualifier is not a numeric product patch.
+            return Math.max(0, Integer.getInteger(PROP_OVERRIDE_PRODUCT_PATCH, 0));
+        }
+        return GeneralUtils.getProductPatchNumber();
     }
 
     @NotNull

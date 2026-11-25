@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.runtime;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -48,9 +49,10 @@ import java.util.Map;
 public class WebUtils {
     private static final Log log = Log.getLog(WebUtils.class);
     private static final int MAX_RETRY_COUNT = 10;
+    private static final int DOWNLOAD_PROGRESS_MAX = 1000;
 
     @NotNull
-    public static URLConnection openConnection(String urlString, String referrer) throws IOException {
+    public static URLConnection openConnection(@NotNull String urlString, @Nullable String referrer) throws IOException {
         return openConnection(urlString, null, referrer);
     }
 
@@ -98,8 +100,24 @@ public class WebUtils {
         int timeout,
         Map<String, String> headers
     ) throws IOException {
+        return openURLConnection(monitor, urlString, authInfo, referrer, method, retryNumber, timeout, headers, false);
+    }
+
+    @NotNull
+    public static URLConnection openURLConnection(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull String urlString,
+        @Nullable DBPAuthInfo authInfo,
+        @Nullable String referrer,
+        @NotNull String method,
+        int retryNumber,
+        int timeout,
+        @Nullable Map<String, String> headers,
+        boolean sensitiveUrl
+    ) throws IOException {
+        String displayUrl = sensitiveUrl ? "<redacted>" : urlString;
         if (retryNumber > MAX_RETRY_COUNT) {
-            String message = String.format("Too many redirects (%d times to %s)", retryNumber, urlString);
+            String message = String.format("Too many redirects (%d times to %s)", retryNumber, displayUrl);
             IOException ioException = new IOException(message);
             if (monitor instanceof ProgressMonitorWithExceptionContext monitorWithExceptionContext) {
                 monitorWithExceptionContext.addException(ioException);
@@ -108,7 +126,7 @@ public class WebUtils {
         } else if (retryNumber > 1) {
             log.debug("Retry number " + retryNumber);
         }
-        log.debug("Open [" + urlString + "]");
+        log.debug("Open [" + displayUrl + "]");
 
         DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
         String proxyHost = prefs.getString(ModelPreferences.UI_PROXY_HOST);
@@ -156,18 +174,30 @@ public class WebUtils {
                 connection.connect();
                 if (connection instanceof HttpURLConnection httpConnection) {
                     final int responseCode = httpConnection.getResponseCode();
-                    if (responseCode != 200) {
+                    if (responseCode != HttpURLConnection.HTTP_OK
+                        && !(responseCode == HttpURLConnection.HTTP_NOT_MODIFIED
+                            && headers != null && headers.containsKey("If-None-Match"))) {
                         if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
                             String newUrl = connection.getHeaderField("Location");
+                            if (sensitiveUrl) {
+                                return openURLConnection(monitor, newUrl, authInfo, referrer, method,
+                                    retryNumber + 1, timeout, headers, true);
+                            }
                             return openURLConnection(newUrl, authInfo, referrer, retryNumber + 1);
+                        }
+                        if (sensitiveUrl) {
+                            throw new IOException("HTTP " + responseCode);
                         }
                         throw new IOException("Can't open '" + connection.getURL() + "': " + httpConnection.getResponseMessage());
                     }
                 }
             } catch (Exception e) {
-                String message = String.format("Exception during a connection to %s", connection.getURL().toString());
-                log.debug(message, e);
-                IOException ioException = new IOException(message, e);
+                String message = String.format("Exception during a connection to %s", sensitiveUrl ? displayUrl : connection.getURL());
+                if (sensitiveUrl) {
+                    message += " (" + e.getClass().getSimpleName() + ")";
+                }
+                log.debug(message, sensitiveUrl ? null : e);
+                IOException ioException = new IOException(message, sensitiveUrl ? null : e);
                 if (monitor instanceof ProgressMonitorWithExceptionContext monitorWithExceptionContext) {
                     monitorWithExceptionContext.addException(ioException);
                 }
@@ -204,11 +234,15 @@ public class WebUtils {
         final NumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
 
         // The value of getContentLength() may be -1 and this should not be handled, see IProgressMonitor#UNKNOWN
-        monitor.beginTask(taskName + " - " + externalURL, contentLength);
+        monitor.beginTask(
+            taskName + " - " + externalURL,
+            contentLength >= 0 ? DOWNLOAD_PROGRESS_MAX : IProgressMonitor.UNKNOWN
+        );
         try (final InputStream inputStream = connection.getInputStream()) {
             final long startTime = System.currentTimeMillis();
             long updateTime = 0;
             long totalRead = 0;
+            int reportedProgress = 0;
 
             while (true) {
                 if (monitor.isCanceled()) {
@@ -236,8 +270,15 @@ public class WebUtils {
                     return totalRead;
                 }
                 outputStream.write(buffer, 0, count);
-                monitor.worked(count);
                 totalRead += count;
+                if (contentLength > 0) {
+                    int progress = (int) Math.min(
+                        DOWNLOAD_PROGRESS_MAX,
+                        totalRead * DOWNLOAD_PROGRESS_MAX / contentLength
+                    );
+                    monitor.worked(progress - reportedProgress);
+                    reportedProgress = progress;
+                }
             }
         } finally {
             monitor.done();

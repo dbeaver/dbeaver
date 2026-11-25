@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.timeplus.model.jdbc.TimeplusJdbcFactory;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -39,7 +38,7 @@ public class TimeplusDataSource extends GenericDataSource {
         @NotNull DBPDataSourceContainer container,
         @NotNull GenericMetaModel metaModel
     ) throws DBException {
-        super(monitor, container, metaModel, new GenericSQLDialect());
+        super(monitor, container, metaModel, new TimeplusSQLDialect());
     }
 
     public TimeplusDataSource(
@@ -47,7 +46,7 @@ public class TimeplusDataSource extends GenericDataSource {
         @NotNull TimeplusMetaModel metaModel,
         @NotNull DBPDataSourceContainer container
     ) throws DBException {
-        super(monitor, metaModel, container, new GenericSQLDialect());
+        super(monitor, metaModel, container, new TimeplusSQLDialect());
     }
 
     @NotNull

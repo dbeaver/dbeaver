@@ -20,13 +20,23 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
+import org.jkiss.dbeaver.ext.h2.util.H2InitScriptValidator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.sql.Connection;
+import java.util.List;
+import java.util.Properties;
+import java.util.function.Predicate;
 
 /**
  * H2 datasource
@@ -34,13 +44,18 @@ import java.sql.Connection;
 public class H2DataSource extends GenericDataSource {
 
     public static final String H2_URL_PREFIX_TCP = "jdbc:h2:tcp:";
+    public static final String H2_URL_PREFIX_SSL = "jdbc:h2:ssl:";
     public static final String H2_URL_PREFIX = "jdbc:h2:";
     public static final String H2_DB_FILE_EXTENSION = ".mv.db";
+
+    @Nullable
+    private H2InitScriptValidator initScriptValidator;
 
     public H2DataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         super(monitor, container, new H2MetaModel(), new H2SQLDialect());
     }
 
+    @Nullable
     @Override
     protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         String url = connectionInfo.getUrl();
@@ -68,7 +83,75 @@ public class H2DataSource extends GenericDataSource {
     }
 
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
-        return super.openConnection(monitor, context, purpose);
+    protected void validateConnectionParameters(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String url,
+        @NotNull Properties connectProps
+    ) throws DBCException {
+        var application = DBWorkbench.getPlatform().getApplication();
+        Predicate<String> confirmation = script -> {
+            if (application.isMultiuser()) {
+                return false;
+            }
+            UIServiceConnectionInit service = DBWorkbench.getService(UIServiceConnectionInit.class);
+            return service != null && service.confirmInitScript(getContainer(), url, script);
+        };
+        H2InitScriptValidator validator = getInitScriptValidator();
+        validator.validate(url, connectProps, confirmation);
+        validateBootstrapQueries(url, getContainer().getActualConnectionConfiguration().getBootstrap().getInitQueries().stream()
+            .map(query -> GeneralUtils.replaceVariables(query, getContainer().getVariablesResolver(true)))
+            .toList());
+    }
+
+    private void validateBootstrapQueries(@Nullable String url, @NotNull List<String> queries) throws DBCException {
+        getInitScriptValidator().validateScripts(url, queries, scripts -> {
+            if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+                return false;
+            }
+            UIServiceConnectionInit service = DBWorkbench.getService(UIServiceConnectionInit.class);
+            return service != null && service.confirmInitScripts(getContainer(), url, scripts);
+        });
+    }
+
+    @NotNull
+    @Override
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
+        return new GenericExecutionContext(instance, type) {
+            @Override
+            protected void validateBootstrapQueries(@NotNull List<String> queries) throws DBException {
+                if (!queries.isEmpty()) {
+                    String url = getConnectionURL(getContainer().getActualConnectionConfiguration());
+                    H2DataSource.this.validateBootstrapQueries(url, queries);
+                }
+            }
+        };
+    }
+
+    @NotNull
+    private synchronized H2InitScriptValidator getInitScriptValidator() {
+        // generic datasource opens its first connection from the superclass constructor
+        if (initScriptValidator == null) {
+            initScriptValidator = new H2InitScriptValidator();
+        }
+        return initScriptValidator;
+    }
+
+    @NotNull
+    @Override
+    protected JDBCConnectionImpl createConnection(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @NotNull DBCExecutionPurpose purpose,
+        @NotNull String taskTitle
+    ) {
+        String url = getContainer().getActualConnectionConfiguration().getUrl();
+        if (url != null &&
+            url.startsWith(H2_URL_PREFIX) &&
+            !url.startsWith(H2_URL_PREFIX_TCP) &&
+            !url.startsWith(H2_URL_PREFIX_SSL)
+        ) {
+            return new H2ConnectionImpl(context, monitor, purpose, taskTitle);
+        }
+        return super.createConnection(monitor, context, purpose, taskTitle);
     }
 }

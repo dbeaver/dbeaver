@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -57,6 +56,7 @@ public class TabbedFolderList extends ConComposite {
     protected static final int INDENT_RIGHT = 10;
     public static final String LABEL_NA = "N/A";
     public static final int SECTION_DIV_HEIGHT = 7;
+    private static final int NAVIGATION_HEIGHT = 16;
     private static final RGB white = new RGB(255, 255, 255);
     private static final RGB black = new RGB(0, 0, 0);
 
@@ -74,21 +74,17 @@ public class TabbedFolderList extends ConComposite {
     private final TopNavigationElement topNavigationElement;
     private final BottomNavigationElement bottomNavigationElement;
     private final IPropertyChangeListener themeChangeListener;
+    private boolean themeRefreshPending;
 
     private int widestLabelIndex = NONE;
     private int tabsThatFitInComposite = NONE;
 
     Color widgetForeground;
     Color widgetNormalShadow;
-    Color widgetDarkShadow;
-    private Color hoverGradientStart;
-    private Color hoverGradientEnd;
+    private Color hoverBackground;
     private Color elementBackground;
     private Color indentedDefaultBackground;
     private Color indentedHoverBackground;
-    private Color navigationElementShadowStroke;
-    private Color bottomNavigationElementShadowStroke1;
-    private Color bottomNavigationElementShadowStroke2;
 
     private final Map<Image, Image> grayedImages = new IdentityHashMap<>();
 
@@ -117,6 +113,7 @@ public class TabbedFolderList extends ConComposite {
             this.index = index;
 
             addPaintListener(this::paint);
+            addListener(SWT.MouseVerticalWheel, TabbedFolderList.this::handleMouseWheel);
             addMouseListener(MouseListener.mouseUpAdapter(mouseEvent -> {
                 if (!selected) {
                     select(getIndex(ListElement.this));
@@ -162,37 +159,32 @@ public class TabbedFolderList extends ConComposite {
          *
          * @param e the paint event.
          */
-        private void paint(PaintEvent e) {
-            Color bgColor = getWidgetBackground(true);
-            /*
-			 * draw the top two lines of the tab, same for selected, hover and
-			 * default
-			 */
+        private void paint(@NotNull PaintEvent e) {
+            boolean lightDialog = UIUtils.isInDialog(this) && !UIStyles.isDarkTheme();
+            Color bgColor = selected && lightDialog
+                ? getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND)
+                : getWidgetBackground(true);
+            // Keep a single, low-contrast separator between tabs.
             Rectangle bounds = getBounds();
             e.gc.setForeground(widgetNormalShadow);
             e.gc.drawLine(0, 0, bounds.width - 1, 0);
-            e.gc.setForeground(bgColor);
-            e.gc.drawLine(0, 1, bounds.width - 1, 1);
 
 			/* draw the fill in the tab */
             if (selected) {
                 e.gc.setBackground(bgColor);
-                e.gc.fillRectangle(0, 2, bounds.width, bounds.height - 1);
+                e.gc.fillRectangle(0, 1, bounds.width, bounds.height - 1);
             } else if (hover && tab.isIndented()) {
                 e.gc.setBackground(indentedHoverBackground);
-                e.gc.fillRectangle(0, 2, bounds.width - 1, bounds.height - 1);
+                e.gc.fillRectangle(0, 1, bounds.width - 1, bounds.height - 1);
             } else if (hover) {
-                e.gc.setForeground(hoverGradientStart);
-                e.gc.setBackground(hoverGradientEnd);
-                e.gc.fillGradientRectangle(0, 2, bounds.width - 1, bounds.height - 1, true);
+                e.gc.setBackground(hoverBackground);
+                e.gc.fillRectangle(0, 1, bounds.width - 1, bounds.height - 1);
             } else if (tab.isIndented()) {
                 e.gc.setBackground(indentedDefaultBackground);
-                e.gc.fillRectangle(0, 2, bounds.width - 1, bounds.height - 1);
+                e.gc.fillRectangle(0, 1, bounds.width - 1, bounds.height - 1);
             } else {
                 e.gc.setBackground(elementBackground);
-                e.gc.fillRectangle(0, 2, bounds.width - 1, bounds.height - 1);
-                //e.gc.setBackground(defaultGradientEnd);
-                //e.gc.fillGradientRectangle(0, 2, bounds.width - 1, bounds.height - 1, true);
+                e.gc.fillRectangle(0, 1, bounds.width - 1, bounds.height - 1);
             }
 
             if (!selected) {
@@ -230,7 +222,9 @@ public class TabbedFolderList extends ConComposite {
             }
 
 			/* draw the text */
-            e.gc.setForeground(widgetForeground);
+            e.gc.setForeground(selected && lightDialog
+                ? getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND)
+                : widgetForeground);
             if (selected) {
 				/* selected tab is bold font */
                 e.gc.setFont(BaseThemeSettings.instance.partTitleBoldFont);
@@ -242,12 +236,6 @@ public class TabbedFolderList extends ConComposite {
 				/* draw a line if the tab has focus */
                 Point point = e.gc.textExtent(tab.getText());
                 e.gc.drawLine(textIndent, bounds.height - 4, textIndent + point.x, bounds.height - 4);
-            }
-
-			/* draw the bottom line on the tab for selected and default */
-            if (!hover) {
-                e.gc.setForeground(bgColor);
-                e.gc.drawLine(0, bounds.height - 1, bounds.width - 2, bounds.height - 1);
             }
         }
 
@@ -282,14 +270,30 @@ public class TabbedFolderList extends ConComposite {
      */
     public class TopNavigationElement extends Canvas {
 
+        private boolean hover;
+
         /**
          * Constructor for TopNavigationElement.
          *
          * @param parent the parent Composite.
          */
-        public TopNavigationElement(Composite parent) {
+        public TopNavigationElement(@NotNull Composite parent) {
             super(parent, SWT.NO_FOCUS);
             addPaintListener(this::paint);
+            addListener(SWT.MouseVerticalWheel, TabbedFolderList.this::handleMouseWheel);
+            addMouseTrackListener(new MouseTrackAdapter() {
+                @Override
+                public void mouseEnter(@NotNull MouseEvent e) {
+                    hover = true;
+                    redraw();
+                }
+
+                @Override
+                public void mouseExit(@NotNull MouseEvent e) {
+                    hover = false;
+                    redraw();
+                }
+            });
             addMouseListener(MouseListener.mouseUpAdapter(mouseEvent -> {
                 if (isUpScrollRequired()) {
                     bottomVisibleIndex--;
@@ -309,7 +313,7 @@ public class TabbedFolderList extends ConComposite {
          *
          * @param e the paint event.
          */
-        private void paint(PaintEvent e) {
+        private void paint(@NotNull PaintEvent e) {
             Color bgColor = getWidgetBackground(false);
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
@@ -332,23 +336,7 @@ public class TabbedFolderList extends ConComposite {
             }
 
             if (isUpScrollRequired()) {
-                e.gc.setForeground(widgetDarkShadow);
-                int middle = bounds.width / 2;
-                e.gc.drawLine(middle + 1, 3, middle + 5, 7);
-                e.gc.drawLine(middle, 3, middle - 4, 7);
-                e.gc.drawLine(middle - 3, 7, middle + 4, 7);
-
-                e.gc.setForeground(bgColor);
-                e.gc.drawLine(middle, 4, middle + 1, 4);
-                e.gc.drawLine(middle - 1, 5, middle + 2, 5);
-                e.gc.drawLine(middle - 2, 6, middle + 3, 6);
-
-                e.gc.setForeground(widgetNormalShadow);
-                e.gc.drawLine(0, 0, bounds.width - 2, 0);
-                e.gc.setForeground(navigationElementShadowStroke);
-                e.gc.drawLine(0, 1, bounds.width - 2, 1);
-                e.gc.drawLine(0, bounds.height - 1, bounds.width - 2,
-                    bounds.height - 1);
+                paintNavigation(e, getClientArea(), bgColor, hover, true);
             }
         }
     }
@@ -360,14 +348,30 @@ public class TabbedFolderList extends ConComposite {
      */
     public class BottomNavigationElement extends Canvas {
 
+        private boolean hover;
+
         /**
          * Constructor for BottomNavigationElement.
          *
          * @param parent the parent Composite.
          */
-        public BottomNavigationElement(Composite parent) {
+        public BottomNavigationElement(@NotNull Composite parent) {
             super(parent, SWT.NO_FOCUS);
             addPaintListener(this::paint);
+            addListener(SWT.MouseVerticalWheel, TabbedFolderList.this::handleMouseWheel);
+            addMouseTrackListener(new MouseTrackAdapter() {
+                @Override
+                public void mouseEnter(@NotNull MouseEvent e) {
+                    hover = true;
+                    redraw();
+                }
+
+                @Override
+                public void mouseExit(@NotNull MouseEvent e) {
+                    hover = false;
+                    redraw();
+                }
+            });
             addMouseListener(MouseListener.mouseUpAdapter(mouseEvent -> {
                 if (isDownScrollRequired()) {
                     topVisibleIndex++;
@@ -387,7 +391,7 @@ public class TabbedFolderList extends ConComposite {
          *
          * @param e the paint event.
          */
-        private void paint(PaintEvent e) {
+        private void paint(@NotNull PaintEvent e) {
             Color bgColor = getWidgetBackground(true);
 
             e.gc.setForeground(widgetForeground);
@@ -404,41 +408,48 @@ public class TabbedFolderList extends ConComposite {
                     e.gc.drawPoint(bounds.width - 1, bounds.height - 1);
                 }
                 e.gc.drawLine(0, 0, bounds.width - 1, 0);
-
-                e.gc.setForeground(bottomNavigationElementShadowStroke1);
-                e.gc.drawLine(0, 1, bounds.width - 2, 1);
-                e.gc.setForeground(bottomNavigationElementShadowStroke2);
-                e.gc.drawLine(0, 2, bounds.width - 2, 2);
             } else {
                 e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
             }
 
             if (isDownScrollRequired()) {
-                e.gc.setForeground(widgetDarkShadow);
-                int middle = bounds.width / 2;
-                int bottom = bounds.height - 3;
-                e.gc.drawLine(middle + 1, bottom, middle + 5, bottom - 4);
-                e.gc.drawLine(middle, bottom, middle - 4, bottom - 4);
-                e.gc.drawLine(middle - 3, bottom - 4, middle + 4, bottom - 4);
-
-                e.gc.setForeground(bgColor);
-                e.gc.drawLine(middle, bottom - 1, middle + 1, bottom - 1);
-                e.gc.drawLine(middle - 1, bottom - 2, middle + 2, bottom - 2);
-                e.gc.drawLine(middle - 2, bottom - 3, middle + 3, bottom - 3);
-
-                e.gc.setForeground(widgetNormalShadow);
-                e.gc.drawLine(0, bottom - 7, bounds.width - 2, bottom - 7);
-                e.gc.setForeground(navigationElementShadowStroke);
-                e.gc.drawLine(0, bottom + 2, bounds.width - 2, bottom + 2);
-                e.gc.drawLine(0, bottom - 6, bounds.width - 2, bottom - 6);
+                paintNavigation(e, getClientArea(), bgColor, hover, false);
             }
         }
     }
 
+    private void paintNavigation(
+        @NotNull PaintEvent e,
+        @NotNull Rectangle bounds,
+        @NotNull Color background,
+        boolean hover,
+        boolean up
+    ) {
+        e.gc.setBackground(hover
+            ? UIUtils.getSharedTextColors().getColor(UIUtils.blend(black, background.getRGB(), 10))
+            : background);
+        e.gc.fillRectangle(bounds);
+        e.gc.setForeground(widgetNormalShadow);
+        e.gc.drawLine(bounds.width - 1, 0, bounds.width - 1, bounds.height - 1);
+        if (!up) {
+            e.gc.drawLine(0, 0, bounds.width - 1, 0);
+        }
+        int middle = bounds.width / 2;
+        int center = bounds.height / 2;
+        int direction = up ? 1 : -1;
+        e.gc.setBackground(widgetForeground);
+        e.gc.fillPolygon(new int[] {
+            middle, center - direction * 3,
+            middle - 4, center + direction * 2,
+            middle + 4, center + direction * 2
+        });
+    }
+
+    @NotNull
     private Color getWidgetBackground(boolean adapt) {
-        if (UIUtils.isInDialog(this) && UIStyles.isDarkTheme()) {
-            return getParent().getBackground();
+        if (UIUtils.isInDialog(this)) {
+            return UIStyles.isDarkTheme() ? getParent().getBackground() : getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
         } else {
             Color listBackground = UIStyles.getDefaultTextBackground();
 
@@ -473,9 +484,17 @@ public class TabbedFolderList extends ConComposite {
         initColours();
 
         themeChangeListener = event -> {
-            if (IThemeManager.CHANGE_CURRENT_THEME.equals(event.getProperty())) {
-                initColours();
-                redraw();
+            if (!themeRefreshPending) {
+                themeRefreshPending = true;
+                UIUtils.asyncExec(() -> {
+                    themeRefreshPending = false;
+                    if (!isDisposed()) {
+                        CSSUtils.applyStyles(this);
+                        initColours();
+                        Rectangle area = getParent().getClientArea();
+                        getParent().redraw(area.x, area.y, area.width, area.height, true);
+                    }
+                });
             }
         };
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
@@ -502,9 +521,15 @@ public class TabbedFolderList extends ConComposite {
         });
         this.addControlListener(ControlListener.controlResizedAdapter(e -> {
             computeTopAndBottomTab();
-            UIUtils.asyncExec(() -> { if (!isDisposed()) redraw(); });
+            UIUtils.asyncExec(() -> {
+                if (!isDisposed()) {
+                    Rectangle area = getClientArea();
+                    redraw(area.x, area.y, area.width, area.height, true);
+                }
+            });
         }));
         this.addTraverseListener(this::handleTraverse);
+        addListener(SWT.MouseVerticalWheel, this::handleMouseWheel);
         addDisposeListener(e -> {
             for (Image di : grayedImages.values()) {
                 UIUtils.dispose(di);
@@ -516,12 +541,27 @@ public class TabbedFolderList extends ConComposite {
         UIUtils.installAndUpdateMainFont(this);
     }
 
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (topNavigationElement != null) {
+            refreshColours();
+        }
+    }
+
+    private void refreshColours() {
+        initColours();
+        Rectangle clientArea = getClientArea();
+        redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, true);
+    }
+
     /**
      * Calculate the number of tabs that will fit in the tab list composite.
      */
     protected void computeTabsThatFitInComposite() {
-        tabsThatFitInComposite = Math
-            .round((float) (getSize().y - 22) / getTabHeight());
+        // Round down and reserve both navigation buttons, including at partial-tab heights.
+        tabsThatFitInComposite = (getClientArea().height - 2 * NAVIGATION_HEIGHT)
+            / (getTextDimension("").y + INDENT_LEFT);
         if (tabsThatFitInComposite <= 0) {
             tabsThatFitInComposite = 1;
         }
@@ -742,55 +782,44 @@ public class TabbedFolderList extends ConComposite {
         ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
         Color widgetBackground;
-        if (UIStyles.isDarkTheme()) {
-            // By some reason E4 sets white background in dark theme.
-            widgetBackground = UIStyles.isDarkHighContrastTheme()
-                ? UIStyles.getDefaultWidgetBackground()
-                : UIStyles.getDefaultTextBackground();
+        if (UIStyles.isDarkTheme() || UIUtils.isInDialog(this)) {
+            // E4 may set a white background in dark theme; dialogs use the SWT widget background in light theme.
+            widgetBackground = UIStyles.isDarkTheme() && !UIStyles.isDarkHighContrastTheme()
+                ? UIStyles.getDefaultTextBackground()
+                : UIStyles.isDarkTheme()
+                    ? UIStyles.getDefaultWidgetBackground()
+                    : display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
             super.setBackground(widgetBackground);
             topNavigationElement.setBackground(widgetBackground);
             bottomNavigationElement.setBackground(widgetBackground);
         } else {
             widgetBackground = getBackground();
         }
-        widgetForeground = UIStyles.getDefaultTextForeground();
-        widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
-        widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
+        widgetForeground = UIUtils.isInDialog(this) && !UIStyles.isDarkTheme()
+            ? display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND)
+            : UIStyles.getDefaultTextForeground();
+        widgetNormalShadow = sharedColors.getColor(UIUtils.blend(
+            widgetForeground.getRGB(), widgetBackground.getRGB(), UIStyles.isDarkTheme() ? 40 : 20));
 
-		/*
-		 * gradient in the default tab: start colour WIDGET_NORMAL_SHADOW 100% +
-		 * white 20% + INFO_BACKGROUND 60% end colour WIDGET_NORMAL_SHADOW 100% +
-		 * INFO_BACKGROUND 40%
-		 */
-        /*
-        defaultGradientStart = sharedColors.getColor(
-            UIUtils.blend(infoBackground,
-                UIUtils.blend(white, widgetNormalShadow.getRGB(), 20), 60)
-        );
-        defaultGradientEnd = sharedColors.getColor(UIUtils.blend(infoBackground, widgetNormalShadow.getRGB(), 40));
-        */
-        if (widgetNormalShadow.hashCode() < widgetBackground.hashCode()) {
+        if (UIStyles.isDarkTheme()) {
+            elementBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 10));
+        } else if (widgetNormalShadow.hashCode() < widgetBackground.hashCode()) {
             // Foreground darker than background - make element background darker
-            elementBackground = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 15));
+            elementBackground = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 10));
         } else {
             // Make element background lighter
             elementBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 15));
         }
 
-        navigationElementShadowStroke = sharedColors.getColor(UIUtils.blend(white, widgetNormalShadow.getRGB(), 55));
-        bottomNavigationElementShadowStroke1 = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 10));
-        bottomNavigationElementShadowStroke2 = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 5));
-
-		/*
-		 * gradient in the hover tab: start colour WIDGET_BACKGROUND 100% +
-		 * white 20% end colour WIDGET_BACKGROUND 100% + WIDGET_NORMAL_SHADOW
-		 * 10%
-		 */
-        hoverGradientStart = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 20));
-        hoverGradientEnd = sharedColors.getColor(UIUtils.blend(widgetNormalShadow.getRGB(), widgetBackground.getRGB(), 10));
+        hoverBackground = sharedColors.getColor(UIUtils.blend(
+            UIStyles.isDarkTheme() ? widgetForeground.getRGB() : widgetBackground.getRGB(),
+            UIStyles.isDarkTheme() ? widgetBackground.getRGB() : elementBackground.getRGB(),
+            UIStyles.isDarkTheme() ? 10 : 25));
 
         indentedDefaultBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 10));
-        indentedHoverBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 75));
+        indentedHoverBackground = UIStyles.isDarkTheme()
+            ? sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 75))
+            : hoverBackground;
     }
 
     @Override
@@ -812,7 +841,7 @@ public class TabbedFolderList extends ConComposite {
 			 * if only one tab will fix, reduce the size of the tab height so
 			 * that the navigation elements fit.
 			 */
-            int ret = getBounds().height - 20;
+            int ret = getClientArea().height - 2 * NAVIGATION_HEIGHT;
             return (ret > tabHeight) ? tabHeight : Math.max(ret, 5);
         }
         return tabHeight;
@@ -878,6 +907,21 @@ public class TabbedFolderList extends ConComposite {
         layoutTabs();
     }
 
+    private void handleMouseWheel(@NotNull Event event) {
+        if (elements.length <= tabsThatFitInComposite || tabsThatFitInComposite <= 0 || event.count == 0) {
+            return;
+        }
+        event.doit = false;
+        int newTopIndex = Math.max(0, Math.min(topVisibleIndex - event.count, elements.length - tabsThatFitInComposite));
+        if (newTopIndex != topVisibleIndex) {
+            topVisibleIndex = newTopIndex;
+            bottomVisibleIndex = topVisibleIndex + tabsThatFitInComposite - 1;
+            layoutTabs();
+            topNavigationElement.redraw();
+            bottomNavigationElement.redraw();
+        }
+    }
+
     /**
      * Layout the tabs.
      */
@@ -902,7 +946,7 @@ public class TabbedFolderList extends ConComposite {
             formData.left = new FormAttachment(0, 0);
             formData.right = new FormAttachment(100, 0);
             formData.top = new FormAttachment(0, 0);
-            formData.height = 10;
+            formData.height = NAVIGATION_HEIGHT;
             topNavigationElement.setLayoutData(formData);
 
 			/*
@@ -937,7 +981,7 @@ public class TabbedFolderList extends ConComposite {
             formData.right = new FormAttachment(100, 0);
             formData.top = new FormAttachment(nextElement, 0);
             formData.bottom = new FormAttachment(100, 0);
-            formData.height = 10;
+            formData.height = NAVIGATION_HEIGHT;
             bottomNavigationElement.setLayoutData(formData);
         }
 

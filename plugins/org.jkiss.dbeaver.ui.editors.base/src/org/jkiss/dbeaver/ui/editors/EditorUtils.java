@@ -22,11 +22,13 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IStorage;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Control;
@@ -142,8 +144,14 @@ public class EditorUtils {
             if (file != null) {
                 return file;
             }
-        } else if (editorInput instanceof IURIEditorInput) {
-            // Most likely it is an external file
+        } else if (editorInput instanceof IURIEditorInput uriInput) {
+            // File-store inputs can refer to workspace files, including linked resources.
+            IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uriInput.getURI());
+            for (IFile file : files) {
+                if (file.exists()) {
+                    return file;
+                }
+            }
             return null;
         }
         // Try to get path input adapter (works for external files)
@@ -235,11 +243,11 @@ public class EditorUtils {
     // Datasource <-> resource manipulations
 
     @Nullable
-    public static Object getResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName) {
+    public static String getResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName) {
         return project.getResourceProperty(project.getResourcePath(resource), propName);
     }
 
-    public static void setResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
+    public static void setResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable String value) {
         project.setResourceProperty(project.getResourcePath(resource), propName, value);
     }
 
@@ -284,17 +292,24 @@ public class EditorUtils {
                 if (localFile != null) {
                     final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
                     String dataSourceId = (String) efManager.getFileProperty(localFile, PROP_SQL_DATA_SOURCE_ID);
-                    String projectName = (String) efManager.getFileProperty(localFile, PROP_SQL_PROJECT_ID);
-                    if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectName)) {
+                    String projectId = (String) efManager.getFileProperty(localFile, PROP_SQL_PROJECT_ID);
+                    if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectId)) {
                         return null;
                     }
-                    final IProject project = DBPPlatformDesktop.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
-                    if (project == null || !project.exists()) {
-                        log.error("Can't locate project '" + projectName + "' in workspace");
+                    DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProjectById(projectId);
+                    if (projectMeta == null) {
+                        // External file metadata created by older versions contains the Eclipse project name.
+                        final IProject project = DBPPlatformDesktop.getInstance().getWorkspace().getEclipseWorkspace()
+                            .getRoot().getProject(projectId);
+                        if (project.exists()) {
+                            projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
+                        }
+                    }
+                    if (projectMeta == null) {
+                        log.error("Can't locate project '" + projectId + "' in workspace");
                         return null;
                     }
-                    DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
-                    return projectMeta == null || (!forceRegistryLoad && !projectMeta.isRegistryLoaded()) ?
+                    return !forceRegistryLoad && !projectMeta.isRegistryLoaded() ?
                         null :
                         projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
 
@@ -354,11 +369,16 @@ public class EditorUtils {
         }
         RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
-            Object dataSourceId = getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
-            if (dataSourceId != null && (forceRegistryLoad || projectMeta.isRegistryLoaded())) {
-                DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
+            String dataSourceId = getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
+            String dataSourceProjectId = getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID);
+            DBPProject dataSourceProject = CommonUtils.isEmpty(dataSourceProjectId) ?
+                projectMeta : DBWorkbench.getPlatform().getWorkspace().getProjectById(dataSourceProjectId);
+            if (dataSourceId != null && dataSourceProject != null &&
+                (forceRegistryLoad || dataSourceProject.isRegistryLoaded())) {
+                DBPDataSourceContainer dataSource = dataSourceProject.getDataSourceRegistry().getDataSource(dataSourceId);
                 if (dataSource == null) {
-                    log.debug("Datasource " + dataSourceId + " not found in project " + projectMeta.getName() + " (" + file.getFullPath().toString() + ")");
+                    log.trace("Datasource " + dataSourceId + " not found in project " + dataSourceProject.getName() +
+                        " (" + file.getFullPath() + ")");
                 }
                 return dataSource;
             } else {
@@ -431,7 +451,7 @@ public class EditorUtils {
         efManager.setFileProperty(
             localFile,
             PROP_SQL_PROJECT_ID,
-            dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getName());
+            dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getId());
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
         efManager.setFileProperty(
             localFile,
@@ -455,16 +475,28 @@ public class EditorUtils {
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
 
         String resourcePath = projectMeta.getResourcePath(file);
-        projectMeta.setResourceProperty(resourcePath, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceId);
+        Map<String, String> oldProperties = projectMeta.getResourceProperties(resourcePath);
+        Map<String, String> newProperties = oldProperties == null ?
+            new LinkedHashMap<>() : new LinkedHashMap<>(oldProperties);
+        if (dataSourceContainer == null) {
+            newProperties.remove(DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID);
+            newProperties.remove(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
+        } else {
+            newProperties.put(DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID, dataSourceContainer.getProject().getId());
+            newProperties.put(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceId);
+        }
         if (!isDefaultContextSettings(context)) {
             String defaultCatalogName = getDefaultCatalogName(context);
             if (!CommonUtils.isEmpty(defaultCatalogName)) {
-                projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_CATALOG, defaultCatalogName);
+                newProperties.put(PROP_CONTEXT_DEFAULT_CATALOG, defaultCatalogName);
             }
             String defaultSchemaName = getDefaultSchemaName(context);
             if (!CommonUtils.isEmpty(defaultSchemaName)) {
-                projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_SCHEMA, defaultSchemaName);
+                newProperties.put(PROP_CONTEXT_DEFAULT_SCHEMA, defaultSchemaName);
             }
+        }
+        if (!newProperties.equals(oldProperties)) {
+            projectMeta.setResourceProperties(resourcePath, newProperties);
         }
     }
 
@@ -703,7 +735,9 @@ public class EditorUtils {
                 filesByHandler.computeIfAbsent(handler, d -> new ArrayList<>()).add(path);
                 openedFiles.add(path);
             } else {
-                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
+                DBWorkbench.getPlatformUI().showError(
+                    EditorsMessages.editor_open_file_title,
+                    NLS.bind(EditorsMessages.editor_open_file_not_found, path));
             }
         }
         return filesByHandler;
@@ -732,7 +766,9 @@ public class EditorUtils {
                     filesByExtension.computeIfAbsent(extension, d -> new ArrayList<>()).add(path);
                 }
             } else {
-                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
+                DBWorkbench.getPlatformUI().showError(
+                    EditorsMessages.editor_open_file_title,
+                    NLS.bind(EditorsMessages.editor_open_file_not_found, path));
             }
         }
         return filesByExtension;
@@ -777,7 +813,9 @@ public class EditorUtils {
                     fileOpenHandler.openFiles(pathList, currentContainer, selectedAction);
                 }
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
+                DBWorkbench.getPlatformUI().showError(
+                    EditorsMessages.editor_open_file_error_title,
+                    NLS.bind(EditorsMessages.editor_open_file_error_message, pathList), e);
             }
         }
         return true;

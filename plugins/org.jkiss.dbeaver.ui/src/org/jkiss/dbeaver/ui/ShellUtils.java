@@ -23,12 +23,16 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
@@ -36,13 +40,43 @@ import java.util.StringTokenizer;
  */
 public final class ShellUtils {
     private static final Log log = Log.getLog(ShellUtils.class);
+    private static final String TEST_BROWSER_EXECUTABLE_PROPERTY = "dbeaver.test.browser.executable";
+    private static final String TEST_BROWSER_ARGUMENTS_PROPERTY = "dbeaver.test.browser.arguments";
 
     private ShellUtils() {
         // prevent constructing utility class
     }
 
     public static boolean launchProgram(@NotNull String path) {
+        String browserExecutable = System.getProperty(TEST_BROWSER_EXECUTABLE_PROPERTY);
+        if (isWebUrl(path) && browserExecutable != null && !browserExecutable.isBlank()) {
+            return launchTestBrowser(browserExecutable, path);
+        }
         return Program.launch(path);
+    }
+
+    private static boolean isWebUrl(@NotNull String path) {
+        return path.regionMatches(true, 0, "http://", 0, 7)
+            || path.regionMatches(true, 0, "https://", 0, 8);
+    }
+
+    private static boolean launchTestBrowser(@NotNull String browserExecutable, @NotNull String url) {
+        List<String> command = new ArrayList<>();
+        command.add(browserExecutable);
+
+        String browserArguments = System.getProperty(TEST_BROWSER_ARGUMENTS_PROPERTY);
+        if (browserArguments != null && !browserArguments.isBlank()) {
+            Collections.addAll(command, browserArguments.split("\\|"));
+        }
+        command.add(url);
+
+        try {
+            new ProcessBuilder(command).start();
+            return true;
+        } catch (IOException e) {
+            log.error("Error launching test browser", e);
+            return false;
+        }
     }
 
     /**
@@ -69,7 +103,7 @@ public final class ShellUtils {
             }
         } catch (IOException | InterruptedException e) {
             DBWorkbench.getPlatformUI()
-                .showError("Unable to open external program", "Unable to open external program in a platform-specific way", e);
+                .showError(UIMessages.external_program_open_error_title, UIMessages.external_program_open_error_message, e);
             log.debug("Unable to open external program in a platform-specific way: " + e.getMessage());
         }
 

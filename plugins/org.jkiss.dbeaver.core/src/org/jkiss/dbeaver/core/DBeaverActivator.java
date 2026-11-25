@@ -17,15 +17,14 @@
 package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.awt.injector.ProxyInjector;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.AWTUtils;
-import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.browser.BrowsePeerMethods;
 import org.jkiss.dbeaver.ui.preferences.UIPreferences;
@@ -43,20 +42,25 @@ import java.util.ResourceBundle;
 public class DBeaverActivator extends AbstractUIPlugin {
 
     // The shared instance
+    @Nullable
     private static DBeaverActivator instance;
-    private ResourceBundle pluginResourceBundle, coreResourceBundle;
+    @Nullable
+    private ResourceBundle pluginResourceBundle;
+    @Nullable
     private PrintStream debugWriter;
+    @Nullable
     private DBPPreferenceStore preferences;
 
     public DBeaverActivator() {
     }
 
+    @Nullable
     public static DBeaverActivator getInstance() {
         return instance;
     }
 
     @Override
-    public void start(BundleContext context)
+    public void start(@NotNull BundleContext context)
         throws Exception {
         super.start(context);
 
@@ -66,13 +70,9 @@ public class DBeaverActivator extends AbstractUIPlugin {
         ModelPreferences.setMainBundle(bundle);
         preferences = new BundlePreferenceStore(bundle);
 
-        DBRFeatureRegistry.getInstance().registerFeatures(CoreFeatures.class);
-        DBRFeatureRegistry.getInstance().registerFeatures(ConnectionFeatures.class);
         try {
-            coreResourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
             pluginResourceBundle = Platform.getResourceBundle(bundle);
-        } catch (MissingResourceException x) {
-            coreResourceBundle = null;
+        } catch (MissingResourceException ignored) {
         }
         try {
             injectProxyPeer();
@@ -105,7 +105,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
     }
 
     @Override
-    public void stop(BundleContext context)
+    public void stop(@NotNull BundleContext context)
         throws Exception {
         this.shutdownUI();
         this.shutdownCore();
@@ -127,19 +127,12 @@ public class DBeaverActivator extends AbstractUIPlugin {
         }
     }
 
-    /**
-     * Returns the plugin's resource bundle,
-     *
-     * @return core resource bundle
-     */
-    public static ResourceBundle getCoreResourceBundle() {
-        return getInstance().coreResourceBundle;
-    }
-
+    @Nullable
     public static ResourceBundle getPluginResourceBundle() {
         return getInstance().pluginResourceBundle;
     }
 
+    @Nullable
     public DBPPreferenceStore getPreferences() {
         return preferences;
     }
@@ -156,7 +149,4 @@ public class DBeaverActivator extends AbstractUIPlugin {
         }
     }
 
-    public static ImageDescriptor getImageDescriptor(String path) {
-        return imageDescriptorFromPlugin(DesktopPlatform.PLUGIN_ID, path);
-    }
 }

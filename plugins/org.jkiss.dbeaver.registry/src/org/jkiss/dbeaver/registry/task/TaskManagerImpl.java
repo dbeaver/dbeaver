@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -292,9 +292,9 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @Override
     public void cancelRunningTasks() {
-        final Job[] tasks = runningTasks.toArray(Job[]::new);
-        for (Job task : tasks) {
-            task.cancel();
+        final TaskRunJob[] tasks = runningTasks.toArray(TaskRunJob[]::new);
+        for (TaskRunJob task : tasks) {
+            task.cancelExecution();
         }
     }
 
@@ -314,6 +314,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBTTaskRunStatus runTask(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob job = createJob((TaskImpl) task, listener);
+        log.debug("Submitting " + job.getExecutionDescription() + " for direct execution");
         if (serviceJob == null) {
             serviceJob = new ServiceJob();
             serviceJob.schedule();
@@ -337,7 +338,17 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob runJob = createJob((TaskImpl) task, listener);
-        runJob.schedule();
+        log.debug("Submitting " + runJob.getExecutionDescription() + " for background execution");
+        // Include queued jobs in cancellation and completion checks, not just jobs that have started.
+        synchronized (runningTasks) {
+            runningTasks.add(runJob);
+            try {
+                runJob.schedule();
+            } catch (RuntimeException e) {
+                runningTasks.remove(runJob);
+                throw e;
+            }
+        }
         if (serviceJob == null) {
             serviceJob = new ServiceJob();
             serviceJob.schedule();
@@ -349,11 +360,6 @@ public class TaskManagerImpl implements DBTTaskManager {
     private TaskRunJob createJob(@NotNull TaskImpl task, @NotNull DBTTaskExecutionListener listener) {
         TaskRunJob runJob = new TaskRunJob(task, Locale.getDefault(), listener);
         runJob.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void aboutToRun(IJobChangeEvent event) {
-                runningTasks.add((TaskRunJob) event.getJob());
-            }
-
             @Override
             public void done(IJobChangeEvent event) {
                 runningTasks.remove((TaskRunJob) event.getJob());

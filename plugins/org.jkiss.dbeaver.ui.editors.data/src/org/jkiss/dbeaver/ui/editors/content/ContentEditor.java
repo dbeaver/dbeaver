@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.content;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
@@ -81,7 +83,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException)e).getTargetException();
             }
-            DBWorkbench.getPlatformUI().showError("Cannot open content editor", null, e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_open_content_editor, null, e);
             return null;
         }
         try {
@@ -255,8 +257,8 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                 ContentEditor.this.dirty = true;
 
                 ContentEditorInput editorInput = getEditorInput();
-                editorInput.updateContentFromFile(new DefaultProgressMonitor(monitor), editorInput.getValue());
-                editorInput.getValueController().updateValue(editorInput.getValue(), true);
+                Object editedValue = editorInput.extractContentFromFile(new DefaultProgressMonitor(monitor));
+                editorInput.getValueController().updateValue(editedValue, true);
 
 /*
                 // Activate owner editor and focus on cell corresponding to this content editor
@@ -277,8 +279,8 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                 UIUtils.asyncExec(this::closeValueEditor);
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError(
-                        "Can't save content",
-                    "Can't save content to database",
+                    ResultSetMessages.model_jdbc_could_not_save_content,
+                    ResultSetMessages.error_save_content_database,
                     e);
             }
         });
@@ -303,8 +305,8 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         }
         catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
-                    "Can't save content",
-                    "Can't save content to file '" + saveFile.toAbsolutePath() + "'",
+                    ResultSetMessages.model_jdbc_could_not_save_content,
+                    NLS.bind(ResultSetMessages.error_save_content_file, saveFile.toAbsolutePath()),
                     e.getTargetException());
         }
         catch (InterruptedException e) {
@@ -505,15 +507,16 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public Object extractEditorValue() throws DBException
     {
+        Object[] editedValue = {getEditorInput().getValue()};
         UIUtils.runInUI(monitor -> {
             try {
-                getEditorInput().updateContentFromFile(monitor, getEditorInput().getValue());
+                editedValue[0] = getEditorInput().extractContentFromFile(monitor);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
         });
 
-        return getEditorInput().getValue();
+        return editedValue[0];
     }
 
     @Override
@@ -526,7 +529,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
             UIUtils.runInProgressService(initializer);
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Cannot refresh content editor", null, e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_refresh_content_editor, null, e);
         } catch (InterruptedException e) {
             // ignore
         }

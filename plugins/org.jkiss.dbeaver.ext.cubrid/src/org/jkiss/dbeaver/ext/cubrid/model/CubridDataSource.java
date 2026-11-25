@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
+import org.jkiss.dbeaver.ext.cubrid.internal.CubridMessages;
 import org.jkiss.dbeaver.ext.cubrid.model.meta.CubridMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
@@ -296,8 +297,8 @@ public class CubridDataSource extends GenericDataSource
             }
         } else {
             DBWorkbench.getPlatformUI().showMessageBox(
-                "Connected CUBRID Info",
-                "The connected CUBRID is an EOL version. Limited features are available.",
+                CubridMessages.connection_eol_title,
+                CubridMessages.connection_eol_message,
                 false);
         }
         try {
@@ -317,10 +318,11 @@ public class CubridDataSource extends GenericDataSource
     }
 
     @Override
-    protected void initializeContextState(DBRProgressMonitor monitor,
-            JDBCExecutionContext context,
-            JDBCExecutionContext initFrom)
-            throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         super.initializeContextState(monitor, context, initFrom);
 
         if (outputReader == null && checkSupportDbmsOutput(monitor, context)) {

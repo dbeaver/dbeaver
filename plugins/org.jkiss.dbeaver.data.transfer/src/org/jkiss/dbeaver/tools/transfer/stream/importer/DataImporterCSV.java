@@ -263,7 +263,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
                                 }
                                 if (trimWhitespaces) {
                                     for (int i = 0; i < line.length; i++) {
-                                        line[i] = line[i].trim();
+                                        if (line[i] != null) {
+                                            line[i] = line[i].trim();
+                                        }
                                     }
                                 }
                                 if (emptyStringNull) {

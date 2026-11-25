@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,10 @@ import java.util.stream.StreamSupport;
 
 public class LSMInspections {
 
-    private static final Pattern anyWordPattern = Pattern.compile("^\\w+$");
-    private static final Pattern anyWordHeadPattern = Pattern.compile("^\\w+");
+    private static final Pattern anyWordPattern = Pattern.compile("^[@\\w]+$");
+    private static final Pattern anyWordHeadPattern = Pattern.compile("^[@\\w]+");
+
+    private static final String VARIABLE_NAME_PREFIX = "@";
 
     public static boolean matchesAnyWord(String str) {
         return anyWordPattern.matcher(str).matches();
@@ -246,7 +248,10 @@ public class LSMInspections {
                     if (nodeRange.b + 1 >= position) {
                         // containing term found
                         STMTreeTermNode prevNode = index <= 0 ? null : this.allNonErrorTerms.get(index - 1);
-                        if (prevNode != null && isAnySomething(node) && !isAnySomething(prevNode)) {
+                        if (nodeRange.b + 1 == position && KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType())) {
+                            // The caret is after the separator, not on it: predict the next operand or list item.
+                            initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
+                        } else if (prevNode != null && isAnySomething(node) && !isAnySomething(prevNode)) {
                             node = prevNode;
                             initialState =  atn.states.get(node.getAtnState()).getTransitions()[0].target;
                         } else if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType()) || (nodeRange.a == position && index > 0)) {
@@ -474,10 +479,10 @@ public class LSMInspections {
                 }
                 for (int i = index; i >= 0; i--) {
                     TermItem item = allTerms.get(i);
-                    if (item.kind == TermNodeKind.IDENTIFIER) {
+                    if (item.kind == TermNodeKind.IDENTIFIER || item.term().getTextContent().startsWith(VARIABLE_NAME_PREFIX)) {
                         nameNodes.addFirst(item.term);
                         i--;
-                        if (i < 0 || allTerms.get(i).kind == TermNodeKind.PERIOD) {
+                        if (i < 0 || allTerms.get(i).kind != TermNodeKind.PERIOD) {
                             break; // not followed by an identifier separator part
                         }
                     } else {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,6 +187,8 @@ public class DBVModel extends DBVContainer {
     }
 
     public void copyFrom(DBVModel model) {
+        // Discard the old foreign keys before replacing the container tree.
+        super.dispose();
         super.copyFrom(model, this);
     }
 
@@ -249,9 +251,8 @@ public class DBVModel extends DBVContainer {
     }
 
     public void resetData() {
+        super.dispose();
         this.clearProperties();
-        this.clearEntities();
-        this.clearContainers();
     }
 
     public static class ModelChangeListener implements DBPEventListener {

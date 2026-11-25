@@ -76,7 +76,6 @@ public class UIIcon {
     public static final DBIcon ZOOM = new DBIcon("zoom", "misc/zoom.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM_IN = new DBIcon("zoom_in", "misc/zoom_in.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM_OUT = new DBIcon("zoom_out", "misc/zoom_out.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon ROTATE = new DBIcon("rotate", "misc/rotate.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ROTATE_LEFT = new DBIcon("rotate_left", "misc/rotate_left.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ROTATE_RIGHT = new DBIcon("rotate_right", "misc/rotate_right.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FIT_WINDOW = new DBIcon("fit_window", "misc/fit_window.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -91,11 +90,19 @@ public class UIIcon {
     public static final DBIcon ARROW_TOP = new DBIcon("arrow_top", "misc/arrow_top.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_UP = new DBIcon("arrow_up", "misc/arrow_up.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_DOWN = new DBIcon("arrow_down", "misc/arrow_down.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DOWNLOAD = new DBIcon("download", "misc/download.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_BOTTOM = new DBIcon("arrow_bottom", "misc/arrow_bottom.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_LEFT = new DBIcon("arrow_left", "misc/arrow_left.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_LEFT_ALL = new DBIcon("arrow_left_all", "misc/arrow_left_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_RIGHT = new DBIcon("arrow_right", "misc/arrow_right.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_RIGHT_ALL = new DBIcon("arrow_right_all", "misc/arrow_right_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EDIT_LOCATION_PREVIOUS = new DBIcon(
+        "edit_location_previous", "misc/edit_location_previous.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EDIT_LOCATION_NEXT = new DBIcon(
+        "edit_location_next", "misc/edit_location_next.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon BLOCK_SELECTION = new DBIcon("block_selection", "misc/block_selection.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SOFTWARE_UPDATE = new DBIcon("software_update", "misc/software_update.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SOFTWARE_INSTALL = new DBIcon("software_install", "misc/software_install.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_RESET = new DBIcon("arrow_reset", "misc/arrow_reset.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT_INCREASE = new DBIcon("sort_increase", "misc/sort_increase.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT_DECREASE = new DBIcon("sort_decrease", "misc/sort_decrease.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -187,6 +194,8 @@ public class UIIcon {
     public static final DBIcon OBJ_REFRESH = new DBIcon("object_refresh", "misc/object_refresh.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OBJ_LAYOUT = new DBIcon("layout", "misc/layout.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon GROUP = new DBIcon("group", "misc/group.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon UNGROUP = new DBIcon("ungroup", "misc/ungroup.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon GROUP_BY_ATTR = new DBIcon("group_attr", "misc/group_attributes.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon TREE_EXPAND = new DBIcon("expand", "misc/expand.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -224,6 +233,10 @@ public class UIIcon {
         "sql_tab_per_result_true", "sql/sql_multiple_results_per_tab_false.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_MULTIPLE_RESULTS_PER_TAB_TRUE = new DBIcon(
         "sql_tab_per_result_false", "sql/sql_multiple_results_per_tab_true.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_AUX_TABS_BOTTOM_BESIDE_CODE = new DBIcon("sql/aux_tabs_bottom_beside_code.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_AUX_TABS_BOTTOM_WITH_RESULTS = new DBIcon("sql/aux_tabs_bottom_with_results.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_AUX_TABS_RIGHT_BESIDE_CODE = new DBIcon("sql/aux_tabs_right_beside_code.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_AUX_TABS_RIGHT_WITH_RESULTS = new DBIcon("sql/aux_tabs_right_with_results.svg"); //$NON-NLS-1$
     public static final DBIcon SQL_ANALYSE = new DBIcon("sql_analyse", "sql/sql_analyse.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_EXPLAIN_PLAN = new DBIcon("sql_explain", "sql/sql_plan.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_VALIDATE = new DBIcon("sql_validate", "sql/sql_validate.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -279,6 +292,17 @@ public class UIIcon {
     public static final DBIcon SIMPLE_MODE = new DBIcon("misc/simple_mode.svg");
     public static final DBIcon CUSTOM_MODE = new DBIcon("misc/custom_mode.svg");
     public static final DBIcon ADVANCED_MODE = new DBIcon("misc/advanced_mode.svg");
+
+    public static final DBIcon SHARED_REMOVE = new DBIcon("eclipse/elcl16/remove.svg");
+    public static final DBIcon SHARED_REMOVE_ALL = new DBIcon("eclipse/elcl16/removeall.svg");
+    public static final DBIcon SHARED_STOP = new DBIcon("eclipse/elcl16/stop.svg");
+    public static final DBIcon SHARED_VIEW_MENU = new DBIcon("eclipse/elcl16/view_menu.svg");
+    public static final DBIcon SHARED_COPY = new DBIcon("eclipse/etool16/copy_edit.svg");
+    public static final DBIcon SHARED_PASTE = new DBIcon("eclipse/etool16/paste_edit.svg");
+    public static final DBIcon SHARED_DEFAULT_PERSPECTIVE = new DBIcon("eclipse/eview16/default_persp.svg");
+    public static final DBIcon SHARED_DEFAULT_VIEW = new DBIcon("eclipse/eview16/defaultview_misc.svg");
+    public static final DBIcon SHARED_ERROR = new DBIcon("eclipse/obj16/error_tsk.svg");
+    public static final DBIcon SHARED_FILE = new DBIcon("eclipse/obj16/file_obj.svg");
 
     static  {
         DBIcon.loadIcons(UIIcon.class);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,8 @@ public class SQLGeneratorMerge extends SQLGeneratorTable {
                 continue;
             }
             if (hasAttr) sql.append(", ");
-            sql.append("tgt.").append(DBUtils.getQuotedIdentifier(object.getDataSource(), attr.getName()))
+            // SET targets are always the merge target; keep them unqualified (SQL standard / PostgreSQL).
+            sql.append(DBUtils.getQuotedIdentifier(object.getDataSource(), attr.getName()))
                 .append("=src.").append(DBUtils.getQuotedIdentifier(object.getDataSource(), attr.getName()));
             hasAttr = true;
         }

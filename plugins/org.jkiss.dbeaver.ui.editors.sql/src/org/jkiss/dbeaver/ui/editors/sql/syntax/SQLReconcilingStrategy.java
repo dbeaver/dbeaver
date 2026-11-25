@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.sql.SQLBatchDelimiterElement;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -56,6 +57,34 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     private final NavigableSet<SQLScriptElementImpl> cache = new TreeSet<>();
 
+    /**
+     * Receives incremental script reconciliation results.
+     */
+    @FunctionalInterface
+    public interface ReconciliationListener {
+        /**
+         * Reports elements observed during reconciliation. Absence is authoritative only within the invalidated range,
+         * where previously tracked elements must be removed. Supplied elements are authoritative for their own coverage
+         * and may include unchanged parsing context outside that range.
+         * <p>
+         * The supplied elements are owned by the strategy and must not be modified or retained.
+         *
+         * @param invalidatedOffset         start of the range where previously tracked elements must be invalidated
+         * @param invalidatedLength         length of the invalidated range
+         * @param observedElements          elements observed by the reconciliation pass
+         * @param documentModificationStamp document modification stamp associated with the result
+         */
+        void onReconciliation(
+            int invalidatedOffset,
+            int invalidatedLength,
+            @NotNull List<SQLScriptElement> observedElements,
+            long documentModificationStamp
+        );
+    }
+
+    private final Set<ReconciliationListener> reconciliationListeners =
+        Collections.synchronizedSet(new HashSet<>());
+
     private final SQLEditorBase editor;
 
     private IDocument document;
@@ -68,6 +97,26 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     public SQLReconcilingStrategy(SQLEditorBase editor) {
         this.editor = editor;
+    }
+
+    public void addReconciliationListener(@NotNull ReconciliationListener listener) {
+        this.reconciliationListeners.add(listener);
+    }
+
+    public void removeReconciliationListener(@NotNull ReconciliationListener listener) {
+        this.reconciliationListeners.remove(listener);
+    }
+
+    private void notifyReconciliationListeners(
+        int offset,
+        int length,
+        @NotNull List<SQLScriptElement> elements,
+        long documentModificationStamp
+    ) {
+        ReconciliationListener[] listeners = this.reconciliationListeners.toArray(ReconciliationListener[]::new);
+        for (ReconciliationListener listener : listeners) {
+            listener.onReconciliation(offset, length, elements, documentModificationStamp);
+        }
     }
 
     protected IAnnotationModel getAnnotationModel() {
@@ -199,7 +248,11 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         if (model == null) {
             return;
         }
+        long documentModificationStamp = this.document instanceof IDocumentExtension4 documentExtension
+            ? documentExtension.getModificationStamp()
+            : IDocumentExtension4.UNKNOWN_MODIFICATION_STAMP;
 
+        final int invalidatedRegionOffset = damagedRegionOffset;
         SQLScriptElementImpl leftBound = cache.lower(new SQLScriptElementImpl(damagedRegionOffset, damagedRegionLength));
         if (leftBound != null) {
             leftBound = cache.lower(leftBound);
@@ -231,7 +284,14 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 rightBound = null;
             }
         }
-
+        final int notificationRegionEnd = rightBound == null ? document.getLength() : rightBound.getOffset() + rightBound.getLength();
+        final int invalidatedRegionLength = notificationRegionEnd - invalidatedRegionOffset;
+        this.notifyReconciliationListeners(
+            invalidatedRegionOffset,
+            invalidatedRegionLength,
+            parsedQueries,
+            documentModificationStamp
+        );
         Collection<SQLScriptElementImpl> cachedQueries;
         if (leftBound == null && rightBound == null) {
             cachedQueries = Collections.unmodifiableNavigableSet(cache);
@@ -270,7 +330,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         cache.addAll(additions.values());
 
         if (isSpellingEnabled() && spellingContext != null) {
-            IRegion[] regions = new IRegion[]{
+            IRegion[] regions = new IRegion[] {
                 new Region(damagedRegionOffset, damagedRegionLength)
             };
             ISpellingProblemCollector spellingProblemCollector = new SpellingProblemCollector(
@@ -282,10 +342,20 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     @Nullable
     private List<SQLScriptElement> extractQueries(int offset, int length) {
-        return editor.extractScriptQueries(offset, length, false, true, false);
+        return editor.extractScriptQueries(
+            offset,
+            length,
+            false,
+            true,
+            false,
+            true
+        );
     }
 
     private boolean deservesFolding(SQLScriptElement element) {
+        if (element instanceof SQLBatchDelimiterElement) {
+            return false;
+        }
         int numberOfLines = getNumberOfLines(element);
         if (numberOfLines == 1) {
             return false;
@@ -455,7 +525,8 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         public void accept(SpellingProblem problem) {
             addedAnnotations.put(
                 new SpellingAnnotation(problem),
-                new Position(problem.getOffset(), problem.getLength()));
+                new Position(problem.getOffset(), problem.getLength())
+            );
         }
 
         @Override

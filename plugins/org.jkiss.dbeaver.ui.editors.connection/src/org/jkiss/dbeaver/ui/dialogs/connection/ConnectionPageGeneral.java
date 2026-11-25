@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
@@ -48,7 +49,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.UIEditorsWorkbenchInitializer;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -56,7 +57,9 @@ import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.ConnectionFolderSelector;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
+import org.jkiss.dbeaver.ui.preferences.ConnectionTypePropertyElement;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -90,13 +93,15 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private DataSourceDescriptor dataSourceDescriptor;
     private Text connectionNameText;
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
-    private Combo navigatorSettingsCombo;
+    private CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo;
     private ConnectionFolderSelector folderSelector;
     private DBPDataSourceFolder curDataSourceFolder;
     private Text descriptionText;
     private Button showVirtualModelCheck;
 
     private boolean connectionNameChanged = false;
+    private boolean updatingConnectionName;
+    private String editedConnectionName;
     private boolean activated = false;
 
     private Button readOnlyConnection;
@@ -107,7 +112,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private final List<FilterInfo> filters = new ArrayList<>();
     private Composite filtersGroup;
 
-    ConnectionPageGeneral(ConnectionWizard wizard) {
+    ConnectionPageGeneral(@NotNull ConnectionWizard wizard) {
         super(PAGE_NAME);
         this.wizard = wizard;
         setTitle(UIConnectionMessages.dialog_connection_edit_wizard_general);
@@ -134,7 +139,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     @Override
-    public DBNBrowseSettings getNavigatorSettings() {
+    public @NotNull DBNBrowseSettings getNavigatorSettings() {
         return navigatorSettings;
     }
 
@@ -155,21 +160,32 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     @Override
     public void activatePage() {
         if (connectionNameText != null) {
-            ConnectionPageSettings settings = wizard.getPageSettings();
+            updatingConnectionName = true;
+            try {
+                String override = wizard.getConnectionNameOverride();
+                if (override != null) {
+                    connectionNameText.setText(override);
+                    connectionNameChanged = true;
+                } else {
+                    ConnectionPageSettings settings = wizard.getPageSettings();
 
-            if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
-                connectionNameText.setText(dataSourceDescriptor.getName());
-            } else {
-                if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
-                    String newName = generateConnectionName(settings,
-                        DBWorkbench.getPlatform()
-                            .getPreferenceStore()
-                            .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
-                    if (!newName.isEmpty()) {
-                        connectionNameText.setText(newName);
+                    if (dataSourceDescriptor != null && !wizard.isNew() && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
+                        connectionNameText.setText(dataSourceDescriptor.getName());
+                    } else {
+                        if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
+                            String newName = generateConnectionName(settings,
+                                DBWorkbench.getPlatform()
+                                    .getPreferenceStore()
+                                    .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+                            if (!newName.isEmpty()) {
+                                connectionNameText.setText(newName);
+                            }
+                            connectionNameChanged = false;
+                        }
                     }
-                    connectionNameChanged = false;
                 }
+            } finally {
+                updatingConnectionName = false;
             }
         }
         folderSelector.loadConnectionFolders(getWizard().getSelectedProject());
@@ -179,7 +195,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 setConnectionType(connectionTypeCombo, conConfig.getConnectionType());
 
-                folderSelector.setFolder(dataSourceDescriptor.getFolder());
+                folderSelector.setFolder(dataSourceDescriptor.getFolder() == null && wizard.isNew()
+                    ? curDataSourceFolder : dataSourceDescriptor.getFolder());
 
                 if (dataSourceDescriptor.getDescription() != null) {
                     descriptionText.setText(dataSourceDescriptor.getDescription());
@@ -215,12 +232,15 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         filtersGroup.layout();
     }
 
-    public static void updateNavigatorSettingsPreset(Combo navigatorSettingsCombo, DBNBrowseSettings navigatorSettings) {
+    public static void updateNavigatorSettingsPreset(
+        @NotNull CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo,
+        @NotNull DBNBrowseSettings navigatorSettings
+    ) {
         // Find first preset that matches current connection settings
         boolean isPreset = false;
         for (DataSourceNavigatorSettings.Preset nsEntry : DataSourceNavigatorSettings.PRESETS.values()) {
             if (navigatorSettings.equals(nsEntry.getSettings())) {
-                navigatorSettingsCombo.setText(nsEntry.getName());
+                navigatorSettingsCombo.select(nsEntry);
                 isPreset = true;
                 break;
             }
@@ -230,7 +250,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
     }
 
-    private void enableFilter(FilterInfo filterInfo, boolean enable) {
+    private void enableFilter(@NotNull FilterInfo filterInfo, boolean enable) {
         filterInfo.link.setEnabled(enable);
         if (enable) {
             filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
@@ -244,7 +264,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 filterInfo.link.setFont(getFont());
             }
         } else {
-            //filterInfo.link.setText(NLS.bind(UIConnectionMessages.dialog_connection_wizard_final_filter_link_not_supported_text, filterInfo.title));
             filterInfo.link.setToolTipText(NLS.bind(
                 UIConnectionMessages.dialog_connection_wizard_final_filter_link_not_supported_tooltip,
                 filterInfo.title,
@@ -253,7 +272,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
     }
 
-    private String generateConnectionName(ConnectionPageSettings settings, String usedName) {
+    private @NotNull String generateConnectionName(
+        @Nullable ConnectionPageSettings settings,
+        @NotNull String usedName
+    ) {
         String newName;
         String resultName = usedName;
         if (settings != null) {
@@ -262,7 +284,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             }
             DataSourceDescriptor dataSource = settings.getActiveDataSource();
             DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-            final ConnectionNameResolver resolver = new ConnectionNameResolver(dataSource, connectionInfo, dataSourceDescriptor);
+            final ConnectionNameResolver resolver = new ConnectionNameResolver(dataSource, connectionInfo, null);
             newName = GeneralUtils.replaceVariables(resultName, resolver);
             newName = DataSourceUtils.generateUniqueDataSourceName(settings.getDataSourceRegistry(), newName, 1);
         } else {
@@ -271,8 +293,23 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         return newName;
     }
 
+    void setConnectionName(@NotNull String name) {
+        if (connectionNameText != null && !connectionNameText.isDisposed() && !connectionNameText.getText().equals(name)) {
+            updatingConnectionName = true;
+            try {
+                connectionNameText.setText(name);
+            } finally {
+                updatingConnectionName = false;
+            }
+        }
+        connectionNameChanged = true;
+    }
+
     @NotNull
     private DataSourceDescriptor getActiveDataSource() {
+        if (dataSourceDescriptor != null) {
+            return dataSourceDescriptor;
+        }
         ConnectionPageSettings pageSettings = getWizard().getPageSettings();
         return pageSettings == null ? wizard.getActiveDataSource() : pageSettings.getActiveDataSource();
     }
@@ -285,9 +322,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         if (navigatorSettings == null) {
-            DBNBrowseSettings settings = getWizard().getSelectedNavigatorSettings();
+            DBNBrowseSettings settings = dataSourceDescriptor == null
+                ? getWizard().getSelectedNavigatorSettings() : dataSourceDescriptor.getNavigatorSettings();
             navigatorSettings = new DataSourceNavigatorSettings(settings.isUserSettings() ? settings.getOriginalSettings() : settings);
         }
 
@@ -302,18 +340,44 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 GridData.FILL_HORIZONTAL
             );
 
+            UIUtils.createControlLabel(miscGroup, UIConnectionMessages.dialog_connection_wizard_final_label_connection_name);
+            Composite nameGroup = UIUtils.createComposite(miscGroup, 2);
+            nameGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
-            connectionNameText = UIUtils.createLabelText(
-                miscGroup,
-                UIConnectionMessages.dialog_connection_wizard_final_label_connection_name,
-                CommonUtils.toString(connectionName)
-            );
+            connectionNameText = new Text(nameGroup, SWT.BORDER);
+            connectionNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            connectionNameText.setText(CommonUtils.toString(connectionName));
             UIUtils.setDefaultTextControlWidthHint(connectionNameText);
+            UIUtils.createPushButton(nameGroup, null,
+                UIConnectionMessages.dialog_connection_name_pattern_settings, UIIcon.CONFIGURATION,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                    UIUtils.showPreferencesFor(getShell(), null, UIEditorsWorkbenchInitializer.MAIN_PAGE);
+                    if (wizard.isNew() && !connectionNameChanged && wizard.getConnectionNameOverride() == null) {
+                        updatingConnectionName = true;
+                        try {
+                            String pattern = DBWorkbench.getPlatform().getPreferenceStore()
+                                .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+                            connectionNameText.setText(generateConnectionName(wizard.getPageSettings(), pattern));
+                        } finally {
+                            updatingConnectionName = false;
+                        }
+                    }
+                    ConnectionPageSettings settings = wizard.getPageSettings();
+                    if (settings != null) {
+                        settings.refreshConnectionName();
+                    }
+                }));
 
             connectionNameText.addModifyListener(e -> {
-                if (dataSourceDescriptor == null || !connectionNameText.getText().equals(connectionName)) {
+                if (!updatingConnectionName && (dataSourceDescriptor == null || !connectionNameText.getText().equals(connectionName))) {
                     connectionNameChanged = true;
                     getContainer().updateButtons();
+                }
+                if (!updatingConnectionName) {
+                    editedConnectionName = connectionNameText.getText();
+                    if (Arrays.asList(wizard.getPages()).contains(this)) {
+                        wizard.setConnectionNameOverride(editedConnectionName);
+                    }
                 }
             });
             ContentAssistUtils.installContentProposal(
@@ -339,7 +403,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 }));
 
                 Composite ctGroup = connectionTypeCombo.getParent();
-                ((GridLayout)ctGroup.getLayout()).numColumns++;
                 UIUtils.createPushButton(
                     ctGroup,
                     null,
@@ -350,7 +413,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                         DataSourceDescriptor dataSource = getActiveDataSource();
                         UIUtils.showPreferencesFor(
                             ctGroup.getShell(),
-                            dataSource.getConnectionConfiguration().getConnectionType(),
+                            new ConnectionTypePropertyElement(
+                                dataSource.getConnectionConfiguration().getConnectionType(),
+                                connectionNameText.getText()
+                            ),
                             PrefPageConnectionTypes.PAGE_ID);
                         loadConnectionTypes(connectionTypeCombo);
                         if (!connectionTypeCombo.getItems().contains(curConType)) {
@@ -433,14 +499,14 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             // Filters
             Composite vmGroup = UIUtils.createTitledComposite(
                 refsGroup,
-                "Virtual model",
+                UIConnectionMessages.dialog_connection_virtual_model_group,
                 1,
                 GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING
             );
             showVirtualModelCheck = UIUtils.createCheckbox(
                 vmGroup,
-                "Show virtual model editor",
-                "Show virtual model pages in table editor",
+                UIConnectionMessages.dialog_connection_virtual_model_show,
+                UIConnectionMessages.dialog_connection_virtual_model_show_tip,
                 !navigatorSettings.isHideVirtualModel(),
                 1);
             showVirtualModelCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -451,19 +517,14 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             }));
             Button resetVM = UIUtils.createDialogButton(
                 vmGroup,
-                "Reset configuration",
+                UIConnectionMessages.dialog_connection_virtual_model_reset,
                 null,
-                "Delete all colorings, transformers and virtual table constraints for all tables in this data source",
+                UIConnectionMessages.dialog_connection_virtual_model_reset_tip,
                 SelectionListener.widgetSelectedAdapter(e -> {
                     if (UIUtils.confirmAction(
                         getShell(),
-                        "Reset virtual model settings",
-                        """
-                            You are about to reset all virtual model configuration.
-                             It includes:
-                            \t- All virtual constraints and foreign keys
-                            \t- All column transformers
-                            \t- All table row colorings"""
+                        UIConnectionMessages.dialog_connection_virtual_model_reset_title,
+                        UIConnectionMessages.dialog_connection_virtual_model_reset_message
                     )
                     ) {
                         dataSourceDescriptor.getVirtualModel().resetData();
@@ -475,8 +536,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                     }
                 }));
             resetVM.setEnabled(dataSourceDescriptor != null && dataSourceDescriptor.getVirtualModel().hasValuableData());
-//            UIUtils.createInfoLabel(vmGroup, "Virtual model is a logical database structure on the client side (not in a real database).\n" +
-//                "It also contains information about\nrow coloring and columns transformations", GridData.FILL_HORIZONTAL, 1);
         }
 
         if (getWizard().isNew()) {
@@ -521,31 +580,37 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         UIUtils.setHelp(group, IHelpContextIds.CTX_CON_WIZARD_FINAL);
     }
 
-    public static Combo createNavigatorSettingsCombo(
-        Composite composite,
-        NavigatorSettingsStorage settingsStorage,
-        DBPDataSourceContainer dataSourceDescriptor
+    public static @NotNull CSmartCombo<DataSourceNavigatorSettings.Preset> createNavigatorSettingsCombo(
+        @NotNull Composite composite,
+        @NotNull NavigatorSettingsStorage settingsStorage,
+        @Nullable DBPDataSourceContainer dataSourceDescriptor
     ) {
         UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_wizard_final_label_navigator_settings);
 
         Composite ctGroup = UIUtils.createComposite(composite, 2);
-        Combo navigatorSettingsCombo = new Combo(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo = new CSmartCombo<>(
+            ctGroup,
+            SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY,
+            new LabelProvider() {
+                @Override
+                public @NotNull String getText(@NotNull Object element) {
+                    return ((DataSourceNavigatorSettings.Preset) element).getName();
+                }
+            }
+        );
         final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = UIUtils.getFontHeight(navigatorSettingsCombo) * 20;
         navigatorSettingsCombo.setLayoutData(gd);
-        for (String ncPresetName : DataSourceNavigatorSettings.PRESETS.keySet()) {
-            navigatorSettingsCombo.add(ncPresetName);
+        for (DataSourceNavigatorSettings.Preset preset : DataSourceNavigatorSettings.PRESETS.values()) {
+            navigatorSettingsCombo.addItem(preset);
         }
         navigatorSettingsCombo.select(0);
         navigatorSettingsCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-            if (navigatorSettingsCombo.getSelectionIndex() == navigatorSettingsCombo.getItemCount() - 1) {
+            DataSourceNavigatorSettings.Preset preset = navigatorSettingsCombo.getSelectedItem();
+            if (preset == DataSourceNavigatorSettings.PRESET_CUSTOM) {
                 // Custom - no changes
             } else {
-                DataSourceNavigatorSettings.Preset newSettings = DataSourceNavigatorSettings.PRESETS.get(navigatorSettingsCombo.getText());
-                if (newSettings == null) {
-                    throw new IllegalStateException("Invalid preset name: " + navigatorSettingsCombo.getText());
-                }
-                settingsStorage.setNavigatorSettings(newSettings.getSettings());
+                settingsStorage.setNavigatorSettings(preset.getSettings());
             }
         }));
 
@@ -564,10 +629,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         return navigatorSettingsCombo;
     }
 
-    public static CSmartCombo<DBPConnectionType> createConnectionTypeCombo(Composite composite) {
+    public static @NotNull CSmartCombo<DBPConnectionType> createConnectionTypeCombo(@NotNull Composite composite) {
         UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_wizard_final_label_connection_type);
 
-        Composite ctGroup = UIUtils.createComposite(composite, 1);
+        Composite ctGroup = UIUtils.createComposite(composite, 2);
 
         CSmartCombo<DBPConnectionType> connectionTypeCombo = new CSmartCombo<>(
             ctGroup,
@@ -584,8 +649,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         return connectionTypeCombo;
     }
 
-    private static DBNBrowseSettings editNavigatorSettings(
-        @NotNull Combo navigatorSettingsCombo,
+    private static @NotNull DBNBrowseSettings editNavigatorSettings(
+        @NotNull CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo,
         @NotNull DBNBrowseSettings navigatorSettings,
         @Nullable DBPDataSourceContainer dataSourceDescriptor) {
         EditConnectionNavigatorSettingsDialog dialog = new EditConnectionNavigatorSettingsDialog(
@@ -619,7 +684,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         });
     }
 
-    public static void loadConnectionTypes(CSmartCombo <DBPConnectionType> connectionTypeCombo) {
+    public static void loadConnectionTypes(@NotNull CSmartCombo<DBPConnectionType> connectionTypeCombo) {
         connectionTypeCombo.removeAll();
         for (DBPConnectionType ct : DataSourceProviderRegistry.getInstance().getConnectionTypes()) {
             connectionTypeCombo.addItem(ct);
@@ -627,8 +692,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     @Override
-    public boolean isPageComplete()
-    {
+    public boolean isPageComplete() {
         return true;
     }
 
@@ -643,7 +707,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         if (connectionNameChanged) {
             name = generateConnectionName(getWizard().getPageSettings(), connectionNameText.getText());
-        } else if (dataSourceDescriptor != null) {
+        } else if (dataSourceDescriptor != null && !wizard.isNew()) {
             name = dataSourceDescriptor.getName();
         } else {
             name = generateConnectionName(getWizard().getPageSettings(),
@@ -716,6 +780,16 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
     public void setDataSourceFolder(@Nullable DBPDataSourceFolder dataSourceFolder) {
         this.curDataSourceFolder = dataSourceFolder;
+    }
+
+    @Nullable
+    DBPDataSourceFolder getDataSourceFolder() {
+        return curDataSourceFolder;
+    }
+
+    @Nullable
+    String getEditedConnectionName() {
+        return editedConnectionName;
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -89,7 +90,7 @@ public class DashboardCatalogPanelTreeContentProvider extends TreeContentProvide
                     try {
                         UIUtils.runInProgressDialog(monitor -> children.addAll(dpd.getInstance().loadRootFolders(monitor, dpd, context)));
                     } catch (InvocationTargetException e) {
-                        DBWorkbench.getPlatformUI().showError("Folders load error", null, e.getTargetException());
+                        DBWorkbench.getPlatformUI().showError(UIDashboardMessages.dashboard_folders_load_error, null, e.getTargetException());
                     }
                     return children.toArray();
                 }
@@ -105,7 +106,7 @@ public class DashboardCatalogPanelTreeContentProvider extends TreeContentProvide
                 return predefineDashboardItemConfigurations.toArray();
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Error reading dashboard info", null, e);
+            DBWorkbench.getPlatformUI().showError(UIDashboardMessages.dashboard_info_read_error, null, e);
         }
         return new Object[0];
     }

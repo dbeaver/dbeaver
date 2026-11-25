@@ -25,13 +25,17 @@ import org.jkiss.utils.CommonUtils;
 import java.net.SocketTimeoutException;
 import java.net.http.HttpTimeoutException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
  * Represents a single AI message
  */
 public class AIMessage {
+    public static final String RESPONSE_CONTENT_MODIFIED = "response.contentModified";
+
     @NotNull
     private final AIMessageType role;
     @NotNull
@@ -49,6 +53,7 @@ public class AIMessage {
     @Nullable
     private final List<AIMessageMeta> meta;
     private final Throwable error;
+    private List<AIImageAttachment> images = List.of();
 
     public AIMessage(
         @NotNull AIMessageType role,
@@ -223,8 +228,41 @@ public class AIMessage {
     }
 
     @NotNull
-    public AIMessage withContent(String newContent) {
-        return new AIMessage(role, newContent, displayMessage, time, meta);
+    public AIMessage withContent(@NotNull String newContent) {
+        List<AIMessageMeta> updatedMeta = meta;
+        // native response state belongs to the original content
+        if (!content.equals(newContent) && meta != null) {
+            updatedMeta = meta.stream().map(info -> {
+                if (info.responseMetadata().isEmpty()) {
+                    return info;
+                }
+                Map<String, String> state = new HashMap<>(info.responseMetadata());
+                state.put(RESPONSE_CONTENT_MODIFIED, Boolean.TRUE.toString());
+                return new AIMessageMeta(info.type(), info.engineId(), info.modelId(), info.usage(), info.timeSpent(),
+                    info.systemPromptLength(), state);
+            }).toList();
+        }
+        return new AIMessage(role, newContent, displayMessage, time, updatedMeta, error).withImages(images);
+    }
+
+    @NotNull
+    public List<AIImageAttachment> getImages() {
+        return images;
+    }
+
+    @NotNull
+    public AIMessage withImages(@NotNull List<AIImageAttachment> images) {
+        if (images.isEmpty() && this.images.isEmpty()) {
+            return this;
+        }
+        if (!images.isEmpty() && role != AIMessageType.USER) {
+            throw new IllegalArgumentException("Only user messages can contain image attachments.");
+        }
+        AIMessage message = new AIMessage(role, content, displayMessage, time, meta, error);
+        List<AIImageAttachment> attachments = List.copyOf(images);
+        AIImageAttachment.validateImages(attachments);
+        message.images = attachments;
+        return message;
     }
 
     @Override

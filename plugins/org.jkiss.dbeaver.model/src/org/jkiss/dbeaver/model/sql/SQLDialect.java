@@ -34,8 +34,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.utils.Pair;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,17 +57,6 @@ public interface SQLDialect {
         GROUP_ROWS,
         PLAIN,
         INSERT_ALL
-    }
-
-    enum ProjectionAliasVisibilityScope {
-        WHERE,
-        HAVING,
-        GROUP_BY,
-        ORDER_BY
-    }
-
-    record GlobalVariableInfo(String name, String description, DBPDataKind type) {
-        public static GlobalVariableInfo[] EMPTY_ARRAY = new GlobalVariableInfo[0];
     }
 
     @NotNull
@@ -121,6 +111,20 @@ public interface SQLDialect {
     String[] getDMLKeywords();
 
     /**
+     * Keywords that can start a statement in the SQL editor completion.
+     * Unlike execute keywords, these do not affect statement parsing or parameter binding.
+     */
+    @NotNull
+    default Collection<String> getCompletionStatementKeywords() {
+        List<String> keywords = new ArrayList<>();
+        Collections.addAll(keywords, getQueryKeywords());
+        Collections.addAll(keywords, getDMLKeywords());
+        Collections.addAll(keywords, getDDLKeywords());
+        Collections.addAll(keywords, getExecuteKeywords());
+        return keywords;
+    }
+
+    /**
      * Retrieves a list of all of this database's SQL keywords
      * that are NOT also SQL92 keywords.
      *
@@ -132,6 +136,10 @@ public interface SQLDialect {
 
     @NotNull
     Collection<String> getFunctions();
+
+    /** Whether a function is registered by this dialect, regardless of identifier case. */
+    boolean isFunction(@NotNull String name);
+
     @NotNull
     Collection<String> getDataTypes(@Nullable DBPDataSource dataSource);
     @Nullable
@@ -206,6 +214,22 @@ public interface SQLDialect {
      */
     @NotNull
     String[] getScriptDelimiters();
+
+    /**
+     * Script delimiters that separate batches rather than individual statements.
+     */
+    @NotNull
+    default String[] getBatchDelimiters() {
+        return new String[0];
+    }
+
+    /**
+     * Returns the lifetime of variables introduced by standalone SQL statements, or {@code null} when unsupported.
+     */
+    @Nullable
+    default SQLScriptVariableScope getScriptVariableScope() {
+        return null;
+    }
 
     @Nullable
     String getScriptDelimiterRedefiner();
@@ -312,6 +336,13 @@ public interface SQLDialect {
     boolean supportsTableDropCascade();
 
     boolean supportsOrderByIndex();
+
+    /**
+     * Whether generated ascending ORDER BY items must include the ASC keyword.
+     */
+    default boolean requiresExplicitOrderByAsc() {
+        return false;
+    }
 
     boolean supportsNestedComments();
 
@@ -519,8 +550,8 @@ public interface SQLDialect {
      * Generates stored procedure call. Parameters (optionally) can be surrounded by cast(:param as paramType).
      */
     void generateStoredProcedureCall(
-        StringBuilder sql, 
-        DBSProcedure proc, 
+        StringBuilder sql,
+        DBSProcedure proc,
         Collection<? extends DBSProcedureParameter> parameters,
         boolean castParams
     );
@@ -543,14 +574,14 @@ public interface SQLDialect {
     @NotNull
     SQLTokenPredicateSet getSkipTokenPredicates();
 
-    default EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.WHERE,
-            ProjectionAliasVisibilityScope.GROUP_BY,
-            ProjectionAliasVisibilityScope.HAVING,
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
-    }
+    /**
+     * Returns the dialect features object containing semantic-analyzer-only configuration.
+     * <p>
+     * Dialects that need custom behaviour create a nested subclass of
+     * {@link SQLDialectFeatures} and return it from here.
+     */
+    @NotNull
+    SQLDialectFeatures getDialectFeatures();
 
     default void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
     }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -47,7 +48,8 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         super(user, grant ? "Grant" : "Revoke");
         this.grant = grant;
         this.privilege = privilege;
-        this.privilegeTypes = new HashSet<>();
+        // EnumSet keeps privileges in declaration order, so generated statements are stable
+        this.privilegeTypes = EnumSet.noneOf(PostgrePrivilegeType.class);
         this.privilegeOwner = privilegeOwner;
 
         if (privilegeTypes != null) {
@@ -77,7 +79,11 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         } else {
             for (PostgrePrivilegeType pn : privilegeTypes) {
                 privName.add(pn.name());
-                withGrantOption |= CommonUtils.isBitSet(privilege.getPermission(pn), PostgrePrivilege.WITH_GRANT_OPTION);
+                if (pn == PostgrePrivilegeType.ALL) {
+                    withGrantOption |= isGrantableForAllPrivileges();
+                } else {
+                    withGrantOption |= CommonUtils.isBitSet(privilege.getPermission(pn), PostgrePrivilege.WITH_GRANT_OPTION);
+                }
             }
         }
 
@@ -85,7 +91,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         String objectName = "", roleName;
         String roleType = null;
         if (object instanceof PostgreRole role) {
-            roleName = DBUtils.getQuotedIdentifier(object);
+            roleName = getGranteeName(object, role.getName());
             if (privilegeOwner instanceof PostgreProcedure) {
                 objectName = ((PostgreProcedure) privilegeOwner).getFullQualifiedSignature();
             } else if (privilege instanceof PostgreRolePrivilege) {
@@ -95,7 +101,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         } else {
             PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.privilege;
             if (permission.getGrantee() != null) {
-                roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), permission.getGrantee().getRoleName());
+                roleName = getGranteeName(object, permission.getGrantee().getRoleName());
                 roleType = permission.getGrantee().getRoleType();
             } else {
                 roleName = "";
@@ -201,6 +207,23 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         }
     }
 
+    /**
+     * GRANT ALL ... WITH GRANT OPTION is only correct when every granted privilege is grantable.
+     * The ACL stores each privilege separately (e.g. EXECUTE), so ALL itself has no entry to check.
+     */
+    private boolean isGrantableForAllPrivileges() {
+        PostgrePrivilege.ObjectPermission[] permissions = privilege.getPermissions();
+        if (permissions.length == 0) {
+            return false;
+        }
+        for (PostgrePrivilege.ObjectPermission permission : permissions) {
+            if (!CommonUtils.isBitSet(permission.getPermissions(), PostgrePrivilege.WITH_GRANT_OPTION)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private boolean hasAllPrivilegeTypes() {
         Class<? extends DBSObject> ownerClass = null;
         if (privilegeOwner instanceof DBNDatabaseFolder) {
@@ -220,5 +243,19 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
     @NotNull
     private String makeUniqueName(@NotNull String name) {
         return name + "#" + privilege.hashCode() + "#" + privilegeOwner.hashCode();
+    }
+
+    /**
+     * Returns the grantee name for the generated DDL.
+     * The PUBLIC pseudo-role is a PostgreSQL keyword and must never be quoted:
+     * {@code GRANT SELECT ON TABLE mytab TO "PUBLIC"} is invalid,
+     * the only correct form is {@code GRANT SELECT ON TABLE mytab TO PUBLIC}.
+     */
+    @NotNull
+    private static String getGranteeName(@NotNull PostgrePrivilegeOwner object, @Nullable String roleName) {
+        if (PostgreConstants.PUBLIC_ROLE_NAME.equalsIgnoreCase(roleName)) {
+            return PostgreConstants.PUBLIC_ROLE_NAME.toUpperCase();
+        }
+        return DBUtils.getQuotedIdentifier(object.getDataSource(), roleName);
     }
 }

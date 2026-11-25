@@ -51,7 +51,13 @@
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalPreferencesPage" id="org.jkiss.dbeaver.preferences.main.sql.terminalview" name="%terminal_view_item_text" />
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalPreferencesPage" id="org.jkiss.dbeaver.preferences.main.sql.terminalview" name="%terminal_view_item_text">
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.sql.terminal.keyword.pref.terminal"/>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ui.editors.sql.terminal.keyword.pref.terminal" label="%keyword.org.jkiss.dbeaver.ui.editors.sql.terminal.keyword.pref.terminal.label"/>
     </extension>
 
 </plugin>

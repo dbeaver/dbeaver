@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetThemeSettings;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -243,9 +244,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
     private void saveValue(boolean showError, @NotNull Consumer<Object> valueUpdater) {
         try {
-            Object newValue = extractEditorValue();
             if (dirty || control instanceof Combo || control instanceof CCombo || control instanceof List) {
                 // Combos are always dirty (because drop-down menu sets a selection)
+                Object newValue = extractEditorValue();
                 valueUpdater.accept(newValue);
             }
         } catch (DBException e) {
@@ -253,7 +254,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                 ((IMultiController) valueController).closeInlineEditor();
             }
             if (showError) {
-                DBWorkbench.getPlatformUI().showError("Value save", "Can't save edited value", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_save_value_title, ResultSetMessages.error_save_value_message, e);
             } else {
                 log.debug("Error saving value: " + e.getMessage());
             }

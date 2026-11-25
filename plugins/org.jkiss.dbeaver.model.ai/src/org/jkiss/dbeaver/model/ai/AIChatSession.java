@@ -63,7 +63,9 @@ public class AIChatSession {
     private final AIChatStorage storage;
     private final SessionIdProvider sessionIdProvider;
     private final UserTokenQuotaService quotaService;
-    private Map<UUID, AIChatConversation> conversations;
+    private final Object initializationLock = new Object();
+    private final Object conversationsLock = new Object();
+    private volatile Map<UUID, AIChatConversation> conversations = new LinkedHashMap<>();
     private boolean busy;
     private AIAssistant assistant;
     private volatile boolean initialized = false;
@@ -102,6 +104,7 @@ public class AIChatSession {
             return;
         }
 
+        loadConversationImages(monitor, conversation);
         AIContextSettings contextSettings = getConversationSettings(conversation);
         AIDatabaseContext databaseContext = null;
         try {
@@ -112,10 +115,22 @@ public class AIChatSession {
             log.warn("Error creating database context for conversation save", e);
         }
 
-        storage.saveConversation(
-            sessionIdProvider.getSessionId(monitor),
-            QMAIChatHistoryMapper.toQMAIChatHistory(conversation, contextSettings, databaseContext)
-        );
+        saveConversation(sessionIdProvider.getSessionId(monitor), conversation, contextSettings, databaseContext);
+    }
+
+    private void saveConversation(
+        @NotNull String sessionId,
+        @NotNull AIChatConversation conversation,
+        @Nullable AIContextSettings settings,
+        @Nullable AIDatabaseContext context
+    ) throws DBException {
+        // serialize the history snapshot and storage write with other saves of this conversation
+        synchronized (conversation.getPersistenceLock()) {
+            if (conversation.isRemoved()) {
+                return;
+            }
+            storage.saveConversation(sessionId, QMAIChatHistoryMapper.toQMAIChatHistory(conversation, settings, context));
+        }
     }
 
     @NotNull
@@ -158,33 +173,64 @@ public class AIChatSession {
         RuntimeUtils.runTask(
             monitor -> {
                 try {
-                    this.conversations = new LinkedHashMap<>();
-                    List<QMAIConversationHistory> conversationsHistory = storage.findConversations(
-                        sessionIdProvider.getSessionId(monitor)
-                    );
-                    for (QMAIConversationHistory history : conversationsHistory) {
-                        DBPDataSourceContainer dataSourceContainer = getContainer(history.getDataSource());
-                        AIChatConversation conversation = QMAIChatHistoryMapper.toAIChatConversation(
-                            getAssistant(),
-                            history,
-                            dataSourceContainer
-                        );
-                        String contextJson = history.getContext().getContextJson();
-                        if (contextJson != null) {
-                            AIContextSettingsChatConversation convSettings = new AIContextSettingsChatConversation(this, conversation);
-                            convSettings.loadSettingsFromString(contextJson);
-                            convSettings.loadDataSourceDefaults();
-                            conversation.setCustomSettings(convSettings);
-                        }
-                        this.conversations.put(conversation.getId(), conversation);
-                    }
-
-                    initialized = true;
+                    init(monitor);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
             }, "Initialize AI chat session", 10000
         );
+    }
+
+    public void init(@NotNull DBRProgressMonitor monitor) throws DBException {
+        synchronized (initializationLock) {
+            if (initialized) {
+                return;
+            }
+            Map<UUID, AIChatConversation> loadedConversations = new LinkedHashMap<>();
+            List<QMAIConversationHistory> conversationsHistory = storage.findConversationSummaries(
+                sessionIdProvider.getSessionId(monitor)
+            );
+            for (QMAIConversationHistory history : conversationsHistory) {
+                DBPDataSourceContainer dataSourceContainer = getContainer(history.getDataSource());
+                AIChatConversation conversation = QMAIChatHistoryMapper.toAIChatConversation(
+                    getAssistant(),
+                    history,
+                    dataSourceContainer
+                );
+                String contextJson = history.getContext().getContextJson();
+                if (contextJson != null) {
+                    AIContextSettingsChatConversation convSettings = new AIContextSettingsChatConversation(this, conversation);
+                    convSettings.loadSettingsFromString(contextJson);
+                    convSettings.loadDataSourceDefaults();
+                    conversation.setCustomSettings(convSettings);
+                }
+                loadedConversations.put(conversation.getId(), conversation);
+            }
+            synchronized (conversationsLock) {
+                // retain conversations added after the legacy initialization wait times out
+                loadedConversations.putAll(conversations);
+                conversations = loadedConversations;
+                initialized = true;
+            }
+        }
+    }
+
+    public void loadConversationImages(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatConversation conversation
+    ) throws DBException {
+        // prompt submission can hold the conversation monitor while waiting for a save job
+        synchronized (conversation.getPersistenceLock()) {
+            if (conversation.areImagesLoaded()) {
+                return;
+            }
+            try {
+                conversation.restoreImages(storage.findConversationImages(
+                    sessionIdProvider.getSessionId(monitor), conversation.getId()));
+            } catch (IllegalArgumentException exception) {
+                throw new DBException("Cannot load image attachments for conversation '" + conversation.getCaption() + "'.", exception);
+            }
+        }
     }
 
     @Nullable
@@ -205,22 +251,29 @@ public class AIChatSession {
     public void addConversation(@NotNull AIChatConversation conversation) throws DBException {
         init();
 
-        conversations.put(conversation.getId(), conversation);
+        synchronized (conversationsLock) {
+            conversations.put(conversation.getId(), conversation);
+        }
     }
 
     public void removeConversation(@NotNull AIChatConversation conversation) throws DBException {
         init();
 
-        conversations.remove(conversation.getId());
-        conversation.clearPendingDeclinedFunctionCallMessages();
-
-        if (conversation.isTemporary()) {
-            return;
+        synchronized (conversation.getPersistenceLock()) {
+            if (!conversation.isTemporary()) {
+                storage.deleteConversation(conversation.getId().toString());
+            }
+            conversation.markRemoved();
         }
+        synchronized (conversationsLock) {
+            conversations.remove(conversation.getId());
+        }
+        conversation.clearPendingDeclinedFunctionCallMessages();
+        notifyListeners(AIChatListener::conversationRemoved, conversation);
+    }
 
-        storage.deleteConversation(
-            conversation.getId().toString()
-        );
+    public boolean hasConversation(@NotNull UUID id) {
+        return conversations != null && conversations.containsKey(id);
     }
 
     @Nullable
@@ -287,6 +340,9 @@ public class AIChatSession {
     }
 
     public void notifyMessageAdd(@NotNull AIChatConversation conversation, @NotNull AIChatMessage message) {
+        if (conversation.isRemoved()) {
+            return;
+        }
         this.notifyListeners(
             (aiChatListener, message1) ->
                 aiChatListener.messageAdded(conversation, message1), message
@@ -294,10 +350,9 @@ public class AIChatSession {
     }
 
     public void notifyMessageRemove(@NotNull AIChatConversation conversation, @NotNull AIChatMessage message) {
-        final int index = conversation.getMessages().indexOf(message);
-        if (index >= 0) {
-            notifyMessagesRemove(conversation, conversation.getMessages().subList(index, index + 1));
-        }
+        notifyMessagesRemove(conversation, conversation.getMessages().stream()
+            .filter(current -> current.id() == message.id())
+            .toList());
         conversation.removeMessage(message);
     }
 
@@ -316,10 +371,9 @@ public class AIChatSession {
     }
 
     public void notifyMessagesRemove(@NotNull AIChatConversation conversation, @NotNull AIChatMessage afterInclusive) {
-        final int index = conversation.getMessages().indexOf(afterInclusive);
-        if (index >= 0) {
-            notifyMessagesRemove(conversation, conversation.getMessages().subList(index, conversation.getMessages().size()));
-        }
+        notifyMessagesRemove(conversation, conversation.getMessages().stream()
+            .dropWhile(current -> current.id() != afterInclusive.id())
+            .toList());
     }
 
     private void notifyMessagesRemove(@NotNull AIChatConversation conversation, @NotNull List<AIChatMessage> view) {
@@ -402,11 +456,20 @@ public class AIChatSession {
         @Nullable AIContextSettings settings,
         @Nullable AIConfirmation confirmation
     ) throws DBException {
+        if (conversation.isRemoved() || conversation.getState() == AIChatConversation.State.CANCELED) {
+            return CompletableFuture.completedFuture(conversation);
+        }
+        try {
+            loadConversationImages(monitor, conversation);
+        } catch (DBException exception) {
+            return finishConversationWithError(conversation, chatListener, exception);
+        }
         String sessionId = sessionIdProvider.getSessionId(monitor);
         AIConfigurationProfile configurationProfile = conversation.getProfile();
         if (configurationProfile == null) {
             configurationProfile = AISettingsManager.getStaticSettings().getDefaultConfiguration();
         }
+        configurationProfile.getEngineDescriptor();
         String engineId = configurationProfile.getEngineId();
         QuotaStatus quotaStatus = quotaService.getUserQuotaStatus(
             sessionId,
@@ -427,18 +490,10 @@ public class AIChatSession {
         try {
             context = settings == null ? null : createDatabaseContext(monitor, promptGenerator, settings);
         } catch (DBException e) {
-            chatListener.warning("Failed to connect to the database");
             return finishConversationWithError(conversation, chatListener, e);
         }
         if (isContextChanged(conversation.getId(), context) && !conversation.isTemporary()) {
-            storage.saveConversation(
-                sessionId,
-                QMAIChatHistoryMapper.toQMAIChatHistory(
-                    conversation,
-                    settings,
-                    context
-                )
-            );
+            saveConversation(sessionId, conversation, settings, context);
         }
 
         List<AIMessage> messages = new ArrayList<>(conversation.getMessages().stream()
@@ -563,11 +618,7 @@ public class AIChatSession {
     }
 
     public void updateScopeSettingsIfNeeded(@NotNull AIContextSettings settings, @NotNull DBPDataSourceContainer container) {
-        if (settings.getScope() != null || !container.isConnected()) {
-            return;
-        }
-        DBCExecutionContext executionContext = contextProvider.getExecutionContext(container);
-        AIUtils.updateScopeSettingsIfNeeded(settings, container, executionContext);
+        AIUtils.updateScopeSettingsIfNeeded(settings, container, null);
     }
 
     private boolean isContextChanged(

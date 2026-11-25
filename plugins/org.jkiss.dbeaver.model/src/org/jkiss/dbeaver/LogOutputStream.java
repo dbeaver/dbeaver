@@ -43,6 +43,7 @@ public class LogOutputStream extends OutputStream {
     public static final String LOGS_MAX_FILES_COUNT = "logs.files.output.maxCount";
 
     private static final int FILE_OPERATIONS_RETRY_LIMIT = 5;
+    private static final String FALLBACK_LOG_FILE_SUFFIX = "-since";
 
     private static final Operations REAL_OPERATIONS = new Operations() {
         @NotNull
@@ -155,18 +156,10 @@ public class LogOutputStream extends OutputStream {
         this.logFileLocation = debugLogFile.getParentFile();
         this.maxLogSize = prefStore.getLong(LOGS_MAX_FILE_SIZE);
         this.maxLogFiles = prefStore.getInt(LOGS_MAX_FILES_COUNT);
-        final String fileName = debugLogFile.getName();
-        int fnameExtStart = fileName.lastIndexOf('.');
-        if (fnameExtStart >= 0) {
-            this.logFileName = fileName.substring(0, fnameExtStart);
-            this.logFileNameExtension = fileName.substring(fnameExtStart);
-        } else {
-            this.logFileName = fileName;
-            this.logFileNameExtension = "";
-        }
-
-        final String logFileNameRegexStr = "^" + Pattern.quote(logFileName) + "\\-[0-9]+(-since)?" + Pattern.quote(logFileNameExtension) + "$";
-        this.logFileNamePattern = Pattern.compile(logFileNameRegexStr).asMatchPredicate();
+        LogFileNameParts logFileNameParts = LogFileNameParts.from(debugLogFile.getName());
+        this.logFileName = logFileNameParts.name();
+        this.logFileNameExtension = logFileNameParts.extension();
+        this.logFileNamePattern = logFileNameParts.getArchivedLogFileNamePredicate();
         
         if (operations.exists(debugLogFile)) {
             this.currentLogSize = operations.length(this.currentLogFile);
@@ -274,9 +267,38 @@ public class LogOutputStream extends OutputStream {
                 this.operations.debugPrint("Failed to rename log " + this.currentLogFile.getAbsolutePath() + " file to " + newFile.getAbsolutePath());
             }
             // if failed to rename, then start using suffix to keep sorting intact
-            this.currentLogFile = new File(this.logFileLocation, this.logFileName + "-" + stamp + "-since" + this.logFileNameExtension);
+            this.currentLogFile = new File(
+                this.logFileLocation,
+                this.logFileName + "-" + stamp + FALLBACK_LOG_FILE_SUFFIX + this.logFileNameExtension
+            );
         }
         this.currentLogSize = 0;
+    }
+
+    /**
+     * Returns a predicate matching archive names generated for the given active log file name.
+     */
+    @NotNull
+    public static Predicate<String> getArchivedLogFileNamePredicate(@NotNull String fileName) {
+        return LogFileNameParts.from(fileName).getArchivedLogFileNamePredicate();
+    }
+
+    private record LogFileNameParts(@NotNull String name, @NotNull String extension) {
+        @NotNull
+        private static LogFileNameParts from(@NotNull String fileName) {
+            int extensionStart = fileName.lastIndexOf('.');
+            if (extensionStart >= 0) {
+                return new LogFileNameParts(fileName.substring(0, extensionStart), fileName.substring(extensionStart));
+            }
+            return new LogFileNameParts(fileName, "");
+        }
+
+        @NotNull
+        private Predicate<String> getArchivedLogFileNamePredicate() {
+            String regex = "^" + Pattern.quote(name) + "\\-[0-9]+(" + Pattern.quote(FALLBACK_LOG_FILE_SUFFIX) + ")?"
+                + Pattern.quote(extension) + "$";
+            return Pattern.compile(regex).asMatchPredicate();
+        }
     }
 
     /**

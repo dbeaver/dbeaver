@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.tidblake.ui;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
@@ -23,7 +26,11 @@ import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
 public class TiDBLakeSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
-        createSSLConfigHint(parent, true, 0);
-        createTrustStoreConfigGroup(parent);
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(new GridLayout(1, false));
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        Composite sslParameters = createTrustStoreConfigGroup(composite);
+        createSSLConfigHint(sslParameters, true, 1);
     }
 }

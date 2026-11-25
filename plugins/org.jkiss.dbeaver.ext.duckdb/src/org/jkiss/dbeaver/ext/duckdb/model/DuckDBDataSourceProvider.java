@@ -16,11 +16,36 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class DuckDBDataSourceProvider extends GenericDataSourceProvider<DuckDBDataSource> {
     public DuckDBDataSourceProvider() {
         super(DuckDBDataSource.class);
     }
 
+    @NotNull
+    @Override
+    public DBPPropertyDescriptor[] getConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @Nullable DBPDataSourceContainer dataSourceContainer,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBException {
+        if (DuckDBConstants.DRIVER_MOTHER_DUCK_ID.equals(driver.getId())) {
+            // The driver lists its settings by opening a real connection, which for MotherDuck means logging in
+            // without the token. Read the same DuckDB settings from an in-memory database instead.
+            DBPConnectionConfiguration localInfo = new DBPConnectionConfiguration();
+            localInfo.setUrl(DuckDBConstants.IN_MEMORY_URL);
+            return super.getConnectionProperties(monitor, driver, null, localInfo);
+        }
+        return super.getConnectionProperties(monitor, driver, dataSourceContainer, connectionInfo);
+    }
 }

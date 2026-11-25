@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
@@ -121,10 +122,7 @@ public class DatabaseTransferUtils {
                 } else if (!(newTarget instanceof DBSDataManipulator)) {
                     throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
                 }
-                containerMapping.setTarget((DBSDataManipulator) newTarget);
-                if (containerMapping.getMappingType() == DatabaseMappingType.create) {
-                    containerMapping.setMappingType(DatabaseMappingType.existing);
-                }
+                setMappingTarget(containerMapping, (DBSDataManipulator) newTarget);
             }
 
             if (updateMappingAttributes || force) {
@@ -137,6 +135,16 @@ public class DatabaseTransferUtils {
                     }
                 }
             }
+        }
+    }
+
+    static void setMappingTarget(
+        @NotNull DatabaseMappingContainer containerMapping,
+        @NotNull DBSDataManipulator target
+    ) {
+        containerMapping.setTarget(target);
+        if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+            containerMapping.setMappingType(DatabaseMappingType.existing);
         }
     }
 
@@ -211,10 +219,10 @@ public class DatabaseTransferUtils {
                 }
                 return actions.toArray(DBEPersistAction[]::new);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Can't create or update target table", null, e);
+                DBWorkbench.getPlatformUI().showError(DTMessages.database_transfer_target_table_error_title, null, e);
                 if (!DBWorkbench.getPlatformUI().confirmAction(
-                    "Generate DDL automatically",
-                    "Do you want to create or update target object with auto-generated SQL script?")) {
+                    DTMessages.database_transfer_generate_ddl_title,
+                    DTMessages.database_transfer_generate_ddl_message)) {
                     throw new DBException("Target table create or update was canceled");
                 }
             }
@@ -660,7 +668,8 @@ public class DatabaseTransferUtils {
         }
     }
 
-    static void createTargetDynamicTable(
+    @Nullable
+    static DBSDataManipulator createTargetDynamicTable(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer schema,
@@ -689,6 +698,13 @@ public class DatabaseTransferUtils {
             throw new DBException("Can not set name for target entity '" + targetEntity.getClass().getName() + "'");
         }
         commandContext.saveChanges(monitor, options);
+        if (targetEntity instanceof DBSDataManipulator dataManipulator) {
+            if (targetEntity instanceof DBSDocumentContainer && tableManager.getObjectsCache(targetEntity) == null) {
+                return dataManipulator;
+            }
+            return null;
+        }
+        throw new DBException("Target entity doesn't support data manipulation: '" + targetEntity.getClass().getName() + "'");
     }
 
     @NotNull
@@ -744,7 +760,7 @@ public class DatabaseTransferUtils {
         }
     }
 
-    public static class TargetCommandContext extends AbstractCommandContext {
+    public static class TargetCommandContext extends AbstractCommandContext implements DBETransientObjectContext {
         public TargetCommandContext(DBCExecutionContext executionContext) {
             super(executionContext, true);
         }

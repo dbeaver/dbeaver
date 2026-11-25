@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -36,7 +37,6 @@ import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
-import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
@@ -51,7 +51,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionManager, SQLEditor.QueryProcessingComponent {
+abstract class QueryProcessor implements SQLResultsConsumer, DBCSmartTransactionManager, SQLEditor.QueryProcessingComponent {
     static final int QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION = 100;
 
 
@@ -62,6 +62,7 @@ abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionMa
     private final AtomicInteger curJobRunning = new AtomicInteger(0);
     protected final List<QueryResultsContainer> resultContainers = new ArrayList<>();
     private DBDDataReceiver curDataReceiver = null;
+    private int curDataReceiverResultSet = -1;
 
     QueryProcessor(@NotNull SQLEditor owner, boolean singleQuery, boolean makeDefault) {
         this.owner = owner;
@@ -92,8 +93,14 @@ abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionMa
         return curJobRunning;
     }
 
-    public void setCurDataReceiver(DBDDataReceiver curDataReceiver) {
+    /**
+     * Sets a receiver that gets query results instead of the result tabs.
+     *
+     * @param resultSetNumber number of the only result set of the query passed to the receiver, or -1 to pass all of them
+     */
+    public void setCurDataReceiver(@Nullable DBDDataReceiver curDataReceiver, int resultSetNumber) {
         this.curDataReceiver = curDataReceiver;
+        this.curDataReceiverResultSet = resultSetNumber;
     }
 
     @NotNull
@@ -224,7 +231,9 @@ abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionMa
                 processDataExport(scriptContext, queries);
             } else {
                 boolean disableFetchCurrentResultSets;
-                if (queries.size() > QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION) {
+                if (queries.size() > QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION
+                    && owner.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM)
+                ) {
                     if (owner.getDisableFetchResultSet() == null) {
                         DBPPlatformUI.UserChoiceResponse rs = DBWorkbench.getPlatformUI().showUserChoice(
                             SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_title,
@@ -289,13 +298,17 @@ abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionMa
                         element = controlResult.getTransformed();
                     }
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Command error", "Error processing control command", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        SQLEditorMessages.sql_control_command_error_title,
+                        SQLEditorMessages.sql_control_command_error_message, e);
                     return;
                 }
             }
             if (element instanceof SQLScript) {
                 DBWorkbench.getPlatformUI()
-                    .showError("Embedded scripts are not allowed", "Query contains script element: " + element.getText());
+                    .showError(
+                        SQLEditorMessages.sql_embedded_script_error_title,
+                        NLS.bind(SQLEditorMessages.sql_embedded_script_error_message, element.getText()));
                 return;
             }
             if (element instanceof SQLQuery query) {
@@ -334,6 +347,9 @@ abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionMa
     @Override
     public DBDDataReceiver getDataReceiver(final SQLQuery statement, final int resultSetNumber) {
         if (curDataReceiver != null) {
+            if (curDataReceiverResultSet >= 0 && curDataReceiverResultSet != resultSetNumber) {
+                return null;
+            }
             return curDataReceiver;
         }
         final boolean isStatsResult = (statement != null && statement.getData() == SQLQueryJob.STATS_RESULTS);

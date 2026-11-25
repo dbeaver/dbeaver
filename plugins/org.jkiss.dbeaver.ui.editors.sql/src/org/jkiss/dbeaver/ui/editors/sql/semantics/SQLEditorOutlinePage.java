@@ -40,10 +40,7 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLCommandModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
@@ -74,6 +71,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         put(SQLQuerySymbolClass.TABLE_ALIAS, ThemeConstants.SQL_EDITOR_COLOR_TABLE_ALIAS);
         put(SQLQuerySymbolClass.COLUMN_DERIVED, ThemeConstants.SQL_EDITOR_COLOR_COLUMN_DERIVED);
         put(SQLQuerySymbolClass.TABLE, ThemeConstants.SQL_EDITOR_COLOR_TABLE);
+        put(SQLQuerySymbolClass.TYPE, ThemeConstants.SQL_EDITOR_COLOR_DATATYPE);
         put(SQLQuerySymbolClass.COLUMN, ThemeConstants.SQL_EDITOR_COLOR_COLUMN);
         put(SQLQuerySymbolClass.FUNCTION, ThemeConstants.SQL_EDITOR_COLOR_FUNCTION);
         put(SQLQuerySymbolClass.COMPOSITE_FIELD, ThemeConstants.SQL_EDITOR_COLOR_COMPOSITE_FIELD);
@@ -833,35 +831,36 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 case CLIENT_PARAMETER -> UIIcon.SQL_PARAMETER;
                 case CLIENT_VARIABLE -> UIIcon.SQL_PARAMETER;
             };
-            this.makeNode(node, varExpr, prepareQueryPreview(varExpr.getRawName()), icon);
+            String extraText = this.obtainExprTypeNameString(varExpr.getValueType());
+            this.makeNode(node, varExpr, prepareQueryPreview(varExpr.getRawName()), extraText, icon);
             return null;
         }
         
         @Nullable
         @Override
-        public Object visitValueColumnRefExpr(
-            @NotNull SQLQueryValueColumnReferenceExpression columnRefExpr,
+        public Object visitValueTargetRefExpr(
+            @NotNull SQLQueryValueTargetReferenceExpression targetRefExpr,
             @NotNull OutlineQueryNode node
         ) {
-            SQLQuerySymbol columnName = columnRefExpr.getColumnNameIfTrivialExpression();
+            SQLQuerySymbol targetName = targetRefExpr.getColumnNameIfTrivialExpression();
             String text;
             String extraText;
             DBPImage icon;
-            if (columnName != null) {
-                SQLQuerySymbolDefinition def = columnName.getDefinition();
+            if (targetName != null) {
+                SQLQuerySymbolDefinition def = targetName.getDefinition();
                 while (def instanceof SQLQuerySymbolEntry s && s != s.getDefinition()) {
                     def = s.getDefinition();
                 }
 
-                text = columnRefExpr.getColumnName() != null ? columnRefExpr.getColumnName().getRawName() : SQLConstants.QUESTION;
-                extraText = this.obtainExprTypeNameString(columnRefExpr);
-                icon = this.obtainExprTypeIcon(columnRefExpr);
+                text = targetRefExpr.getColumnName() != null ? targetRefExpr.getColumnName().getRawName() : SQLConstants.QUESTION;
+                extraText = this.obtainExprTypeNameString(targetRefExpr);
+                icon = this.obtainExprTypeIcon(targetRefExpr);
             } else {
                 text = SQLConstants.QUESTION;
                 extraText = null;
                 icon = DBIcon.TYPE_UNKNOWN;
             }
-            this.makeNode(node, columnRefExpr, text, extraText, icon);
+            this.makeNode(node, targetRefExpr, text, extraText, icon);
             return null;
         }
 
@@ -1205,6 +1204,26 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Object visitCommandVariable(@NotNull SQLCommandModel.VariableNode variable, OutlineQueryNode arg) {
             this.makeNode(arg, variable, variable.name.getName() + " = " + variable.value, UIIcon.SQL_PARAMETER);
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitVariableStatement(@NotNull SQLQueryVariableStatementModel variableStatement, @NotNull OutlineQueryNode node) {
+            for (SQLQueryVariableClause clause : variableStatement.getVariableClauses()) {
+                clause.apply(this, node);
+            }
+            if (variableStatement.getBody() != null) {
+                variableStatement.getBody().apply(this, node);
+            }
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitVariableClause(@NotNull SQLQueryVariableClause variableClause, @NotNull OutlineQueryNode node) {
+            String nodeText = prepareQueryPreview(variableClause.getSyntaxNode().getTextContent());
+            this.makeNode(node, variableClause, nodeText, UIIcon.SQL_VARIABLE2, variableClause.getValueExpression());
             return null;
         }
 

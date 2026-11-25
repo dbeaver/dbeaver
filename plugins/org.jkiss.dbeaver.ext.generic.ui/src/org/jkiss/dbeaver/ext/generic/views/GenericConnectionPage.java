@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionListener;
@@ -138,6 +139,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_URL, urlLabel);
             addControlToGroup(GROUP_URL, urlText);
         }
+        createUrlControls(settingsGroup);
         {
             Label hostLabel = new Label(settingsGroup, SWT.NONE);
             hostLabel.setText(GenericMessages.dialog_connection_host_label);
@@ -292,6 +294,9 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         return UIUtils.createEmptyLabel(parent, 2, 1);
     }
 
+    protected void createUrlControls(@NotNull Composite parent) {
+    }
+
     @Nullable
     private String showDatabaseFileSelectorDialog(int style) {
         if (this.urlPattern.hasProperty(DBConstants.PROP_FILE)) {
@@ -406,6 +411,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
     @Override
     public void loadSettings() {
+        activated = false;
         super.loadSettings();
 
         // Load values from new connection info
@@ -458,7 +464,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         }
 
         if (urlText != null) {
-            if (CommonUtils.isEmpty(connectionInfo.getUrl())) {
+            if (CommonUtils.isEmpty(connectionInfo.getUrl()) && !isCustomURL()) {
                 try {
                     saveSettings(dataSource);
                 } catch (Exception e) {
@@ -565,7 +571,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 showControlGroup(GROUP_DB, properties.contains(DBConstants.PROP_DATABASE));
                 showControlGroup(GROUP_PATH, properties.contains(DBConstants.PROP_FOLDER) || properties.contains(DBConstants.PROP_FILE));
                 showControlGroup(GROUP_CONNECTION_MODE, true);
-                urlText.setEditable(false);
                 controlGroupsByUrl = properties.stream().map(controlGroupByUrlProp::get).collect(Collectors.toSet());
             } else {
                 useCustomUrl = true;
@@ -609,7 +614,8 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         String databaseName = cfg.getDatabaseName();
         testDataSource.setName(databaseName);
 
-        if (!UIUtils.confirmAction(getShell(), "Create Database", "Are you sure you want to create database '" + databaseName + "'?")) {
+        if (!UIUtils.confirmAction(getShell(), GenericMessages.create_database_confirm_title,
+            NLS.bind(GenericMessages.create_database_confirm_message, databaseName))) {
             testDataSource.dispose();
             return;
         }
@@ -624,7 +630,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             });
             MessageDialog.openInformation(getShell(), "Database Create", "Database '" + databaseName + "' created!");
         } catch (InvocationTargetException e1) {
-            DBWorkbench.getPlatformUI().showError("Create database", "Error creating database", e1.getTargetException());
+            DBWorkbench.getPlatformUI().showError(GenericMessages.create_database_confirm_title, GenericMessages.create_database_error, e1.getTargetException());
         } catch (InterruptedException e1) {
             // Just ignore
         }

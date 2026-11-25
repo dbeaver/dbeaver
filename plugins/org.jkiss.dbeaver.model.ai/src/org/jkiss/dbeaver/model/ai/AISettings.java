@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -44,12 +44,13 @@ public class AISettings implements DBPAdaptable {
 
     private final Map<String, AIConfigurationProfile> configurations = new LinkedHashMap<>();
     private String defaultConfiguration;
+    private transient String userDefaultConfiguration;
 
     private String activeEngine;
     // Deprecated. Use AIConfigurationProfile instead
     @Deprecated(forRemoval = true)
     @JsonAdapter(AISettingsManager.EngineConfigAdapter.class)
-    private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
+    private final Map<String, AILegacyEngineConfiguration> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
@@ -73,6 +74,7 @@ public class AISettings implements DBPAdaptable {
         if (profile == null) {
             throw new DBException("AI engine is not configured");
         }
+        profile.getEngineDescriptor();
         return profile;
     }
 
@@ -102,6 +104,10 @@ public class AISettings implements DBPAdaptable {
 
     @Nullable
     public AIConfigurationProfile getDefaultConfigurationOrNull() {
+        AIConfigurationProfile userProfile = configurations.get(userDefaultConfiguration);
+        if (userProfile != null) {
+            return userProfile;
+        }
         if (CommonUtils.isEmpty(defaultConfiguration)) {
             if (!configurations.isEmpty()) {
                 defaultConfiguration = configurations.values().iterator().next().getProfileId();
@@ -116,6 +122,10 @@ public class AISettings implements DBPAdaptable {
             defaultConfiguration = profile.getProfileId();
         }
         return profile;
+    }
+
+    public void setUserDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
+        userDefaultConfiguration = profile == null ? null : profile.getProfileId();
     }
 
     public void setDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
@@ -144,13 +154,50 @@ public class AISettings implements DBPAdaptable {
     }
 
     @NotNull
-    public AIConfigurationProfile copyConfiguration(
+    public String generateProfileId(@NotNull AIEngineDescriptor engine) {
+        String baseId = engine.getId();
+        String id = baseId;
+        for (int i = 1; getConfigurationOrNull(id) != null; i++) {
+            id = baseId + "_" + i;
+        }
+        return id;
+    }
+
+    @NotNull
+    public String generateProfileName(@NotNull String baseName) {
+        String name = baseName;
+        for (int i = 1; getConfigurationByNameOrNull(name) != null; i++) {
+            name = baseName + " (" + i + ")";
+        }
+        return name;
+    }
+
+    @NotNull
+    public synchronized AIConfigurationProfile copyConfiguration(@NotNull AIConfigurationProfile source) throws DBException {
+        return copyConfiguration(
+            source,
+            generateProfileId(source.getEngineDescriptor()),
+            generateProfileName(source.getProfileName())
+        );
+    }
+
+    @NotNull
+    public synchronized AIConfigurationProfile copyConfiguration(
+        @NotNull AIConfigurationProfile source,
+        @NotNull String id
+    ) throws DBException {
+        return copyConfiguration(source, id, generateProfileName(source.getProfileName()));
+    }
+
+    @NotNull
+    public synchronized AIConfigurationProfile copyConfiguration(
         @NotNull AIConfigurationProfile source,
         @NotNull String id,
         @NotNull String name
     ) throws DBException {
         AIConfigurationProfile copy = createConfiguration(id, source.getEngineDescriptor());
         copy.setProfileName(name);
+        copy.setGlobal(source.isGlobal());
         AIEngineProperties sourceConfiguration = source.getConfiguration();
         copy.setConfiguration(AISettingsManager.READ_PROPS_GSON.fromJson(
             AISettingsManager.READ_PROPS_GSON.toJson(sourceConfiguration),
@@ -170,6 +217,9 @@ public class AISettings implements DBPAdaptable {
         }
         // Remove in legacy config too
         engineConfigurations.remove(profile.getEngineId());
+        if (!profile.isAvailable()) {
+            return;
+        }
         try {
             profile.getConfiguration().deleteSecrets(profile);
         } catch (DBException e) {
@@ -236,50 +286,66 @@ public class AISettings implements DBPAdaptable {
 
     // Patches configuration to support legacy configuration format
     public void finishSettingsLoading() {
-        // Def engine
-        if (activeEngine == null || getConfigurationOrNull(activeEngine) == null) {
+        boolean migrateLegacyConfigurations = configurations.isEmpty() && !engineConfigurations.isEmpty();
+        if (migrateLegacyConfigurations) {
+            // Profiles from engine settings
+            for (Map.Entry<String, AILegacyEngineConfiguration> entry : engineConfigurations.entrySet()) {
+                String engineId = entry.getKey();
+                AIConfigurationProfile profile = AISettingsManager.EngineConfigAdapter.toProfile(engineId, entry.getValue());
+                if (profile.isAvailable()) {
+                    try {
+                        if (profile.getConfiguration() instanceof OpenAIProperties properties
+                            && CommonUtils.isEmpty(properties.getModel())) {
+                            properties.setModel(OpenAIConstants.LEGACY_DEFAULT_MODEL);
+                        }
+                    } catch (DBException e) {
+                        log.error(e);
+                    }
+                }
+                configurations.put(engineId, profile);
+            }
+        }
+
+        // keep the saved engine even when this product does not provide it
+        if (activeEngine == null) {
             activeEngine = OpenAIConstants.OPENAI_ENGINE;
         }
 
-        if (configurations.isEmpty() && !engineConfigurations.isEmpty()) {
-            // Profiles from engine settings
-            for (Map.Entry<String, AIEngineProperties> ep : engineConfigurations.entrySet()) {
-                String engineId = ep.getKey();
-                AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
-                if (engineDescriptor != null) {
-                    AIConfigurationProfile cp = new AIConfigurationProfile();
-                    cp.setMigrated(true);
-                    cp.setProfileId(engineId);
-                    cp.setProfileName(engineDescriptor.getId());
-                    cp.setEngineId(engineId);
-                    cp.setConfiguration(ep.getValue());
-                    configurations.put(ep.getKey(), cp);
-                }
-            }
+        if (migrateLegacyConfigurations) {
             defaultConfiguration = activeEngine;
         } else if (!configurations.isEmpty()) {
             // Set profile IDs
             for (Map.Entry<String, AIConfigurationProfile> ep : configurations.entrySet()) {
                 ep.getValue().setProfileId(ep.getKey());
             }
+        }
+    }
 
-            if (engineConfigurations.isEmpty()) {
-                // Copy to engine configs for backward compatibility
-                for (Map.Entry<String, AIConfigurationProfile> ep : configurations.entrySet()) {
-                    try {
-                        engineConfigurations.put(ep.getValue().getEngineId(), ep.getValue().getConfiguration());
-                    } catch (DBException e) {
-                        log.error(e);
-                    }
-                }
+    public void prepareSettingsSaving() throws DBException {
+        for (AIConfigurationProfile profile : configurations.values()) {
+            if (!profile.isAvailable()) {
+                continue;
             }
+            String engineId = profile.getEngineId();
+            if (!engineConfigurations.containsKey(engineId)
+                || profile.isMigrated() && profile.getProfileId().equals(engineId)) {
+                engineConfigurations.put(engineId, new AILegacyEngineConfiguration(profile.getConfiguration()));
+            }
+        }
+        // legacy settings are shared, so a per-user default must not choose their representative
+        AIConfigurationProfile sharedDefault = configurations.get(defaultConfiguration);
+        if (sharedDefault != null && sharedDefault.isAvailable()) {
+            engineConfigurations.put(sharedDefault.getEngineId(), new AILegacyEngineConfiguration(sharedDefault.getConfiguration()));
         }
     }
 
     public void resolveSecrets() {
         for (AIConfigurationProfile profile : this.getConfigurations()) {
+            if (!profile.isAvailable()) {
+                continue;
+            }
             try {
-                profile.getConfiguration().resolveSecrets(profile);
+                profile.resolveSecrets();
             } catch (DBException e) {
                 log.error("Error resolving profile '" + profile.getProfileId() + "' secrets", e);
             }

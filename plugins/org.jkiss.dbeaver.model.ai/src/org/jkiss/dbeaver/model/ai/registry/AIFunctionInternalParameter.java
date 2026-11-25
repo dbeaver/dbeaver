@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameterTransformer;
+import org.jkiss.dbeaver.model.ai.AIFunctionParameterValueProvider;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -30,21 +31,65 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
     private static final Log log = Log.getLog(AIFunctionInternalParameter.class);
 
     private final IConfigurationElement config;
+    @Nullable
+    private final AIFunctionImplementationDescriptor implementation;
+    @Nullable
+    private final String validValuesProviderClass;
     private String targetSuffix;
     private AIFunctionParameterTransformer transformer;
+    private AIFunctionParameterValueProvider validValuesProvider;
+    private boolean validValuesProviderInitialized;
 
     public AIFunctionInternalParameter(@NotNull IConfigurationElement config) {
+        this(config, null);
+    }
+
+    AIFunctionInternalParameter(
+        @NotNull IConfigurationElement config,
+        @Nullable AIFunctionImplementationDescriptor implementation
+    ) {
         super(config);
         this.config = config;
-        String transformerClass = this.config.getAttribute("transformer");
-        if (!CommonUtils.isEmpty(transformerClass)) {
+        String parameterName = config.getAttribute("name");
+        this.implementation = implementation != null && implementation.getParametersWithValueProvider().contains(parameterName)
+            ? implementation : null;
+        this.validValuesProviderClass = this.implementation == null ? config.getAttribute("validValuesProvider") : null;
+        if (implementation != null && implementation.getTransformedParameters().contains(parameterName)) {
             try {
-                transformer = new ObjectType(transformerClass).createInstance(AIFunctionParameterTransformer.class);
-                targetSuffix = this.config.getAttribute("targetSuffix");
+                transformer = implementation.createParameterTransformer(parameterName);
+                targetSuffix = implementation.getParameterTransformerSuffix(parameterName);
             } catch (DBException e) {
-                log.error("Error creating transformer");
+                log.error("Error creating runtime transformer for parameter '" + parameterName + "'", e);
+            }
+        } else {
+            String transformerClass = this.config.getAttribute("transformer");
+            if (!CommonUtils.isEmpty(transformerClass)) {
+                try {
+                    transformer = new ObjectType(transformerClass).createInstance(AIFunctionParameterTransformer.class);
+                    targetSuffix = this.config.getAttribute("targetSuffix");
+                } catch (DBException e) {
+                    log.error("Error creating transformer for parameter '" + parameterName + "'", e);
+                }
             }
         }
+    }
+
+    @Nullable
+    private synchronized AIFunctionParameterValueProvider getValidValuesProvider() {
+        if (!validValuesProviderInitialized) {
+            validValuesProviderInitialized = true;
+            try {
+                if (implementation != null) {
+                    validValuesProvider = implementation.createParameterValueProvider(getName());
+                } else if (!CommonUtils.isEmpty(validValuesProviderClass)) {
+                    validValuesProvider = new ObjectType(validValuesProviderClass)
+                        .createInstance(AIFunctionParameterValueProvider.class);
+                }
+            } catch (DBException e) {
+                log.error("Error creating valid values provider for parameter '" + getName() + "'", e);
+            }
+        }
+        return validValuesProvider;
     }
 
     @Override
@@ -62,7 +107,21 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
     @Override
     @Nullable
     public String getDescription() {
-        return config.getAttribute("description");
+        String description = config.getAttribute("description");
+        AIFunctionParameterValueProvider provider = getValidValuesProvider();
+        if (provider != null) {
+            String suffix = provider.getValidValuesDescription();
+            if (!CommonUtils.isEmpty(suffix)) {
+                if (CommonUtils.isEmpty(description) || description.isBlank()) {
+                    return suffix;
+                }
+                description = description.stripTrailing();
+                char lastChar = description.charAt(description.length() - 1);
+                String separator = lastChar == '.' || lastChar == '!' || lastChar == '?' ? " " : ". ";
+                return description + separator + suffix;
+            }
+        }
+        return description;
     }
 
     @Override
@@ -79,6 +138,13 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
     @Override
     @Nullable
     public String[] getValidValues() {
+        AIFunctionParameterValueProvider provider = getValidValuesProvider();
+        if (provider != null) {
+            String[] providedValues = provider.getValidValues();
+            if (providedValues != null) {
+                return providedValues;
+            }
+        }
         String validValues = config.getAttribute("validValues");
         return CommonUtils.isEmpty(validValues) ? null : validValues.split(",");
     }
