@@ -26,9 +26,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 public class DataExporterXMLTest {
@@ -104,6 +107,44 @@ public class DataExporterXMLTest {
         assertOutputMatches(expectedRow);
     }
 
+    @Test
+    public void elementNamesKeepLettersOfOtherScripts() throws DBException, IOException {
+        List<String> output = exportWithNames("顧客", "氏名");
+
+        Assertions.assertEquals("<顧客>", output.get(1));
+        Assertions.assertEquals("    <氏名>value</氏名>", output.get(3));
+        Assertions.assertEquals("</顧客>", output.get(5));
+    }
+
+    @Test
+    public void elementNamesKeepAccentedLettersAndCombiningMarks() throws DBException, IOException {
+        Assertions.assertEquals("    <Größe>value</Größe>", exportWithNames("t", "Größe").get(3));
+        Assertions.assertEquals("    <नाम>value</नाम>", exportWithNames("t", "नाम").get(3));
+    }
+
+    @Test
+    public void elementNamesStartingWithNonAsciiDigitGetUnderscorePrefix() throws DBException, IOException {
+        Assertions.assertEquals("    <_２０２６年>value</_２０２６年>", exportWithNames("t", "２０２６年").get(3));
+    }
+
+    @Test
+    public void doctypeUsesTheElementNamesOfTheRows() throws DBException, IOException {
+        StringWriter writer = new StringWriter();
+        IStreamDataExporterSite site = ExporterTestsUtils.getIStreamDataExporterSiteMock("顧客", "名前", writer, outputEncoding);
+        Mockito.when(site.getProperties()).thenReturn(Map.of("includeDoctype", true));
+        Mockito.when(site.getAttributes()[0].getLabel()).thenReturn("氏名");
+        DataExporterXML xmlExporter = new DataExporterXML();
+        xmlExporter.init(site);
+        xmlExporter.exportHeader(session);
+        xmlExporter.exportRow(session, resultSet, new Object[]{"value"});
+        xmlExporter.exportFooter(null);
+
+        List<String> output = writer.toString().lines().toList();
+        Assertions.assertTrue(output.contains("  <!ELEMENT DATA_RECORD (名前?)+>"), writer.toString());
+        Assertions.assertTrue(output.contains("  <!ELEMENT 名前 (#PCDATA)>"), writer.toString());
+        Assertions.assertTrue(output.contains("    <名前>value</名前>"), writer.toString());
+    }
+
     @BeforeEach
     public void setUp() throws DBException {
         stringWriter = new StringWriter();
@@ -124,6 +165,40 @@ public class DataExporterXMLTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[]{row});
         exporter.exportFooter(null);
+    }
+
+    @Test
+    public void elementNamesReplaceLettersTheOutputEncodingCannotWrite() throws DBException, IOException {
+        List<String> output = exportWithNames("顧客", "Größe", "US-ASCII");
+
+        Assertions.assertEquals("<_>", output.get(1));
+        Assertions.assertEquals("    <Gr_e>value</Gr_e>", output.get(3));
+        Assertions.assertEquals("    <Größe>value</Größe>", exportWithNames("t", "Größe", "ISO-8859-1").get(3));
+    }
+
+    @Test
+    public void emptyElementNameBecomesUnderscore() throws DBException, IOException {
+        Assertions.assertEquals("    <_>value</_>", exportWithNames("t", "").get(3));
+    }
+
+    @NotNull
+    private List<String> exportWithNames(@NotNull String table, @NotNull String column) throws DBException, IOException {
+        return exportWithNames(table, column, outputEncoding);
+    }
+
+    @NotNull
+    private List<String> exportWithNames(
+        @NotNull String table,
+        @NotNull String column,
+        @NotNull String encoding
+    ) throws DBException, IOException {
+        StringWriter writer = new StringWriter();
+        DataExporterXML xmlExporter = new DataExporterXML();
+        xmlExporter.init(ExporterTestsUtils.getIStreamDataExporterSiteMock(table, column, writer, encoding));
+        xmlExporter.exportHeader(session);
+        xmlExporter.exportRow(session, resultSet, new Object[]{"value"});
+        xmlExporter.exportFooter(null);
+        return writer.toString().lines().toList();
     }
 
     private void assertOutputMatches(@NotNull String expectedRow) {
