@@ -71,6 +71,22 @@ class DBDamNameServiceTest {
     }
 
     @Test
+    void initializesNameWhenRegistrationBecomesVisibleOnRetry() throws Exception {
+        var saved = dam(DEFAULT_NAME);
+        Mockito.when(account.getDam(CLIENT_ID)).thenReturn(null, dam(null), saved);
+        Mockito.when(account.canRenameDam()).thenReturn(true);
+        Mockito.when(account.renameDam(CLIENT_ID, DEFAULT_NAME)).thenReturn(saved);
+
+        Assertions.assertNull(DBDamNameService.getOrInitializeName(account, CLIENT_ID,
+            () -> Assertions.fail("A name must not be generated before server registration")));
+        Assertions.assertSame(saved, DBDamNameService.getOrInitializeName(account, CLIENT_ID, () -> DEFAULT_NAME));
+        Assertions.assertSame(saved, DBDamNameService.getOrInitializeName(account, CLIENT_ID,
+            () -> Assertions.fail("The saved name must be preserved")));
+
+        Mockito.verify(account).renameDam(CLIENT_ID, DEFAULT_NAME);
+    }
+
+    @Test
     void respectsRenamePermissionWithoutShowingAnUnsavedSuggestion() throws Exception {
         var unnamed = dam(null);
         Mockito.when(account.getDam(CLIENT_ID)).thenReturn(unnamed);

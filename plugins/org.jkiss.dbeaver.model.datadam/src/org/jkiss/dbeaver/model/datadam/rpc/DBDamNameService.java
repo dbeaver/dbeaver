@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -38,6 +41,7 @@ import java.util.function.Supplier;
 /** Persists the initial desktop name after the server registers the Dam. */
 public class DBDamNameService implements IPluginService {
     private static final Log log = Log.getLog(DBDamNameService.class);
+    private static final long NAME_RETRY_DELAY = 5_000;
 
     @Nullable
     private DDRemoteDamSubscription subscription;
@@ -71,16 +75,32 @@ public class DBDamNameService implements IPluginService {
         if (!ready) {
             return;
         }
-        job = Job.createSystem("Initialize DataDam desktop name", monitor -> {
-            if (monitor.isCanceled() || !DDProductConfig.isIntegrationEnabled() || !session.getChannel().getStatus().isReady()) {
-                return;
+        job = new Job("Initialize DataDam desktop name") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull IProgressMonitor monitor) {
+                if (monitor.isCanceled() || !DDProductConfig.isIntegrationEnabled()
+                    || !session.getChannel().getStatus().isReady()) {
+                    return Status.CANCEL_STATUS;
+                }
+                try {
+                    if (getOrInitializeName(account, session.getClientDamId()) != null) {
+                        return Status.OK_STATUS;
+                    }
+                } catch (DBException e) {
+                    log.debug("Cannot save initial DataDam desktop name", e);
+                }
+                // Registration may not be visible yet, and transient Account failures must not require a reconnect.
+                synchronized (DBDamNameService.this) {
+                    if (!stopped && job == this && !monitor.isCanceled()
+                        && DDProductConfig.isIntegrationEnabled() && session.getChannel().getStatus().isReady()) {
+                        schedule(NAME_RETRY_DELAY);
+                    }
+                }
+                return Status.OK_STATUS;
             }
-            try {
-                getOrInitializeName(account, session.getClientDamId());
-            } catch (DBException e) {
-                log.debug("Cannot save initial DataDam desktop name", e);
-            }
-        });
+        };
+        job.setSystem(true);
         job.schedule();
     }
 

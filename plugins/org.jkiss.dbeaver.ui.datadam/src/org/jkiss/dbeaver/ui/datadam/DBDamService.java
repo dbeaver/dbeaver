@@ -62,10 +62,10 @@ public class DBDamService {
     public DDConnectedRemoteDam getDam(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
         var session = DBDamSessionService.getInstance();
         String clientDamId = session.getClientDamId();
-        DDConnectedRemoteDam dam = account.getDam(clientDamId);
+        DDConnectedRemoteDam dam = DBDamNameService.getOrInitializeName(account, clientDamId);
         if (dam == null) {
             awaitConnection(session, monitor);
-            dam = account.getDam(clientDamId);
+            dam = DBDamNameService.getOrInitializeName(account, clientDamId);
         }
         return dam;
     }
