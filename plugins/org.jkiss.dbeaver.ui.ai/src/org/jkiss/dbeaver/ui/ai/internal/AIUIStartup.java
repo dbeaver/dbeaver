@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.ai.internal;
 
 import org.eclipse.ui.IStartup;
-import org.jkiss.dbeaver.model.ai.AIProjectConnectionCount;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIPropertyTester;
 
@@ -25,9 +24,6 @@ public class AIUIStartup implements IStartup {
     @Override
     public void earlyStartup() {
         // The activity test does not activate this bundle during workbench initialization.
-        UIUtils.asyncExec(() -> {
-            AIPropertyTester.firePropertyChange(AIPropertyTester.PROP_IS_DISABLED);
-            AIProjectConnectionCount.getInstance().start();
-        });
+        UIUtils.asyncExec(() -> AIPropertyTester.firePropertyChange(AIPropertyTester.PROP_IS_DISABLED));
     }
 }
