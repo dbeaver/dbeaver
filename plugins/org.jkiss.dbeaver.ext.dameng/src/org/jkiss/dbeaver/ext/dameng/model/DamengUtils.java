@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.dameng.DamengConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPObjectWithLongId;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -35,11 +36,28 @@ import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Shengkai Bai
  */
 public class DamengUtils {
+
+    private static final int ERROR_UNRESOLVED_MEMBER = -2207;
+    private static final String QUOTED_IDENTIFIER = "\"(?:\"\"|[^\"])*+\"";
+    private static final String IDENTIFIER = "(?:" + QUOTED_IDENTIFIER + "|[\\p{L}_][\\p{L}\\p{N}_$#]*)";
+    private static final String ALTERNATIVE_STRING = "\\bN?Q'(?:\\[(?s:.*?)\\]|\\{(?s:.*?)\\}|\\((?s:.*?)\\)|<(?s:.*?)>"
+        + "|(?-i:(?<quoteDelimiter>[^\\s\\[{(<])(?s:.*?)\\k<quoteDelimiter>))'";
+    private static final Pattern DDL_PARTS = Pattern.compile(
+        ALTERNATIVE_STRING + "|'(?:''|[^'])*+'|" + QUOTED_IDENTIFIER
+            + "|--[^\\r\\n]*(?:\\r\\n?|\\n|$)|(?s:/\\*.*?\\*/)"
+            + "|(?<keyword>\\b(?:TABLE|INDEX|ON|REFERENCES)\\b)(?<separator>\\s+)"
+            + "(?<qualifier>" + IDENTIFIER + "\\s*\\.\\s*)(?=" + IDENTIFIER + ")|(?<space>\\s+)",
+        Pattern.CASE_INSENSITIVE
+    );
 
     public static String getDDL(DBRProgressMonitor monitor, DBSObject object, DamengConstants.ObjectType objectType, String schema) throws DBException {
 
@@ -50,27 +68,50 @@ public class DamengUtils {
         }
     }
 
-    @Nullable
+    @NotNull
     static String getTableDDL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull GenericTableBase table,
         @NotNull String schema,
-        boolean skipIndexes
+        @NotNull Map<String, Object> options
     ) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read Dameng table DDL")) {
-            String tableDDL = getDDL(session, DamengConstants.ObjectType.TABLE, table.getName(), schema);
-            if (CommonUtils.isEmpty(tableDDL)) {
-                return null;
+            String tableDDL = getNativeTableDDL(session, table.getName(), schema);
+            if (tableDDL == null || tableDDL.isBlank()) {
+                Map<String, Object> fallbackOptions = new HashMap<>(options);
+                fallbackOptions.put(DBPScriptObject.OPTION_SKIP_INDEXES, true);
+                tableDDL = DBStructUtils.generateTableDDL(monitor, table, fallbackOptions, false);
+            } else {
+                tableDDL = formatDDL(tableDDL, options);
             }
             StringBuilder ddl = new StringBuilder(tableDDL.length());
             DBStructUtils.addDDLLine(ddl, tableDDL);
-            appendTableComments(session, table, schema, ddl);
-            if (!skipIndexes) {
-                appendTableIndexes(session, table.getName(), schema, ddl);
+            appendTableComments(session, table, schema, options, ddl);
+            if (!CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_INDEXES)) {
+                appendTableIndexes(session, table.getName(), schema, options, ddl);
             }
             return ddl.toString().stripTrailing();
         } catch (SQLException e) {
             throw new DBException("Load source code for table '" + table.getName() + "' failed", e);
+        }
+    }
+
+    @Nullable
+    private static String getNativeTableDDL(JDBCSession session, String table, String schema) throws SQLException {
+        try {
+            return getDDL(session, DamengConstants.ObjectType.TABLE, table, schema);
+        } catch (SQLException e) {
+            if (e.getErrorCode() == ERROR_UNRESOLVED_MEMBER) {
+                try (JDBCPreparedStatement statement = session.prepareStatement("SELECT SF_CHECK_SYSTEM_PACKAGE('DBMS_METADATA')");
+                     JDBCResultSet result = statement.executeQuery()) {
+                    if (result.next() && "0".equals(result.getString(1))) {
+                        return null;
+                    }
+                } catch (SQLException checkError) {
+                    e.addSuppressed(checkError);
+                }
+            }
+            throw e;
         }
     }
 
@@ -87,8 +128,13 @@ public class DamengUtils {
         }
     }
 
-    private static void appendTableComments(JDBCSession session, GenericTableBase table, String schema, StringBuilder ddl)
-        throws SQLException {
+    private static void appendTableComments(
+        JDBCSession session,
+        GenericTableBase table,
+        String schema,
+        Map<String, Object> options,
+        StringBuilder ddl
+    ) throws SQLException {
         String query = """
             SELECT NULL AS COLUMN_NAME, COMMENT$ FROM SYS.SYSTABLECOMMENTS
             WHERE SCHNAME = ? AND TVNAME = ? AND TABLE_TYPE = 'TABLE' AND COMMENT$ IS NOT NULL
@@ -98,8 +144,10 @@ public class DamengUtils {
             ORDER BY COLUMN_NAME NULLS FIRST
             """;
         var dataSource = table.getDataSource();
-        String tableName = DBUtils.getQuotedIdentifier(dataSource, schema, true, true) + "."
-            + DBUtils.getQuotedIdentifier(dataSource, table.getName(), true, true);
+        String tableName = DBUtils.getQuotedIdentifier(dataSource, table.getName(), true, true);
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true)) {
+            tableName = DBUtils.getQuotedIdentifier(dataSource, schema, true, true) + "." + tableName;
+        }
         try (JDBCPreparedStatement statement = session.prepareStatement(query)) {
             statement.setString(1, schema);
             statement.setString(2, table.getName());
@@ -119,11 +167,16 @@ public class DamengUtils {
         }
     }
 
-    private static void appendTableIndexes(JDBCSession session, String table, String schema, StringBuilder ddl)
-        throws SQLException {
+    private static void appendTableIndexes(
+        JDBCSession session,
+        String table,
+        String schema,
+        Map<String, Object> options,
+        StringBuilder ddl
+    ) throws SQLException {
         // bit 0 marks system-generated indexes, including those backing primary and unique keys.
         String query = """
-            SELECT DBMS_METADATA.GET_DDL('INDEX', idx.NAME, sch.NAME)
+            SELECT INDEXDEF(info.ID, 1)
             FROM SYS.SYSOBJECTS tab
             JOIN SYS.SYSOBJECTS sch ON sch.ID = tab.SCHID
             JOIN SYS.SYSOBJECTS idx ON idx.PID = tab.ID AND idx.SUBTYPE$ = 'INDEX'
@@ -139,11 +192,34 @@ public class DamengUtils {
                 while (result.next()) {
                     String indexDDL = result.getString(1);
                     if (indexDDL != null) {
-                        DBStructUtils.addDDLLine(ddl, indexDDL);
+                        DBStructUtils.addDDLLine(ddl, formatDDL(indexDDL, options));
                     }
                 }
             }
         }
+    }
+
+    private static String formatDDL(String ddl, Map<String, Object> options) {
+        boolean qualified = CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true);
+        boolean compact = CommonUtils.getOption(options, DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT);
+        if (qualified && !compact) {
+            return ddl;
+        }
+
+        // consume quoted text and comments before looking for schema prefixes or whitespace.
+        Matcher parts = DDL_PARTS.matcher(ddl);
+        StringBuilder formatted = new StringBuilder(ddl.length());
+        while (parts.find()) {
+            String keyword = parts.group("keyword");
+            if (keyword != null) {
+                String separator = compact ? " " : parts.group("separator");
+                String qualifier = qualified ? parts.group("qualifier") : "";
+                parts.appendReplacement(formatted, Matcher.quoteReplacement(keyword + separator + qualifier));
+            } else if (compact && parts.group("space") != null) {
+                parts.appendReplacement(formatted, " ");
+            }
+        }
+        return parts.appendTail(formatted).toString();
     }
 
     @Nullable

@@ -225,9 +225,7 @@ public class DamengMetaModel extends GenericMetaModel {
             return super.getTableDDL(monitor, table, options);
         }
 
-        String ddl = DamengUtils.getTableDDL(
-            monitor, table, schema.getName(), CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_INDEXES));
-        return ddl == null ? super.getTableDDL(monitor, table, options) : ddl;
+        return DamengUtils.getTableDDL(monitor, table, schema.getName(), options);
     }
 
     @Override
