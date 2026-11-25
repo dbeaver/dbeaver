@@ -68,7 +68,6 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanActionDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -282,7 +281,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
         if (planner instanceof DBCQueryPlannerSerializable qps) {
 
             FileDialog fd = new FileDialog(viewer.getControl().getShell(), SWT.OPEN | SWT.SINGLE);
-            fd.setText(UIMessages.save_execution_plan);
+            fd.setText(SQLEditorMessages.save_execution_plan);
             fd.setFilterPath(curFolder);
             fd.setFilterExtensions(SQLPlanSaveProvider.EXT);
             String selected = fd.open();
@@ -302,7 +301,10 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
                     return true;
 
                 } catch (IOException | InvocationTargetException e) {
-                    DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan ", CommonUtils.getRootCause(e));
+                    DBWorkbench.getPlatformUI().showError(
+                        SQLEditorMessages.sql_plan_load_error_title,
+                        SQLEditorMessages.sql_plan_load_error_message,
+                        CommonUtils.getRootCause(e));
                 }
             }
         }
@@ -395,7 +397,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
             return;
         }
         if (planner == null) {
-            DBWorkbench.getPlatformUI().showError("No SQL Plan", "This datasource doesn't support execution plans");
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_plan_not_supported_title, SQLEditorMessages.sql_plan_not_supported_message);
             return;
         }
         DBRRunnableWithReturn<DBCQueryPlannerConfiguration> configurator = monitor -> {

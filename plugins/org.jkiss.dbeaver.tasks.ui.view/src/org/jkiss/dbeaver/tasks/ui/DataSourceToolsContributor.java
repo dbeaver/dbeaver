@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView;
 import org.jkiss.dbeaver.tools.registry.ToolDescriptor;
 import org.jkiss.dbeaver.tools.registry.ToolGroupDescriptor;
@@ -227,7 +229,9 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                     new DataSourceEditorInput(dataSource, editor),
                     editor.getEditorId());
             } catch (PartInitException e) {
-                DBWorkbench.getPlatformUI().showError("Editor open", "Error opening tool editor '" + editor.getEditorId() + "'", e.getStatus());
+                DBWorkbench.getPlatformUI().showError(
+                    TaskUIViewMessages.task_editor_open_error_title,
+                    NLS.bind(TaskUIViewMessages.task_editor_open_error_message, editor.getEditorId()), e.getStatus());
             }
         }
     }

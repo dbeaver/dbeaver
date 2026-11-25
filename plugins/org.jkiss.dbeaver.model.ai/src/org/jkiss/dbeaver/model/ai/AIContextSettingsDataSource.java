@@ -21,6 +21,7 @@ import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
@@ -58,6 +59,12 @@ public class AIContextSettingsDataSource extends AIContextSettings {
     @NotNull
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
+    }
+
+    @NotNull
+    @Override
+    public AIDatabaseScope getScope() {
+        return CommonUtils.notNull(super.getScope(), AIUtils.getDefaultScope());
     }
 
     protected void loadSettings() {

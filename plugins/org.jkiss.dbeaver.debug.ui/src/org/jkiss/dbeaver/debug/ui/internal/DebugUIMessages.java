@@ -20,8 +20,12 @@ package org.jkiss.dbeaver.debug.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class DebugUIMessages extends NLS {
-
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages"; //$NON-NLS-1$
+
+    public static String debug_panel_error_title;
+    public static String debug_panel_error_message;
+    public static String debug_launch_error_message;
+
 
     public static String DatabaseStandardBreakpointPane_description;
     public static String DatabaseStandardBreakpointPane_name;

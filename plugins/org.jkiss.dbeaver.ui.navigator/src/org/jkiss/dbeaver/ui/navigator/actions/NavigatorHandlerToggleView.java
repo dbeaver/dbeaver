@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IParameterValues;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -28,6 +29,7 @@ import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
@@ -51,7 +53,8 @@ public class NavigatorHandlerToggleView extends AbstractHandler implements IElem
                     workbenchWindow.getActivePage().showView(viewId);
                 }
             } catch (PartInitException e) {
-                DBWorkbench.getPlatformUI().showError("Toggle view", "Cannot open view " + viewId, e);
+                DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_toggle_view_title,
+                    NLS.bind(UINavigatorMessages.error_open_view_message, viewId), e);
             }
         }
 

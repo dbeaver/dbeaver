@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.impl.AIFunctionCallConsumer;
 import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
 import org.jkiss.dbeaver.model.ai.qm.QMAIChatStorageInMemory;
 import org.jkiss.dbeaver.model.ai.qm.QMAIContext;
@@ -49,6 +50,78 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 public class AIChatSessionTest extends DBeaverUnitTest {
+    @Test
+    public void lateCompletionDoesNotReactivateCanceledConversation() {
+        AIChatConversation conversation = conversation();
+        var completion = conversation.startConversation();
+        conversation.cancelConversation();
+
+        new AIChatSessionResponseConsumer(session(new QMAIChatStorageInMemory()), conversation)
+            .complete(List.of(), false, false);
+
+        Assertions.assertTrue(completion.isCancelled());
+        Assertions.assertEquals(AIChatConversation.State.CANCELED, conversation.getState());
+        Assertions.assertFalse(conversation.isActive());
+    }
+
+    @Test
+    public void canceledConversationDoesNotRequestMoreToolCalls() {
+        AIChatConversation conversation = conversation();
+        conversation.startConversation();
+        conversation.cancelConversation();
+        AIChatSession session = Mockito.mock(AIChatSession.class);
+        AIChatResponseConsumer consumer = Mockito.mock(AIChatResponseConsumer.class);
+
+        new AIFunctionCallConsumer(session, consumer, conversation, new VoidProgressMonitor()).accept(List.of());
+
+        Mockito.verifyNoInteractions(session, consumer);
+    }
+
+    @Test
+    public void deletedConversationCannotBeSavedOrRestartedByLateCallbacks() throws DBException {
+        QMAIChatStorageInMemory storage = new QMAIChatStorageInMemory();
+        AIChatSession session = session(storage);
+        session.init(new VoidProgressMonitor());
+        AIChatConversation conversation = conversation();
+        session.addConversation(conversation);
+        session.saveConversationSettings(new VoidProgressMonitor(), conversation);
+        var completion = conversation.startConversation();
+        conversation.cancelConversation();
+        session.removeConversation(conversation);
+        AIChatListener listener = Mockito.mock(AIChatListener.class);
+        session.addListener(listener);
+
+        AIChatMessage lateMessage = conversation.addMessage(AIMessage.assistantMessage("Late response", List.of()));
+        session.notifyMessageAdd(conversation, lateMessage);
+        session.saveConversationSettings(new VoidProgressMonitor(), conversation);
+
+        Assertions.assertTrue(completion.isCancelled());
+        Assertions.assertTrue(conversation.startConversation().isDone());
+        Assertions.assertEquals(AIChatConversation.State.CANCELED, conversation.getState());
+        Assertions.assertFalse(session.hasConversation(conversation.getId()));
+        Assertions.assertTrue(storage.findConversations("session").isEmpty());
+        Mockito.verifyNoInteractions(listener);
+    }
+
+    @Test
+    public void canceledSubmissionDoesNotStartAnotherRequest() throws DBException {
+        AIChatStorage storage = Mockito.mock(AIChatStorage.class);
+        AIChatSession session = session(storage);
+        AIChatConversation conversation = conversation();
+        conversation.startConversation();
+        conversation.cancelConversation();
+        AIChatResponseConsumer consumer = Mockito.mock(AIChatResponseConsumer.class);
+
+        Assertions.assertSame(conversation,
+            session.processAICompletion(new VoidProgressMonitor(), conversation, consumer, null, null).join());
+        Mockito.verifyNoInteractions(storage, consumer);
+    }
+
+    @NotNull
+    private static AIChatConversation conversation() {
+        return new AIChatConversation(UUID.randomUUID(), "Chat", Mockito.mock(AIPromptGenerator.class), List.of(), null, 0, null);
+    }
+
     @Test
     public void removesUnsavedEmptyConversationFromInMemorySession() throws DBException {
         QMAIChatStorageInMemory storage = new QMAIChatStorageInMemory();

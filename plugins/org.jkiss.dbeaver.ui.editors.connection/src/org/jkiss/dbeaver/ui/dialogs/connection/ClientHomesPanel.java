@@ -190,7 +190,8 @@ public class ClientHomesPanel extends Composite {
                     }
                 });
             } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Client download", "Failed to download client files", e.getTargetException());
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.controls_client_homes_panel_download_title,
+                    UIConnectionMessages.controls_client_homes_panel_download_error, e.getTargetException());
             }
         }
         DBPNativeClientLocationManager nativeClientLocationManager = driver.getNativeClientManager();
@@ -311,7 +312,8 @@ public class ClientHomesPanel extends Composite {
                     try {
                         descriptor.getProviderDescriptor().getRegistry().saveDrivers();
                     } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                        DBWorkbench.getPlatformUI().showError(UIConnectionMessages.pref_page_network_profiles_save_error_title,
+                            UIConnectionMessages.dialog_drivers_save_error, e);
                         return;
                     }
                 }

@@ -25,4 +25,6 @@ public interface CLIConstants {
     String COMMAND_REUSE_WORKSPACE = "-reuseWorkspace";
 
     String PARAM_PROJECT = "--project";
+
+    String ENV_LAUNCH_DIRECTORY = "DBVR_LAUNCH_CWD";
 }

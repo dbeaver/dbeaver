@@ -632,7 +632,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 true
             );
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't set filter", "Cannot set custom filter", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_set_filter_title, ResultSetMessages.error_set_filter_message, e);
             return;
         }
         if (currentCondition.toString().trim().equals(condition.trim())) {
@@ -955,7 +955,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             try {
                 editControl = createObjectPanel(popup);
             } catch (PartInitException e1) {
-                DBWorkbench.getPlatformUI().showError("Object info", "Error opening object info", e1);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_object_info_title, ResultSetMessages.error_object_info_message, e1);
                 popup.dispose();
                 return;
             }
@@ -1143,6 +1143,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 UIUtils.asyncExec(() -> composite.setBackground(editControl.getBackground()));
             }
 
+            UIUtils.applyMainFont(composite);
             Point parentRect = getDisplay().map(filtersText, null, new Point(0, 0));
             Rectangle displayRect = getMonitor().getClientArea();
 
@@ -1217,7 +1218,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 @Override
                 public void update(@NotNull ViewerCell cell) {
                     cell.setText(((QMQueryFilter) cell.getElement()).text());
-                    cell.setFont(BaseThemeSettings.instance.monospaceFont);
                 }
             });
 

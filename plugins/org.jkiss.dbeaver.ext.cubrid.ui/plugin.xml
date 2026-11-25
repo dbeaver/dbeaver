@@ -62,7 +62,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.cubrid.OIDNavigator" name="%views.CubridOIDSearchDiaglog.name" description="views.CubridOIDSearchDiaglog.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.cubrid.OIDNavigator" name="%views.CubridOIDSearchDiaglog.name" description="%views.CubridOIDSearchDiaglog.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">

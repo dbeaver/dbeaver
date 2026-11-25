@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -76,7 +77,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                 presentation
             );
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("GIS Viewer", "Error initializing GIS viewer", e);
+            DBWorkbench.getPlatformUI().showError(GISMessages.gis_viewer_title, GISMessages.gis_viewer_initialization_error, e);
             return null;
         }
 

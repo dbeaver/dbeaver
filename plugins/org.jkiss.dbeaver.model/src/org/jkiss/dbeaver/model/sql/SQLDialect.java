@@ -136,6 +136,10 @@ public interface SQLDialect {
 
     @NotNull
     Collection<String> getFunctions();
+
+    /** Whether a function is registered by this dialect, regardless of identifier case. */
+    boolean isFunction(@NotNull String name);
+
     @NotNull
     Collection<String> getDataTypes(@Nullable DBPDataSource dataSource);
     @Nullable
@@ -332,6 +336,13 @@ public interface SQLDialect {
     boolean supportsTableDropCascade();
 
     boolean supportsOrderByIndex();
+
+    /**
+     * Whether generated ascending ORDER BY items must include the ASC keyword.
+     */
+    default boolean requiresExplicitOrderByAsc() {
+        return false;
+    }
 
     boolean supportsNestedComments();
 

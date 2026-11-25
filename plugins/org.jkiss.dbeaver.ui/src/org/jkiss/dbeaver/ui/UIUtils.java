@@ -54,7 +54,6 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
@@ -121,6 +120,7 @@ public class UIUtils {
     private static final SharedTextColors SHARED_TEXT_COLORS = new SharedTextColors();
     private static final SharedFonts SHARED_FONTS = new SharedFonts();
     private static final String MAX_LONG_STRING = String.valueOf(Long.MAX_VALUE);
+    private static final int COLUMN_HEADER_MARGIN = 5;
 
     public static VerifyListener getIntegerVerifyListener(Locale locale) {
         final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
@@ -266,11 +266,15 @@ public class UIUtils {
 
     public static void packColumns(@NotNull Table table, boolean fit) {
         table.setRedraw(false);
+        GC gc = new GC(table);
         try {
+            gc.setFont(table.getFont());
             int totalWidth = 0;
             final TableColumn[] columns = table.getColumns();
+            TableColumn sortColumn = table.getSortDirection() == SWT.NONE ? null : table.getSortColumn();
             for (TableColumn column : columns) {
                 column.pack();
+                column.setWidth(Math.max(column.getWidth(), getColumnHeaderWidth(gc, column, sortColumn == column)));
                 totalWidth += column.getWidth();
             }
             final Rectangle clientArea = table.getBounds();
@@ -280,7 +284,7 @@ public class UIUtils {
                     if (colWidth > totalWidth / 3) {
                         // If some columns are too big (more than 33% of total width)
                         // Then shrink them to 30%
-                        column.setWidth(totalWidth / 3);
+                        column.setWidth(Math.max(totalWidth / 3, getColumnHeaderWidth(gc, column, sortColumn == column)));
                         totalWidth -= colWidth;
                         totalWidth += column.getWidth();
                     }
@@ -288,20 +292,14 @@ public class UIUtils {
                 if (totalWidth < clientArea.width) {
                     int extraSpace = totalWidth - clientArea.width;
 
-                    GC gc = new GC(table);
-                    try {
-                        for (TableColumn tc : columns) {
-                            double ratio = (double) tc.getWidth() / totalWidth;
-                            int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
-                            int minWidth = gc.stringExtent(tc.getText()).x;
-                            minWidth += 5;
-                            if (newWidth < minWidth) {
-                                newWidth = minWidth;
-                            }
-                            tc.setWidth(newWidth);
+                    for (TableColumn tc : columns) {
+                        double ratio = (double) tc.getWidth() / totalWidth;
+                        int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
+                        int minWidth = getColumnHeaderWidth(gc, tc, sortColumn == tc);
+                        if (newWidth < minWidth) {
+                            newWidth = minWidth;
                         }
-                    } finally {
-                        gc.dispose();
+                        tc.setWidth(newWidth);
                     }
                 }
             }
@@ -313,11 +311,15 @@ public class UIUtils {
                 if (columns.length > 0) {
                     int extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 2;
                     for (TableColumn tc : columns) {
-                        tc.setWidth(tc.getWidth() + extraSpace);
+                        tc.setWidth(Math.max(
+                            tc.getWidth() + extraSpace,
+                            getColumnHeaderWidth(gc, tc, sortColumn == tc)
+                        ));
                     }
                 }
             }
         } finally {
+            gc.dispose();
             table.setRedraw(true);
         }
     }
@@ -328,7 +330,9 @@ public class UIUtils {
 
     public static void packColumns(@NotNull Tree tree, boolean fit, @Nullable float[] ratios) {
         tree.setRedraw(false);
+        GC gc = new GC(tree);
         try {
+            gc.setFont(tree.getFont());
             // Check for disposed items
             // TODO: it looks like SWT error. Sometimes tree items are disposed and NPE is thrown from column.pack
             for (TreeItem item : tree.getItems()) {
@@ -337,8 +341,10 @@ public class UIUtils {
                 }
             }
             final TreeColumn[] columns = tree.getColumns();
+            TreeColumn sortColumn = tree.getSortDirection() == SWT.NONE ? null : tree.getSortColumn();
             for (TreeColumn column : columns) {
                 column.pack();
+                column.setWidth(Math.max(column.getWidth(), getColumnHeaderWidth(gc, column, sortColumn == column)));
             }
 
             Rectangle clientArea = tree.getClientArea();
@@ -356,7 +362,7 @@ public class UIUtils {
                 int colWidth = column.getWidth();
                 if (colWidth > clientArea.width) {
                     // Too wide column - make it a bit narrower
-                    colWidth = clientArea.width;
+                    colWidth = Math.max(clientArea.width, getColumnHeaderWidth(gc, column, sortColumn == column));
                     column.setWidth(colWidth);
                 }
                 totalWidth += colWidth;
@@ -367,21 +373,15 @@ public class UIUtils {
                 //                    areaWidth -= tree.getVerticalBar().getSize().x;
                 //                }
                 if (totalWidth > areaWidth) {
-                    GC gc = new GC(tree);
-                    try {
-                        int extraSpace = totalWidth - areaWidth;
-                        for (TreeColumn tc : columns) {
-                            double ratio = (double) tc.getWidth() / totalWidth;
-                            int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
-                            int minWidth = gc.stringExtent(tc.getText()).x;
-                            minWidth += 5;
-                            if (newWidth < minWidth) {
-                                newWidth = minWidth;
-                            }
-                            tc.setWidth(newWidth);
+                    int extraSpace = totalWidth - areaWidth;
+                    for (TreeColumn tc : columns) {
+                        double ratio = (double) tc.getWidth() / totalWidth;
+                        int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
+                        int minWidth = getColumnHeaderWidth(gc, tc, sortColumn == tc);
+                        if (newWidth < minWidth) {
+                            newWidth = minWidth;
                         }
-                    } finally {
-                        gc.dispose();
+                        tc.setWidth(newWidth);
                     }
                 } else if (totalWidth < areaWidth) {
                     float extraSpace = areaWidth - totalWidth;
@@ -390,7 +390,10 @@ public class UIUtils {
                             extraSpace /= columns.length;
                             extraSpace--;
                             for (TreeColumn tc : columns) {
-                                tc.setWidth((int) (tc.getWidth() + extraSpace));
+                                tc.setWidth(Math.max(
+                                    (int) (tc.getWidth() + extraSpace),
+                                    getColumnHeaderWidth(gc, tc, sortColumn == tc)
+                                ));
                             }
                         } else {
                             for (int i = 0; i < columns.length; i++) {
@@ -402,8 +405,22 @@ public class UIUtils {
                 }
             }
         } finally {
+            gc.dispose();
             tree.setRedraw(true);
         }
+    }
+
+    private static int getColumnHeaderWidth(@NotNull GC gc, @NotNull Item column, boolean sorted) {
+        // Fitting columns to the viewport must leave room for header text and decorations.
+        int width = gc.textExtent(column.getText(), SWT.DRAW_MNEMONIC).x + COLUMN_HEADER_MARGIN;
+        Image image = column.getImage();
+        if (image != null) {
+            width += image.getBounds().width + COLUMN_HEADER_MARGIN;
+        }
+        if (sorted) {
+            width += gc.getFontMetrics().getHeight();
+        }
+        return width;
     }
 
     public static void maxTableColumnsWidth(@NotNull Table table) {
@@ -1385,28 +1402,6 @@ public class UIUtils {
         return new CustomSashForm(parent, style);
     }
 
-    /**
-     * Checks the style of the sash.
-     * <p>
-     * This method removes the {@link SWT#SMOOTH} style if the device zoom is not 100%,
-     * addressing the bug in the SWT implementation for Windows that causes the sash to
-     * operate on its bounds in pixels rather than points.
-     * <p>
-     * This method can later be removed when migrated to a newer version of Eclipse that includes a fix for this issue.
-     *
-     * @param style the style of the sash
-     * @return the modified style if necessary
-     * @see <a href="https://github.com/eclipse-platform/eclipse.platform.swt/issues/2329">https://github.com/eclipse-platform/eclipse.platform.swt/issues/2329</a>
-     */
-    public static int checkSashStyle(int style) {
-        // https://github.com/eclipse-platform/eclipse.platform.swt/issues/2329
-        if (DPIUtil.getDeviceZoom() != 100) {
-            return style & ~SWT.SMOOTH;
-        }
-
-        return style;
-    }
-
     @NotNull
     public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image) {
         return createPushButton(parent, label, image, null);
@@ -1889,6 +1884,22 @@ public class UIUtils {
 
     public static boolean isInDialog(@NotNull Control control) {
         return control.getShell().getData() instanceof Dialog;
+    }
+
+    public static boolean isShellBlocked(@NotNull Shell shell) {
+        for (Shell other : shell.getDisplay().getShells()) {
+            if (!other.isVisible() || isParent(other, shell)) {
+                continue;
+            }
+            if ((other.getStyle() & (SWT.APPLICATION_MODAL | SWT.SYSTEM_MODAL)) != 0) {
+                return true;
+            }
+            Composite parent = other.getParent();
+            if ((other.getStyle() & SWT.PRIMARY_MODAL) != 0 && parent != null && isParent(parent, shell)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isInWizard(@NotNull Control control) {
@@ -2658,6 +2669,7 @@ public class UIUtils {
         final Control[] tabList = parent.getTabList();
 
         final Text text = new Text(parent, style);
+        text.setFont(original.getFont());
         text.setText(original.getText());
         text.setLayoutData(original.getLayoutData());
         text.moveAbove(original);
@@ -2686,7 +2698,30 @@ public class UIUtils {
         }
     }
 
+    public static void applyDialogFont(@Nullable Control control) {
+        if (control == null || control.isDisposed()) {
+            return;
+        }
+        Dialog.applyDialogFont(control);
+        applyDialogFontToTextControls(control);
+    }
+
+    private static void applyDialogFontToTextControls(@NotNull Control control) {
+        if (control instanceof Text) {
+            // JFace caches defaults by widget class, but Text defaults can differ by style (e.g. on Cocoa).
+            Font originalFont = control.getFont();
+            control.setFont(null);
+            boolean defaultFont = Arrays.equals(originalFont.getFontData(), control.getFont().getFontData());
+            control.setFont(defaultFont ? JFaceResources.getDialogFont() : originalFont);
+        } else if (control instanceof Composite composite) {
+            for (Control child : composite.getChildren()) {
+                applyDialogFontToTextControls(child);
+            }
+        }
+    }
+
     public static void installAndUpdateMainFont(@NotNull Control control) {
+        applyMainFont(control);
         BaseThemeSettings.instance.addPropertyListener(
             UIFonts.DBeaver.MAIN_FONT,
             s -> applyMainFont(control),
@@ -2703,25 +2738,17 @@ public class UIUtils {
     }
 
     public static void applyFont(@Nullable Control control, @NotNull Font font) {
-        if (control == null || control.isDisposed() || mainFontIsDefault()) {
+        if (control == null || control.isDisposed()) {
             return;
-        }
-        if (control instanceof Composite comp) {
-            comp.layout();
         }
         control.setFont(font);
 
-        if (control instanceof Composite) {
-            for (Control element : ((Composite) control).getChildren()) {
+        if (control instanceof Composite composite) {
+            for (Control element : composite.getChildren()) {
                 applyFont(element, font);
             }
+            composite.layout(true);
         }
-    }
-
-    private static boolean mainFontIsDefault() {
-        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBeaver.MAIN_FONT);
-        final FontData[] defaultFontData = JFaceResources.getFontRegistry().getFontData(JFaceResources.DEFAULT_FONT);
-        return Arrays.equals(mainFontData, defaultFontData);
     }
 
     @Nullable

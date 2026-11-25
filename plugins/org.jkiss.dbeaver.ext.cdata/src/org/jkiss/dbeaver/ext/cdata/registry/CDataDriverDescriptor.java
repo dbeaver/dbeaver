@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverLoaderDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -78,6 +79,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     ) {
         super(providerDescriptor, id);
         this.driverInfo = driverInfo;
+        updateDriverCategories();
         setCustom(false);
         updateDriverIcons(DBIcon.DATABASE_DEFAULT, DBIcon.DATABASE_BIG_DEFAULT);
     }
@@ -98,6 +100,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
             logoRetryAfterNanos = 0;
         }
         this.driverInfo = driverInfo;
+        updateDriverCategories();
         dataSourceType = null;
     }
 
@@ -345,7 +348,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
             return null;
         }
         DBPDriver driver = getProviderDescriptor().getRegistry().findDriver(driverInfo.iconDriver());
-        return driver instanceof CDataDriverDescriptor ? null : driver;
+        return driver == null || driver instanceof CDataDriverDescriptor || driver.getDriverStub() != null ? null : driver;
     }
 
     @NotNull
@@ -356,5 +359,12 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     private synchronized void updateDriverIcons(@NotNull DBPImage icon, @NotNull DBPImage iconBig) {
         setIconPlain(new DBIconComposite(icon, false, null, null, null, CDataIcons.CDATA_OVERLAY));
         setIconBig(new DBIconComposite(iconBig, false, null, null, null, CDataIcons.CDATA_OVERLAY_BIG));
+    }
+
+    private void updateDriverCategories() {
+        var categories = new LinkedHashSet<String>();
+        categories.add(getProviderDescriptor().getId());
+        categories.addAll(driverInfo.categories());
+        setCategories(List.copyOf(categories));
     }
 }

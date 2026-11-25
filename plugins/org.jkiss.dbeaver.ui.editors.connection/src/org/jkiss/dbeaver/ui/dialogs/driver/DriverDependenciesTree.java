@@ -206,12 +206,12 @@ class DriverDependenciesTree {
             if (causeException instanceof DBExceptionWithHistory exceptionWithHistory) {
                 List<Throwable> exceptions = exceptionWithHistory.getExceptions();
                 exceptions.add(dbException);
-                DBWorkbench.getPlatformUI().showError("Download error",
-                    String.format("Network error: %s", dbException.getMessage()),
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error,
+                    NLS.bind(UIConnectionMessages.dialog_driver_download_network_error, dbException.getMessage()),
                     GeneralUtils.transformExceptionsToStatus(exceptions));
             } else {
-                DBWorkbench.getPlatformUI().showError("Download error",
-                    String.format("Network error: %s", dbException.getMessage()),
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error,
+                    NLS.bind(UIConnectionMessages.dialog_driver_download_network_error, dbException.getMessage()),
                     dbException);
                 return false;
             }
@@ -296,7 +296,8 @@ class DriverDependenciesTree {
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Versions", "Error reading versions", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_driver_versions_title,
+                UIConnectionMessages.dialog_driver_versions_error, e.getTargetException());
             return;
         } catch (InterruptedException e) {
             return;

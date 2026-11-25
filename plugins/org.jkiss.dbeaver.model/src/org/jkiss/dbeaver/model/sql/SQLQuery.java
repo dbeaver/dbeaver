@@ -23,7 +23,6 @@ import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
-import net.sf.jsqlparser.statement.ParenthesedStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
@@ -43,7 +42,6 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -54,6 +52,7 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
+import org.jkiss.dbeaver.model.sql.parser.SelectMutationVisitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -174,146 +173,161 @@ public class SQLQuery implements SQLScriptElement {
                 return;
             }
             statement = SQLSemanticProcessor.parseQuery(dataSource == null ? null : dataSource.getSQLDialect(), text);
-            if (statement instanceof Select) {
-                type = SQLQueryType.SELECT;
-                if (statement instanceof PlainSelect plainSelect) {
-                    // Detect single source table (no joins, no group by, no sub-selects)
-                    FromItem fromItem = plainSelect.getFromItem();
-                    if (fromItem instanceof Table fromTable && isPotentiallySingleSourceSelect(plainSelect)) {
-                        boolean hasSubSelects = false;
-                        boolean hasDirectSelects = false;
-                        for (SelectItem<?> si : plainSelect.getSelectItems()) {
-                            if (si.getExpression() instanceof ParenthesedSelect) {
-                                hasSubSelects = true;
-                            } else if (si.getExpression() instanceof Column) {
-                                hasDirectSelects = true;
+            switch (statement) {
+                case Select select -> {
+                    type = SQLQueryType.SELECT;
+                    if (select instanceof PlainSelect plainSelect) {
+                        // Detect single source table (no joins, no group by, no sub-selects)
+                        FromItem fromItem = plainSelect.getFromItem();
+                        if (fromItem instanceof Table fromTable && isPotentiallySingleSourceSelect(plainSelect)) {
+                            boolean hasSubSelects = false;
+                            boolean hasDirectSelects = false;
+                            for (SelectItem<?> si : plainSelect.getSelectItems()) {
+                                if (si.getExpression() instanceof ParenthesedSelect) {
+                                    hasSubSelects = true;
+                                } else if (si.getExpression() instanceof Column) {
+                                    hasDirectSelects = true;
+                                }
+                            }
+                            if (hasDirectSelects || !hasSubSelects) {
+                                fillSingleSource(fromTable);
                             }
                         }
-                        if (hasDirectSelects || !hasSubSelects) {
-                            fillSingleSource(fromTable);
+                        if (!CommonUtils.isEmpty(plainSelect.getJoins()) && fromItem instanceof Table) {
+                            createTargetName(plainSelect, (Table) fromItem);
+                        }
+                        // Extract select items info
+                        final List<SQLSelectItem> items = CommonUtils.safeList(plainSelect.getSelectItems()).stream()
+                            .filter(this::isValidSelectItem)
+                            .map(item -> new SQLSelectItem(this, item))
+                            .collect(Collectors.toList());
+                        if (!items.isEmpty()) {
+                            selectItems = items;
                         }
                     }
-                    if (!CommonUtils.isEmpty(plainSelect.getJoins()) && fromItem instanceof Table) {
-                        createTargetName(plainSelect, (Table) fromItem);
-                    }
-                    // Extract select items info
-                    final List<SQLSelectItem> items = CommonUtils.safeList(plainSelect.getSelectItems()).stream()
-                        .filter(this::isValidSelectItem)
-                        .map(item -> new SQLSelectItem(this, item))
-                        .collect(Collectors.toList());
-                    if (!items.isEmpty()) {
-                        selectItems = items;
-                    }
                 }
-            } else if (statement instanceof Insert insert) {
-                type = SQLQueryType.INSERT;
-                fillSingleSource(insert.getTable());
-            } else if (statement instanceof Update update) {
-                type = SQLQueryType.UPDATE;
-                Table table = update.getTable();
-                if (table != null) {
-                    fillSingleSource(table);
+                case Insert insert -> {
+                    type = SQLQueryType.INSERT;
+                    fillSingleSource(insert.getTable());
                 }
-            } else if (statement instanceof Delete delete) {
-                type = SQLQueryType.DELETE;
-                if (delete.getTable() != null) {
-                    fillSingleSource(delete.getTable());
-                } else {
-                    List<Table> tables = delete.getTables();
-                    if (tables != null && tables.size() == 1) {
-                        fillSingleSource(tables.get(0));
+                case Update update -> {
+                    type = SQLQueryType.UPDATE;
+                    Table table = update.getTable();
+                    if (table != null) {
+                        fillSingleSource(table);
                     }
                 }
-            } else if (statement instanceof Alter alter) {
-                type = SQLQueryType.DDL;
-                fillSingleSource(alter.getTable());
-                setObjectOperation(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.TABLE, alter.getTable());
-            } else if (statement instanceof CreateTable createTable) {
-                type = SQLQueryType.DDL;
-                fillSingleSource(createTable.getTable());
-                setObjectOperation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.TABLE, createTable.getTable());
-            } else if (statement instanceof CreateView createView) {
-                type = SQLQueryType.DDL;
-                fillSingleSource(createView.getView());
-                setObjectOperation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.VIEW, createView.getView());
-            } else if (statement instanceof CreateIndex createIndex) {
-                type = SQLQueryType.DDL;
-                setObjectOperation(
-                    SQLObjectOperation.Operation.CREATE,
-                    SQLObjectOperation.ObjectKind.INDEX,
-                    getIndexNameParts(createIndex)
-                );
-            } else if (statement instanceof Drop drop) {
-                type = SQLQueryType.DDL;
-                SQLObjectOperation.ObjectKind objectKind = getDdlObjectKind(drop.getType());
-                if (objectKind == SQLObjectOperation.ObjectKind.TABLE || objectKind == SQLObjectOperation.ObjectKind.VIEW) {
-                    fillSingleSource(drop.getName());
+                case Delete delete -> {
+                    type = SQLQueryType.DELETE;
+                    if (delete.getTable() != null) {
+                        fillSingleSource(delete.getTable());
+                    } else {
+                        List<Table> tables = delete.getTables();
+                        if (tables != null && tables.size() == 1) {
+                            fillSingleSource(tables.getFirst());
+                        }
+                    }
                 }
-                setObjectOperation(SQLObjectOperation.Operation.DROP, objectKind, getNameParts(drop.getName()));
-            } else if (statement instanceof CreateFunction createFunction) {
-                type = SQLQueryType.DDL;
-                setObjectOperation(
-                    SQLObjectOperation.Operation.CREATE,
-                    SQLObjectOperation.ObjectKind.FUNCTION,
-                    getFunctionalNameParts(createFunction)
-                );
-            } else if (statement instanceof CreateProcedure createProcedure) {
-                type = SQLQueryType.DDL;
-                setObjectOperation(
-                    SQLObjectOperation.Operation.CREATE,
-                    SQLObjectOperation.ObjectKind.PROCEDURE,
-                    getFunctionalNameParts(createProcedure)
-                );
-            } else if (statement instanceof CreateSequence createSequence) {
-                type = SQLQueryType.DDL;
-                var sequence = createSequence.getSequence();
-                if (sequence != null) {
+                case Alter alter -> {
+                    type = SQLQueryType.DDL;
+                    fillSingleSource(alter.getTable());
+                    setObjectOperation(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.TABLE, alter.getTable());
+                }
+                case CreateTable createTable -> {
+                    type = SQLQueryType.DDL;
+                    fillSingleSource(createTable.getTable());
+                    setObjectOperation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.TABLE, createTable.getTable());
+                }
+                case CreateView createView -> {
+                    type = SQLQueryType.DDL;
+                    fillSingleSource(createView.getView());
+                    setObjectOperation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.VIEW, createView.getView());
+                }
+                case CreateIndex createIndex -> {
+                    type = SQLQueryType.DDL;
                     setObjectOperation(
                         SQLObjectOperation.Operation.CREATE,
-                        SQLObjectOperation.ObjectKind.SEQUENCE,
-                        getNameParts(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName())
+                        SQLObjectOperation.ObjectKind.INDEX,
+                        getIndexNameParts(createIndex)
                     );
                 }
-            } else if (statement instanceof CreateSynonym createSynonym) {
-                type = SQLQueryType.DDL;
-                var synonym = createSynonym.getSynonym();
-                if (synonym != null) {
+                case Drop drop -> {
+                    type = SQLQueryType.DDL;
+                    SQLObjectOperation.ObjectKind objectKind = getDdlObjectKind(drop.getType());
+                    if (objectKind == SQLObjectOperation.ObjectKind.TABLE || objectKind == SQLObjectOperation.ObjectKind.VIEW) {
+                        fillSingleSource(drop.getName());
+                    }
+                    setObjectOperation(SQLObjectOperation.Operation.DROP, objectKind, getNameParts(drop.getName()));
+                }
+                case CreateFunction createFunction -> {
+                    type = SQLQueryType.DDL;
                     setObjectOperation(
                         SQLObjectOperation.Operation.CREATE,
-                        SQLObjectOperation.ObjectKind.SYNONYM,
-                        getNameParts(synonym.getDatabase(), synonym.getSchemaName(), synonym.getName())
+                        SQLObjectOperation.ObjectKind.FUNCTION,
+                        getFunctionalNameParts(createFunction)
                     );
                 }
-            } else if (statement instanceof AlterView alterView) {
-                type = SQLQueryType.DDL;
-                fillSingleSource(alterView.getView());
-                setObjectOperation(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.VIEW, alterView.getView());
-            } else if (statement instanceof AlterSequence alterSequence) {
-                type = SQLQueryType.DDL;
-                var sequence = alterSequence.getSequence();
-                if (sequence != null) {
+                case CreateProcedure createProcedure -> {
+                    type = SQLQueryType.DDL;
                     setObjectOperation(
-                        SQLObjectOperation.Operation.ALTER,
-                        SQLObjectOperation.ObjectKind.SEQUENCE,
-                        getNameParts(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName())
+                        SQLObjectOperation.Operation.CREATE,
+                        SQLObjectOperation.ObjectKind.PROCEDURE,
+                        getFunctionalNameParts(createProcedure)
                     );
                 }
-            } else if (statement instanceof CreateSchema createSchema) {
-                type = SQLQueryType.DDL;
-                setObjectOperation(
-                    SQLObjectOperation.Operation.CREATE,
-                    SQLObjectOperation.ObjectKind.SCHEMA,
-                    getNameParts(createSchema.getSchemaName())
-                );
-            } else if (statement instanceof Merge) {
-                type = SQLQueryType.MERGE;
-            } else if (statement instanceof Commit) {
-                type = SQLQueryType.COMMIT;
-            } else if (statement instanceof RollbackStatement rollback) {
-                // ROLLBACK TO [SAVEPOINT] name keeps the transaction open, so it must not be treated as a full rollback
-                type = rollback.getSavepointName() == null ? SQLQueryType.ROLLBACK : SQLQueryType.UNKNOWN;
-            } else {
-                type = SQLQueryType.UNKNOWN;
+                case CreateSequence createSequence -> {
+                    type = SQLQueryType.DDL;
+                    var sequence = createSequence.getSequence();
+                    if (sequence != null) {
+                        setObjectOperation(
+                            SQLObjectOperation.Operation.CREATE,
+                            SQLObjectOperation.ObjectKind.SEQUENCE,
+                            getNameParts(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName())
+                        );
+                    }
+                }
+                case CreateSynonym createSynonym -> {
+                    type = SQLQueryType.DDL;
+                    var synonym = createSynonym.getSynonym();
+                    if (synonym != null) {
+                        setObjectOperation(
+                            SQLObjectOperation.Operation.CREATE,
+                            SQLObjectOperation.ObjectKind.SYNONYM,
+                            getNameParts(synonym.getDatabase(), synonym.getSchemaName(), synonym.getName())
+                        );
+                    }
+                }
+                case AlterView alterView -> {
+                    type = SQLQueryType.DDL;
+                    fillSingleSource(alterView.getView());
+                    setObjectOperation(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.VIEW, alterView.getView());
+                }
+                case AlterSequence alterSequence -> {
+                    type = SQLQueryType.DDL;
+                    var sequence = alterSequence.getSequence();
+                    if (sequence != null) {
+                        setObjectOperation(
+                            SQLObjectOperation.Operation.ALTER,
+                            SQLObjectOperation.ObjectKind.SEQUENCE,
+                            getNameParts(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName())
+                        );
+                    }
+                }
+                case CreateSchema createSchema -> {
+                    type = SQLQueryType.DDL;
+                    setObjectOperation(
+                        SQLObjectOperation.Operation.CREATE,
+                        SQLObjectOperation.ObjectKind.SCHEMA,
+                        getNameParts(createSchema.getSchemaName())
+                    );
+                }
+                case Merge ignored -> type = SQLQueryType.MERGE;
+                case Commit ignored -> type = SQLQueryType.COMMIT;
+                case RollbackStatement rollback -> {
+                    // ROLLBACK TO [SAVEPOINT] name keeps the transaction open, so it must not be treated as a full rollback
+                    type = rollback.getSavepointName() == null ? SQLQueryType.ROLLBACK : SQLQueryType.UNKNOWN;
+                }
+                default -> type = SQLQueryType.UNKNOWN;
             }
         } catch (Throwable e) {
             if (objectOperation == null) {
@@ -406,7 +420,7 @@ public class SQLQuery implements SQLScriptElement {
     @NotNull
     private List<String> getFunctionalNameParts(@NotNull CreateFunctionalStatement statement) {
         List<String> declarationParts = statement.getFunctionDeclarationParts();
-        return CommonUtils.isEmpty(declarationParts) ? List.of() : getNameParts(declarationParts.get(0));
+        return CommonUtils.isEmpty(declarationParts) ? List.of() : getNameParts(declarationParts.getFirst());
     }
 
     @NotNull
@@ -510,18 +524,6 @@ public class SQLQuery implements SQLScriptElement {
         return false;
     }
 
-    public SQLSelectItem getSelectItem(String name) {
-        if (selectItems == null) {
-            return null;
-        }
-        for (SQLSelectItem item : selectItems) {
-            if (item.getName().equals(name)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
     public int getSelectItemCount() {
         return selectItems == null ? 0 : selectItems.size();
     }
@@ -577,17 +579,6 @@ public class SQLQuery implements SQLScriptElement {
     @NotNull
     public String getOriginalText() {
         return originalText;
-    }
-
-    /**
-     * Sets the baseline query text that subsequent calls to {@link #reset()} restore, while preserving the baseline's
-     * existing statement-cardinality state.
-     * <p>
-     * Use {@link #setOriginalText(String, boolean)} when the replacement establishes or changes whether the original
-     * text is known to represent one logical statement.
-     */
-    public void setOriginalText(@NotNull String originalText) {
-        setOriginalText(originalText, originalRepresentsOneStatement);
     }
 
     /**
@@ -739,7 +730,7 @@ public class SQLQuery implements SQLScriptElement {
 
     /**
      * Restores the current query text and statement-cardinality state from the baseline configured through
-     * {@link #setOriginalText(String)} or {@link #setOriginalText(String, boolean)}, and clears parsed state derived
+     * {@link #setOriginalText(String, boolean)}, and clears parsed state derived
      * from the replaced current text.
      */
     public void reset() {
@@ -787,15 +778,11 @@ public class SQLQuery implements SQLScriptElement {
 
     public boolean isDeleteUpdateDangerous() {
         parseQuery();
-        if (statement == null) {
-            return false;
-        }
-        if (statement instanceof Delete delete) {
-            return delete.getWhere() == null;
-        } else if (statement instanceof Update update) {
-            return update.getWhere() == null;
-        }
-        return false;
+        return switch (statement) {
+            case Delete delete -> delete.getWhere() == null;
+            case Update update -> update.getWhere() == null;
+            case null, default -> false;
+        };
     }
 
     public boolean isDropDangerous() {
@@ -847,125 +834,6 @@ public class SQLQuery implements SQLScriptElement {
         rawSingleTableMetadata = null;
         selectItems = null;
         allSelectEntitiesNames.clear();
-    }
-
-    private static class SelectMutationVisitor extends TablesNamesFinder<Void> {
-        private boolean mutating = false;
-
-        @Override
-        @Nullable
-        public <S> Void visit(@NotNull WithItem<?> withItem, @Nullable S context) {
-            ParenthesedStatement statement = withItem.getParenthesedStatement();
-            if (!(statement instanceof ParenthesedSelect)) {
-                mutating = true;
-                return null;
-            }
-            return super.visit(withItem, context);
-        }
-
-        @Override
-        @Nullable
-        public <S> Void visit(@NotNull PlainSelect plainSelect, @Nullable S context) {
-            if (!CommonUtils.isEmpty(plainSelect.getIntoTables()) || plainSelect.getIntoTempTable() != null) {
-                mutating = true;
-            }
-            visitSelectModifiers(plainSelect, context);
-            if (plainSelect.getDistinct() != null && plainSelect.getDistinct().getOnSelectItems() != null) {
-                for (var item : plainSelect.getDistinct().getOnSelectItems()) {
-                    item.accept(this, context);
-                }
-            }
-            if (plainSelect.getGroupBy() != null) {
-                if (plainSelect.getGroupBy().getGroupByExpressionList() != null) {
-                    plainSelect.getGroupBy().getGroupByExpressionList().accept(this, context);
-                }
-                if (plainSelect.getGroupBy().getGroupingSets() != null) {
-                    for (var groupingSet : plainSelect.getGroupBy().getGroupingSets()) {
-                        groupingSet.accept(this, context);
-                    }
-                }
-            }
-            if (plainSelect.getQualify() != null) {
-                plainSelect.getQualify().accept(this, context);
-            }
-            if (plainSelect.getWindowDefinitions() != null) {
-                for (var window : plainSelect.getWindowDefinitions()) {
-                    if (window.getPartitionExpressionList() != null) {
-                        window.getPartitionExpressionList().accept(this, context);
-                    }
-                    if (window.getOrderByElements() != null) {
-                        for (var orderBy : window.getOrderByElements()) {
-                            orderBy.getExpression().accept(this, context);
-                        }
-                    }
-                }
-            }
-            return super.visit(plainSelect, context);
-        }
-
-        @Override
-        @Nullable
-        public <S> Void visit(@NotNull SetOperationList setOperationList, @Nullable S context) {
-            visitSelectModifiers(setOperationList, context);
-            return super.visit(setOperationList, context);
-        }
-
-        @Override
-        @Nullable
-        public <S> Void visit(@NotNull ParenthesedSelect parenthesedSelect, @Nullable S context) {
-            visitSelectModifiers(parenthesedSelect, context);
-            return super.visit(parenthesedSelect, context);
-        }
-
-        @Override
-        @Nullable
-        public <S> Void visit(@NotNull Delete delete, @Nullable S context) {
-            mutating = true;
-            return null;
-        }
-
-        @Override
-        @Nullable
-        public <S> Void visit(@NotNull Insert insert, @Nullable S context) {
-            mutating = true;
-            return null;
-        }
-
-        @Override
-        @Nullable
-        public <S> Void visit(@NotNull Update update, @Nullable S context) {
-            mutating = true;
-            return null;
-        }
-
-        private <S> void visitSelectModifiers(@NotNull Select select, @Nullable S context) {
-            if (select.getOrderByElements() != null) {
-                for (var orderBy : select.getOrderByElements()) {
-                    orderBy.getExpression().accept(this, context);
-                }
-            }
-            if (select.getLimit() != null) {
-                if (select.getLimit().getOffset() != null) {
-                    select.getLimit().getOffset().accept(this, context);
-                }
-                if (select.getLimit().getRowCount() != null) {
-                    select.getLimit().getRowCount().accept(this, context);
-                }
-                if (select.getLimit().getByExpressions() != null) {
-                    select.getLimit().getByExpressions().accept(this, context);
-                }
-            }
-            if (select.getOffset() != null && select.getOffset().getOffset() != null) {
-                select.getOffset().getOffset().accept(this, context);
-            }
-            if (select.getFetch() != null && select.getFetch().getExpression() != null) {
-                select.getFetch().getExpression().accept(this, context);
-            }
-        }
-
-        private boolean isMutating() {
-            return mutating;
-        }
     }
 
     private static class SingleTableMeta implements DBCEntityMetaData {

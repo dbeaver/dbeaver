@@ -39,6 +39,9 @@ public class OAIMessage {
     public String callId;
     public String output;
     public List<OAIMessageContent> content;
+    public List<OAIMessageContent> summary;
+    @SerializedName("encrypted_content")
+    public String encryptedContent;
 
     public OAIMessage() {
     }

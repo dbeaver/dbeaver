@@ -22,6 +22,15 @@ public class EditorsMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.internal.EditorsResources"; //$NON-NLS-1$
 
     public static String dialog_morph_delimited_shell_text;
+    public static String editor_init_error_title;
+    public static String editor_init_error_message;
+    public static String editor_open_file_title;
+    public static String editor_open_file_not_found;
+    public static String editor_open_file_error_title;
+    public static String editor_open_file_error_message;
+    public static String editor_morph_text_title;
+    public static String editor_morph_text_empty_selection;
+    public static String editor_morph_text_error;
     public static String dialog_morph_delimited_source_group;
     public static String dialog_morph_delimited_source_group_delimiter;
     public static String dialog_morph_delimited_target_group_label;
@@ -43,6 +52,7 @@ public class EditorsMessages extends NLS {
     public static String file_dialog_save_failed;
     public static String file_dialog_save_as_file;
     public static String file_dialog_cannot_load_file;
+    public static String file_dialog_cannot_load_file_message;
 
     public static String progress_editor_initializing_text;
     public static String progress_editor_uninitialized_text;
