@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,12 +59,34 @@ public class DamengUtils {
         Pattern.CASE_INSENSITIVE
     );
 
-    public static String getDDL(DBRProgressMonitor monitor, DBSObject object, DamengConstants.ObjectType objectType, String schema) throws DBException {
-
+    @Nullable
+    public static String getDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject object,
+        @NotNull DamengConstants.ObjectType objectType,
+        @Nullable String schema
+    ) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load source code for " + objectType + " '" + object.getName() + "'")) {
             return getDDL(session, objectType, object.getName(), schema);
         } catch (SQLException e) {
             throw new DBException("Load source code for " + objectType + " '" + object.getName() + "' failed", e);
+        }
+    }
+
+    @Nullable
+    private static String getDDL(
+        @NotNull JDBCSession session,
+        @NotNull DamengConstants.ObjectType objectType,
+        @NotNull String name,
+        @Nullable String schema
+    ) throws SQLException {
+        try (JDBCPreparedStatement statement = session.prepareStatement("SELECT DBMS_METADATA.GET_DDL(?,?,?)")) {
+            statement.setString(1, objectType.name());
+            statement.setString(2, name);
+            statement.setString(3, schema);
+            try (JDBCResultSet result = statement.executeQuery()) {
+                return result.next() ? result.getString(1) : null;
+            }
         }
     }
 
@@ -97,7 +119,11 @@ public class DamengUtils {
     }
 
     @Nullable
-    private static String getNativeTableDDL(JDBCSession session, String table, String schema) throws SQLException {
+    private static String getNativeTableDDL(
+        @NotNull JDBCSession session,
+        @NotNull String table,
+        @NotNull String schema
+    ) throws SQLException {
         try {
             return getDDL(session, DamengConstants.ObjectType.TABLE, table, schema);
         } catch (SQLException e) {
@@ -115,25 +141,12 @@ public class DamengUtils {
         }
     }
 
-    @Nullable
-    private static String getDDL(JDBCSession session, DamengConstants.ObjectType objectType, String name, String schema)
-        throws SQLException {
-        try (JDBCPreparedStatement statement = session.prepareStatement("SELECT DBMS_METADATA.GET_DDL(?,?,?)")) {
-            statement.setString(1, objectType.name());
-            statement.setString(2, name);
-            statement.setString(3, schema);
-            try (JDBCResultSet result = statement.executeQuery()) {
-                return result.next() ? result.getString(1) : null;
-            }
-        }
-    }
-
     private static void appendTableComments(
-        JDBCSession session,
-        GenericTableBase table,
-        String schema,
-        Map<String, Object> options,
-        StringBuilder ddl
+        @NotNull JDBCSession session,
+        @NotNull GenericTableBase table,
+        @NotNull String schema,
+        @NotNull Map<String, Object> options,
+        @NotNull StringBuilder ddl
     ) throws SQLException {
         String query = """
             SELECT NULL AS COLUMN_NAME, COMMENT$ FROM SYS.SYSTABLECOMMENTS
@@ -168,11 +181,11 @@ public class DamengUtils {
     }
 
     private static void appendTableIndexes(
-        JDBCSession session,
-        String table,
-        String schema,
-        Map<String, Object> options,
-        StringBuilder ddl
+        @NotNull JDBCSession session,
+        @NotNull String table,
+        @NotNull String schema,
+        @NotNull Map<String, Object> options,
+        @NotNull StringBuilder ddl
     ) throws SQLException {
         // bit 0 marks system-generated indexes, including those backing primary and unique keys.
         String query = """
@@ -199,7 +212,8 @@ public class DamengUtils {
         }
     }
 
-    private static String formatDDL(String ddl, Map<String, Object> options) {
+    @NotNull
+    private static String formatDDL(@NotNull String ddl, @NotNull Map<String, Object> options) {
         boolean qualified = CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true);
         boolean compact = CommonUtils.getOption(options, DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT);
         if (qualified && !compact) {
