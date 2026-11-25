@@ -466,9 +466,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             SQLServerDatabase database = owner.getDatabase();
             SQLServerDataSource dataSource = owner.getDataSource();
             boolean supportsColumnProperty = dataSource.supportsColumnProperty();
-            boolean crossDatabase = supportsColumnProperty
-                && SQLServerUtils.supportsCrossDatabaseQueries(dataSource)
-                && !database.getName().equals(session.getCatalog());
+            boolean useCatalogScopedQuery = supportsColumnProperty && SQLServerUtils.supportsCrossDatabaseQueries(dataSource);
 
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT c.*,t.name as table_name,t.schema_id,cc.is_persisted,cc.definition as computed_definition");
@@ -488,11 +486,11 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(database, "computed_columns"))
                 .append(" cc ON cc.object_id=t.object_id AND cc.column_id=c.column_id")
                 .append("\nWHERE ").append(forTable != null ? "t.object_id=" : "t.schema_id=")
-                .append(crossDatabase ? "@parent_id" : "?")
+                .append(useCatalogScopedQuery ? "@parent_id" : "?")
                 .append("\nORDER BY c.object_id,c.column_id");
 
             String query = sql.toString();
-            if (crossDatabase) {
+            if (useCatalogScopedQuery) {
                 // columnproperty resolves object ids in the database context of the query
                 query = "EXEC " + SQLServerUtils.getSystemTableName(database, "sp_executesql") + " "
                     + SQLUtils.quoteString(dataSource, query) + ", N'@parent_id bigint', ?";
