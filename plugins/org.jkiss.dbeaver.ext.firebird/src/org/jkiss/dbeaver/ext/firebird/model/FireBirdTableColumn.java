@@ -195,6 +195,18 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
         return domainName;
     }
 
+    /**
+     * Returns the built-in type of the column. For a column whose type name is a domain,
+     * this is the domain's underlying type.
+     */
+    @NotNull
+    public String getBaseTypeName() {
+        if (getDataSource().getLocalDataType(getTypeName()) instanceof FireBirdDataType fbDataType && fbDataType.isDomain()) {
+            return fbDataType.getFieldType();
+        }
+        return getTypeName();
+    }
+
     @Nullable
     private String getUserDomainName(@NotNull String typeName) {
         if (FireBirdColumnTypeNameListProvider.isSystemDomainName(typeName)) {

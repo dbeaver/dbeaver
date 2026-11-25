@@ -25,6 +25,9 @@ import org.jkiss.dbeaver.ext.firebird.model.FireBirdSQLDialect;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTable;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -34,6 +37,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
@@ -51,6 +56,8 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
         FireBirdSQLDialect dialect = Mockito.mock(FireBirdSQLDialect.class);
         Mockito.when(dialect.getQuotedIdentifier(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyBoolean()))
             .thenAnswer(invocation -> invocation.getArgument(0));
+        Mockito.when(dialect.getColumnTypeModifiers(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.any()))
+            .thenCallRealMethod();
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
         FireBirdDataType charType = new FireBirdDataType(dataSource, FireBirdFieldType.CHAR);
         Mockito.when(dataSource.getLocalDataType(DOMAIN_NAME)).thenReturn(domainType(DOMAIN_NAME));
@@ -59,6 +66,7 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
 
         table = Mockito.mock(FireBirdTable.class);
         Mockito.when(table.getDataSource()).thenReturn(dataSource);
+        Mockito.when(table.getFullyQualifiedName(Mockito.any())).thenReturn("TEST_TABLE");
         progressMonitor = Mockito.mock(DBRProgressMonitor.class);
     }
 
@@ -102,6 +110,55 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
         Assertions.assertEquals(DOMAIN_NAME, column.getDomainName());
     }
 
+    @Test
+    public void alterTypeKeepsDomainWithoutSizeChange() throws DBException {
+        FireBirdTableColumn column = loadColumn(DOMAIN_NAME);
+
+        Assertions.assertEquals(
+            List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE DOM_UUID"),
+            getModifyScripts(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, DOMAIN_NAME)));
+    }
+
+    @Test
+    public void alterSizeOfDomainColumnUsesUnderlyingType() throws DBException {
+        FireBirdTableColumn column = loadColumn(DOMAIN_NAME);
+        column.setMaxLength(20);
+
+        Assertions.assertEquals(
+            List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE CHAR(20)"),
+            getModifyScripts(column, Map.of("maxLength", 20L)));
+    }
+
+    @Test
+    public void alterSizeAfterSwitchingToDomainUsesUnderlyingType() throws DBException {
+        FireBirdTableColumn column = loadColumn(IMPLICIT_DOMAIN_NAME);
+        // The type name is the domain name now, which must not get a size modifier
+        column.setTypeName(DOMAIN_NAME);
+        column.setMaxLength(20);
+
+        Assertions.assertEquals(
+            List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE CHAR(20)"),
+            getModifyScripts(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, DOMAIN_NAME, "maxLength", 20L)));
+    }
+
+    @Test
+    public void alterSizeKeepsSizeEqualToDomain() throws DBException {
+        FireBirdTableColumn column = loadColumn(DOMAIN_NAME);
+
+        // The domain has length 16 as well, but the size must not be dropped once the domain is no longer used
+        Assertions.assertEquals(
+            List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE CHAR(16)"),
+            getModifyScripts(column, Map.of("maxLength", 16L)));
+    }
+
+    @NotNull
+    private List<String> getModifyScripts(@NotNull FireBirdTableColumn column, @NotNull Map<String, Object> properties)
+        throws DBException {
+        return new TestColumnManager().getModifyActions(progressMonitor, column, properties).stream()
+            .map(DBEPersistAction::getScript)
+            .toList();
+    }
+
     @NotNull
     private FireBirdTableColumn loadColumn(@NotNull String fieldSource) throws DBException {
         Mockito.when(table.getColumnDomainType(Mockito.any(), Mockito.any())).thenReturn(fieldSource);
@@ -136,6 +193,19 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
             @NotNull DBECommandAbstract<GenericTableColumn> command
         ) {
             return getNestedDeclaration(monitor, column.getTable(), command, Map.of()).toString();
+        }
+
+        @NotNull
+        List<DBEPersistAction> getModifyActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull FireBirdTableColumn column,
+            @NotNull Map<String, Object> properties
+        ) throws DBException {
+            ObjectChangeCommand command = new ObjectChangeCommand(column);
+            command.getProperties().putAll(properties);
+            List<DBEPersistAction> actions = new ArrayList<>();
+            addObjectModifyActions(monitor, Mockito.mock(DBCExecutionContext.class), actions, command, Map.of());
+            return actions;
         }
     }
 }
