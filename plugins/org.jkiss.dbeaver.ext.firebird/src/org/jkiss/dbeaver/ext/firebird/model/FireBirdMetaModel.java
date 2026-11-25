@@ -530,7 +530,7 @@ public class FireBirdMetaModel extends GenericMetaModel
         DBSIndexType indexType,
         boolean persisted
     ) {
-        return new FireBirdTableIndex(table, nonUnique, indexName, false, false, 0, null, null, null, persisted);
+        return new FireBirdTableIndex(table, nonUnique, indexName, persisted);
     }
 
     @NotNull
@@ -548,18 +548,14 @@ public class FireBirdMetaModel extends GenericMetaModel
         if (dbResult == null) {
             return createIndexImpl(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
         }
-        return new FireBirdTableIndex(
-            table,
-            nonUnique,
-            indexName,
-            "D".equals(JDBCUtils.safeGetString(dbResult, "ASC_OR_DESC")),
-            JDBCUtils.safeGetInt(dbResult, "RDB$INDEX_INACTIVE") != 0,
-            JDBCUtils.safeGetDouble(dbResult, "RDB$STATISTICS"),
-            FireBirdTableIndex.extractExpression(JDBCUtils.safeGetString(dbResult, "RDB$EXPRESSION_SOURCE")),
-            FireBirdTableIndex.extractCondition(JDBCUtils.safeGetString(dbResult, "RDB$CONDITION_SOURCE")),
-            JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION"),
-            persisted
-        );
+        FireBirdTableIndex index = new FireBirdTableIndex(table, nonUnique, indexName, persisted);
+        index.setDescending("D".equals(JDBCUtils.safeGetString(dbResult, "ASC_OR_DESC")));
+        index.setInactive(JDBCUtils.safeGetInt(dbResult, "RDB$INDEX_INACTIVE") != 0);
+        index.setSelectivity(JDBCUtils.safeGetDouble(dbResult, "RDB$STATISTICS"));
+        index.setExpression(FireBirdTableIndex.extractExpression(JDBCUtils.safeGetString(dbResult, "RDB$EXPRESSION_SOURCE")));
+        index.setCondition(FireBirdTableIndex.extractCondition(JDBCUtils.safeGetString(dbResult, "RDB$CONDITION_SOURCE")));
+        index.setDescription(JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION"));
+        return index;
     }
 
     @Override

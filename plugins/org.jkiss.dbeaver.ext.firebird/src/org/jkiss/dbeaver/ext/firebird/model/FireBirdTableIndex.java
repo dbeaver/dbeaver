@@ -38,7 +38,7 @@ public class FireBirdTableIndex extends GenericTableIndex {
 
     private boolean descending;
     private boolean inactive;
-    private final double selectivity;
+    private double selectivity;
     @Nullable
     private String expression;
     @Nullable
@@ -46,25 +46,16 @@ public class FireBirdTableIndex extends GenericTableIndex {
     @Nullable
     private String description;
 
+    /**
+     * Creates an ascending, active column index. The other attributes are set with the setters.
+     */
     public FireBirdTableIndex(
         @NotNull GenericTableBase table,
         boolean nonUnique,
         @Nullable String indexName,
-        boolean descending,
-        boolean inactive,
-        double selectivity,
-        @Nullable String expression,
-        @Nullable String condition,
-        @Nullable String description,
         boolean persisted
     ) {
         super(table, nonUnique, null, 0, indexName, DBSIndexType.OTHER, persisted);
-        this.descending = descending;
-        this.inactive = inactive;
-        this.selectivity = selectivity;
-        this.expression = expression;
-        this.condition = condition;
-        this.description = description;
     }
 
     /**
@@ -121,6 +112,10 @@ public class FireBirdTableIndex extends GenericTableIndex {
     @Property(viewable = true, order = 8)
     public double getSelectivity() {
         return selectivity;
+    }
+
+    public void setSelectivity(double selectivity) {
+        this.selectivity = selectivity;
     }
 
     /**

@@ -150,7 +150,12 @@ public class FireBirdIndexManagerTest extends DBeaverUnitTest {
         String condition,
         String description
     ) {
-        return new FireBirdTableIndex(table, nonUnique, name, descending, false, 0, expression, condition, description, false);
+        FireBirdTableIndex index = new FireBirdTableIndex(table, nonUnique, name, false);
+        index.setDescending(descending);
+        index.setExpression(expression);
+        index.setCondition(condition);
+        index.setDescription(description);
+        return index;
     }
 
     private void addColumns(@NotNull FireBirdTableIndex index, boolean ascending, @NotNull String... names) {
