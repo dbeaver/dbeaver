@@ -59,7 +59,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                 // Use CAST to improve performance, binaries are too slow
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT RDB$FIELD_NAME,RDB$FIELD_LENGTH,RDB$FIELD_SCALE,RDB$FIELD_PRECISION,RDB$FIELD_TYPE,RDB$FIELD_SUB_TYPE,RDB$CHARACTER_LENGTH,RDB$CHARACTER_SET_ID,\n" +
-                        "CAST(RDB$VALIDATION_SOURCE AS VARCHAR(512)) VALIDATION_SOURCE,SUBSTRING(RDB$COMPUTED_SOURCE FROM 1 FOR 512) COMPUTED_SOURCE,CAST(RDB$DEFAULT_SOURCE AS VARCHAR(512)) DEFAULT_SOURCE\n" +
+                        "CAST(RDB$VALIDATION_SOURCE AS VARCHAR(512)) VALIDATION_SOURCE,SUBSTRING(RDB$COMPUTED_SOURCE FROM 1 FOR 512) COMPUTED_SOURCE,CAST(RDB$DEFAULT_SOURCE AS VARCHAR(512)) DEFAULT_SOURCE,RDB$NULL_FLAG,RDB$DESCRIPTION\n" +
                         "FROM RDB$FIELDS F ORDER BY RDB$FIELD_NAME"))
                 {
                     monitor.subTask("Load Firebird domain types");
