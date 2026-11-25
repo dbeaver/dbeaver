@@ -35,6 +35,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class FireBirdProcedure extends GenericProcedure implements DBSObjectWithScript {
@@ -76,14 +79,22 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
 
     @Nullable
     @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public synchronized Collection<GenericProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return super.getParameters(monitor);
+    }
+
+    @Nullable
+    @Override
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         clearProcedureColumns();
         executable = false;
         return super.refreshObject(monitor);
     }
 
     @Override
-    public void loadProcedureColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public synchronized void loadProcedureColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<GenericProcedureParameter> parameters = new ArrayList<>();
+        boolean executableProcedure = false;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
             String sql;
             boolean isProcedure = getProcedureType() == DBSProcedureType.PROCEDURE;
@@ -159,7 +170,7 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         if (isProcedure) {
                             // JDBC maps a null type to zero, which also denotes a legacy procedure
                             int procedureType = dbResult.getInt("RDB$PROCEDURE_TYPE");
-                            executable = procedureType == EXECUTABLE_PROCEDURE_TYPE
+                            executableProcedure = procedureType == EXECUTABLE_PROCEDURE_TYPE
                                 || (procedureType == LEGACY_PROCEDURE_TYPE && dbResult.getInt("RDB$PROCEDURE_OUTPUTS") == 0);
                         }
                         String parameterName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
@@ -232,13 +243,16 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                                 defaultValue,
                                 fieldName,
                                 relationName);
-                        addColumn(parameter);
+                        parameters.add(parameter);
                     }
                 }
             }
         } catch (SQLException e) {
             throw new DBDatabaseException(e, getDataSource());
         }
+        clearProcedureColumns();
+        parameters.forEach(this::addColumn);
+        executable = executableProcedure;
     }
 
     @Override
