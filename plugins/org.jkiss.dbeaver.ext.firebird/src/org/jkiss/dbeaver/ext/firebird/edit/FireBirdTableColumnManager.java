@@ -28,12 +28,15 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.SimpleTypedObject;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -50,7 +53,7 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
      * Columns declared with a user-defined domain must reference the domain instead of its underlying type.
      * The domain already defines length, precision and character set, so no type modifiers are appended.
      */
-    private final ColumnModifier<GenericTableColumn> DomainDataTypeModifier = (monitor, column, sql, command) -> {
+    private final ColumnModifier<GenericTableColumn> domainDataTypeModifier = (monitor, column, sql, command) -> {
         final String domainName = ((FireBirdTableColumn) column).getDomainName();
         if (domainName != null) {
             sql.append(' ').append(DBUtils.getQuotedIdentifier(column.getDataSource(), domainName));
@@ -79,17 +82,17 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
 
     @NotNull
     @Override
-    protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
+    protected ColumnModifier[] getSupportedModifiers(@NotNull GenericTableColumn column, @NotNull Map<String, Object> options) {
         if (CommonUtils.isNotEmpty(((FireBirdTableColumn) column).getComputedDefinition())) {
             // Only GENERATED ALWAYS AS is supported when field is computed
-            return new ColumnModifier[] {DomainDataTypeModifier, ComputedModifier};
+            return new ColumnModifier[] {domainDataTypeModifier, ComputedModifier};
         }
         if (column.isAutoIncrement()) {
             // DefaultModifier and ComputedModifier not supported in this case, IncrementModifier must be before NotNullModifier
-            return new ColumnModifier[] {DomainDataTypeModifier, IncrementModifier, NotNullModifier};
+            return new ColumnModifier[] {domainDataTypeModifier, IncrementModifier, NotNullModifier};
         }
         // According to SQL92 DEFAULT comes before constraints
-        return new ColumnModifier[] {DomainDataTypeModifier, DefaultModifier, NotNullModifier};
+        return new ColumnModifier[] {domainDataTypeModifier, DefaultModifier, NotNullModifier};
     }
 
     @Override
@@ -119,13 +122,12 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     ) throws DBException {
         final FireBirdTableColumn column = (FireBirdTableColumn) command.getObject();
 
-        String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
-        boolean typeSizeChanged = command.getProperty("maxLength") != null || command.getProperty("precision") != null || command.getProperty("scale") != null;
-        String domainName = column.getDomainName();
-        // An explicit size change detaches the column from its domain, so the underlying type has to be used then
-        String typeClause = domainName != null && !typeSizeChanged
-            ? DBUtils.getQuotedIdentifier(column.getDataSource(), domainName)
-            : column.getFullTypeName();
+        String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL)
+            + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
+        boolean typeSizeChanged = command.getProperty("maxLength") != null
+            || command.getProperty("precision") != null
+            || command.getProperty("scale") != null;
+        String typeClause = getAlterTypeClause(column, typeSizeChanged);
         String computedDefinition = column.getComputedDefinition(monitor);
         if (command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null || typeSizeChanged) {
             final StringBuilder ddl = new StringBuilder()
@@ -207,4 +209,46 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         processObjectReorder(commandContext, object, siblingObjects, newPosition);
     }
 
+    /**
+     * Returns the type for ALTER COLUMN TYPE. A column declared with a domain keeps referencing the domain.
+     * An explicit size change detaches the column from its domain: then the domain's underlying type is used
+     * with the new size, because a domain name can't take size modifiers (DOM_NAME(20) is invalid).
+     */
+    @NotNull
+    private static String getAlterTypeClause(@NotNull FireBirdTableColumn column, boolean typeSizeChanged) {
+        String domainName = column.getDomainName();
+        if (domainName == null) {
+            return column.getFullTypeName();
+        }
+        if (!typeSizeChanged) {
+            return DBUtils.getQuotedIdentifier(column.getDataSource(), domainName);
+        }
+        String baseTypeName = column.getBaseTypeName();
+        // Pass the sizes without the column itself: the dialect omits sizes equal to those of the column's
+        // data type (here the domain), but they are needed once the column no longer uses the domain
+        DBSTypedObject sizedType = new SimpleTypedObject(baseTypeName) {
+            @NotNull
+            @Override
+            public DBPDataKind getDataKind() {
+                return column.getDataKind();
+            }
+
+            @Override
+            public Integer getScale() {
+                return column.getScale();
+            }
+
+            @Override
+            public Integer getPrecision() {
+                return column.getPrecision();
+            }
+
+            @Override
+            public long getMaxLength() {
+                return column.getMaxLength();
+            }
+        };
+        String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), sizedType, baseTypeName, column.getDataKind());
+        return modifiers == null ? baseTypeName : baseTypeName + modifiers;
+    }
 }
