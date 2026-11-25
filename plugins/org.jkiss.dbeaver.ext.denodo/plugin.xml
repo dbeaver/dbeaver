@@ -39,10 +39,16 @@
                         description="Denodo Virtual DataPort JDBC driver for SQL access to heterogeneous data sources."
                         webURL="https://community.denodo.com/docs/html/browse/latest/vdp/developer/access_through_jdbc/access_through_jdbc"
                         categories="sql,analytic">
-                    <file type="jar" path="https://community.denodo.com/drivers/jdbc/9/denodo-vdp-jdbcdriver"/>
+                    <file type="jar" path="maven:/com.denodo.vdp:denodo-vdp-jdbcdriver:RELEASE[9.5.3]"/>
                 </driver>
             </drivers>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="denodo-maven-repo" name="Denodo" url="https://community.denodo.com/drivers/repository/maven2/" order="20">
+            <scope group="com.denodo.vdp"/>
+        </repository>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
