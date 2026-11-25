@@ -43,6 +43,12 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
 
     private FireBirdDataType dataType;
     private String computedDefinition;
+    /**
+     * User-defined domain the column is declared with, or null if the column uses a built-in type
+     * (in which case Firebird assigns an implicit RDB$ domain).
+     */
+    @Nullable
+    private String domainName;
 
     public FireBirdTableColumn(GenericTableBase table) {
         super(table);
@@ -53,6 +59,9 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
         String domainTypeName = getDomainTypeName(monitor);
         if (domainTypeName != null) {
             dataType = (FireBirdDataType) table.getDataSource().getLocalDataType(domainTypeName);
+            if (!FireBirdColumnTypeNameListProvider.isSystemDomainName(domainTypeName)) {
+                domainName = domainTypeName;
+            }
         } else {
             dataType = (FireBirdDataType) table.getDataSource().getLocalDataType(typeName);
         }
@@ -165,9 +174,35 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     }
 
     @Override
+    public void setTypeName(@NotNull String typeName) throws DBException {
+        super.setTypeName(typeName);
+        this.domainName = getUserDomainName(typeName);
+    }
+
+    @Override
     public void setDataType(@NotNull FireBirdDataType dataType) {
         this.dataType = dataType;
         this.typeName = dataType.getTypeName();
+        this.domainName = dataType.isDomain() ? getUserDomainName(dataType.getTypeName()) : null;
+    }
+
+    /**
+     * Returns the user-defined domain this column is declared with, or null if it uses a built-in type.
+     * The domain must be used in DDL instead of the underlying type, otherwise the domain reference is lost.
+     */
+    @Nullable
+    public String getDomainName() {
+        return domainName;
+    }
+
+    @Nullable
+    private String getUserDomainName(@NotNull String typeName) {
+        if (FireBirdColumnTypeNameListProvider.isSystemDomainName(typeName)) {
+            return null;
+        }
+        return getDataSource().getLocalDataType(typeName) instanceof FireBirdDataType fbDataType && fbDataType.isDomain()
+            ? fbDataType.getTypeName()
+            : null;
     }
 
     /**

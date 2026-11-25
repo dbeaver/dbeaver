@@ -1,0 +1,141 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.firebird.edit;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataSource;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataType;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdFieldType;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdSQLDialect;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdTable;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.sql.Types;
+import java.util.Map;
+
+public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
+
+    private static final String DOMAIN_NAME = "DOM_UUID";
+    private static final String IMPLICIT_DOMAIN_NAME = "RDB$100";
+
+    private FireBirdDataSource dataSource;
+    private FireBirdTable table;
+    private DBRProgressMonitor progressMonitor;
+
+    @BeforeEach
+    public void setUp() {
+        dataSource = Mockito.mock(FireBirdDataSource.class);
+        FireBirdSQLDialect dialect = Mockito.mock(FireBirdSQLDialect.class);
+        Mockito.when(dialect.getQuotedIdentifier(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyBoolean()))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        FireBirdDataType charType = new FireBirdDataType(dataSource, FireBirdFieldType.CHAR);
+        Mockito.when(dataSource.getLocalDataType(DOMAIN_NAME)).thenReturn(domainType(DOMAIN_NAME));
+        Mockito.when(dataSource.getLocalDataType(IMPLICIT_DOMAIN_NAME)).thenReturn(domainType(IMPLICIT_DOMAIN_NAME));
+        Mockito.when(dataSource.getLocalDataType(charType.getTypeName())).thenReturn(charType);
+
+        table = Mockito.mock(FireBirdTable.class);
+        Mockito.when(table.getDataSource()).thenReturn(dataSource);
+        progressMonitor = Mockito.mock(DBRProgressMonitor.class);
+    }
+
+    @Test
+    public void columnDeclarationUsesUserDomainInsteadOfUnderlyingType() throws DBException {
+        FireBirdTableColumn column = loadColumn(DOMAIN_NAME);
+
+        Assertions.assertEquals(DOMAIN_NAME, column.getDomainName());
+        Assertions.assertEquals("TEST_NAME DOM_UUID NOT NULL", getDeclaration(column));
+    }
+
+    @Test
+    public void columnDeclarationUsesUnderlyingTypeForImplicitDomain() throws DBException {
+        FireBirdTableColumn column = loadColumn(IMPLICIT_DOMAIN_NAME);
+
+        Assertions.assertNull(column.getDomainName());
+        String declaration = getDeclaration(column);
+        Assertions.assertTrue(declaration.startsWith("TEST_NAME CHAR"), declaration);
+        Assertions.assertFalse(declaration.contains(IMPLICIT_DOMAIN_NAME), declaration);
+    }
+
+    @Test
+    public void changingTypeNameUpdatesDomain() throws DBException {
+        FireBirdTableColumn column = loadColumn(DOMAIN_NAME);
+
+        column.setTypeName(FireBirdFieldType.CHAR.getName());
+        Assertions.assertNull(column.getDomainName());
+
+        column.setTypeName(DOMAIN_NAME);
+        Assertions.assertEquals(DOMAIN_NAME, column.getDomainName());
+    }
+
+    @Test
+    public void changingDataTypeUpdatesDomain() throws DBException {
+        FireBirdTableColumn column = loadColumn(DOMAIN_NAME);
+
+        column.setDataType(new FireBirdDataType(dataSource, FireBirdFieldType.CHAR));
+        Assertions.assertNull(column.getDomainName());
+
+        column.setDataType(domainType(DOMAIN_NAME));
+        Assertions.assertEquals(DOMAIN_NAME, column.getDomainName());
+    }
+
+    @NotNull
+    private FireBirdTableColumn loadColumn(@NotNull String fieldSource) throws DBException {
+        Mockito.when(table.getColumnDomainType(Mockito.any(), Mockito.any())).thenReturn(fieldSource);
+        return new FireBirdTableColumn(
+            progressMonitor, null, table, "TEST_NAME", FireBirdFieldType.CHAR.getName(), Types.CHAR, Types.CHAR,
+            1, 16, 16, null, null, 10, true, null, null, false, false);
+    }
+
+    @NotNull
+    private FireBirdDataType domainType(@NotNull String name) {
+        return new FireBirdDataType(
+            dataSource, FireBirdFieldType.CHAR, 0, name, null, false, true, 0, 0, 0,
+            16, 16, null, null, null, "OCTETS", false);
+    }
+
+    @NotNull
+    @SuppressWarnings("unchecked")
+    private String getDeclaration(@NotNull FireBirdTableColumn column) {
+        DBECommandAbstract<GenericTableColumn> command = Mockito.mock(DBECommandAbstract.class);
+        Mockito.when(command.getObject()).thenReturn(column);
+        return new TestColumnManager().getDeclaration(progressMonitor, column, command);
+    }
+
+    /**
+     * Exposes the protected column declaration builder of the manager.
+     */
+    private static class TestColumnManager extends FireBirdTableColumnManager {
+        @NotNull
+        String getDeclaration(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull FireBirdTableColumn column,
+            @NotNull DBECommandAbstract<GenericTableColumn> command
+        ) {
+            return getNestedDeclaration(monitor, column.getTable(), command, Map.of()).toString();
+        }
+    }
+}

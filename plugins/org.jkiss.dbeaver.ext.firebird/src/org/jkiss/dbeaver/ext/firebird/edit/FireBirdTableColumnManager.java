@@ -46,6 +46,19 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     implements DBEObjectRenamer<GenericTableColumn>, DBEObjectReorderer<GenericTableColumn>
 {
 
+    /**
+     * Columns declared with a user-defined domain must reference the domain instead of its underlying type.
+     * The domain already defines length, precision and character set, so no type modifiers are appended.
+     */
+    private final ColumnModifier<GenericTableColumn> DomainDataTypeModifier = (monitor, column, sql, command) -> {
+        final String domainName = ((FireBirdTableColumn) column).getDomainName();
+        if (domainName != null) {
+            sql.append(' ').append(DBUtils.getQuotedIdentifier(column.getDataSource(), domainName));
+        } else {
+            DataTypeModifier.appendModifier(monitor, column, sql, command);
+        }
+    };
+
     private final ColumnModifier<GenericTableColumn> ComputedModifier = (monitor, column, sql, command) -> {
         final String definition = ((FireBirdTableColumn) column).getComputedDefinition();
         if (CommonUtils.isNotEmpty(definition)) {
@@ -69,14 +82,14 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
         if (CommonUtils.isNotEmpty(((FireBirdTableColumn) column).getComputedDefinition())) {
             // Only GENERATED ALWAYS AS is supported when field is computed
-            return new ColumnModifier[] {DataTypeModifier, ComputedModifier};
+            return new ColumnModifier[] {DomainDataTypeModifier, ComputedModifier};
         }
         if (column.isAutoIncrement()) {
             // DefaultModifier and ComputedModifier not supported in this case, IncrementModifier must be before NotNullModifier
-            return new ColumnModifier[] {DataTypeModifier, IncrementModifier, NotNullModifier};
+            return new ColumnModifier[] {DomainDataTypeModifier, IncrementModifier, NotNullModifier};
         }
         // According to SQL92 DEFAULT comes before constraints
-        return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NotNullModifier};
+        return new ColumnModifier[] {DomainDataTypeModifier, DefaultModifier, NotNullModifier};
     }
 
     @Override
@@ -107,9 +120,14 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         final FireBirdTableColumn column = (FireBirdTableColumn) command.getObject();
 
         String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
-        String typeClause = column.getFullTypeName();
+        boolean typeSizeChanged = command.getProperty("maxLength") != null || command.getProperty("precision") != null || command.getProperty("scale") != null;
+        String domainName = column.getDomainName();
+        // An explicit size change detaches the column from its domain, so the underlying type has to be used then
+        String typeClause = domainName != null && !typeSizeChanged
+            ? DBUtils.getQuotedIdentifier(column.getDataSource(), domainName)
+            : column.getFullTypeName();
         String computedDefinition = column.getComputedDefinition(monitor);
-        if (command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null || command.getProperty("maxLength") != null || command.getProperty("precision") != null || command.getProperty("scale") != null) {
+        if (command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null || typeSizeChanged) {
             final StringBuilder ddl = new StringBuilder()
                 .append(prefix).append("TYPE ").append(typeClause);
             if (CommonUtils.isNotEmpty(computedDefinition)) {
