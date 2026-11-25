@@ -28,6 +28,19 @@
                 label="Firebird"
                 icon="icons/firebird_icon.png"
                 dialect="firebird">
+            <!-- Read-only system information, like the "System Info" folder of PostgreSQL -->
+            <treeInjection path="generic/catalog/schema" after="dataType">
+                <folder label="%tree.information.node.name" icon="#folder_info" description="%tree.information.node.tip" adminFolder="true">
+                    <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdCharacterSet" label="%tree.charsets.node.name" icon="#folder" description="%tree.charsets.node.tip">
+                        <items label="%tree.charset.node.name" path="characterSet" property="characterSets" icon="#info">
+                            <items label="%tree.collation.node.name" path="collation" property="collations" icon="#info" navigable="false"/>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdCollation" label="%tree.collations.node.name" icon="#folder" description="%tree.collations.node.tip">
+                        <items label="%tree.collation.node.name" path="collation" property="collations" icon="#info"/>
+                    </folder>
+                </folder>
+            </treeInjection>
             <drivers managable="true">
 
                 <driver
