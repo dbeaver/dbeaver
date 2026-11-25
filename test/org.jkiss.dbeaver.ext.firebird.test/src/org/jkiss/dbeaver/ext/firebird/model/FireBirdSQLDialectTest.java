@@ -94,18 +94,27 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
 
     @NotNull
     private String generateCall(boolean executable, boolean castParams, @NotNull List<DBSProcedureParameter> parameters) {
-        FireBirdProcedure procedure = Mockito.mock(FireBirdProcedure.class);
         GenericDataSource dataSource = Mockito.mock(GenericDataSource.class);
         DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
         DBPPreferenceStore preferences = Mockito.mock(DBPPreferenceStore.class);
-        Mockito.when(procedure.getProcedureType()).thenReturn(DBSProcedureType.PROCEDURE);
-        Mockito.when(procedure.getFullyQualifiedName(DBPEvaluationContext.DML)).thenReturn("TEST_PROC");
-        Mockito.when(procedure.isExecutable()).thenReturn(executable);
-        Mockito.when(procedure.getDataSource()).thenReturn(dataSource);
+        GenericStructContainer structContainer = Mockito.mock(GenericStructContainer.class);
+        Mockito.when(structContainer.getDataSource()).thenReturn(dataSource);
         Mockito.when(dataSource.getContainer()).thenReturn(container);
         Mockito.when(container.getPreferenceStore()).thenReturn(preferences);
         Mockito.when(preferences.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)).thenReturn(":");
 
+        FireBirdProcedure procedure = new FireBirdProcedure(structContainer, "TEST_PROC", null, null, DBSProcedureType.PROCEDURE, null) {
+            @Override
+            boolean isExecutable() {
+                return executable;
+            }
+
+            @NotNull
+            @Override
+            public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+                return getName();
+            }
+        };
         StringBuilder sql = new StringBuilder();
         dialect.generateStoredProcedureCall(sql, procedure, parameters, castParams);
         return sql.toString().stripTrailing();
