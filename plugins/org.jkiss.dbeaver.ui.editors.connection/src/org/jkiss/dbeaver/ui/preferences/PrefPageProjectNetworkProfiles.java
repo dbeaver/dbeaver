@@ -97,7 +97,11 @@ public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfil
                 profile.persistSecrets(secretController);
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Save error", "Cannot save network profile credentials", e);
+            DBWorkbench.getPlatformUI().showError(
+                UIConnectionMessages.pref_page_network_profiles_save_error_title,
+                UIConnectionMessages.pref_page_network_profiles_save_error,
+                e
+            );
         }
     }
 

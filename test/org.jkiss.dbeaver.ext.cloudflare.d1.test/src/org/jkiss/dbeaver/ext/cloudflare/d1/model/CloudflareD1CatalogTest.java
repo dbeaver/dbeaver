@@ -75,20 +75,20 @@ public class CloudflareD1CatalogTest {
 
         DBPConnectionConfiguration original = new DBPConnectionConfiguration();
         original.setDatabaseName("configured-id");
-        original.setUrl("jdbc:d1://configured-id");
+        original.setUrl("jdbc:dbeaver:d1://configured-id");
         original.setUserName("account");
         original.setUserPassword("test-token");
         original.setProperty("queryTimeout", "1234");
 
         var firstConfig = firstContext.prepareConfiguration(original);
         var secondConfig = secondContext.prepareConfiguration(original);
-        Assertions.assertEquals("jdbc:d1://first-id", firstConfig.getUrl());
-        Assertions.assertEquals("jdbc:d1://second-id", secondConfig.getUrl());
+        Assertions.assertEquals("jdbc:dbeaver:d1://first-id", firstConfig.getUrl());
+        Assertions.assertEquals("jdbc:dbeaver:d1://second-id", secondConfig.getUrl());
         Assertions.assertEquals("second-id", secondConfig.getDatabaseName());
         Assertions.assertEquals("account", secondConfig.getUserName());
         Assertions.assertEquals("test-token", secondConfig.getUserPassword());
         Assertions.assertEquals("1234", secondConfig.getProperty("queryTimeout"));
-        Assertions.assertEquals("jdbc:d1://configured-id", original.getUrl());
+        Assertions.assertEquals("jdbc:dbeaver:d1://configured-id", original.getUrl());
         Assertions.assertEquals("configured-id", original.getDatabaseName());
         Assertions.assertSame(firstContext, first.getDefaultContext(monitor, false));
         Assertions.assertNotSame(firstContext, secondContext);

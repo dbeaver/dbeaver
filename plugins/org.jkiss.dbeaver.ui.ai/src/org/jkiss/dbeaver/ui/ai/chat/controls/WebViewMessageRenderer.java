@@ -248,8 +248,11 @@ final class WebViewMessageRenderer {
     @Nullable
     private static Map<String, String> buildMessageMeta(@NotNull AIChatMessage message) {
         var meta = message.message().getMeta();
-        if (meta == null) {
-            return null;
+        if (CommonUtils.isEmpty(meta)) {
+            return message.message().getRole() == AIMessageType.ASSISTANT ? Map.of(
+                "time", AIChatUtils.formatMessageTime(message.message()),
+                "usage", AIChatMessagesUI.ai_chat_message_meta_tokens_unavailable
+            ) : null;
         }
 
         AIExtendedUsage extendedUsage = AIExtendedUsage.from(meta);
@@ -257,12 +260,15 @@ final class WebViewMessageRenderer {
         return Map.of(
             "time", AIChatUtils.formatMessageTime(message.message()),
             "duration", DurationFormatter.format(extendedUsage.totalTime(), DurationFormat.SHORT),
-            "usage", formatUsage(AIExtendedUsage.from(meta))
+            "usage", formatUsage(extendedUsage)
         );
     }
 
     @NotNull
     static String formatUsage(@NotNull AIExtendedUsage usage) {
+        if (!usage.hasUsage()) {
+            return AIChatMessagesUI.ai_chat_message_meta_tokens_unavailable;
+        }
         return NLS.bind(
             AIChatMessagesUI.ai_chat_message_meta_tokens,
             usage.totalInputTokens(),
@@ -322,6 +328,7 @@ final class WebViewMessageRenderer {
             Map<String, Object> resultArgs = new HashMap<>();
             resultArgs.put("messageId", message.id());
             resultArgs.put("functionName", functionCall.getFunctionName());
+            resultArgs.put("functionCallId", functionCall.getId().toString());
             resultArgs.put("result", result);
             resultArgs.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
             AIFunctionResult functionResult = message.message().getFunctionResult();
@@ -354,6 +361,7 @@ final class WebViewMessageRenderer {
                 : NLS.bind(AIChatMessagesUI.ai_chat_confirm_auto_approved, toolName)
         );
         args.put("functionName", functionCall.getFunctionName());
+        args.put("functionCallId", functionCall.getId().toString());
         args.put("confirmed", confirmed);
         args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
         args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
@@ -419,8 +427,31 @@ final class WebViewMessageRenderer {
             ),
             "notice",
             AIChatMessagesUI.ai_chat_ai_notice,
+            "strings",
+            Map.ofEntries(
+                Map.entry("allowOptions", AIChatMessagesUI.ai_chat_confirm_allow_options),
+                Map.entry("allowTitlePrefix", AIChatMessagesUI.ai_chat_confirm_title_prefix),
+                Map.entry("allowTitleMiddle", AIChatMessagesUI.ai_chat_confirm_title_middle),
+                Map.entry("parameters", AIChatMessagesUI.ai_chat_confirm_params),
+                Map.entry("result", AIChatMessagesUI.ai_chat_confirm_result),
+                Map.entry("invalidAttachmentData", AIChatMessagesUI.ai_chat_attachment_invalid_data),
+                Map.entry("unknownFile", AIChatMessagesUI.ai_chat_attachment_unknown_file),
+                Map.entry("showInExplorer", AIChatMessagesUI.ai_chat_attachment_show_in_explorer),
+                Map.entry("attachmentError", AIChatMessagesUI.ai_chat_attachment_create_error),
+                Map.entry("chooseType", AIChatMessagesUI.ai_chat_attachment_choose_type),
+                Map.entry("chooseTypeTip", AIChatMessagesUI.ai_chat_attachment_choose_type_tip),
+                Map.entry("noHandlers", AIChatMessagesUI.ai_chat_attachment_no_handlers),
+                Map.entry("noActions", AIChatMessagesUI.ai_chat_attachment_no_actions),
+                Map.entry("noTypeActions", AIChatMessagesUI.ai_chat_attachment_no_type_actions),
+                Map.entry("openAsTable", AIChatMessagesUI.ai_chat_attachment_open_as_table),
+                Map.entry("importFile", AIChatMessagesUI.ai_chat_attachment_import_file),
+                Map.entry("importFiles", AIChatMessagesUI.ai_chat_attachment_import_files),
+                Map.entry("openCompleted", AIChatMessagesUI.ai_chat_attachment_open_completed),
+                Map.entry("importCompleted", AIChatMessagesUI.ai_chat_attachment_import_completed)
+            ),
             "a11y",
             Map.of(
+                "notifyOutsideWebView", "edge".equals(browser.getBrowserType()),
                 "transcriptLabel", AIChatMessagesUI.ai_chat_a11y_transcript_label,
                 "waitingForResponse", AIChatMessagesUI.ai_chat_a11y_waiting_for_response,
                 "roles", Map.of(

@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerGCloud;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceURLProvider;
@@ -41,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDataSource> implements DBPNativeClientLocationManager {
     private static final Map<String, String> connectionsProps;
@@ -100,6 +102,16 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDat
         }
 
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
+        String hostName = CommonUtils.notEmpty(configToUse.getHostName());
+        // the host field holds a Cloud SQL instance connection name
+        if (!PostgreServerGCloud.TYPE_ID.equals(serverType.getId()) && (hostName.contains(",") || hostName.contains(":"))) {
+            configToUse = new DBPConnectionConfiguration(configToUse);
+            String port = CommonUtils.notEmpty(configToUse.getHostPort());
+            // the URL template appends the port to the final host
+            configToUse.setHostName(Arrays.stream(hostName.split(",", -1))
+                .map(host -> host.contains(":") && !host.startsWith("[") ? "[" + host + "]" : host)
+                .collect(Collectors.joining((port.isEmpty() ? "" : ":" + port) + ",")));
+        }
         if (serverType.supportsCustomConnectionURL()) {
             return DatabaseURL.generateUrlByTemplate(driver, configToUse);
         }

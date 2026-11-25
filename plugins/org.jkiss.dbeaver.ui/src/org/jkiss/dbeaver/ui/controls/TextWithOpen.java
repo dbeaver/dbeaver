@@ -138,7 +138,7 @@ public class TextWithOpen {
                         try {
                             IDE.openEditorOnFileStore(UIUtils.getActiveWorkbenchWindow().getActivePage(), store);
                         } catch (Exception ex) {
-                            DBWorkbench.getPlatformUI().showError("File open error", null, ex);
+                            DBWorkbench.getPlatformUI().showError(UIMessages.file_open_error_title, null, ex);
                         }
                     })
             );

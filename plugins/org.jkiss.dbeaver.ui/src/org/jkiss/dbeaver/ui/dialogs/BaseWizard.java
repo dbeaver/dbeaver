@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -45,7 +46,7 @@ public abstract class BaseWizard extends Wizard
         try {
             getRunnableContext().run(true, true, runnable::run);
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Internal error", "Internal error while running wizard task", e);
+            DBWorkbench.getPlatformUI().showError(UIMessages.wizard_task_error_title, UIMessages.wizard_task_error_message, e);
         } catch (InterruptedException ignored) {
 
         }

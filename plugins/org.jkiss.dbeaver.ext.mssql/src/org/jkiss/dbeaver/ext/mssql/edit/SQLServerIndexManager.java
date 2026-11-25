@@ -137,6 +137,9 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
             super.addObjectCreateActions(monitor, executionContext, actions, command, options);
             return;
         }
+        if (!CommonUtils.isEmpty(index.getFilterDefinition())) {
+            ddl.append(" WHERE ").append(index.getFilterDefinition());
+        }
         actions.add(
                 new SQLDatabasePersistAction("Create new SQL Server index", ddl.toString())
         );

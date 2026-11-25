@@ -38,7 +38,7 @@
                     sampleURL="jdbc:databricks://{host}[:{port}][/{database}]"
                     webURL="https://docs.databricks.com/aws/en/integrations/jdbc-oss.html"
                     databaseDocumentationSuffixURL="Database-driver-Databricks"
-                    description="Databricks OSS JDBC Driver"
+                    description="Open-source Databricks JDBC driver for cloud lakehouse SQL analytics."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic,cloud"
                     singleConnection="true">
@@ -47,7 +47,7 @@
                     <replace provider="databricks" driver="databricks"/>
                     <replace provider="databricks" driver="databricks-native"/>
 
-                    <file type="jar" path="maven:/com.databricks:databricks-jdbc:3.4.3" bundle="!drivers.databricks_native"/>
+                    <file type="jar" path="maven:/com.databricks:databricks-jdbc:3.4.4" bundle="!drivers.databricks_native"/>
                     <file type="jar" path="drivers/databricks_native" bundle="drivers.databricks_native"/>
                     <file type="jar" path="bundle:/org.jkiss.bundle.jackson" bundle="drivers.databricks_native"/>
                     <file type="jar" path="bundle:/org.apache.commons.lang3" bundle="drivers.databricks_native"/>

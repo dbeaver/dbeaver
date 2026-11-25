@@ -78,6 +78,11 @@ public interface AIEngineProperties {
 
     double getTemperature();
 
+    @Nullable
+    default Double getRequestTemperature() {
+        return getTemperature();
+    }
+
     // Checks that properties have all required values
     boolean isValidConfiguration();
 
@@ -88,6 +93,9 @@ public interface AIEngineProperties {
     int getTimeout();
 
     void setTimeout(int timeout);
+
+    default void clearUserCredentials() {
+    }
 
     void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException;
 

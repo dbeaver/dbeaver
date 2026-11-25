@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
+import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 
 /** Creates a remote DataDam project and uploads the selected local project. */
 public class DDProjectSharingJob extends DDProjectOperationJob<DDSharedProject> {

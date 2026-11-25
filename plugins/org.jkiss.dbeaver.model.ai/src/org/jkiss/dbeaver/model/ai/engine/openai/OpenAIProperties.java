@@ -83,6 +83,9 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @SerializedName("openai.authentication")
     private String authentication = AUTHENTICATION_API_TOKEN;
+    // personal edits must not replace the shared authentication method
+    @Nullable
+    protected transient Boolean userAccountAuthentication;
     @SecureProperty
     @SerializedName(ACCESS_TOKEN)
     private String accessToken;
@@ -160,14 +163,17 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     public void selectModel(@NotNull AIModel model) {
         setModel(model.name());
-        setContextWindowSize(model.contextWindowSize() != null ? model.contextWindowSize() :
-            OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE));
+        Integer contextSize = model.contextWindowSize();
+        if (contextSize == null && (isChatGptAccountAuthentication() || OpenAIModels.isOpenAIEndpoint(getEffectiveBaseUrl()))) {
+            contextSize = OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(null);
+        }
+        setContextWindowSize(contextSize != null ? contextSize : AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE);
     }
 
     @Override
     @Property(order = 4)
     public double getTemperature() {
-        if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
+        if (Double.isFinite(temperature) && (hasExplicitTemperature() || temperature != AIUtils.DEFAULT_TEMPERATURE)) {
             return temperature;
         }
 
@@ -195,6 +201,9 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         if (contextWindowSize != null) {
             return contextWindowSize;
         }
+        if (!isChatGptAccountAuthentication() && !OpenAIModels.isOpenAIEndpoint(getEffectiveBaseUrl())) {
+            return null;
+        }
 
         return OpenAIModels.getModelByName(getModel())
             .map(AIModel::contextWindowSize)
@@ -205,7 +214,8 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     public Integer getEffectiveContextWindowSize() {
         String environmentModel = getEnvironmentModel();
-        return environmentModel == null ? getContextWindowSize() : OpenAIModels.getModelByName(environmentModel)
+        return environmentModel == null || !isChatGptAccountAuthentication() && !OpenAIModels.isOpenAIEndpoint(getEffectiveBaseUrl())
+            ? getContextWindowSize() : OpenAIModels.getModelByName(environmentModel)
             .map(AIModel::contextWindowSize)
             .orElseGet(this::getContextWindowSize);
     }
@@ -214,9 +224,17 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         this.contextWindowSize = contextWindowSize;
     }
 
+    @Nullable
+    public Integer getConfiguredContextWindowSize() {
+        return contextWindowSize;
+    }
+
     @NotNull
     @Property(order = 1)
     public String getAuthentication() {
+        if (userAccountAuthentication != null) {
+            return userAccountAuthentication ? AUTHENTICATION_CHATGPT_ACCOUNT : AUTHENTICATION_API_TOKEN;
+        }
         return AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
             ? AUTHENTICATION_CHATGPT_ACCOUNT
             : AUTHENTICATION_API_TOKEN;
@@ -237,11 +255,20 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     }
 
     @Override
+    public void setUserAccountAuthentication(@Nullable Boolean accountAuthentication) {
+        userAccountAuthentication = accountAuthentication;
+    }
+
+    @Override
     public boolean supportsDeviceAuthorization() {
         return true;
     }
 
     public void setAuthentication(@Nullable String authentication) {
+        if (userAccountAuthentication != null) {
+            userAccountAuthentication = AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication);
+            return;
+        }
         this.authentication = AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
             ? AUTHENTICATION_CHATGPT_ACCOUNT
             : AUTHENTICATION_API_TOKEN;
@@ -470,9 +497,10 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
             long expiresInSeconds = Math.max(0, (credentials.expiresAt - System.currentTimeMillis()) / 1000);
+            // empty tokens still reach the persistence, so a sign-out is saved too
             credentials.saveAccountTokensInternal(credentials.refreshToken, new AIAccountAuthenticator.Tokens(
-                credentials.accessToken,
-                credentials.refreshToken,
+                CommonUtils.notEmpty(credentials.accessToken),
+                CommonUtils.notEmpty(credentials.refreshToken),
                 expiresInSeconds,
                 credentials.accountId,
                 credentials.accountEmail

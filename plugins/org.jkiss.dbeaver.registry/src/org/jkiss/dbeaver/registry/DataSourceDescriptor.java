@@ -472,6 +472,11 @@ public class DataSourceDescriptor
         return sharedCredentials;
     }
 
+    @Override
+    public boolean isSharedCredentialsRevoked() {
+        return sharedCredentialsRevoked;
+    }
+
     //ignore changed store type
     public void forceSetSharedCredentials(boolean sharedCredentials) {
         if (sharedCredentials) {
@@ -893,13 +898,15 @@ public class DataSourceDescriptor
         try {
             registry.updateDataSource(this, forcePersistSecrets);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Datasource update error", "Error updating datasource", e);
+            DBWorkbench.getPlatformUI().showError(
+                RegistryMessages.data_source_update_error_title, RegistryMessages.data_source_update_error_message, e);
             return false;
         }
 
         Throwable lastError = registry.getLastError();
         if (lastError != null) {
-            DBWorkbench.getPlatformUI().showError("Save error", "Error saving datasource configuration", lastError);
+            DBWorkbench.getPlatformUI().showError(
+                RegistryMessages.data_source_save_error_title, RegistryMessages.data_source_save_error_message, lastError);
             return false;
         }
 
@@ -2140,15 +2147,16 @@ public class DataSourceDescriptor
                 if (actualConfig != connConfig || !dataSourceContainer.isSavePassword()) {
                     dataSourceContainer.resolvedConnectionInfo = promptConnectionInfo;
                 }
-                if (dataSourceContainer.isSavePassword()) {
+                if (!dataSourceContainer.isSavePassword()) {
+                    dataSourceContainer.setConnectionInfo(savedConnectionInfo);
+                    dataSourceContainer.setSavePassword(savedPasswordState);
+                } else if (!dataSourceContainer.isTemporary()) {
+                    // Updating an unregistered test connection would add it to the registry and navigator.
                     try {
                         dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
                     } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Error saving datasource", null, e);
+                        DBWorkbench.getPlatformUI().showError(RegistryMessages.data_source_save_error, null, e);
                     }
-                } else {
-                    dataSourceContainer.setConnectionInfo(savedConnectionInfo);
-                    dataSourceContainer.setSavePassword(savedPasswordState);
                 }
                 return true;
             }
@@ -2207,7 +2215,7 @@ public class DataSourceDescriptor
                 // Update connection properties
                 dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Error saving datasource", null, e);
+                DBWorkbench.getPlatformUI().showError(RegistryMessages.data_source_save_error, null, e);
             }
         }
 

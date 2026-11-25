@@ -152,6 +152,7 @@ public class BaseErrorDialog extends BaseDialog {
             ((GridLayout) dialogArea.getLayout()).numColumns++;
 
             Text messageText = new Text(dialogArea, SWT.READ_ONLY | SWT.WRAP | SWT.MULTI);
+            messageText.setBackground(dialogArea.getBackground());
             messageText.setText(message);
             applyMessageSizes(messageText, false, DEFAULT_MESSAGE_WIDTH);
         }

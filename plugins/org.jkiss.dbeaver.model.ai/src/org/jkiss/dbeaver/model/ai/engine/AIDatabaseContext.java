@@ -23,9 +23,13 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
@@ -93,12 +97,11 @@ public class AIDatabaseContext {
         }
         this.executionContext = executionContext;
 
-        // Native DDL and relationships can reveal names of objects outside the connection allowlist.
-        this.schemaGenerationOptions = dataSourceCustomScope
+        // Preserve requested DDL features and filter individual entities and relationship endpoints instead.
+        this.schemaGenerationOptions = (dataSourceCustomScope || scope != AIDatabaseScope.CURRENT_DATASOURCE)
             ? schemaGenerationOptions.toBuilder()
-                .withSendForeignKeys(false)
-                .withSendFullDDL(false)
-                .withSendReferences(false)
+                .withObjectFilter((monitor, object) -> schemaGenerationOptions.includesObject(monitor, object)
+                    && isDDLInScope(monitor, object))
                 .build()
             : schemaGenerationOptions;
     }
@@ -106,6 +109,22 @@ public class AIDatabaseContext {
     @NotNull
     public DBSLogicalDataSource getDataSource() {
         return dataSource;
+    }
+
+    private boolean isDDLInScope(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) throws DBException {
+        if (object instanceof DBSEntityAssociation association) {
+            if (!AIUtils.isObjectInScope(this, executionContext, association.getParentObject())) {
+                return false;
+            }
+            DBSEntity target = DBStructUtils.getAssociatedEntity(monitor, association);
+            return target != null && AIUtils.isObjectInScope(this, executionContext, target);
+        }
+        // Columns, indexes and constraints belong to the selected entity even in a table-level custom scope.
+        DBSObject owner = object;
+        while (owner != null && !(owner instanceof DBSEntity)) {
+            owner = owner.getParentObject();
+        }
+        return AIUtils.isObjectInScope(this, executionContext, owner == null ? object : owner);
     }
 
     @NotNull

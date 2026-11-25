@@ -146,7 +146,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         composite.setForeground(fg);
         composite.setBackground(bg);
         if (project != null && this.project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
-            Button newButton = UIUtils.createPushButton(
+            UIUtils.createPushButton(
                 childComposite,
                 SQLEditorMessages.script_selector_create_script,
                 null,
@@ -163,7 +163,6 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
                     cancelPressed();
                 })
             );
-            closeOnFocusLost(newButton);
         } else {
             UIUtils.createPlaceholder(childComposite, 1);
         }
@@ -375,7 +374,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             })
         );
 
-        closeOnFocusLost(patternText, scriptViewer.getTree());
+        closeOnFocusLost();
 
         useProjectScripts(projectCheckbox.getSelection());
         UIUtils.expandAll(scriptViewer);

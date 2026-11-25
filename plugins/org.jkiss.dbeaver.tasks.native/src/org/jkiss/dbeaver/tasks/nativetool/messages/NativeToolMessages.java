@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ public class NativeToolMessages extends NLS {
 
     public static String native_tool_handler_log_task;
     public static String native_tool_handler_log_finished_task;
+    public static String native_tool_handler_error_connection_not_found;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, NativeToolMessages.class);

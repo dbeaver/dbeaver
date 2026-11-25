@@ -21,8 +21,8 @@
             <property name="aboutText" value="%aboutText"/>
             <property name="copyright" value="© 2026 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
-            <property name="website" value="%productWebsite"/>
-            <property name="email" value="%productEmail"/>
+            <property name="website" value="https://dbeaver.io/"/>
+            <property name="email" value="support@dbeaver.com"/>
             <property name="versionUpdateURL" value="https://dbeaver.io/product/version.xml"/>
             <property name="earlyAccessURL" value="https://dbeaver.io/files/ea"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
@@ -46,8 +46,8 @@
             <property name="aboutText" value="%aboutText"/>
             <property name="copyright" value="© 2026 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
-            <property name="website" value="%productWebsite"/>
-            <property name="email" value="%productEmail"/>
+            <property name="website" value="https://dbeaver.io/"/>
+            <property name="email" value="support@dbeaver.com"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver CE"/>
             <property name="versionInfoCoord" value="154,53"/>
@@ -59,14 +59,14 @@
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ui.app.standalone/tips.xml"/>
+            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ui.app.standalone/OSGI-INF/l10n/tips.xml"/>
         </product>
     </extension>
 
     <extension point="org.jkiss.dbeaver.application">
         <application id="dbeaver-ce"
             family="DB"
-            name="%productName"
+            name="DBeaver"
             description="%productSubTitle"/>
     </extension>
 
@@ -79,13 +79,13 @@
         <command
             id="org.jkiss.dbeaver.core.util.resetSettings"
             categoryId="org.jkiss.dbeaver.core.util"
-            name="Reset Settings..."
-            description="Reset settings and restart"/>
+            name="%command.org.jkiss.dbeaver.core.util.resetSettings.name"
+            description="%command.org.jkiss.dbeaver.core.util.resetSettings.description"/>
         <command
             id="org.jkiss.dbeaver.core.util.clearHistory"
             categoryId="org.jkiss.dbeaver.core.util"
-            name="Clear History..."
-            description="Clear logs, query history and restart"/>
+            name="%command.org.jkiss.dbeaver.core.util.clearHistory.name"
+            description="%command.org.jkiss.dbeaver.core.util.clearHistory.description"/>
         <command
                 id="org.jkiss.dbeaver.core.try.pro"
                 name="%command.org.jkiss.dbeaver.ui.try.pro.name"
@@ -98,8 +98,8 @@
                 categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command
                 id="org.jkiss.dbeaver.ui.window.minimize"
-                name="Minimize Window"
-                description="Minimize the current window"
+                name="%command.org.jkiss.dbeaver.ui.window.minimize.name"
+                description="%command.org.jkiss.dbeaver.ui.window.minimize.description"
                 categoryId="org.eclipse.ui.category.window"/>
         <command
                 id="org.jkiss.dbeaver.ui.versionUpdate"
@@ -197,6 +197,13 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.eclipse.ui.window.preferences" class="org.jkiss.dbeaver.ui.app.standalone.actions.PreferencesHandler">
+            <activeWhen>
+                <with variable="selection">
+                    <test property="org.jkiss.dbeaver.core.global.standalone"/>
+                </with>
+            </activeWhen>
+        </handler>
         <handler commandId="org.eclipse.ui.help.aboutAction" class="org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxHandler">
             <activeWhen>
                 <with variable="selection">
@@ -215,7 +222,7 @@
         <handler commandId="org.jkiss.dbeaver.core.try.pro" class="org.jkiss.dbeaver.ui.app.standalone.actions.TryPROHandler"/>
         <handler commandId="org.jkiss.dbeaver.ui.window.minimize" class="org.jkiss.dbeaver.ui.app.standalone.actions.MinimizeWindowHandler"/>
         <handler commandId="org.jkiss.dbeaver.ui.versionUpdate" class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateHandler"/>
-        <handler commandId="org.jkiss.dbeaver.ui.versionUpdate.releaseNotes" class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ui.versionUpdate.releaseNotes" class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateHandler$ReleaseNotes"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -288,6 +295,9 @@
             <command commandId="org.eclipse.ui.file.print"/>
             <command commandId="org.eclipse.ui.edit.rename"/>
             <command commandId="org.eclipse.ui.file.refresh"/>
+
+            <separator name="preferences" visible="true"/>
+            <command commandId="org.eclipse.ui.window.preferences"/>
 
             <separator name="import-export" visible="true"/>
             <command commandId="org.eclipse.ui.file.import">
@@ -369,21 +379,11 @@
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
         </menuContribution>
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.trim.command2">
-            <toolbar label="%toolbar.versionUpdate.label" id="dbeaver-version-update">
-                <command
-                        commandId="org.jkiss.dbeaver.ui.versionUpdate"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/download.svg"
-                        id="org.jkiss.dbeaver.ui.versionUpdate.menu"
-                        mode="FORCE_TEXT"
-                        style="pulldown">
-                    <visibleWhen>
-                        <test
-                                forcePluginActivation="true"
-                                property="org.jkiss.dbeaver.ui.versionUpdate.available"/>
-                    </visibleWhen>
-                </command>
-            </toolbar>
+            <toolbar label="%toolbar.versionUpdate.label" id="dbeaver-version-update"/>
         </menuContribution>
+        <menuContribution
+                class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateContribution"
+                locationURI="toolbar:dbeaver-version-update"/>
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.ui.versionUpdate.menu">
             <command commandId="org.jkiss.dbeaver.ui.versionUpdate.releaseNotes"/>
         </menuContribution>
@@ -392,7 +392,12 @@
     <!-- Keybindings. A bit different than standard -->
 
     <extension point="org.eclipse.ui.bindings">
-        <scheme description="%productName" id="org.jkiss.dbeaver.defaultKeyScheme" name="%productName" parentId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+        <scheme description="DBeaver" id="org.jkiss.dbeaver.defaultKeyScheme" name="DBeaver" parentId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+
+        <!-- Preferences -->
+        <key commandId="org.eclipse.ui.window.preferences" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" platform="win32" sequence="CTRL+ALT+S"/>
+        <key commandId="org.eclipse.ui.window.preferences" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" platform="gtk" sequence="CTRL+ALT+S"/>
+        <key commandId="org.eclipse.ui.window.preferences" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" platform="cocoa" sequence="COMMAND+,"/>
 
         <!-- Text editors -->
         <key commandId="org.eclipse.ui.edit.text.openLocalFile" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
@@ -409,6 +414,10 @@
         <!--<key commandId="org.eclipse.ui.edit.text.delete.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Y"/>-->
         <key commandId="org.eclipse.ui.edit.text.join.lines" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+J"/>
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
+
+        <!-- Override the global F2 breakpoint-label binding while preserving text-editor tooltips. -->
+        <key commandId="org.eclipse.ui.edit.rename" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F2"/>
+        <key commandId="org.eclipse.ui.edit.text.showInformation" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F2"/>
 
         <key commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" contextId="org.eclipse.ui.contexts.window" sequence="CTRL+ALT+SHIFT+F" schemeId="org.jkiss.dbeaver.defaultKeyScheme"/>
         

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.datadam.sync.project.ConflictResolution;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 
 import java.nio.file.Path;
+import java.util.UUID;
 
 /**
  * DataDam operations for one local binding-file location, bound or unbound.
@@ -51,10 +52,9 @@ public class DDProject {
     }
 
     @Nullable
-    public synchronized DDProjectSyncLocalBinding getBinding(@NotNull DBPProject project) throws DBException {
+    public DDProjectSyncLocalBinding getBinding(@NotNull DBPProject project) throws DBException {
         validateProject(project);
-        DDProjectSyncLocalBinding binding = bindingStore.load();
-        return belongsToAnotherAccount(binding) ? null : binding;
+        return bindingStore.load();
     }
 
     @NotNull
@@ -92,10 +92,10 @@ public class DDProject {
 
     @NotNull
     public synchronized DDSharedProject share(
-        @NotNull DBPProject project, @NotNull String name, @Nullable String description
+        @NotNull DBPProject project, @NotNull UUID remoteProjectId, @NotNull String name, @Nullable String description
     ) throws DBException {
         requireUnbound(project);
-        DDProjectSyncService.ShareResult result = syncService.createRemoteProject(project, name, description);
+        DDProjectSyncService.ShareResult result = syncService.createRemoteProject(project, remoteProjectId, name, description);
         bindingStore.save(result.binding());
         // Persist the new association before uploading, so a failed upload can be retried without sharing again.
         synchronize(project);
@@ -110,10 +110,6 @@ public class DDProject {
 
     public synchronized void unbind(@NotNull DBPProject project) throws DBException {
         validateProject(project);
-        DDProjectSyncLocalBinding binding = bindingStore.load();
-        if (belongsToAnotherAccount(binding)) {
-            throw new DBException("Project is bound to another DataDam account: " + project.getName());
-        }
         bindingStore.delete();
     }
 
@@ -148,11 +144,11 @@ public class DDProject {
 
     @Nullable
     private DDProjectSyncSnapshot prepareSnapshot(@NotNull DBPProject project) throws DBException {
-        DDProjectSyncLocalBinding current = getBinding(project);
-        if (current == null) {
+        DDProjectSyncLocalBinding binding = getBinding(project);
+        if (binding == null) {
             return null;
         }
-        return syncService.getProjectSyncSnapshot(project, current);
+        return syncService.getProjectSyncSnapshot(project, binding);
     }
 
     private void requireUnbound(@NotNull DBPProject project) throws DBException {
@@ -166,10 +162,6 @@ public class DDProject {
         if (!bindingFile.equals(DDProjectSyncBindingStore.getBindingFile(project))) {
             throw new DBException("Project binding location does not match this DataDam project: " + project.getName());
         }
-    }
-
-    private boolean belongsToAnotherAccount(@Nullable DDProjectSyncLocalBinding binding) {
-        return binding != null && !binding.accountId().equals(syncService.getAccountId());
     }
 
     @NotNull

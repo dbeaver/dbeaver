@@ -507,7 +507,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
     protected boolean determinePageCompletion() {
         for (EventProcessorComposite<?> processor : processors.values()) {
             if (processor.isProcessorApplicable() && processor.isProcessorEnabled() && !processor.isProcessorComplete()) {
-                setErrorMessage(NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.getDescriptor().getLabel()));
+                setErrorMessage(NLS.bind(DTUIMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.getDescriptor().getLabel()));
                 return false;
             }
         }

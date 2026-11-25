@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -544,7 +545,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
                     null);
                 secretController.flushChanges();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing auth profile credentials from secret storage", e);
+                DBWorkbench.getPlatformUI().showError(
+                    RegistryMessages.auth_profile_secrets_remove_error_title,
+                    RegistryMessages.auth_profile_secrets_remove_error_message, e);
             }
         }
         synchronized (authProfiles) {

@@ -514,6 +514,15 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         }
     }
 
+    /**
+     * Returns the table name to pass to JDBC {@code getExportedKeys}. Drivers that
+     * ignore the separate schema argument can override this for qualified names.
+     */
+    @NotNull
+    protected String getExportedKeyTableName() {
+        return getName();
+    }
+
     public List<ForeignKeyInfo> loadReferenceInfoList(@NotNull JDBCSession session, GenericMetaObject fkObject) throws SQLException {
         final List<ForeignKeyInfo> fkInfos = new ArrayList<>();
         JDBCDatabaseMetaData metaData = session.getMetaData();
@@ -521,7 +530,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         try (JDBCResultSet dbResult = metaData.getExportedKeys(
             getCatalog() == null ? null : getCatalog().getName(),
             getSchema() == null ? null : getSchema().getName(),
-            getName())) {
+            getExportedKeyTableName())) {
             while (dbResult.next()) {
                 ForeignKeyInfo fkInfo = new ForeignKeyInfo();
                 fkInfo.fetchColumnsInfo(fkObject, dbResult);

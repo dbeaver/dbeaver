@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,11 +51,48 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     private volatile boolean childrenCached = false;
     private final Map<OBJECT, SimpleObjectCache<OBJECT, CHILD>> childrenCache = new IdentityHashMap<>();
 
-    abstract protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable OBJECT forObject)
-        throws SQLException;
+    @NotNull
+    protected abstract JDBCStatement prepareChildrenStatement(
+        @NotNull JDBCSession session,
+        @NotNull OWNER owner,
+        @Nullable OBJECT forObject
+    ) throws SQLException;
 
-    abstract protected CHILD fetchChild(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull OBJECT parent, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException;
+    @NotNull
+    protected JDBCStatement prepareChildrenStatement(
+        @NotNull JDBCSession session,
+        @NotNull OWNER owner,
+        @Nullable OBJECT forObject,
+        @Nullable List<OBJECT> batch
+    ) throws SQLException {
+        return prepareChildrenStatement(session, owner, forObject);
+    }
+
+    /**
+     * Return null for the original, unrestricted bulk query. Subclasses may split a bulk load
+     * into batches of cached parents without changing single-parent loading.
+     */
+    @NotNull
+    protected List<List<OBJECT>> getBulkChildrenBatches(@NotNull OWNER owner) {
+        return Collections.singletonList(null);
+    }
+
+    protected boolean isEmptyBulkChildrenResultComplete() {
+        return false;
+    }
+
+    @NotNull
+    protected JDBCSession openChildrenSession(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner) throws DBException {
+        return DBUtils.openMetaSession(monitor, owner, "Load child objects");
+    }
+
+    @Nullable
+    protected abstract CHILD fetchChild(
+        @NotNull JDBCSession session,
+        @NotNull OWNER owner,
+        @NotNull OBJECT parent,
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException;
 
     protected JDBCStructCache(Object objectNameColumn) {
         this.objectNameColumn = objectNameColumn;
@@ -84,20 +121,35 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
             super.loadObjects(monitor, owner);
         }
 
+        List<List<OBJECT>> batches = forObject == null ? getBulkChildrenBatches(owner) : Collections.singletonList(null);
+        if (batches.isEmpty()) {
+            // An empty list is complete only if loading the parents finished successfully.
+            if (!monitor.isCanceled() && isFullyCached()) {
+                this.childrenCached = true;
+            }
+            return;
+        }
+
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
             throw new DBException(ModelMessages.error_not_connected_to_database);
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load child objects")) {
+        try (JDBCSession session = openChildrenSession(monitor, owner)) {
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<>();
 
             // Load columns
-            try (JDBCStatement dbStat = prepareChildrenStatement(session, owner, forObject)) {
-                dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-                dbStat.executeStatement();
-                JDBCResultSet dbResult = dbStat.getResultSet();
-                if (dbResult != null) {
-                    try {
+            for (List<OBJECT> batch : batches) {
+                if (monitor.isCanceled()) {
+                    return;
+                }
+                // Collect results from every batch before marking any parents as complete.
+                try (JDBCStatement dbStat = prepareChildrenStatement(session, owner, forObject, batch)) {
+                    dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+                    dbStat.executeStatement();
+                    try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                        if (dbResult == null) {
+                            return;
+                        }
                         while (dbResult.next()) {
                             if (monitor.isCanceled()) {
                                 return;
@@ -126,47 +178,47 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                                 continue;
                             }
                             CHILD child = fetchChild(session, owner, object, dbResult);
-                            if (child == null) {
-                                continue;
-                            }
-
-                            // Add to map
-                            List<CHILD> children = objectMap.computeIfAbsent(object, k -> new ArrayList<>());
-                            children.add(child);
-                        }
-
-                        if (monitor.isCanceled()) {
-                            return;
-                        }
-
-                        // All children are read. Now assign them to parents
-                        for (Map.Entry<OBJECT, List<CHILD>> colEntry : objectMap.entrySet()) {
-                            if (!isChildrenCached(colEntry.getKey())) {
-                                // isChildrenCached may return true if the same cache was read in other thread
-                                // just skip
-                                cacheChildren(colEntry.getKey(), colEntry.getValue());
+                            if (child != null) {
+                                // Add to map
+                                objectMap.computeIfAbsent(object, k -> new ArrayList<>()).add(child);
                             }
                         }
-                        if (forObject == null) {
-                            if (objectMap.isEmpty()) {
-                                // Nothing was read. May be it means empty list of children
-                                // but possibly this feature is not supported [JDBC: SQLite]
-                            } else {
-                                // Now set empty column list for other tables
-                                for (OBJECT tmpObject : getAllObjects(monitor, owner)) {
-                                    if (!isChildrenCached(tmpObject) && !objectMap.containsKey(tmpObject)) {
-                                        cacheChildren(tmpObject, new ArrayList<>());
-                                    }
-                                }
-                                this.childrenCached = true;
-                            }
-                        } else if (!objectMap.containsKey(forObject)) {
-                            cacheChildren(forObject, new ArrayList<>());
-                        }
-                    } finally {
-                        dbResult.close();
                     }
                 }
+            }
+            if (monitor.isCanceled()) {
+                return;
+            }
+            // All children are read. Now assign them to parents
+            for (Map.Entry<OBJECT, List<CHILD>> colEntry : objectMap.entrySet()) {
+                if (!isChildrenCached(colEntry.getKey())) {
+                    // isChildrenCached may return true if the same cache was read in other thread
+                    cacheChildren(colEntry.getKey(), colEntry.getValue());
+                }
+            }
+            if (forObject == null) {
+                if (objectMap.isEmpty() && !isEmptyBulkChildrenResultComplete()) {
+                    // Nothing was read. May be it means empty list of children
+                    // but possibly this feature is not supported [JDBC: SQLite]
+                } else {
+                    // Now set empty column list for other tables
+                    List<OBJECT> bulkParents = new ArrayList<>();
+                    if (batches.getFirst() == null) {
+                        bulkParents.addAll(getAllObjects(monitor, owner));
+                    } else {
+                        for (List<OBJECT> batch : batches) {
+                            bulkParents.addAll(batch);
+                        }
+                    }
+                    for (OBJECT tmpObject : bulkParents) {
+                        if (!isChildrenCached(tmpObject) && !objectMap.containsKey(tmpObject)) {
+                            cacheChildren(tmpObject, new ArrayList<>());
+                        }
+                    }
+                    this.childrenCached = true;
+                }
+            } else if (!objectMap.containsKey(forObject)) {
+                cacheChildren(forObject, new ArrayList<>());
             }
         } catch (SQLException ex) {
             throw new DBDatabaseException(ex, dataSource);

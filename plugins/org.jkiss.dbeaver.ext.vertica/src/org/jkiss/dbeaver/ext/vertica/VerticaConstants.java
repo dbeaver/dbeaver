@@ -25,10 +25,14 @@ public class VerticaConstants {
     public static final String PROP_DOLLAR_QUOTES_AS_STRING = "dollar-quotes-as-string@";
 
     public static final String PROP_TLS_MODE = "tlsmode";
+    public static final String PROP_SSL = "ssl";
     public static final String PROP_KEYSTORE_PATH = "keystorepath";
     public static final String PROP_KEYSTORE_PASSWORD = "keystorepassword";
     public static final String PROP_SSL_SOCKET_FACTORY = "sslsocketfactoryname";
     public static final String PROP_SYSTEM_KEYSTORE = "javax.net.ssl.keyStore";
     public static final String TLS_MODE_REQUIRE = "require";
+    public static final String TLS_MODE_PREFER = "prefer";
+    public static final String TLS_MODE_VERIFY_CA = "verify-ca";
+    public static final String TLS_MODE_VERIFY_FULL = "verify-full";
 
 }

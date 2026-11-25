@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
 import java.util.Collections;
 
@@ -91,7 +92,8 @@ public class MultipleResultsPerTabMenuContribution extends ActionContributionIte
             try {
                 executeCommand();
             } catch (CommandException e) {
-                DBWorkbench.getPlatformUI().showError("Command action error", "An error occurred during command action execution", e);
+                DBWorkbench.getPlatformUI().showError(
+                    SQLEditorMessages.sql_command_action_error_title, SQLEditorMessages.sql_command_action_error_message, e);
             }
         }
 

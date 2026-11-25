@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseTitleDialog;
 import org.jkiss.dbeaver.ui.dialogs.IDialogPageContainer;
+import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
 class EditObjectDialog extends BaseTitleDialog implements IDialogPageContainer {
@@ -101,7 +102,7 @@ class EditObjectDialog extends BaseTitleDialog implements IDialogPageContainer {
             try {
                 oep.performFinish();
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Error saving data", null, e);
+                DBWorkbench.getPlatformUI().showError(ObjectEditorMessages.edit_object_error_saving_data, null, e);
                 return;
             }
         }

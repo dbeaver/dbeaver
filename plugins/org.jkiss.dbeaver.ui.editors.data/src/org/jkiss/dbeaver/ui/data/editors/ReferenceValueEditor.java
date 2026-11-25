@@ -359,12 +359,14 @@ public class ReferenceValueEditor {
                         })
                 );
                 hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+                UIUtils.installAndUpdateMainFont(labelGroup);
             }
         }
         if (refConstraint instanceof DBSEntityAssociation) {
             valueFilterText = new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
             valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             valueFilterText.setMessage(ResultSetMessages.reference_value_editor_search_hint_value);
+            UIUtils.installAndUpdateMainFont(valueFilterText);
             valueFilterText.addModifyListener(e -> {
                 String filterPattern = valueFilterText.getText();
                 controller.filter(valueController.getValue(), filterPattern);

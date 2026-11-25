@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public class DDAIEngineProperties extends OpenAIProperties {
     public static final String ENV_BASE_URL = "DBEAVER_AI_DATADAM_BASE_URL";
     public static final String ENV_MODEL = "DBEAVER_AI_DATADAM_MODEL";
 
-    public static final String DEFAULT_ENDPOINT = "https://ai.datadam.cloud/v1/";
+    public static final String DEFAULT_ENDPOINT = DDEndpoints.getAiBaseUrl();
     public static final String DEFAULT_MODEL = "datadam-fast";
 
     private static final String DATADAM_API_TOKEN = "datadam.token";
