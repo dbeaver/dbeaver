@@ -418,6 +418,10 @@ public class ResultSetModel implements DBDResultSetModel {
         return this.filteredRows != null ? this.filteredRows.size() : this.curRows.size();
     }
 
+    public int getFetchedRowCount() {
+        return curRows.size();
+    }
+
     @Override
     @NotNull
     public List<ResultSetRow> getAllRows() {

@@ -109,7 +109,7 @@
                 supportsRecordMode="true"
                 supportsHints="true"
                 order="100">
-            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes() || context.hasRows()"/>
         </presentation>
         <presentation
                 id="plaintext"
@@ -120,7 +120,7 @@
                 type="columns"
                 supportsRecordMode="true"
                 order="200">
-            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes() || context.hasRows()"/>
         </presentation>
     </extension>
 
