@@ -3772,7 +3772,10 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    private void onKeyDown(Event e) {
+    private void onKeyDown(@NotNull Event e) {
+        if (getItemCount() == 0) {
+            return;
+        }
         if (focusColumn == null) {
             if (columns.isEmpty())
                 return;
