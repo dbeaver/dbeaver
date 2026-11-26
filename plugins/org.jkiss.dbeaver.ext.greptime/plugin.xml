@@ -53,6 +53,7 @@
                     <parameter name="supports-multi-insert" value="true"/>
                     <parameter name="read-only-data" value="true"/>
                     <parameter name="read-only-meta-data" value="true"/>
+                    <parameter name="connection-validator" value="mysql"/>
                 </driver>
             </drivers>
         </datasource>
