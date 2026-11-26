@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -184,7 +185,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             } catch (DBException e) {
                 selectedDebugType = null;
                 selectedDebugPanel = null;
-                DBWorkbench.getPlatformUI().showError("Panel create error", "Can't create debugger config panel " + debugPanel.getId(), e);
+                DBWorkbench.getPlatformUI().showError(DebugUIMessages.debug_panel_error_title, NLS.bind(DebugUIMessages.debug_panel_error_message, debugPanel.getId()), e);
             }
         } else {
             selectedDebugType = null;

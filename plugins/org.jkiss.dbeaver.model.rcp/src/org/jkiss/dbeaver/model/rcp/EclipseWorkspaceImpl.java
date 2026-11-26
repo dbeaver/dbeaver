@@ -286,6 +286,13 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         }
     }
 
+    @Override
+    public void notifyProjectVisibilityChanged() {
+        for (DBPProjectListener listener : getListenersCopy()) {
+            listener.handleProjectVisibilityChange();
+        }
+    }
+
     @NotNull
     private DBPProjectListener[] getListenersCopy() {
         DBPProjectListener[] listeners;

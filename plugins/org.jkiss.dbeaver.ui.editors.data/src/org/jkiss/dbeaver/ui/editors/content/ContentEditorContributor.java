@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 
@@ -235,8 +237,8 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 editor.fireContentChanged();
             } catch (InvocationTargetException e) {
                 DBWorkbench.getPlatformUI().showError(
-                    "Can't load content",
-                    "Can't load content from file '" + loadFile.toAbsolutePath() + "'",
+                    ResultSetMessages.error_load_content_title,
+                    NLS.bind(ResultSetMessages.error_load_content_file, loadFile.toAbsolutePath()),
                     e.getTargetException());
             } catch (InterruptedException e) {
                 // do nothing

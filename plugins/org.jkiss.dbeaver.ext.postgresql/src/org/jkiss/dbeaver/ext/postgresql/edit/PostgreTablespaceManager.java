@@ -17,10 +17,12 @@
 
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -68,7 +70,7 @@ public class PostgreTablespaceManager extends SQLObjectEditor<PostgreTablespace,
     public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull PostgreTablespace object, @NotNull Map<String, Object> options)
         throws DBException {
         if (systemTablespaces.contains(object.getName().toLowerCase())) {
-            DBWorkbench.getPlatformUI().showError("Drop tablespace", "Unable to drop system tablespace " + object.getName());
+            DBWorkbench.getPlatformUI().showError(PostgreSQLMessages.drop_tablespace_title, NLS.bind(PostgreSQLMessages.drop_system_tablespace_error, object.getName()));
         } else {
             super.deleteObject(commandContext, object, options);
         }

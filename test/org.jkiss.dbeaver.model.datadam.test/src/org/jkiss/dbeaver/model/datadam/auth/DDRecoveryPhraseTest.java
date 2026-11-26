@@ -43,9 +43,13 @@ class DDRecoveryPhraseTest {
 
     @Test
     void rejectsUnknownWord() {
-        Assertions.assertThrows(
+        var error = Assertions.assertThrows(
             DBException.class,
             () -> DDRecoveryPhrase.normalizeAndValidate(RECOVERY_PHRASE.replace("about", "notaword"))
+        );
+        Assertions.assertEquals(
+            "The encryption key contains an unknown word. Check the words and try again.",
+            error.getMessage()
         );
     }
 

@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetThemeSettings;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
@@ -282,7 +283,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Cell editor", "Can't open cell editor", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_cell_editor_title, ResultSetMessages.error_cell_editor_message, e);
         }
     }
 

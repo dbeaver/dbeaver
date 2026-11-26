@@ -43,19 +43,19 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIStandardLabel;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
-import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
 
-class FilterSettingsDialog extends HelpEnabledDialog {
+class FilterSettingsDialog extends AbstractPopupPanel {
     private static final String DIALOG_ID = "DBeaver.FilterSettingsDialog";//$NON-NLS-1$
 
     private final Comparator<DBDAttributeBinding> POSITION_SORTER = (o1, o2) -> {
@@ -80,9 +80,11 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     private ToolItem moveBottomButton;
     private final Comparator<DBDAttributeBinding> activeSorter = POSITION_SORTER;
     private FilterSettingsTreeEditor treeEditor;
+    private boolean showAllColumns;
 
-    FilterSettingsDialog(ResultSetViewer resultSetViewer) {
-        super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_DATA_FILTER);
+    FilterSettingsDialog(@NotNull ResultSetViewer resultSetViewer) {
+        super(resultSetViewer.getControl().getShell(), ResultSetMessages.controls_resultset_filter_title);
+        setModeless(true);
         this.resultSetViewer = resultSetViewer;
         this.dataFilter = new DBDDataFilter(resultSetViewer.getModel().getDataFilter());
         this.constraints = dataFilter.getConstraints();
@@ -97,6 +99,15 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     protected IDialogSettings getDialogBoundsSettings()
     {
         return UIUtils.getDialogSettings(DIALOG_ID);
+    }
+
+    @NotNull
+    @Override
+    protected Control createContents(@NotNull Composite parent) {
+        Control contents = super.createContents(parent);
+        UIUtils.setHelp(contents, IHelpContextIds.CTX_DATA_FILTER);
+        ResultSetUtils.closeOnResultSetRefresh(resultSetViewer, getShell());
+        return contents;
     }
 
     @Override
@@ -273,6 +284,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
             {
                 Composite tph = UIUtils.createComposite(columnsGroup, 1);
+                tph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 ToolBar toolbar = new ToolBar(tph, SWT.HORIZONTAL | SWT.FLAT);
                 toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 moveTopButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_to_top, UIIcon.ARROW_TOP, () -> {
@@ -302,6 +314,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 });
                 UIUtils.createToolBarSeparator(toolbar, SWT.VERTICAL);
                 ToolItem showAllButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_show_all, null, () -> {
+                    showAllColumns = true;
                     for (DBDAttributeConstraint constraint : constraints) {
                         constraint.setVisible(true);
                     }
@@ -324,7 +337,6 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     whereText.setText(""); //$NON-NLS-1$
                 });
                 columnsViewer.addSelectionChangedListener(event -> updateButtons());
-
             }
             CTabItem libsTab = new CTabItem(tabFolder, SWT.NONE);
             libsTab.setText(ResultSetMessages.controls_resultset_filter_group_columns);
@@ -460,16 +472,13 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+    protected boolean needsButtonBar() {
+        return true;
     }
 
     @Override
-    protected void buttonPressed(int buttonId)
-    {
-        super.buttonPressed(buttonId);
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, UIStandardLabel.APPLY.getLabel(), true);
     }
 
     @Override
@@ -487,7 +496,8 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             }
         }
         if (!hasVisibleColumns) {
-            UIUtils.showMessageBox(getShell(), "Bad filter", "You have to set at least one column visible", SWT.ICON_WARNING);
+            UIUtils.showMessageBox(getShell(), ResultSetMessages.error_bad_filter_title,
+                ResultSetMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ICON_WARNING);
             return;
         }
         if (!CommonUtils.isEmpty(orderText.getText())) {
@@ -506,10 +516,14 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             // Only attribute visibility was changed
             filtersChanged = false;
         }
+        if (showAllColumns && resultSetViewer.getActivePresentation() instanceof SpreadsheetPresentation spreadsheet) {
+            spreadsheet.resetColumnFilter();
+        }
+        // Detach the refresh listener before applying our own filter.
+        super.okPressed();
         resultSetViewer.setDataFilter(
             dataFilter,
             filtersChanged);
-        super.okPressed();
     }
 
     private void updateButtons() {
@@ -695,7 +709,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         }
 
         public void okPressed() {
-            if (RuntimeUtils.isMacOS() && lastTreeItem != null && lastEditor != null && !lastEditor.isDisposed()) {
+            if (lastTreeItem != null && lastEditor != null && !lastEditor.isDisposed()) {
                 saveEditorValue(lastEditor, COLUMN_CRITERIA_INDEX, lastTreeItem);
             }
         }

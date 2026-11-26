@@ -186,7 +186,9 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
                     selectorPanel.setSelection(selCatalogs);
                 }
             } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Catalogs", " Error loading catalog list", e.getTargetException());
+                DBWorkbench.getPlatformUI().showError(
+                    TaskNativeUIMessages.tools_catalogs_error_title,
+                    TaskNativeUIMessages.tools_catalogs_error_message, e.getTargetException());
             } catch (InterruptedException e) {
                 // ignore
             }

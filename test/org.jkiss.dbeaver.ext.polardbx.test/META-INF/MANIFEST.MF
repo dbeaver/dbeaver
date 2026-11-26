@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver PolarDB-X Tests
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.polardbx.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20261102
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-Vendor: DBeaver Corp
+Fragment-Host: org.jkiss.dbeaver.ext.polardbx
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.jkiss.dbeaver.headless,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.jdbc,
+ org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.test.platform,
+ org.jkiss.dbeaver.ext.mysql

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConfigurationList;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewer;
 
@@ -33,8 +35,8 @@ public class HandlerDashboardDelete extends HandlerDashboardAbstract {
         if (view != null) {
             if (UIUtils.confirmAction(
                 HandlerUtil.getActiveShell(event),
-                "Delete dashboard",
-                "Are you sure you want to delete dashboard '" + view.getConfiguration().getTitle() + "'?")
+                UIDashboardMessages.dashboard_delete_confirm_title,
+                NLS.bind(UIDashboardMessages.dashboard_delete_confirm_message, view.getConfiguration().getTitle()))
             ) {
                 if (view instanceof IViewPart viewPart) {
                     HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().hideView(viewPart);

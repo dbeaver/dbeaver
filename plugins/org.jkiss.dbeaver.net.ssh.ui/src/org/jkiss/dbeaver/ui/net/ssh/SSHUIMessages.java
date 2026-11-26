@@ -21,6 +21,12 @@ import org.eclipse.osgi.util.NLS;
 public class SSHUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.net.ssh.SSHUIMessages"; //$NON-NLS-1$
 
+    public static String ssh_configuration_title;
+    public static String ssh_configuration_load_error;
+    public static String ssh_error_title;
+    public static String ssh_host_delete_title;
+    public static String ssh_host_delete_message;
+
     public static String model_ssh_configurator_group_settings;
     public static String model_ssh_configurator_group_advanced;
     public static String model_ssh_configurator_checkbox_save_pass;

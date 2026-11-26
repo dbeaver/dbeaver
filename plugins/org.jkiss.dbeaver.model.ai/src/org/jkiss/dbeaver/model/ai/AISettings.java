@@ -345,7 +345,7 @@ public class AISettings implements DBPAdaptable {
                 continue;
             }
             try {
-                profile.getConfiguration().resolveSecrets(profile);
+                profile.resolveSecrets();
             } catch (DBException e) {
                 log.error("Error resolving profile '" + profile.getProfileId() + "' secrets", e);
             }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tasks.ui.wizard;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -219,7 +220,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     @Override
     public boolean canFinish() {
         if (isCurrentTaskSaved()) {
-            return true;
+            TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+            return taskPage == null || taskPage.isPageComplete();
         }
         for (IWizardPage page : getPages()) {
             if (isPageNeedsCompletion(page) && isPageValid(page) && !page.isPageComplete()) {
@@ -269,7 +271,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 task.getProject().getTaskManager().scheduleTask(task, executor);
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Task run error", e.getMessage(), e);
+            DBWorkbench.getPlatformUI().showError(TaskUIMessages.task_run_error_title, e.getMessage(), e);
             return false;
         }
         return true;
@@ -280,6 +282,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     boolean saveTask() {
+        TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
+        if (taskPage != null && !taskPage.isPageComplete()) {
+            return false;
+        }
         IWizardPage currentPage = getContainer().getCurrentPage();
         // Save current page settings
         if (currentPage instanceof IWizardPageActive) {
@@ -292,7 +298,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             // Create new task
             DBTTaskType taskType = getTaskType();
             if (taskType == null) {
-                DBWorkbench.getPlatformUI().showError("No task type", "Can't find task type " + getTaskTypeId());
+                DBWorkbench.getPlatformUI().showError(
+                    TaskUIMessages.task_type_missing_title, NLS.bind(TaskUIMessages.task_type_missing_message, getTaskTypeId()));
                 return false;
             }
             EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(
@@ -307,7 +314,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 return false;
             }
         } else {
-            TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
             if (taskPage != null) {
                 taskPage.saveSettings();
             }
@@ -335,7 +341,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
             theTask.getProject().getTaskManager().updateTaskConfiguration(theTask);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Task save error", "Error saving task configuration", e);
+            DBWorkbench.getPlatformUI().showError(TaskUIMessages.task_save_error_title, TaskUIMessages.task_save_error_message, e);
             return false;
         }
         return true;
@@ -367,7 +373,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 try {
                     UIUtils.getActiveWorkbenchWindow().getActivePage().showView(descriptor.getId());
                 } catch (PartInitException e1) {
-                    DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
+                    DBWorkbench.getPlatformUI().showError(
+                        TaskUIMessages.task_open_view_error_title, TaskUIMessages.task_open_view_error_message, e1);
                 }
             })
         );

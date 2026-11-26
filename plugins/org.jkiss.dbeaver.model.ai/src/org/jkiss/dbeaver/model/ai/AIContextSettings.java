@@ -51,6 +51,7 @@ public abstract class AIContextSettings {
     protected static class PersistentSettings {
         public boolean confirmed;
         public boolean mcpEnabled;
+        public boolean datadamMcpEnabled;
         public AIDatabaseScope scope;
         public String[] objects;
     }
@@ -74,6 +75,14 @@ public abstract class AIContextSettings {
 
     public void setMcpEnabled(boolean mcpEnabled) {
         this.settings.mcpEnabled = mcpEnabled;
+    }
+
+    public boolean isDatadamMcpEnabled() {
+        return settings.datadamMcpEnabled;
+    }
+
+    public void setDatadamMcpEnabled(boolean datadamMcpEnabled) {
+        settings.datadamMcpEnabled = datadamMcpEnabled;
     }
 
     @Nullable
@@ -118,6 +127,7 @@ public abstract class AIContextSettings {
     public boolean equalsSettings(AIContextSettings that) {
         return settings.confirmed == that.settings.confirmed &&
             settings.mcpEnabled == that.settings.mcpEnabled &&
+            settings.datadamMcpEnabled == that.settings.datadamMcpEnabled &&
             settings.scope == that.settings.scope &&
             Objects.deepEquals(settings.objects, that.settings.objects);
     }

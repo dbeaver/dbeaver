@@ -53,10 +53,7 @@ class ProjectsPanel implements DBPProjectListener {
         parent.addDisposeListener(e ->
             DBPPlatformDesktop.getInstance().getWorkspace().removeProjectListener(this));
 
-        projects = new ArrayList<>(
-            DBWorkbench.getPlatform().getWorkspace().getProjects());
-        projects.sort((o1, o2) ->
-            o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName()));
+        projects = new ArrayList<>();
 
         Composite projectGroup = UIUtils.createComposite(parent, 3);
         projectGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -83,11 +80,11 @@ class ProjectsPanel implements DBPProjectListener {
     }
 
     public void setSelectedProject(@Nullable DBPProject selectedProject) {
-        this.selectedProject = selectedProject;
-        if (selectedProject == null) {
+        this.selectedProject = selectedProject != null && projects.contains(selectedProject) ? selectedProject : null;
+        if (this.selectedProject == null) {
             projectCombo.setText("");
         } else {
-            projectCombo.setText(selectedProject.getName());
+            projectCombo.setText(this.selectedProject.getName());
         }
     }
 
@@ -104,6 +101,9 @@ class ProjectsPanel implements DBPProjectListener {
     }
 
     private void refillCombo() {
+        projects.clear();
+        projects.addAll(DBWorkbench.getPlatform().getWorkspace().getVisibleProjects());
+        projects.sort((o1, o2) -> o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName()));
         projectCombo.removeAll();
         for (DBPProject project : projects) {
             projectCombo.add(project.getName());
@@ -111,7 +111,7 @@ class ProjectsPanel implements DBPProjectListener {
 
         selectedProject = NavigatorUtils.getSelectedProject();
         if (selectedProject == null  || !projects.contains(selectedProject)) {
-            selectedProject = projects.getFirst();
+            selectedProject = projects.isEmpty() ? null : projects.getFirst();
         }
 
         projectCombo.setText(selectedProject == null ? "" : selectedProject.getName());
@@ -125,6 +125,15 @@ class ProjectsPanel implements DBPProjectListener {
     @Override
     public void handleProjectRemove(@NotNull DBPProject project) {
         removeProject(project);
+    }
+
+    @Override
+    public void handleProjectVisibilityChange() {
+        UIUtils.asyncExec(() -> {
+            if (!projectCombo.isDisposed()) {
+                refillCombo();
+            }
+        });
     }
 
     @Override

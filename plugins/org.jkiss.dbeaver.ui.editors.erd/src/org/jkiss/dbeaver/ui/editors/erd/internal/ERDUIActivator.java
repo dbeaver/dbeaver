@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.RemoteUserBundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.editors.erd.ERDPreferencesInitializer;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -46,6 +47,7 @@ public class ERDUIActivator extends AbstractUIPlugin {
         preferences = !DBWorkbench.isDistributed()
             ? new BundlePreferenceStore(getBundle())
             : new RemoteUserBundlePreferenceStore(getBundle(), DBWorkbench.getPlatform().getPreferenceStore());
+        ERDPreferencesInitializer.initializeDefaultPreferences(preferences);
         // Switch off D3D because of Sun XOR painting bug
         // See http://www.jgraph.com/forum/viewtopic.php?t=4066
         System.setProperty("sun.java2d.d3d", Boolean.FALSE.toString()); //$NON-NLS-1$

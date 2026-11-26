@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -65,6 +66,9 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         } else {
             generateCustomDDL(monitor, executionContext, options, entity, ddl);
             ddl.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(GeneralUtils.getDefaultLineSeparator());
+            if (options.sendIndexes() && entity instanceof DBSTable table) {
+                addIndexesDDL(monitor, executionContext, options, table, ddl);
+            }
         }
 
         if (options.sendReferences() && executionContext != null) {
@@ -75,6 +79,75 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
 
         return ddl.toString().trim();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void addIndexesDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBCExecutionContext executionContext,
+        @NotNull AISchemaGenerationOptions options,
+        @NotNull DBSTable table,
+        @NotNull StringBuilder ddl
+    ) {
+        try {
+            DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
+            for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
+                synchronized (index) {
+                    try {
+                        if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)
+                            || !includesIndexAttributes(monitor, options, index)) {
+                            continue;
+                        }
+                        SQLObjectEditor indexEditor = editorsRegistry.getObjectManager(index.getClass(), SQLObjectEditor.class);
+                        if (indexEditor != null) {
+                            String indexName = index.getName();
+                            try {
+                                Map<String, Object> indexOptions = Map.of(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES,
+                                    options.useFQN() || requiresFqn(table, executionContext));
+                                DBEPersistAction[] actions = indexEditor.makeCreateCommand(index, indexOptions).getPersistActions(
+                                    monitor,
+                                    executionContext == null ? DBUtils.getDefaultContext(index, true) : executionContext,
+                                    indexOptions);
+                                if (actions != null && !options.sendObjectComment()) {
+                                    actions = Arrays.stream(actions)
+                                        .filter(action -> !"COMMENT".equalsIgnoreCase(SQLUtils.getFirstKeyword(
+                                            table.getDataSource().getSQLDialect(), CommonUtils.notEmpty(action.getScript()))))
+                                        .toArray(DBEPersistAction[]::new);
+                                }
+                                DBStructUtils.addDDLLine(ddl, SQLUtils.generateScript(table.getDataSource(), actions, false));
+                            } finally {
+                                // generic index managers may quote the cached object's name while generating DDL
+                                if (index instanceof DBPNamedObject2 namedIndex && !indexName.equals(index.getName())) {
+                                    namedIndex.setName(indexName);
+                                }
+                            }
+                        }
+                    } catch (DBException e) {
+                        log.debug("Error reading index '" + index.getName() + "'", e);
+                    }
+                }
+            }
+        } catch (DBException e) {
+            log.debug("Error reading table '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "' indexes", e);
+        }
+    }
+
+    private boolean includesIndexAttributes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AISchemaGenerationOptions options,
+        @NotNull DBSTableIndex index
+    ) throws DBException {
+        List<? extends DBSEntityAttributeRef> references = index.getAttributeReferences(monitor);
+        if (references == null) {
+            return false;
+        }
+        for (DBSEntityAttributeRef reference : references) {
+            DBSEntityAttribute attribute = reference.getAttribute();
+            if (attribute != null && (DBUtils.isHiddenObject(attribute) || !options.includesObject(monitor, attribute))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Nullable

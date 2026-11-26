@@ -21,7 +21,7 @@ import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,8 +55,8 @@ class DDAccountClientTest {
     private final AtomicInteger requests = new AtomicInteger();
     private HttpServer server;
     private URI account;
-    private MockedStatic<DDDesktopAccessService> session;
-    private DDDesktopAccessService manager;
+    private MockedStatic<DBDamAccessService> session;
+    private DBDamAccessService manager;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -76,9 +76,9 @@ class DDAccountClientTest {
             }
         });
         server.start();
-        manager = Mockito.mock(DDDesktopAccessService.class);
-        session = Mockito.mockStatic(DDDesktopAccessService.class);
-        session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
+        manager = Mockito.mock(DBDamAccessService.class);
+        session = Mockito.mockStatic(DBDamAccessService.class);
+        session.when(DBDamAccessService::getInstance).thenReturn(manager);
         Mockito.when(manager.getAccessTokenForResource(account.resolve("/graphql"))).thenReturn("test-access-token");
     }
 

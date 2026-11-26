@@ -103,7 +103,8 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                                 return null;
                             });
                         } catch (DBException e) {
-                            DBWorkbench.getPlatformUI().showError("Paste error", "Can't paste nodes", e);
+                            DBWorkbench.getPlatformUI().showError(
+                                UINavigatorMessages.error_paste_title, UINavigatorMessages.error_paste_nodes_message, e);
                             failedToPasteResources.addAll(cbNodes.stream().map(DBNNode::getNodeDisplayName).toList());
                         }
                     } else {
@@ -117,7 +118,8 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                                         return null;
                                     });
                                 } catch (DBException e) {
-                                    DBWorkbench.getPlatformUI().showError("Paste error", "Can't paste node '" + nodeObject.getName() + "'", e);
+                                    DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_paste_title,
+                                        NLS.bind(UINavigatorMessages.error_paste_node_message, nodeObject.getName()), e);
                                     failedToPasteResources.add(nodeObject.getName());
                                 }
                             } else {
@@ -156,7 +158,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                     UINavigatorMessages.failed_to_paste_due_to_permissions_title,
                     NLS.bind(
                         UINavigatorMessages.failed_to_paste_due_to_permissions_message,
-                        toProject != null ? toProject.getDisplayName() : "Can't find owner project",
+                        toProject != null ? toProject.getDisplayName() : UINavigatorMessages.error_owner_project_not_found,
                         String.join(",\n", failedToPasteResources)
                     )
                 );
@@ -198,7 +200,8 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Copy error", "Error copying resource", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.error_copy_title, UINavigatorMessages.error_copy_resource_message, e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
@@ -265,7 +268,8 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Copy error", "Error copying resource", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.error_copy_title, UINavigatorMessages.error_copy_resource_message, e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }

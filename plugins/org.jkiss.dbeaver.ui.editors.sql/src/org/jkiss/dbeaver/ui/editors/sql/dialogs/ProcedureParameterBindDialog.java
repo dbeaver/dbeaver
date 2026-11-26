@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,7 +59,8 @@ public class ProcedureParameterBindDialog extends StatusDialog {
         try {
             this.parameters.addAll(procedure.getParameters(new VoidProgressMonitor()));
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't get parameters", "Error getting procedure papameters", e);
+            DBWorkbench.getPlatformUI().showError(
+                SQLEditorMessages.sql_procedure_parameters_error_title, SQLEditorMessages.sql_procedure_parameters_error_message, e);
         }
 
         this.values = new HashMap<>(values);
