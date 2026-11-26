@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.datadam.project.keys.DDProjectKeyUIManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
 /** Encryption key controls and their local account display on the Projects preference page. */
@@ -259,14 +260,15 @@ final class DDEncryptionKeysSection {
 
     private void generateKeys() {
         generateKeysButton.setEnabled(false);
-        String[] phrase = new String[1];
+        CompletableFuture<String> generatedPhrase = new CompletableFuture<>();
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 monitor.beginTask(DDTrackingUIMessages.sync_preference_page_generate_keys_button,
                     DBDamEncryptionKeyService.GENERATION_WORK_UNITS);
                 try {
-                    phrase[0] = keyManager.generateKeys(monitor);
+                    generatedPhrase.complete(keyManager.generateKeys(monitor));
                 } catch (InterruptedException e) {
+                    generatedPhrase.cancel(false);
                     // The service returns the phrase even if cancellation arrives after registration.
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
@@ -274,14 +276,17 @@ final class DDEncryptionKeysSection {
                     monitor.done();
                 }
             });
-            if (phrase[0] != null) {
-                new DDGeneratedEncryptionKeyDialog(UIUtils.getActiveWorkbenchShell(), phrase[0]).open();
-                importKeys(phrase[0]);
+            if (!generatedPhrase.isCancelled()) {
+                String phrase = generatedPhrase.getNow(null);
+                if (phrase != null) {
+                    new DDGeneratedEncryptionKeyDialog(UIUtils.getActiveWorkbenchShell(), phrase).open();
+                    importKeys(phrase);
+                }
             }
         } catch (InvocationTargetException e) {
             onError.accept(DDTrackingUIMessages.sync_preference_page_generate_keys_failed, e.getTargetException());
         } finally {
-            if (phrase[0] == null) {
+            if (!generatedPhrase.isDone() || generatedPhrase.isCancelled()) {
                 notifyKeysChanged();
             }
         }
