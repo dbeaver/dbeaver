@@ -114,9 +114,11 @@ public interface IGridContentProvider extends IContentProvider {
     boolean isGridReadOnly();
 
     /**
-     * Checks for additional data read according to the specified cell/row
+     * Checks for additional data read according to the specified cell/row.
+     * The column is null when the grid has rows but no columns.
+     * The row is null when the grid has columns but no rows (e.g. zero-column results in record mode).
      */
-    void validateDataPresence(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement);
+    void validateDataPresence(@Nullable IGridColumn colElement, @Nullable IGridRow rowElement);
 
     /**
      * Returns cell information.
