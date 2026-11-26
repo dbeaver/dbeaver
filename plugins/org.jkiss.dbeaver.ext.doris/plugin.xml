@@ -53,6 +53,7 @@
                     <parameter name="supports-collations" value="false"/>
                     <parameter name="supportsClients" value="false"/>
                     <parameter name="meta-model" value="doris"/>
+                    <parameter name="connection-validator" value="mysql"/>
                 </driver>
             </drivers>
         </datasource>

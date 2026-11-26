@@ -214,7 +214,9 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     public boolean supportsDrop(@Nullable DBNNode otherNode)
     {
         return otherNode == null || otherNode instanceof DBNDataSource ||
-            (otherNode instanceof DBNLocalFolder && ((DBNLocalFolder) otherNode).getFolder().canMoveTo(getFolder()));
+            (otherNode instanceof DBNLocalFolder otherFolder &&
+                otherFolder.getDataSourceRegistry() == getDataSourceRegistry() &&
+                otherFolder.getFolder().canMoveTo(getFolder()));
     }
 
     @Override
