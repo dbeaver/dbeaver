@@ -16,13 +16,16 @@
  */
 package org.jkiss.dbeaver.model.data.aggregate;
 
+import org.jkiss.code.Nullable;
+
 /**
  * Aggregate function
  */
 public interface IAggregateFunction {
 
-    boolean accumulate(Object value, boolean aggregateAsStrings);
+    boolean accumulate(@Nullable Object value, boolean aggregateAsStrings);
 
+    @Nullable
     Object getResult(int valueCount);
 
 }

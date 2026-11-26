@@ -19,12 +19,15 @@ package org.jkiss.dbeaver.model.data.aggregate;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.jkiss.code.Nullable;
+
 /**
  * FunctionSum
  */
 public abstract class FunctionNumeric implements IAggregateFunction {
 
-    protected static Number getNumeric(Object value) {
+    @Nullable
+    protected static Number getNumeric(@Nullable Object value) {
         if (value == null) {
             return null;
         }
@@ -45,7 +48,8 @@ public abstract class FunctionNumeric implements IAggregateFunction {
         return null;
     }
 
-    protected static Comparable<?> getComparable(Object value, boolean aggregateAsStrings) {
+    @Nullable
+    protected static Comparable<?> getComparable(@Nullable Object value, boolean aggregateAsStrings) {
         if (!aggregateAsStrings) {
             Number num = FunctionNumeric.getNumeric(value);
             if (num != null) {
@@ -58,7 +62,8 @@ public abstract class FunctionNumeric implements IAggregateFunction {
         return null;
     }
 
-    protected static BigDecimal getBigDecimal(Object value) {
+    @Nullable
+    protected static BigDecimal getBigDecimal(@Nullable Object value) {
         if (value == null) {
             return null;
         }
@@ -81,7 +86,8 @@ public abstract class FunctionNumeric implements IAggregateFunction {
         }
     }
 
-    protected static Number getNumericForAggregation(Object value) {
+    @Nullable
+    protected static Number getNumericForAggregation(@Nullable Object value) {
         if (value instanceof Number) {
             return (Number) value;
         }

@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.data.aggregate;
 
 import java.math.BigDecimal;
 
+import org.jkiss.code.Nullable;
+
 /**
  * FunctionSum
  */
@@ -29,7 +31,7 @@ public class FunctionSum extends FunctionNumeric {
     private boolean hasSpecialValue;
 
     @Override
-    public boolean accumulate(Object value, boolean aggregateAsStrings) {
+    public boolean accumulate(@Nullable Object value, boolean aggregateAsStrings) {
         Number num = getNumericForAggregation(value);
         if (num == null) {
             return false;
@@ -51,6 +53,7 @@ public class FunctionSum extends FunctionNumeric {
     }
 
     @Override
+    @Nullable
     public Object getResult(int valueCount) {
         if (hasSpecialValue) {
             return Double.isNaN(specialResult) ? null : specialResult;

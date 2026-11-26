@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.data.aggregate;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
+import org.jkiss.code.Nullable;
+
 /**
  * FunctionAvg
  */
@@ -30,7 +32,7 @@ public class FunctionAvg extends FunctionNumeric {
     private boolean hasSpecialValue;
 
     @Override
-    public boolean accumulate(Object value, boolean aggregateAsStrings) {
+    public boolean accumulate(@Nullable Object value, boolean aggregateAsStrings) {
         Number num = getNumericForAggregation(value);
         if (num == null) {
             return false;
@@ -52,6 +54,7 @@ public class FunctionAvg extends FunctionNumeric {
         return true;
     }
 
+    @Nullable
     @Override
     public Object getResult(int valueCount) {
         if (preciseResult == null && !hasSpecialValue) {
