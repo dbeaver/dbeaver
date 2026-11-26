@@ -70,7 +70,7 @@ public class DorisTableManager extends GenericTableManager {
         @NotNull Map<String, Object> options
     ) {
         GenericTableBase table = command.getObject();
-        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+        if (table.isPersisted() && command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
@@ -89,6 +89,9 @@ public class DorisTableManager extends GenericTableManager {
         @NotNull Map<String, Object> options
     ) {
         String delimiter = getDelimiter(options);
+        if (!alter && CommonUtils.isNotEmpty(table.getDescription())) {
+            ddl.append(delimiter).append("COMMENT ").append(SQLUtils.quoteString(table, table.getDescription()));
+        }
         ddl.append(delimiter).append(DEFAULT_DISTRIBUTION);
         Integer replicaCount = getReplicaCount(table);
         if (replicaCount != null) {
