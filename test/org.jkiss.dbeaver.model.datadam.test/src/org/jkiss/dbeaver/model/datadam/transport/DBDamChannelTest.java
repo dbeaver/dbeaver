@@ -26,7 +26,6 @@ import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSessionListener;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
-import com.google.gson.JsonObject;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -1004,9 +1003,7 @@ class DBDamChannelTest extends DBeaverUnitTest {
 
     @NotNull
     private static DDRemoteDamMessage message(@NotNull String topic, @NotNull String value) {
-        JsonObject payload = new JsonObject();
-        payload.addProperty("value", value);
-        return new DDRemoteDamMessage(topic, "changed", payload);
+        return new DDRemoteDamMessage(topic, "changed", Map.of("value", value));
     }
 
     @NotNull
