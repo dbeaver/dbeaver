@@ -271,9 +271,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
             if (rowNum < 0 && model.getRowCount() > 0) {
                 rowNum = 0;
             }
-            if (rowNum >= 0 && rowNum < model.getRowCount() && colNum >= 0 && colNum < model.getVisibleAttributeCount()) {
+            if (rowNum >= 0 && rowNum < model.getRowCount()) {
                 controller.setCurrentRow(model.getRow(rowNum));
-                curAttribute = model.getVisibleAttribute(colNum);
+                curAttribute = colNum >= 0 && colNum < model.getVisibleAttributeCount() ? model.getVisibleAttribute(colNum) : null;
             }
             controller.updateEditControls();
 
@@ -439,18 +439,22 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         if (controller.isRecordMode()) {
             super.scrollToRow(position);
         } else {
+            int rowCount = controller.getModel().getRowCount();
+            if (rowCount == 0) {
+                return;
+            }
+            int firstRowLine = FIRST_ROW_LINE
+                + (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP) ? 1 : 0);
+            int lastRowLine = firstRowLine + rowCount - 1;
             int caretOffset = text.getCaretOffset();
             if (caretOffset < 0) caretOffset = 0;
             int lineNum = text.getLineAtOffset(caretOffset);
-            if (lineNum < FIRST_ROW_LINE) {
-                lineNum = FIRST_ROW_LINE;
-            }
             int lineOffset = text.getOffsetAtLine(lineNum);
             int xOffset = caretOffset - lineOffset;
-            int totalLines = text.getLineCount();
+            lineNum = Math.max(firstRowLine, Math.min(lastRowLine, lineNum));
             switch (position) {
                 case FIRST:
-                    lineNum = FIRST_ROW_LINE;
+                    lineNum = firstRowLine;
                     break;
                 case PREVIOUS:
                     lineNum--;
@@ -459,17 +463,21 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
                     lineNum++;
                     break;
                 case LAST:
-                    lineNum = totalLines - 1;
+                    lineNum = lastRowLine;
                     break;
                 case CURRENT:
-                    lineNum = controller.getCurrentRow().getVisualNumber() + FIRST_ROW_LINE;
+                    ResultSetRow currentRow = controller.getCurrentRow();
+                    if (currentRow == null) {
+                        return;
+                    }
+                    lineNum = currentRow.getVisualNumber() + firstRowLine;
                     break;
             }
-            if (lineNum < FIRST_ROW_LINE || lineNum >= totalLines) {
+            if (lineNum < firstRowLine || lineNum > lastRowLine) {
                 return;
             }
             int newOffset = text.getOffsetAtLine(lineNum);
-            newOffset += xOffset;
+            newOffset += Math.min(xOffset, text.getLine(lineNum).length());
             text.setCaretOffset(newOffset);
             //text.setSelection(newOffset, 0);
             text.showSelection();

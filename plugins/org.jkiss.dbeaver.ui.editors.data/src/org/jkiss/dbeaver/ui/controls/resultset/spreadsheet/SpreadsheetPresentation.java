@@ -227,7 +227,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         spreadsheet.addDisposeListener(e -> controller.removeListener(columnFilterListener));
 
         this.spreadsheet.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN && e.data != null) {
+                if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN
+                    && (e.data != null || (!controller.isRecordMode() && spreadsheet.getColumnCount() == 0))) {
                     updateGridCursor((GridCell) e.data);
                 }
                 fireSelectionChanged(new SpreadsheetSelectionImpl());
@@ -349,6 +350,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, gridRow.getVisualPosition()));
                             if (newCell != null) {
                                 spreadsheet.setCursor(newCell, false, true, true);
+                            } else if (spreadsheet.getColumnCount() == 0) {
+                                spreadsheet.setRowCursor(gridRow.getVisualPosition());
                             }
                         }
                     }
@@ -499,13 +502,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
         spreadsheet.setDefaultFocusRow();
     }
 
-    private void updateGridCursor(GridCell cell) {
+    private void updateGridCursor(@Nullable GridCell cell) {
         boolean changed;
         IGridColumn newCol;
         IGridRow newRow;
         if (cell == null) {
             newCol = null;
-            newRow = null;
+            newRow = !controller.isRecordMode() && spreadsheet.getColumnCount() == 0 ? spreadsheet.getFocusRow() : null;
         } else if (isArrayColAndFirstRow(cell.getColumn(), cell.getRow())) {
             newCol = cell.getColumn().getParent();
             newRow = cell.getRow();
