@@ -1114,6 +1114,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             spreadsheet.setCursor(
                 new GridCell(gridColumn, gridRow), false, true, true);
+        } else if (oldRow != null && !recordMode) {
+            IGridRow gridRow = spreadsheet.getRowByElement(oldRow.getVisualNumber(), oldRow);
+            if (gridRow != null) {
+                spreadsheet.setRowCursor(gridRow.getVisualPosition());
+            }
         }
         spreadsheet.layout(true, true);
     }
@@ -2012,6 +2017,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @NotNull
         @Override
         public List<ResultSetRow> getSelectedRows() {
+            if (controller.getModel().getVisibleAttributeCount() == 0) {
+                ResultSetRow currentRow = controller.getCurrentRow();
+                return currentRow == null ? Collections.emptyList() : Collections.singletonList(currentRow);
+            }
             {
                 List<ResultSetRow> rows = new ArrayList<>();
                 if (controller.isRecordMode()) {
