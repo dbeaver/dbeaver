@@ -990,6 +990,14 @@ public class GenericMetaModel {
     }
 
     /**
+     * Whether an index may have no column rows, for example an expression index.
+     * If false, an index without columns is treated as broken and skipped.
+     */
+    public boolean isIndexWithoutColumnsAllowed() {
+        return false;
+    }
+
+    /**
      * Creates an index read with {@link #prepareIndexesLoadStatement}. Extensions override this method
      * to read additional index attributes from the result set; by default it is not used.
      */

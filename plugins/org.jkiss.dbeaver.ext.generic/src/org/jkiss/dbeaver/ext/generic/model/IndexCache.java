@@ -42,6 +42,7 @@ import java.util.Locale;
  */
 public class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericTableIndex, GenericTableIndexColumn> {
 
+    private final GenericDataSource dataSource;
     private final GenericMetaObject indexObject;
 
     IndexCache(TableCache tableCache)
@@ -51,7 +52,13 @@ public class IndexCache extends JDBCCompositeCache<GenericStructContainer, Gener
             GenericTableBase.class,
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX, JDBCConstants.TABLE_NAME),
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX, JDBCConstants.INDEX_NAME));
-        indexObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_INDEX);
+        dataSource = tableCache.getDataSource();
+        indexObject = dataSource.getMetaObject(GenericConstants.OBJECT_INDEX);
+    }
+
+    @Override
+    protected boolean isEmptyObjectRowsAllowed() {
+        return dataSource.getMetaModel().isIndexWithoutColumnsAllowed();
     }
 
     @NotNull

@@ -519,6 +519,12 @@ public class FireBirdMetaModel extends GenericMetaModel
         return dbStat;
     }
 
+    @Override
+    public boolean isIndexWithoutColumnsAllowed() {
+        // Expression indexes (COMPUTED BY) have no rows in RDB$INDEX_SEGMENTS
+        return true;
+    }
+
     @NotNull
     @Override
     public GenericTableIndex createIndexImpl(
