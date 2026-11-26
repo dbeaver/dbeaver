@@ -102,7 +102,7 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
         conn.setLineStyle(SWT.LINE_CUSTOM);
 
         // Adjust the color of the arrow based on the delete-rule of the foreign key.
-        if (association.getObject() instanceof DBSTableForeignKey foreignKey) {
+        if (ERDColors.isForeignKeyModifyRuleColorEnabled() && association.getObject() instanceof DBSTableForeignKey foreignKey) {
             DBSForeignKeyModifyRule deleteRule = foreignKey.getDeleteRule();
             conn.setForegroundColor(ERDColors.getForeignKeyModifyRuleColor(deleteRule));
         }

@@ -79,7 +79,7 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
         }
 
         // Adjust the color of the arrow based on the delete-rule of the foreign key.
-        if (association.getObject() instanceof DBSTableForeignKey foreignKey) {
+        if (ERDColors.isForeignKeyModifyRuleColorEnabled() && association.getObject() instanceof DBSTableForeignKey foreignKey) {
             DBSForeignKeyModifyRule deleteRule = foreignKey.getDeleteRule();
             conn.setForegroundColor(ERDColors.getForeignKeyModifyRuleColor(deleteRule));
         }
