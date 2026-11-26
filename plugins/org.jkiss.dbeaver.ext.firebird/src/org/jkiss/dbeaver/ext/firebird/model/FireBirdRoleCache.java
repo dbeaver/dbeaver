@@ -35,8 +35,8 @@ public class FireBirdRoleCache extends JDBCObjectCache<FireBirdDataSource, FireB
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull FireBirdDataSource owner)
         throws SQLException {
-        // SELECT * because RDB$DESCRIPTION and RDB$SYSTEM_FLAG only exist since Firebird 2.0;
-        // missing columns are read as null
+        // SELECT * because RDB$DESCRIPTION and RDB$SYSTEM_FLAG only exist since Firebird 2.0
+        // and RDB$SYSTEM_PRIVILEGES since Firebird 4; missing columns are read as null
         return session.prepareStatement("SELECT * FROM RDB$ROLES ORDER BY RDB$ROLE_NAME");
     }
 
@@ -56,7 +56,8 @@ public class FireBirdRoleCache extends JDBCObjectCache<FireBirdDataSource, FireB
             name,
             JDBCUtils.safeGetStringTrimmed(resultSet, "RDB$OWNER_NAME"),
             JDBCUtils.safeGetString(resultSet, "RDB$DESCRIPTION"),
-            JDBCUtils.safeGetInt(resultSet, "RDB$SYSTEM_FLAG") != 0
+            JDBCUtils.safeGetInt(resultSet, "RDB$SYSTEM_FLAG") != 0,
+            FireBirdRole.decodeSystemPrivileges(JDBCUtils.safeGetBytes(resultSet, "RDB$SYSTEM_PRIVILEGES"))
         );
     }
 }

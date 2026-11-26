@@ -29,6 +29,41 @@ public class FireBirdConstants  {
     /** Grantee that stands for all users */
     public static final String GRANTEE_PUBLIC = "PUBLIC";
 
+    /**
+     * System privileges of a role (Firebird 4+), indexed by their id in Firebird's src/jrd/SystemPrivileges.h.
+     * Id 0 is the unused NULL_PRIVILEGE. In RDB$ROLES.RDB$SYSTEM_PRIVILEGES privilege p is bit (p % 8) of byte (p / 8).
+     */
+    public static final String[] SYSTEM_PRIVILEGES = {
+        null,
+        "USER_MANAGEMENT",
+        "READ_RAW_PAGES",
+        "CREATE_USER_TYPES",
+        "USE_NBACKUP_UTILITY",
+        "CHANGE_SHUTDOWN_MODE",
+        "TRACE_ANY_ATTACHMENT",
+        "MONITOR_ANY_ATTACHMENT",
+        "ACCESS_SHUTDOWN_DATABASE",
+        "CREATE_DATABASE",
+        "DROP_DATABASE",
+        "USE_GBAK_UTILITY",
+        "USE_GSTAT_UTILITY",
+        "USE_GFIX_UTILITY",
+        "IGNORE_DB_TRIGGERS",
+        "CHANGE_HEADER_SETTINGS",
+        "SELECT_ANY_OBJECT_IN_DATABASE",
+        "ACCESS_ANY_OBJECT_IN_DATABASE",
+        "MODIFY_ANY_OBJECT_IN_DATABASE",
+        "CHANGE_MAPPING_RULES",
+        "USE_GRANTED_BY_CLAUSE",
+        "GRANT_REVOKE_ON_ANY_OBJECT",
+        "GRANT_REVOKE_ANY_DDL_RIGHT",
+        "CREATE_PRIVILEGED_ROLES",
+        "GET_DBCRYPT_INFO",
+        "MODIFY_EXT_CONN_POOL",
+        "REPLICATE_INTO_DATABASE",
+        "PROFILE_ANY_ATTACHMENT"
+    };
+
     public static final String CHARSET_OCTETS = "OCTETS";
     public static final String CHARSET_BINARY = "BINARY";
 }

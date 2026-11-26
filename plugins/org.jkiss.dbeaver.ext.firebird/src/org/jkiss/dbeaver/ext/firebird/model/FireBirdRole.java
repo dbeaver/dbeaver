@@ -37,7 +37,9 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,6 +56,8 @@ public class FireBirdRole implements GenericScriptObject, DBPQualifiedObject, DB
     @Nullable
     private final String description;
     private final boolean system;
+    @NotNull
+    private final List<String> systemPrivileges;
     private final MemberCache memberCache = new MemberCache();
 
     public FireBirdRole(
@@ -61,13 +65,15 @@ public class FireBirdRole implements GenericScriptObject, DBPQualifiedObject, DB
         @NotNull String name,
         @Nullable String ownerName,
         @Nullable String description,
-        boolean system
+        boolean system,
+        @NotNull List<String> systemPrivileges
     ) {
         this.dataSource = dataSource;
         this.name = name;
         this.ownerName = ownerName;
         this.description = description;
         this.system = system;
+        this.systemPrivileges = systemPrivileges;
     }
 
     @NotNull
@@ -81,6 +87,20 @@ public class FireBirdRole implements GenericScriptObject, DBPQualifiedObject, DB
     @Property(viewable = true, order = 2)
     public String getOwnerName() {
         return ownerName;
+    }
+
+    /**
+     * System privileges granted to the role with SET SYSTEM PRIVILEGES (Firebird 4+).
+     */
+    @NotNull
+    public List<String> getSystemPrivileges() {
+        return systemPrivileges;
+    }
+
+    @NotNull
+    @Property(viewable = true, order = 3)
+    public String getSystemPrivilegesText() {
+        return String.join(", ", systemPrivileges);
     }
 
     @Nullable
@@ -134,7 +154,11 @@ public class FireBirdRole implements GenericScriptObject, DBPQualifiedObject, DB
         StringBuilder ddl = new StringBuilder();
         if (!system) {
             // System roles (RDB$ADMIN) are built in and can't be created
-            ddl.append("CREATE ROLE ").append(quotedName).append(";\n");
+            ddl.append("CREATE ROLE ").append(quotedName);
+            if (!systemPrivileges.isEmpty()) {
+                ddl.append("\n    SET SYSTEM PRIVILEGES TO ").append(String.join(", ", systemPrivileges));
+            }
+            ddl.append(";\n");
         }
         if (!CommonUtils.isEmpty(description)) {
             ddl.append("\nCOMMENT ON ROLE ").append(quotedName)
@@ -148,6 +172,24 @@ public class FireBirdRole implements GenericScriptObject, DBPQualifiedObject, DB
             }
         }
         return ddl.toString().trim();
+    }
+
+    /**
+     * Decodes RDB$ROLES.RDB$SYSTEM_PRIVILEGES. Bits of privileges unknown to this version are ignored.
+     */
+    @NotNull
+    static List<String> decodeSystemPrivileges(@Nullable byte[] bits) {
+        List<String> result = new ArrayList<>();
+        if (bits == null) {
+            return result;
+        }
+        String[] names = FireBirdConstants.SYSTEM_PRIVILEGES;
+        for (int id = 1; id < names.length && (id >> 3) < bits.length; id++) {
+            if ((bits[id >> 3] & (1 << (id & 7))) != 0) {
+                result.add(names[id]);
+            }
+        }
+        return result;
     }
 
     @Override

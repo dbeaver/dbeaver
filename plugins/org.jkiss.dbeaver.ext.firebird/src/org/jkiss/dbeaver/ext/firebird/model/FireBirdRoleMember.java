@@ -18,14 +18,16 @@ package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * A user or role a Firebird role is granted to.
  */
-public class FireBirdRoleMember implements DBSObject {
+public class FireBirdRoleMember implements DBSObject, DBPUniqueObject {
 
     @NotNull
     private final FireBirdRole role;
@@ -58,6 +60,16 @@ public class FireBirdRoleMember implements DBSObject {
     @Property(viewable = true, order = 1)
     public String getName() {
         return name;
+    }
+
+    /**
+     * A grantee may have the same role from several grantors, and a user and a role may share a name.
+     */
+    @NotNull
+    @Override
+    public String getUniqueName() {
+        String uniqueName = (memberRole ? "ROLE " : "") + name;
+        return CommonUtils.isEmpty(grantor) ? uniqueName : uniqueName + " (" + grantor + ")";
     }
 
     /**
@@ -106,6 +118,10 @@ public class FireBirdRoleMember implements DBSObject {
         }
         if (adminOption) {
             sql.append(" WITH ADMIN OPTION");
+        }
+        if (!CommonUtils.isEmpty(grantor)) {
+            // Keep the original grantor, so each grantor can still revoke its own grant
+            sql.append(" GRANTED BY ").append(DBUtils.getQuotedIdentifier(getDataSource(), grantor));
         }
         return sql.toString();
     }

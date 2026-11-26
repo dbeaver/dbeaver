@@ -48,9 +48,10 @@ public class FireBirdRoleTest extends DBeaverUnitTest {
 
     @Test
     public void generatesRoleWithCommentAndGrants() throws Exception {
-        FireBirdRole role = Mockito.spy(new FireBirdRole(dataSource, "R_SALES", "SYSDBA", "Sales staff", false));
+        FireBirdRole role = Mockito.spy(new FireBirdRole(dataSource, "R_SALES", "SYSDBA", "Sales staff", false, List.of()));
         Mockito.doReturn(List.of(
             new FireBirdRoleMember(role, "ALICE", false, "SYSDBA", false, false),
+            new FireBirdRoleMember(role, "ALICE", false, "R_ADMIN_USER", false, false),
             new FireBirdRoleMember(role, "BOB", false, "SYSDBA", false, true),
             new FireBirdRoleMember(role, "R_MANAGER", true, "SYSDBA", true, false),
             new FireBirdRoleMember(role, "PUBLIC", false, "SYSDBA", false, false)
@@ -59,16 +60,17 @@ public class FireBirdRoleTest extends DBeaverUnitTest {
         Assertions.assertEquals(
             "CREATE ROLE R_SALES;\n\n"
                 + "COMMENT ON ROLE R_SALES IS 'Sales staff';\n\n"
-                + "GRANT R_SALES TO USER ALICE;\n"
-                + "GRANT DEFAULT R_SALES TO USER BOB;\n"
-                + "GRANT R_SALES TO ROLE R_MANAGER WITH ADMIN OPTION;\n"
-                + "GRANT R_SALES TO PUBLIC;",
+                + "GRANT R_SALES TO USER ALICE GRANTED BY SYSDBA;\n"
+                + "GRANT R_SALES TO USER ALICE GRANTED BY R_ADMIN_USER;\n"
+                + "GRANT DEFAULT R_SALES TO USER BOB GRANTED BY SYSDBA;\n"
+                + "GRANT R_SALES TO ROLE R_MANAGER WITH ADMIN OPTION GRANTED BY SYSDBA;\n"
+                + "GRANT R_SALES TO PUBLIC GRANTED BY SYSDBA;",
             role.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS));
     }
 
     @Test
     public void omitsCreateForSystemRole() throws Exception {
-        FireBirdRole role = Mockito.spy(new FireBirdRole(dataSource, "RDB$ADMIN", "SYSDBA", null, true));
+        FireBirdRole role = Mockito.spy(new FireBirdRole(dataSource, "RDB$ADMIN", "SYSDBA", null, true, List.of()));
         Mockito.doReturn(List.of(new FireBirdRoleMember(role, "SYSDBA", false, null, true, true)))
             .when(role).getMembers(monitor);
 
@@ -84,6 +86,8 @@ public class FireBirdRoleTest extends DBeaverUnitTest {
         Mockito.when(resultSet.getString("RDB$OWNER_NAME")).thenReturn("SYSDBA   ");
         Mockito.when(resultSet.getString("RDB$DESCRIPTION")).thenReturn("Sales staff");
         Mockito.when(resultSet.getInt("RDB$SYSTEM_FLAG")).thenReturn(0);
+        // USER_MANAGEMENT (1) and CREATE_DATABASE (9)
+        Mockito.when(resultSet.getBytes("RDB$SYSTEM_PRIVILEGES")).thenReturn(new byte[] {0x02, 0x02, 0, 0, 0, 0, 0, 0});
 
         FireBirdRole role = new FireBirdRoleCache().fetchObject(Mockito.mock(JDBCSession.class), dataSource, resultSet);
 
@@ -92,11 +96,12 @@ public class FireBirdRoleTest extends DBeaverUnitTest {
         Assertions.assertEquals("SYSDBA", role.getOwnerName());
         Assertions.assertEquals("Sales staff", role.getDescription());
         Assertions.assertFalse(role.isSystem());
+        Assertions.assertEquals(List.of("USER_MANAGEMENT", "CREATE_DATABASE"), role.getSystemPrivileges());
     }
 
     @Test
     public void readsMemberFromResultSet() throws Exception {
-        FireBirdRole role = new FireBirdRole(dataSource, "R_SALES", "SYSDBA", null, false);
+        FireBirdRole role = new FireBirdRole(dataSource, "R_SALES", "SYSDBA", null, false, List.of());
         JDBCResultSet resultSet = Mockito.mock(JDBCResultSet.class);
         Mockito.when(resultSet.getString("RDB$USER")).thenReturn("R_MANAGER   ");
         Mockito.when(resultSet.getInt("RDB$USER_TYPE")).thenReturn(FireBirdConstants.OBJECT_TYPE_ROLE);
@@ -113,5 +118,28 @@ public class FireBirdRoleTest extends DBeaverUnitTest {
         Assertions.assertEquals("SYSDBA", member.getGrantor());
         Assertions.assertTrue(member.isAdminOption());
         Assertions.assertTrue(member.isDefaultRole());
+        Assertions.assertEquals("ROLE R_MANAGER (SYSDBA)", member.getUniqueName());
+    }
+
+    @Test
+    public void generatesRoleWithSystemPrivileges() throws Exception {
+        FireBirdRole role = Mockito.spy(new FireBirdRole(
+            dataSource, "R_USER_ADMIN", "SYSDBA", null, false, List.of("USER_MANAGEMENT", "IGNORE_DB_TRIGGERS")));
+        Mockito.doReturn(List.of()).when(role).getMembers(monitor);
+
+        Assertions.assertEquals(
+            "CREATE ROLE R_USER_ADMIN\n"
+                + "    SET SYSTEM PRIVILEGES TO USER_MANAGEMENT, IGNORE_DB_TRIGGERS;",
+            role.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS));
+    }
+
+    @Test
+    public void decodesSystemPrivileges() {
+        Assertions.assertEquals(List.of(), FireBirdRole.decodeSystemPrivileges(null));
+        Assertions.assertEquals(List.of(), FireBirdRole.decodeSystemPrivileges(new byte[8]));
+        // Bit 0 is the unused NULL_PRIVILEGE, ids beyond the known list are ignored
+        byte[] all = {(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF};
+        Assertions.assertEquals(FireBirdConstants.SYSTEM_PRIVILEGES.length - 1, FireBirdRole.decodeSystemPrivileges(all).size());
+        Assertions.assertEquals(List.of("PROFILE_ANY_ATTACHMENT"), FireBirdRole.decodeSystemPrivileges(new byte[] {0, 0, 0, 0x08}));
     }
 }
