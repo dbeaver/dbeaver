@@ -22,6 +22,7 @@ import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
@@ -45,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class DDProjectManager {
+    private static final Log log = Log.getLog(DDProjectManager.class);
     public enum BindingStatus { UNBOUND, CURRENT_ACCOUNT, OTHER_ACCOUNT, ACCOUNT_UNKNOWN, PROJECT_REMOVED }
 
     @Nullable
@@ -200,14 +202,17 @@ public class DDProjectManager {
     /** Removes only local shared projects bound to the account whose keys are being discarded. */
     public synchronized void deleteAccountProjects(@NotNull UUID accountId) throws DBException {
         List<DBPProject> accountProjects = getAccountProjects(accountId);
+        log.debug("Deleting " + accountProjects.size() + " local DataDam projects");
         DBPProject activeProject = workspace.getActiveProject();
         if (activeProject != null && accountProjects.contains(activeProject)) {
             throw new DBException("Select an unshared local project before deleting DataDam projects");
         }
         for (DBPProject project : accountProjects) {
             Path bindingFile = DDProjectSyncBindingStore.getBindingFile(project);
+            log.debug("Deleting local DataDam project '" + project.getName() + "'");
             workspace.deleteProject(project);
             projects.remove(bindingFile);
+            log.debug("Deleted local DataDam project '" + project.getName() + "'");
         }
     }
 
@@ -301,7 +306,7 @@ public class DDProjectManager {
     private UUID requireAccountId() throws DBException {
         DDKeyBundle bundle = accessService.getKeyBundle();
         if (bundle == null) {
-            throw new DBException("Import encryption keys for the current DataDam account in Preferences > DataDam > Projects");
+            throw new DBException("Import the encryption key for the current DataDam account in Preferences > DataDam > Projects");
         }
         return bundle.accountId();
     }

@@ -120,6 +120,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     public static final long MAX_FILE_LENGTH_FOR_RULES = 1024 * 1000 * 2; // 2MB
     private static final int SCROLL_ON_RESIZE_THRESHOLD_PX = 10;
     private static final int UTF_16_BOM_LENGTH = 2;
+    private static final String MATCHING_CHARACTER_COLOR = "writeOccurrenceIndicationColor";
 
     static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
@@ -160,6 +161,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private SQLEditorControl editorControl;
 
     private ICharacterPairMatcher characterPairMatcher;
+    private SQLMatchingCharacterPainter matchingCharacterPainter;
     private SQLCompletionContext completionContext;
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
@@ -263,9 +265,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private void refreshSyntaxColors() {
         ISourceViewer sourceViewer = getSourceViewer();
         if (sourceViewer != null && !sourceViewer.getTextWidget().isDisposed()) {
+            refreshMatchingCharacterColor();
             // Reloading syntax rules also refreshes the presentation reconciler without
             // resetting undo history or the folding strategy cache.
             reloadSyntaxRules();
+        }
+    }
+
+    private void refreshMatchingCharacterColor() {
+        if (matchingCharacterPainter != null) {
+            matchingCharacterPainter.setColor(getSharedColors().getColor(
+                PreferenceConverter.getColor(getPreferenceStore(), MATCHING_CHARACTER_COLOR)));
+            matchingCharacterPainter.paint(IPainter.CONFIGURATION);
         }
     }
 
@@ -557,7 +568,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Override
-    protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
+    protected void handlePreferenceStoreChanged(@NotNull PropertyChangeEvent event) {
+        if (MATCHING_CHARACTER_COLOR.equals(event.getProperty())) {
+            refreshMatchingCharacterColor();
+        }
         if (!occurrencesHighlighter.handlePreferenceStoreChanged(event)) {
             super.handlePreferenceStoreChanged(event);
         }
@@ -866,11 +880,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         getSourceViewerDecorationSupport(sourceViewer);
 
-        SQLMatchingCharacterPainter matchPainter = new SQLMatchingCharacterPainter(sourceViewer, characterPairMatcher);
-        matchPainter.setColor(getSharedColors().getColor(
-            PreferenceConverter.getColor(getPreferenceStore(), "writeOccurrenceIndicationColor")));
-        matchPainter.setHighlightCharacterAtCaretLocation(true);
-        sourceViewer.addPainter(matchPainter);
+        matchingCharacterPainter = new SQLMatchingCharacterPainter(sourceViewer, characterPairMatcher);
+        matchingCharacterPainter.setColor(getSharedColors().getColor(
+            PreferenceConverter.getColor(getPreferenceStore(), MATCHING_CHARACTER_COLOR)));
+        matchingCharacterPainter.setHighlightCharacterAtCaretLocation(true);
+        sourceViewer.addPainter(matchingCharacterPainter);
 
         return sourceViewer;
     }
