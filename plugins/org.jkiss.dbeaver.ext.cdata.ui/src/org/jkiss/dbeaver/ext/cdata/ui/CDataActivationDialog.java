@@ -380,7 +380,6 @@ final class CDataActivationDialog extends BaseDialog {
         Label fieldLabel = UIUtils.createLabel(parent, label);
         GridData labelData = new GridData(SWT.LEFT, SWT.TOP, false, false);
         labelData.verticalIndent = 3;
-        labelData.widthHint = 80;
         fieldLabel.setLayoutData(labelData);
         Composite field = UIUtils.createPlaceholder(parent, 1, 0);
         field.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
 
     // It cannot be static! Otherwise item state cache become corrupted (I guess)
     private final StatusLineContributionItem STATUS_FIELD_SELECTION_STATE
-        = new StatusLineContributionItem(SQLEditorBase.STATS_CATEGORY_SELECTION_STATE, true, 12);
+        = new StatusLineContributionItem(SQLEditorBase.STATS_CATEGORY_SELECTION_STATE, true, 20);
     private final StatusLineContributionItem STATUS_FIELD_TRANSACTION_TIMEOUT
         = new StatusLineContributionItem(SQLEditor.STATS_CATEGORY_TRANSACTION_TIMEOUT, true, 25);
 

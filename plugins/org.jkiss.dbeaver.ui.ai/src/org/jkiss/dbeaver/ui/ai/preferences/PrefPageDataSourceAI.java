@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
-import org.jkiss.dbeaver.model.ai.AIProjectConnectionCount;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
@@ -268,9 +267,7 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
     private void persistConnection() {
         DBPDataSourceContainer connection = getConnection();
         if (connection != null && !(getContainer() instanceof IWizardContainer)) {
-            if (connection.persistConfiguration()) {
-                AIProjectConnectionCount.refresh(connection.getRegistry());
-            }
+            connection.persistConfiguration();
         }
     }
 
