@@ -151,6 +151,23 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
             getModifyScripts(column, Map.of("maxLength", 16L)));
     }
 
+    @Test
+    public void newDomainColumnWithoutSizeChangeUsesDomain() {
+        FireBirdTableColumn column = newColumn(DOMAIN_NAME);
+
+        Assertions.assertEquals("TEST_NAME DOM_UUID", getCreateDeclaration(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, DOMAIN_NAME)));
+    }
+
+    @Test
+    public void newDomainColumnWithSizeChangeUsesUnderlyingTypeAndCharset() {
+        FireBirdTableColumn column = newColumn(DOMAIN_NAME);
+        column.setMaxLength(20);
+
+        Assertions.assertEquals(
+            "TEST_NAME CHAR(20) CHARACTER SET OCTETS",
+            getCreateDeclaration(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, DOMAIN_NAME, DBConstants.PROP_ID_MAX_LENGTH, 20L)));
+    }
+
     @NotNull
     private List<String> getModifyScripts(@NotNull FireBirdTableColumn column, @NotNull Map<String, Object> properties)
         throws DBException {
@@ -168,10 +185,24 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
     }
 
     @NotNull
+    private FireBirdTableColumn newColumn(@NotNull String domainName) {
+        FireBirdTableColumn column = new FireBirdTableColumn(table);
+        column.setName("TEST_NAME");
+        column.setDataType(domainType(domainName));
+        column.setMaxLength(16);
+        return column;
+    }
+
+    @NotNull
     private FireBirdDataType domainType(@NotNull String name) {
         return new FireBirdDataType(
             dataSource, FireBirdFieldType.CHAR, 0, name, null, false, true, 0, 0, 0,
             16, 16, null, null, null, "OCTETS", false);
+    }
+
+    @NotNull
+    private String getCreateDeclaration(@NotNull FireBirdTableColumn column, @NotNull Map<String, Object> properties) {
+        return new TestColumnManager().getCreateDeclaration(progressMonitor, column, properties);
     }
 
     @NotNull
@@ -192,6 +223,17 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
             @NotNull FireBirdTableColumn column,
             @NotNull DBECommandAbstract<GenericTableColumn> command
         ) {
+            return getNestedDeclaration(monitor, column.getTable(), command, Map.of()).toString();
+        }
+
+        @NotNull
+        String getCreateDeclaration(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull FireBirdTableColumn column,
+            @NotNull Map<String, Object> properties
+        ) {
+            ObjectCreateCommand command = makeCreateCommand(column, Map.of());
+            command.getProperties().putAll(properties);
             return getNestedDeclaration(monitor, column.getTable(), command, Map.of()).toString();
         }
 
