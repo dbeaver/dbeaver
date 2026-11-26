@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.List;
 import java.util.Properties;
@@ -68,22 +67,6 @@ public class DuckDBDataSource extends GenericDataSource {
                 throw new DBCException("DuckDB native extension loading was not approved. Connection cancelled");
             }
         }
-        validateBootstrapQueries(url, getContainer().getActualConnectionConfiguration().getBootstrap().getInitQueries().stream()
-            .map(query -> GeneralUtils.replaceVariables(query, getContainer().getVariablesResolver(true)))
-            .toList());
-    }
-
-    protected void validateBootstrapQueries(@Nullable String url, @NotNull List<String> queries) throws DBCException {
-        if (queries.isEmpty()) {
-            return;
-        }
-        if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-            UIServiceConnectionInit service = DBWorkbench.getService(UIServiceConnectionInit.class);
-            if (service != null && service.confirmInitScripts(getContainer(), url, List.copyOf(queries))) {
-                return;
-            }
-        }
-        throw new DBCException("DuckDB initialization SQL execution was not approved. Connection cancelled");
     }
 
     @NotNull

@@ -42,7 +42,6 @@ import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Isolated
 public class DuckDBConnectionValidationTest {
@@ -121,40 +120,39 @@ public class DuckDBConnectionValidationTest {
     }
 
     @Test
-    public void requiresSqlApprovalAfterNativeApproval() {
+    public void acceptsBootstrapWithNativeApprovalWithoutRequestingSqlApproval() throws DBCException {
         Mockito.when(confirmation.confirmNativeExtensions(Mockito.any(), Mockito.anyString(), Mockito.anyList())).thenReturn(true);
         configuration.getBootstrap().getInitQueries().add("LOAD 'test.duckdb_extension'");
-        Assertions.assertThrows(DBCException.class, () -> dataSource.validateConnectionParameters(
-            monitor, URL + ";allow_unsigned_extensions=true", new Properties()));
-        Mockito.verify(confirmation).confirmInitScripts(container, URL + ";allow_unsigned_extensions=true",
-            List.of("LOAD 'test.duckdb_extension'"));
+        String url = URL + ";allow_unsigned_extensions=true";
+
+        dataSource.validateConnectionParameters(monitor, url, new Properties());
+
+        Mockito.verify(confirmation).confirmNativeExtensions(container, url, List.of("allow_unsigned_extensions=true"));
+        Mockito.verifyNoMoreInteractions(confirmation);
     }
 
     @Test
-    public void confirmsResolvedBootstrapAndChecksChangesBeforeExecution() throws DBException {
-        AtomicReference<String> value = new AtomicReference<>("first");
-        configuration.getBootstrap().getInitQueries().add("LOAD '${path}/test.duckdb_extension'");
-        Mockito.when(container.getVariablesResolver(true)).thenReturn(name -> value.get());
-        Mockito.when(confirmation.confirmInitScripts(Mockito.any(), Mockito.anyString(), Mockito.anyList())).thenReturn(true);
+    public void ordinaryBootstrapDoesNotRequestApprovalBeforeConnectionOrExecution() throws DBException {
+        configuration.getBootstrap().getInitQueries().add("SELECT 1");
         dataSource.validateConnectionParameters(monitor, URL, new Properties());
-        Mockito.verify(confirmation).confirmInitScripts(container, URL, List.of("LOAD 'first/test.duckdb_extension'"));
 
         TestExecutionContext context = Mockito.mock(TestExecutionContext.class, Mockito.CALLS_REAL_METHODS);
-        Mockito.doReturn(dataSource).when(context).getDataSource();
-        Mockito.when(confirmation.confirmInitScripts(container, URL, List.of("LOAD 'changed/test.duckdb_extension'"))).thenReturn(false);
-        Assertions.assertThrows(DBCException.class, () ->
-            context.validateBootstrapQueries(List.of("LOAD 'changed/test.duckdb_extension'")));
-        Mockito.verify(confirmation).confirmInitScripts(container, URL, List.of("LOAD 'changed/test.duckdb_extension'"));
+        context.validateBootstrapQueries(List.of("SELECT 1"));
+
+        Mockito.verifyNoInteractions(services, confirmation);
     }
 
     @Test
-    public void rejectsBootstrapInMultiuserModeAndWithoutService() {
+    public void ordinaryBootstrapDoesNotRequireServiceInHeadlessOrMultiuserModes() throws DBCException {
         configuration.getBootstrap().getInitQueries().add("SELECT 1");
         Mockito.when(services.getService(UIServiceConnectionInit.class)).thenReturn(null);
-        Assertions.assertThrows(DBCException.class, () -> dataSource.validateConnectionParameters(monitor, URL, new Properties()));
+        Mockito.when(platform.getApplication().isHeadlessMode()).thenReturn(true);
+        dataSource.validateConnectionParameters(monitor, URL, new Properties());
+        Mockito.when(platform.getApplication().isHeadlessMode()).thenReturn(false);
         Mockito.when(platform.getApplication().isMultiuser()).thenReturn(true);
-        Assertions.assertThrows(DBCException.class, () -> dataSource.validateConnectionParameters(monitor, URL, new Properties()));
-        Mockito.verifyNoInteractions(confirmation);
+        dataSource.validateConnectionParameters(monitor, URL, new Properties());
+
+        Mockito.verifyNoInteractions(services, confirmation);
     }
 
     public abstract static class TestDataSource extends DuckDBDataSource {

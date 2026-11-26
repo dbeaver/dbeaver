@@ -34,21 +34,13 @@ import org.jkiss.utils.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 public class DuckDBExecutionContext extends GenericExecutionContext {
 
     private static final Logger log = LoggerFactory.getLogger(DuckDBExecutionContext.class);
     private String activeCatalogName;
 
-    public DuckDBExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String purpose) {
+    public DuckDBExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance, purpose);
-    }
-
-    @Override
-    protected void validateBootstrapQueries(@NotNull List<String> queries) throws DBException {
-        ((DuckDBDataSource) getDataSource()).validateBootstrapQueries(
-            getDataSource().getContainer().getActualConnectionConfiguration().getUrl(), queries);
     }
 
     @Override
