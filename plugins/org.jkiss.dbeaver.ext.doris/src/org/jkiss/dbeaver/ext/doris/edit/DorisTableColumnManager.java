@@ -38,6 +38,11 @@ import java.util.Map;
 public class DorisTableColumnManager extends GenericTableColumnManager {
 
     @Override
+    protected long getDDLFeatures(@NotNull GenericTableColumn column) {
+        return super.getDDLFeatures(column) | FEATURE_ALTER_TABLE_ADD_COLUMN;
+    }
+
+    @Override
     protected void addObjectModifyActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
