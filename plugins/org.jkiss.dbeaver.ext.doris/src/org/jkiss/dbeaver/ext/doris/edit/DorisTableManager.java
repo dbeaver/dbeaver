@@ -18,11 +18,26 @@ package org.jkiss.dbeaver.ext.doris.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.doris.model.DorisDataSource;
+import org.jkiss.dbeaver.ext.doris.model.DorisTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,10 +45,48 @@ import java.util.Map;
  */
 public class DorisTableManager extends GenericTableManager {
 
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
+        DorisTableColumn.class,
+        GenericUniqueKey.class,
+        GenericTableForeignKey.class,
+        GenericTableIndex.class
+    );
+
     // Doris uses three replicas when CREATE TABLE omits replication properties.
     private static final int DEFAULT_REPLICA_COUNT = 3;
     private static final String DEFAULT_DISTRIBUTION = "DISTRIBUTED BY RANDOM BUCKETS 1"; //$NON-NLS-1$
     private static final String REPLICATION_PROPERTIES = "PROPERTIES (\"replication_num\" = \"%d\")"; //$NON-NLS-1$
+
+    @NotNull
+    @Override
+    public Class<? extends DBSObject>[] getChildTypes() {
+        return CHILD_TYPES;
+    }
+
+    @Override
+    protected void addObjectExtraActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
+        GenericTableBase table = command.getObject();
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            actions.add(new SQLDatabasePersistAction(
+                "Comment table",
+                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
+                    + " MODIFY COMMENT " + SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription()))
+            ));
+        }
+        if (!table.isPersisted()) {
+            for (GenericTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+                if (CommonUtils.isNotEmpty(column.getDescription())) {
+                    DorisTableColumnManager.addCommentAction(actions, column);
+                }
+            }
+        }
+    }
 
     @Override
     protected void appendTableModifiers(

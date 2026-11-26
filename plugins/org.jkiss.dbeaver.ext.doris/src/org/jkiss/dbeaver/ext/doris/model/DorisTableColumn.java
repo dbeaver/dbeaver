@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
@@ -117,6 +119,14 @@ public class DorisTableColumn extends GenericTableColumn {
     @Override
     public DorisDataSource getDataSource() {
         return (DorisDataSource) super.getDataSource();
+    }
+
+    @Nullable
+    @Override
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view",
+        length = PropertyLength.MULTILINE, order = 100)
+    public String getDescription() {
+        return super.getDescription();
     }
 
     private static int mapSqlType(@Nullable String typeName, @Nullable Integer givenType) {

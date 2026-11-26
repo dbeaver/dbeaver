@@ -29,6 +29,7 @@
     <plugin id="org.jkiss.dbeaver.ext.manticore.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.altibase.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.clickhouse.test" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.doris.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.firebird.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.generic.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.timeplus.test" version="0.0.0"/>
