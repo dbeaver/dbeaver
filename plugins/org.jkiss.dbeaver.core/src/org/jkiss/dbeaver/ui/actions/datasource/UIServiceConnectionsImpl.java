@@ -23,6 +23,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -66,7 +67,8 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
                     DBSSecretController secretController = DBSSecretController.getProjectSecretController(dataSourceContainer.getProject());
                     dataSourceContainer.resolveSecrets(secretController);
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Secret resolve", "Error loading connection secrets", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        CoreMessages.connection_secrets_error_title, CoreMessages.connection_secrets_error_message, e);
                 }
             }
             EditConnectionDialog.openEditConnectionDialog(UIUtils.getActiveWorkbenchWindow(), dataSourceContainer, defaultPageName);

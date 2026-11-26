@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.UUIDv7;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -35,7 +36,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
-import java.util.UUID;
 
 /** File-backed logging for a task executed outside the managed task runner. */
 public final class TaskExecutionLog implements DBRRunnableContext, AutoCloseable {
@@ -61,7 +61,7 @@ public final class TaskExecutionLog implements DBRRunnableContext, AutoCloseable
     @Nullable
     public static TaskExecutionLog open(@NotNull DBTTask task, @NotNull DBRRunnableContext context) {
         TaskRunImpl run = new TaskRunImpl(
-            UUID.randomUUID().toString(), new Date(),
+            UUIDv7.randomUUID().toString(), new Date(),
             System.getProperty(StandardConstants.ENV_USER_NAME), GeneralUtils.getProductTitle(), null, null);
         Path logFile = task.getRunLog(run);
         if (logFile == null) {

@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
+import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 
 /** Downloads the remote project selected in Preferences into the local workspace. */
 public class DDProjectImportJob extends DDProjectOperationJob<DBPProject> {

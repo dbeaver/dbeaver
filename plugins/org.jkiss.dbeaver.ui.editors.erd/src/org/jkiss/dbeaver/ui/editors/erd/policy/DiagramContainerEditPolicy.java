@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,15 @@ package org.jkiss.dbeaver.ui.editors.erd.policy;
 
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPart;
+import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.AbstractEditPolicy;
 import org.eclipse.gef.editpolicies.ContainerEditPolicy;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.GroupRequest;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.erd.ERDEntity;
 import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.ui.editors.erd.command.NoteCreateCommand;
@@ -56,13 +59,21 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
      * @see ContainerEditPolicy#getCreateCommand(org.eclipse.gef.requests.CreateRequest)
      */
     @Override
-    protected Command getCreateCommand(CreateRequest request)
+    @Nullable
+    protected Command getCreateCommand(@NotNull CreateRequest request)
     {
-        DiagramPart diagramPart = (DiagramPart) getHost();
+        EditPartViewer viewer = getHost().getViewer();
+        if (viewer == null) {
+            return null;
+        }
+        Object newObject = request.getNewObject();
+        // collecting metadata can dispatch a diagram reload and detach the original host
+        if (!(viewer.getContents() instanceof DiagramPart diagramPart)) {
+            return null;
+        }
         Point location = request.getLocation();
         diagramPart.getFigure().translateToRelative(location);
 
-        Object newObject = request.getNewObject();
         if (newObject instanceof ERDNote) {
             return new NoteCreateCommand(diagramPart, (ERDNote)newObject, location, request.getSize());
         }

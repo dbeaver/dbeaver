@@ -112,7 +112,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         boolean hasCompiler = getCompileCommandId() != null;
 
         if (hasCompiler) {
-            editorSash = new SashForm(pageControl.createContentContainer(), UIUtils.checkSashStyle(SWT.VERTICAL | SWT.SMOOTH));
+            editorSash = new SashForm(pageControl.createContentContainer(), SWT.VERTICAL | SWT.SMOOTH);
             super.createPartControl(editorSash);
 
             editorControl = editorSash.getChildren()[0];

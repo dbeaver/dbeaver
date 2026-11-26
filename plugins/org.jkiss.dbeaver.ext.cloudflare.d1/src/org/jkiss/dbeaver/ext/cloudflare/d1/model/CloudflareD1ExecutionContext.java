@@ -36,7 +36,7 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 final class CloudflareD1ExecutionContext extends GenericExecutionContext {
-    private static final String URL_PREFIX = "jdbc:d1://";
+    private static final String URL_PREFIX = "jdbc:dbeaver:d1://";
     private final String databaseId;
     private String catalogName;
 

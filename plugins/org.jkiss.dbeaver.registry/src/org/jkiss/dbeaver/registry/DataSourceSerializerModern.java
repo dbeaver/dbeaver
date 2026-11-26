@@ -855,8 +855,12 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     connectionConfigurationChanged = true;
                 } else {
                     parseResults.updatedDataSources.add(dataSource);
-                    if (!dataSource.equalSettings(oldDataSource)) {
-                        connectionConfigurationChanged = true;
+                    try {
+                        if (!dataSource.equalSettings(oldDataSource)) {
+                            connectionConfigurationChanged = true;
+                        }
+                    } finally {
+                        oldDataSource.dispose();
                     }
                 }
             }
@@ -865,6 +869,12 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             for (Map<String, Object> ctMap : JSONUtils.getObjectList(configurationMap, "saved-filters")) {
                 DBSObjectFilter filter = filterSerializer.deserializeObjectFilter(ctMap);
                 registry.addSavedFilter(filter);
+            }
+            // Shared and unused parsed models are templates, not owned by a data source.
+            for (DBVModel model : modelMap.values()) {
+                if (model.getDataSourceContainer() == null) {
+                    model.dispose();
+                }
             }
         }
         return connectionConfigurationChanged;

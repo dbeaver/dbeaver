@@ -332,7 +332,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
             if (change.getValue() instanceof DBDAttributeBinding ab) {
                 attrRefs.add(ab);
             }
-            if (!hasComplexUpdates && isComplexNestedAttribute(change.getKey())) {
+            if (!hasComplexUpdates && isComplexNestedAttribute(row, change.getKey())) {
                 hasComplexUpdates = true;
             }
         }
@@ -341,6 +341,13 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
             for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
                 if (change.getValue() instanceof DBDAttributeBinding ab && attrRefs.contains(ab)) {
                     changes.put(ab, row.getChange(ab));
+                }
+            }
+            // Keep independent top-level changes alongside whole-value updates.
+            for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
+                DBDAttributeBinding attribute = change.getKey();
+                if (attribute.getParentObject() == null && !attrRefs.contains(attribute)) {
+                    changes.put(attribute, change.getValue());
                 }
             }
         } else {
@@ -359,14 +366,18 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
         return changes;
     }
 
-    // Returns true only if our attribute has parent of type array
-    private static boolean isComplexNestedAttribute(@NotNull DBDAttributeBinding attr) {
+    // Array elements and composites that cannot update members are persisted as complete values.
+    private boolean isComplexNestedAttribute(@NotNull ResultSetRow row, @NotNull DBDAttributeBinding attr) {
         for (DBDAttributeBinding parent = attr.getParentObject(); parent != null; parent = parent.getParentObject()) {
             if (parent.getDataKind() == DBPDataKind.ARRAY) {
                 return true;
             }
         }
-        return false;
+        if (attr.getParentObject() == null) {
+            return false;
+        }
+        Object rootValue = model.getCellValue(attr.getTopParent(), row);
+        return rootValue instanceof DBDComposite composite && composite.requiresWholeValueUpdate();
     }
 
     public void rejectChanges() {
@@ -382,7 +393,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                     if (!Objects.equals(changedValue.getValue(), curValue)) {
                         DBUtils.releaseValue(curValue);
                         try {
-                            model.updateCellValue(changedValue.getKey(), row, null, changedValue.getValue(), false);
+                            model.updateCellValue(changedValue.getKey(), row, null, null, changedValue.getValue(), false);
                         } catch (DBException e) {
                             log.error(e);
                         }
@@ -585,7 +596,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                         ));
                 } else {
                     DBWorkbench.getPlatformUI().showError(
-                        "Data error", "Error synchronizing data with database", error);
+                        ResultSetMessages.error_data_title, ResultSetMessages.error_synchronize_data_message, error);
                     viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
                 }
                 if (hasZeroRowChanges && error == null && !viewer.getControl().isDisposed()) {
@@ -602,7 +613,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
     }
 
     private void showError(@NotNull Throwable error) {
-        DBWorkbench.getPlatformUI().showError("Data error", "Error generating script", error);
+        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_data_title, ResultSetMessages.error_generate_script_message, error);
     }
 
     @Nullable

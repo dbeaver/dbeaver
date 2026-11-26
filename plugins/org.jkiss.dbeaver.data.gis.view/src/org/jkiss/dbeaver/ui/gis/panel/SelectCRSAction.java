@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ class SelectCRSAction extends Action {
     public void run() {
         if (valueEditor instanceof GISLeafletViewer &&
                 Arrays.stream(((GISLeafletViewer) valueEditor).getCurrentValue()).map(DBGeometry::getSRID).distinct().count() > 1) {
-            DBWorkbench.getPlatformUI().showWarningMessageBox("Warning", "Can't change coordinate reference system because geometries have different SRID.");
+            DBWorkbench.getPlatformUI().showWarningMessageBox(GISMessages.gis_crs_warning_title, GISMessages.gis_crs_different_srid_message);
         } else {
             SelectSRIDDialog manageCRSDialog = new SelectSRIDDialog(
                     UIUtils.getActiveWorkbenchShell(),

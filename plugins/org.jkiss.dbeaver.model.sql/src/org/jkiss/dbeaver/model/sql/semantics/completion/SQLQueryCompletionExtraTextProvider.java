@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,12 +130,20 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @Nullable
     @Override
     public String  visitSpecialText(@NotNull SQLSpecialTextCompletionItem specialText) {
-        return " - Special substitution";
+        return specialText.kind == SQLQueryCompletionItemKind.TYPE
+            ? " - " + specialText.description : " - Special substitution";
     }
 
     @Nullable
     public String visitScriptVariable(@NotNull SQLScriptVariableCompletionItem scriptVariable) {
         String typeName = prepareTypeNameString(scriptVariable.variableDefinition.type());
         return typeName == null ? " - SQL Script variable" : (" : " + typeName);
+    }
+
+    @Nullable
+    @Override
+    public String visitLocalVariable(@NotNull SQLLocalVariableCompletionItem localVariable) {
+        String typeName = prepareTypeNameString(localVariable.binding.type());
+        return typeName == null ? " - Local variable" : " : " + typeName;
     }
 }

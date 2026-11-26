@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.variables;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -42,10 +43,9 @@ public class RemoveVariablesAction extends Action {
         if (UIUtils.confirmAction(
             editor.getSite().getShell(),
             SQLEditorMessages.action_result_tabs_delete_variables,
-            SQLEditorMessages.action_result_tabs_delete_variables_question +
-                ' ' +
-                varNames.toString().replaceAll("^[\\[]|[\\]]$","")
-                + "?"))
+            NLS.bind(
+                SQLEditorMessages.action_result_tabs_delete_variables_confirm_message,
+                varNames.toString().replaceAll("^[\\[]|[\\]]$", ""))))
         {
             for (String varName : varNames) {
                 final SQLQueryParameterRegistry instance = SQLQueryParameterRegistry.getInstance();

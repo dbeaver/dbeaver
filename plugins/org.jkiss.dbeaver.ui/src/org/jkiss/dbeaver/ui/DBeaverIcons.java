@@ -17,8 +17,13 @@
 
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -26,11 +31,13 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -42,21 +49,27 @@ public class DBeaverIcons {
     private static class IconDescriptor {
         @NotNull
         String id;
-        @NotNull
+        @Nullable
         Image image;
         @NotNull
         ImageDescriptor imageDescriptor;
 
         IconDescriptor(@NotNull String id, @NotNull ImageDescriptor imageDescriptor) {
             this.id = id;
-            this.image = imageDescriptor.createImage(false);
             this.imageDescriptor = imageDescriptor;
         }
 
-        IconDescriptor(@NotNull String id, @NotNull Image image) {
-            this.id = id;
-            this.image = image;
-            this.imageDescriptor = ImageDescriptor.createFromImage(image);
+        @Nullable
+        Image getImage() {
+            if (image == null || image.isDisposed()) {
+                // Descriptor lookup must not allocate native resources or rasterize SVGs.
+                // Image creation remains on the requesting display thread.
+                if (Display.getCurrent() == null) {
+                    SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS);
+                }
+                image = imageDescriptor.createImage(imageDescriptor instanceof OverlayImageDescriptor);
+            }
+            return image;
         }
 
         IconDescriptor(@NotNull String id, @NotNull Image image, @NotNull ImageDescriptor imageDescriptor) {
@@ -66,17 +79,19 @@ public class DBeaverIcons {
         }
     }
 
-    private static final Map<String, IconDescriptor> imageMap = new HashMap<>();
-    private static final Map<String, IconDescriptor> compositeMap = new HashMap<>();
+    // Reuse palette variants when switching back. Images can also be retained by owner-drawn controls,
+    // so do not dispose a previous palette's images while the display is alive.
+    private static final Map<String, IconDescriptor> imageMap = new ConcurrentHashMap<>();
+    private static final Map<String, IconDescriptor> compositeMap = new ConcurrentHashMap<>();
 
     @NotNull
     public static Image getImage(@Nullable DBPImage image) {
-        return getIconDescriptor(image, true).image;
+        return getIconDescriptor(image, true).getImage();
     }
 
     @NotNull
     public static Image getImage(@Nullable DBPImage image, boolean useCache) {
-        return getIconDescriptor(image, useCache).image;
+        return getIconDescriptor(image, useCache).getImage();
     }
 
     @Nullable
@@ -85,7 +100,7 @@ public class DBeaverIcons {
         if (icon == null) {
             return null;
         }
-        return icon.image;
+        return icon.getImage();
     }
 
     @NotNull
@@ -131,7 +146,7 @@ public class DBeaverIcons {
         if (!image.hasOverlays()) {
             return mainIcon;
         }
-        String compositeId = mainIcon.id + "^" +
+        String compositeId = mainIcon.id + "^" + IconThemeManager.getPalette() + "^" +
             (image.getTopLeft() == null ? "" : image.getTopLeft().getLocation()) + "^" +
             (image.getTopRight() == null ? "" : image.getTopRight().getLocation()) + "^" +
             (image.getBottomLeft() == null ? "" : image.getBottomLeft().getLocation()) + "^" +
@@ -151,8 +166,7 @@ public class DBeaverIcons {
             if (image.getBottomRight() != null) {
                 ovrImage.setBottomRight(accumulateDecorations(image, DBIconComposite::getBottomRight));
             }
-            Image resultImage = ovrImage.createImage();
-            icon = new IconDescriptor(compositeId, resultImage);
+            icon = new IconDescriptor(compositeId, trackImages(image, ovrImage));
             if (useCache) {
                 compositeMap.put(compositeId, icon);
             }
@@ -182,12 +196,17 @@ public class DBeaverIcons {
 
     @Nullable
     private static IconDescriptor getIconByLocation(@NotNull String location) {
-        IconDescriptor icon = imageMap.get(location);
+        IconThemeManager.initialize();
+        boolean themeable = SVGUtils.isThemeableSvg(location);
+        String key = themeable ? location + "#" + IconThemeManager.getPalette() : location;
+        IconDescriptor icon = imageMap.get(key);
         if (icon == null) {
             try {
-                ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(URI.create(location).toURL());
-                icon = new IconDescriptor(location, imageDescriptor);
-                imageMap.put(location, icon);
+                ImageDescriptor imageDescriptor = themeable
+                    ? trackImages(new DBIcon(location), SVGUtils.createThemedDescriptor(location, IconThemeManager::getPalette))
+                    : ImageDescriptor.createFromURL(URI.create(location).toURL());
+                icon = new IconDescriptor(key, imageDescriptor);
+                imageMap.put(key, icon);
             } catch (Exception e) {
                 log.error(e);
                 return null;
@@ -196,4 +215,64 @@ public class DBeaverIcons {
         return icon;
     }
 
+    @NotNull
+    private static ImageDescriptor trackImages(@NotNull DBPImage icon, @NotNull ImageDescriptor source) {
+        Map<String, String> palette = IconThemeManager.getPalette();
+        class TrackedImageDescriptor extends ImageDescriptor implements IAdaptable {
+            @Nullable
+            @Override
+            public <T> T getAdapter(@NotNull Class<T> adapter) {
+                // Eclipse command renderers recover the icon URI from its image descriptor.
+                // Only plain icons have a source URI; adapting composites would discard their overlays.
+                if (icon instanceof DBIcon) {
+                    URI uri = URI.create(icon.getLocation());
+                    if (adapter == URI.class) {
+                        return adapter.cast(uri);
+                    }
+                    if (adapter == URL.class) {
+                        try {
+                            return adapter.cast(uri.toURL());
+                        } catch (MalformedURLException e) {
+                            log.debug("Error adapting icon location", e);
+                        }
+                    }
+                }
+                return null;
+            }
+
+            @NotNull
+            private ImageDescriptor currentSource() {
+                // Composite descriptors cache their base pixels; rebuild them after a palette change.
+                return palette.equals(IconThemeManager.getPalette()) ? source : getImageDescriptor(icon);
+            }
+
+            @Nullable
+            @Override
+            public ImageData getImageData(int zoom) {
+                return currentSource().getImageData(zoom);
+            }
+
+            @Nullable
+            @Override
+            public Image createImage(boolean returnMissingImageOnError, @Nullable Device device) {
+                Image image = currentSource().createImage(returnMissingImageOnError, device);
+                if (image != null) {
+                    IconThemeManager.trackImage(image, icon);
+                }
+                return image;
+            }
+        }
+        return new TrackedImageDescriptor();
+    }
+
+    static void disposeCachedImages() {
+        for (Map<String, IconDescriptor> cache : List.of(imageMap, compositeMap)) {
+            for (IconDescriptor descriptor : cache.values()) {
+                if (descriptor.image != null && !descriptor.image.isDisposed()) {
+                    descriptor.image.dispose();
+                }
+            }
+            cache.clear();
+        }
+    }
 }

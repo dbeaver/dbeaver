@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -48,11 +49,11 @@ import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.ConnectionPreferences;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -71,18 +72,31 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
     private DBPDriverSubstitutionDescriptor driverSubstitution;
+    private String connectionNameOverride;
 
     protected ConnectionWizard() {
         setNeedsProgressMonitor(true);
     }
 
     @Override
+    @NotNull
     public String getWindowTitle() {
-        if (isNew()) {
+        if ((isNew() && getPageCount() == 0) || getSelectedDriver() == null) {
             return UIConnectionMessages.dialog_new_connection_wizard_title;
-        } else {
-            DataSourceDescriptor activeDataSource = getActiveDataSource();
-            return NLS.bind( UIConnectionMessages.dialog_connection_edit_title, activeDataSource.getName());
+        }
+        return getWindowTitle(getConnectionNamePreview());
+    }
+
+    @NotNull
+    private String getWindowTitle(@NotNull String connectionName) {
+        return isNew()
+            ? UIConnectionMessages.dialog_new_connection_wizard_title + " - " + connectionName
+            : NLS.bind(UIConnectionMessages.dialog_connection_edit_title, connectionName);
+    }
+
+    void updateWindowTitle(@NotNull String connectionName) {
+        if (getContainer() != null && getShell() != null && !getShell().isDisposed()) {
+            getShell().setText(getWindowTitle(connectionName));
         }
     }
 
@@ -158,6 +172,77 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         getActiveDataSource().setDriverSubstitution(driverSubstitution);
     }
 
+    void setConnectionNameOverride(@NotNull String name) {
+        connectionNameOverride = name;
+        updateWindowTitle(name);
+        for (IWizardPage page : getPages()) {
+            if (page instanceof ConnectionPageGeneral generalPage) {
+                generalPage.setConnectionName(name);
+            }
+        }
+        ConnectionPageSettings settings = getPageSettings();
+        if (settings != null) {
+            settings.refreshConnectionName();
+        }
+    }
+
+    @Nullable
+    String getConnectionNameOverride() {
+        return connectionNameOverride;
+    }
+
+    @NotNull
+    String getConnectionNamePreview() {
+        return getConnectionNamePreview(getActiveDataSource());
+    }
+
+    @NotNull
+    String getConnectionNamePreview(@NotNull DataSourceDescriptor dataSource) {
+        if (connectionNameOverride != null) {
+            return connectionNameOverride;
+        }
+        if (!isNew()) {
+            return getActiveDataSource().getName();
+        }
+        String pattern = DBWorkbench.getPlatform().getPreferenceStore()
+            .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+        return generateConnectionName(pattern, dataSource);
+    }
+
+    void applyConnectionName(@NotNull DataSourceDescriptor dataSource) {
+        if (connectionNameOverride != null) {
+            dataSource.setName(generateConnectionName(connectionNameOverride, dataSource));
+        } else if (isNew()) {
+            dataSource.setName(generateConnectionName(DBWorkbench.getPlatform().getPreferenceStore()
+                .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN), dataSource));
+        }
+    }
+
+    @NotNull
+    private String generateConnectionName(@NotNull String pattern, @Nullable DataSourceDescriptor dataSource) {
+        ConnectionPageSettings settings = getPageSettings();
+        if (settings == null || dataSource == null) {
+            return getSelectedDriver().getName();
+        }
+        if (pattern.isBlank()) {
+            pattern = GeneralUtils.variablePattern(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE);
+        }
+        String name = GeneralUtils.replaceVariables(pattern,
+            new ConnectionNameResolver(dataSource, dataSource.getConnectionConfiguration(), null));
+        Set<String> existingNames = new HashSet<>();
+        DataSourceDescriptor original = getOriginalDataSource();
+        for (DBPDataSourceContainer existing : settings.getDataSourceRegistry().getDataSources()) {
+            if (original == null || !existing.getId().equals(original.getId())) {
+                existingNames.add(existing.getName());
+            }
+        }
+        String uniqueName = name;
+        for (int index = 1; existingNames.contains(uniqueName); index++) {
+            uniqueName = name + " (" + index + ")";
+        }
+        return uniqueName;
+    }
+
     public void testConnection() {
         DataSourceDescriptor activeDataSource = getActiveDataSource();
         DataSourceDescriptor targetDataSource;
@@ -185,6 +270,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         }
 
         saveSettings(targetDataSource);
+        if (targetDataSource.isTemporary()) {
+            targetDataSource.getConnectionConfiguration().setRuntimeAttribute(
+                DBPConnectionConfiguration.ATTRIBUTE_TEST_CONNECTION_SOURCE, activeDataSource);
+        }
 
         if (activeDataSource == targetDataSource) {
             persistDataSource();
@@ -192,16 +281,18 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
         if (targetDataSource.isSharedCredentials()) {
             if (!targetDataSource.getProject().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN)) {
-                UIUtils.showMessageBox(getShell(), "Credentials edit restricted",
-                    "Shared credentials edit is available for administrators only.",
+                UIUtils.showMessageBox(getShell(), UIConnectionMessages.dialog_connection_credentials_restricted_title,
+                    UIConnectionMessages.dialog_connection_credentials_restricted_message,
                     SWT.ICON_ERROR);
             } else {
-                UIUtils.showMessageBox(getShell(), "Use credentials manager",
-                    "Direct connection test is not available for shared connections.\nGo to shared credentials manager dialog.",
+                UIUtils.showMessageBox(getShell(), UIConnectionMessages.dialog_connection_credentials_manager_title,
+                    UIConnectionMessages.dialog_connection_credentials_manager_message,
                     SWT.ICON_WARNING);
             }
             return;
         }
+
+        firePropertyChangeEvent(PROP_CONNECTION_TEST, null, targetDataSource);
 
         ConnectionFeatures.CONNECTION_TEST.use(Map.of("driver", targetDataSource.getDriver().getPreconfiguredId()));
 

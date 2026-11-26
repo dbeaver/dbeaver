@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
@@ -52,6 +53,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
@@ -78,8 +80,8 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
                 UINavigatorMessages.actions_navigator_error_dialog_open_resource_title,
-                "Can't open resource '" + resource.getName() + "'",
-                e); //$NON-NLS-3$
+                NLS.bind(SQLEditorMessages.sql_resource_open_error, resource.getName()),
+                e);
         }
     }
 
@@ -132,7 +134,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         } catch (InterruptedException e) {
             return null;
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Open editor", null, e);
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_editor_open_generic_title, null, e);
         }
         return null;
     }
@@ -332,7 +334,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                 matchFlags
             );
         } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Can't open editor", null, e);
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_editor_open_generic_error, null, e);
         }
         return null;
     }

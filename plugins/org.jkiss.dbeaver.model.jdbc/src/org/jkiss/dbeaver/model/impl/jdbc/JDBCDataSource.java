@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDataSource;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.impl.jdbc.internal.JDBCModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -243,9 +243,15 @@ public abstract class JDBCDataSource extends AbstractDataSource
             JDBCConnectionOpener connectTask = null;
             boolean openTaskFinished;
             try {
+                try {
+                    this.fixupConnectionProperties(monitor, connectionInfo, url, connectProps);
+                } catch (DBException e) {
+                    throw new DBCException("Error preparing connection properties", e);
+                }
                 // Authentication and driver substitution may have changed both the URL and properties.
                 // Validate before creating the driver or invoking any of its URL-processing APIs.
                 validateConnectionProperties(url, connectProps);
+                validateConnectionParameters(monitor, url, connectProps);
                 Driver driverInstance = createDriverInstance(monitor, driver);
                 if (driverInstance != null) {
                     try {
@@ -267,7 +273,6 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     connectProps,
                     authResult
                 );
-
                 if (openTimeout <= 0) {
                     connectTask.run(monitor);
                     openTaskFinished = true;
@@ -323,6 +328,25 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
+    protected void validateConnectionParameters(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String url,
+        @NotNull Properties connectProps
+    ) throws DBCException {
+    }
+
+    /**
+     * Adjusts final runtime properties after driver substitution and authentication initialization, before opening a connection.
+     * The URL is supplied for interpreting overrides; implementations must not modify the saved connection configuration.
+     */
+    protected void fixupConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull String connectionUrl,
+        @NotNull Properties connectionProperties
+    ) throws DBException {
+    }
+
     /**
      * Enforces connection policy on the final connection inputs, before any driver URL parsing.
      * Implementations may sanitize the transient properties or reject the connection with a DBCException.
@@ -330,7 +354,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected void validateConnectionProperties(@Nullable String url, @NotNull Properties connectProps) throws DBCException {
         if (DBWorkbench.getPlatform().getApplication().isMultiuser()
             || DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES)) {
-            JDBCConnectionValidator validator = GeneralUtils.adapt(this, JDBCConnectionValidator.class);
+            Object validatorId = container.getDriver().getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR);
+            JDBCConnectionValidator validator = validatorId == null
+                ? GeneralUtils.adapt(this, JDBCConnectionValidator.class)
+                : JDBCConnectionValidatorRegistry.getInstance().createValidator(CommonUtils.toString(validatorId));
             if (validator != null) {
                 validator.validateConnectionProperties(url, connectProps);
             }
@@ -616,7 +643,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
         JDBCRemoteInstance defaultInstance = getDefaultInstance();
         defaultInstance.initializeMetaContext(monitor);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, JDBCModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
             readDatabaseServerVersion(session, metaData);

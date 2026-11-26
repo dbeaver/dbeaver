@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersister;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectVisibility;
 
 public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProjectListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
@@ -89,7 +90,8 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     public DBNNode getRootNode() {
         DBNProject projectNode = getGlobalNavigatorModel().getRoot().getProjectNode(
             DBWorkbench.getPlatform().getWorkspace().getActiveProject());
-        return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
+        return projectNode == null || !ProjectVisibility.isVisible(projectNode)
+            ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 
     @Override

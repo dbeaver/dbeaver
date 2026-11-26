@@ -19,8 +19,18 @@ package org.jkiss.dbeaver.ui.app.config.nls;
 import org.eclipse.osgi.util.NLS;
 
 public final class ProductConfigMessages extends NLS {
+    private static final String BUNDLE_NAME = ProductConfigMessages.class.getName();
+
+    public static String welcome_language_change_title;
+    public static String welcome_language_change_message;
+
     public static String wizard_title;
     public static String wizard_apply;
+
+    public static String preferences_features_hint;
+    public static String preferences_open_product_configuration;
+    public static String preferences_restart_title;
+    public static String preferences_restart_message;
 
     public static String welcome_title;
     public static String welcome_description;
@@ -57,7 +67,7 @@ public final class ProductConfigMessages extends NLS {
     public static String confirm_exit_message;
 
     static {
-        NLS.initializeMessages(ProductConfigMessages.class.getName(), ProductConfigMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, ProductConfigMessages.class);
     }
 
     private ProductConfigMessages() {

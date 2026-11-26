@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedObject2, DBSTypedObjectExt4<FireBirdDataType> {
 
@@ -86,7 +88,7 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     }
 
     @NotNull
-    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = FireBirdColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
     {
@@ -166,6 +168,30 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     public void setDataType(@NotNull FireBirdDataType dataType) {
         this.dataType = dataType;
         this.typeName = dataType.getTypeName();
+    }
+
+    /**
+     * Firebird stores every column type in RDB$FIELDS: besides user domains it contains system domains and
+     * an implicit {@code RDB$<n>} domain for each column declared without a domain. These are internal and can number
+     * in the tens of thousands, so they are not offered as column type names.
+     */
+    public static class FireBirdColumnTypeNameListProvider extends ColumnTypeNameListProvider {
+
+        @Nullable
+        @Override
+        public Object[] getPossibleValues(@NotNull JDBCTableColumn<?> column) {
+            Object[] typeNames = super.getPossibleValues(column);
+            if (typeNames == null) {
+                return null;
+            }
+            return Arrays.stream(typeNames)
+                .filter(typeName -> !isSystemDomainName(typeName.toString()))
+                .toArray(String[]::new);
+        }
+
+        static boolean isSystemDomainName(@NotNull String typeName) {
+            return typeName.startsWith("RDB$");
+        }
     }
 
     public static class FireBirdColumnIncrementValueValidator implements IPropertyValueValidator<FireBirdTableColumn, Object> {

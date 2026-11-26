@@ -111,6 +111,58 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void testHeaderQuotingWhenNecessary() throws DBException, IOException {
+        properties.put("headerQuoting", "when necessary");
+        addColumn("DEVICE1", "DEVICE1", JDBCStringValueHandler.INSTANCE);
+        addColumn("DEVICE2", "DEVICE2", JDBCStringValueHandler.INSTANCE);
+        initExporter();
+
+        dataExporterCSV.exportHeader(dbcSession);
+        dataExporterCSV.exportRow(dbcSession, resultSetMock, new Object[]{"hi, there", "dear john"});
+
+        assertEquals("DEVICE1,DEVICE2\n\"hi, there\",dear john\n", stringWriter.toString());
+    }
+
+    @Test
+    public void testHeaderQuotingWhenNecessaryWithSpecialCharacters() throws DBException, IOException {
+        properties.put("headerQuoting", "when necessary");
+        properties.put("quoteAlways", "all");
+        addColumn("PLAIN", "PLAIN", JDBCStringValueHandler.INSTANCE);
+        addColumn("COMMA", "A,B", JDBCStringValueHandler.INSTANCE);
+        addColumn("QUOTE", "A\"B", JDBCStringValueHandler.INSTANCE);
+        addColumn("NEWLINE", "A\nB", JDBCStringValueHandler.INSTANCE);
+        initExporter();
+
+        dataExporterCSV.exportHeader(dbcSession);
+
+        assertEquals("PLAIN,\"A,B\",\"A\"\"B\",\"A\nB\"\n", stringWriter.toString());
+    }
+
+    @Test
+    public void testHeaderQuotingNever() throws DBException, IOException {
+        properties.put("headerQuoting", "never");
+        addColumn("COMMA", "A,B", JDBCStringValueHandler.INSTANCE);
+        addColumn("QUOTE", "A\"B", JDBCStringValueHandler.INSTANCE);
+        initExporter();
+
+        dataExporterCSV.exportHeader(dbcSession);
+        dataExporterCSV.exportRow(dbcSession, resultSetMock, new Object[]{"hi, there", "dear john"});
+
+        assertEquals("A,B,A\"B\n\"hi, there\",dear john\n", stringWriter.toString());
+    }
+
+    @Test
+    public void testQuoteNeverOverridesHeaderQuoting() throws DBException, IOException {
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+        addColumn("COMMA", "A,B", JDBCStringValueHandler.INSTANCE);
+        initExporter();
+
+        dataExporterCSV.exportHeader(dbcSession);
+
+        assertEquals("A,B\n", stringWriter.toString());
+    }
+
+    @Test
     public void testNotThrowsIfQuoteAndSeparatorAreSameCharAndQuoteNever() throws DBException {
         // given
         properties.put(DataExporterCSV.PROP_DELIMITER, ALTERNATIVE_VALUE_SEPARATOR);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,13 @@ import org.eclipse.osgi.util.NLS;
 public class PostgreSQLMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages"; //$NON-NLS-1$
 
+    public static String pgagent_access_error_title;
+    public static String pgagent_access_error_message;
+    public static String drop_tablespace_title;
+    public static String drop_system_tablespace_error;
+    public static String warning_title;
+    public static String restore_warning_message;
+
     public static String pseudo_column_oid_description;
     public static String global_variable_current_date_description;
     public static String global_variable_current_time_description;
@@ -33,6 +40,14 @@ public class PostgreSQLMessages extends NLS {
     public static String global_variable_system_user_description;
     public static String global_variable_user_description;
     public static String error_multi_database_mode_disabled_description;
+    public static String action_create_publication;
+    public static String action_drop_publication;
+    public static String action_create_subscription;
+    public static String action_alter_subscription;
+    public static String action_drop_subscription;
+    public static String action_test_subscription_connection;
+    public static String action_refresh_subscription_publications;
+    public static String action_read_publication_names;
 
     static {
         // initialize resource bundle

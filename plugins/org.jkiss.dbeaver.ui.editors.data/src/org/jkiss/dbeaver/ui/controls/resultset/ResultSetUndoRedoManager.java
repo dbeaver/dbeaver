@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ final class ResultSetUndoRedoManager {
         @NotNull DBDAttributeBinding attribute,
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         @Nullable Object value
     ) throws DBException {
         int historyLimit = Math.clamp(
@@ -61,12 +63,12 @@ final class ResultSetUndoRedoManager {
         );
         if (historyLimit == 0) {
             clear();
-            return viewer.getModel().updateCellValue(attribute, row, rowIndexes, value, true);
+            return viewer.getModel().updateCellValue(attribute, row, rowIndexes, valuePath, value, true);
         }
-        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes);
+        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes, valuePath);
         boolean updated;
         try {
-            updated = viewer.getModel().updateCellValue(attribute, row, rowIndexes, value, true);
+            updated = viewer.getModel().updateCellValue(attribute, row, rowIndexes, valuePath, value, true);
         } catch (DBException e) {
             if (historyItem != null) {
                 historyItem.release();
@@ -93,13 +95,19 @@ final class ResultSetUndoRedoManager {
     boolean resetCellValue(
         @NotNull DBDAttributeBinding attribute,
         @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes
+        @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath
     ) {
+        DBDAttributeBinding pathRoot = DBUtils.getRootValueBinding(valuePath);
+        // A binding from another hierarchy cannot mark this path's edit, so check the path root.
+        // An unchanged sibling shares that root but must not qualify for reset.
+        DBDAttributeBinding changedAttribute = pathRoot != null && attribute.getTopParent() != pathRoot
+            ? pathRoot : attribute;
         if (row.getState() == ResultSetRow.STATE_REMOVED) {
-            viewer.getModel().resetCellValue(attribute, row, rowIndexes);
+            viewer.getModel().resetCellValue(attribute, row, rowIndexes, valuePath);
             return true;
         }
-        if (!row.isChanged(attribute)) {
+        if (!row.isChanged(changedAttribute)) {
             return false;
         }
         int historyLimit = Math.clamp(
@@ -109,11 +117,11 @@ final class ResultSetUndoRedoManager {
         );
         if (historyLimit == 0) {
             clear();
-            viewer.getModel().resetCellValue(attribute, row, rowIndexes);
+            viewer.getModel().resetCellValue(attribute, row, rowIndexes, valuePath);
             return true;
         }
-        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes);
-        viewer.getModel().resetCellValue(attribute, row, rowIndexes);
+        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes, valuePath);
+        viewer.getModel().resetCellValue(attribute, row, rowIndexes, valuePath);
         if (historyItem != null) {
             CellSnapshot newValue = snapshotCell(historyItem.valueLocation);
             if (newValue != null) {
@@ -194,7 +202,7 @@ final class ResultSetUndoRedoManager {
             }
             viewer.getModel().refreshChangeCount();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Cell edit", "Error restoring cell value", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_edit_cell_title, ResultSetMessages.error_restore_cell_message, e);
             return false;
         }
 
@@ -214,23 +222,27 @@ final class ResultSetUndoRedoManager {
     private CellEditHistoryItem makeHistoryItem(
         @NotNull DBDAttributeBinding attribute,
         @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes
+        @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath
     ) {
-        ResultSetCellLocation currentCell = viewer.getActivePresentation().getCurrentCellLocation();
-        ResultSetValuePath valuePath = currentCell != null
-            && currentCell.getRow() == row
-            && currentCell.getAttribute() == attribute
-            && Arrays.equals(currentCell.getRowIndexes(), rowIndexes)
-            ? currentCell.getValuePath()
-            : null;
+        if (valuePath == null) {
+            ResultSetCellLocation currentCell = viewer.getActivePresentation().getCurrentCellLocation();
+            valuePath = currentCell != null
+                && currentCell.getRow() == row
+                && currentCell.getAttribute() == attribute
+                && Arrays.equals(currentCell.getRowIndexes(), rowIndexes)
+                ? currentCell.getValuePath()
+                : null;
+        }
         ResultSetCellLocation cell = new ResultSetCellLocation(
             attribute,
             row,
             rowIndexes == null ? null : rowIndexes.clone(),
             valuePath);
         // Nested edits and resets affect the entire root, including its original value and child change markers.
+        DBDAttributeBinding pathRoot = DBUtils.getRootValueBinding(valuePath);
         ResultSetCellLocation valueLocation = new ResultSetCellLocation(
-            attribute.getLevel() == 0 ? attribute : attribute.getTopParent(), row);
+            pathRoot == null ? attribute.getTopParent() : pathRoot, row);
         CellSnapshot oldValue = snapshotCell(valueLocation);
         if (oldValue == null) {
             return null;

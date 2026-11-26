@@ -56,6 +56,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     private long objectId;
     private String ddl;
     private boolean isColumnStore;
+    private String filterDefinition;
 
     public SQLServerTableIndex(
         SQLServerTableBase table,
@@ -79,7 +80,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
         this.primary = source.isPrimary();
         this.indexComment = source.getDescription();
         if (source instanceof SQLServerTableIndex) {
-            //this.cardinality = ((SQLServerTableIndex)source).cardinality;
+            this.filterDefinition = ((SQLServerTableIndex) source).filterDefinition;
         }
         List<? extends DBSTableIndexColumn> columns = source.getAttributeReferences(monitor);
         if (columns != null) {
@@ -107,6 +108,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
         this.objectId = JDBCUtils.safeGetLong(dbResult, "index_id");
         this.unique = JDBCUtils.safeGetInt(dbResult, "is_unique") != 0;
         this.primary = JDBCUtils.safeGetInt(dbResult, "is_primary_key") != 0;
+        this.filterDefinition = JDBCUtils.safeGetString(dbResult, "filter_definition");
     }
 
     @NotNull
@@ -143,6 +145,16 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     @Property(viewable = true, order = 7)
     public boolean isColumnStore() {
         return isColumnStore;
+    }
+
+    @Nullable
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 8)
+    public String getFilterDefinition() {
+        return filterDefinition;
+    }
+
+    public void setFilterDefinition(@Nullable String filterDefinition) {
+        this.filterDefinition = filterDefinition;
     }
 
     @Nullable

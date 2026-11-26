@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 
 import java.util.Collections;
 import java.util.List;
@@ -85,10 +85,18 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
         if (this.object != null) {
             this.object.resolveObjectAndRowsReferences(context, statistics);
         }
+        for (SQLQueryValueExpression expression : this.expressions) {
+            expression.resolveRowSources(context, statistics);
+        }
     }
 
     @Override
     public boolean tryResolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        for (SQLQueryValueExpression expression : this.expressions) {
+            if (!expression.tryResolveValueRelations(context, statistics)) {
+                return false;
+            }
+        }
         if (this.nameScope != null) {
             this.nameScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.DbObjectRef(
                 context.getRowsSources(), Set.of(RelationalObjectType.TYPE_PROCEDURE, RelationalObjectType.TYPE_PACKAGE), false
@@ -112,15 +120,15 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
     @NotNull
     public static SQLQueryModelContent recognize(
         @NotNull SQLQueryModelRecognizer recognizer,
-        @NotNull STMTreeNode node,
-        @NotNull DBSObjectType objectType
+        @NotNull STMTreeNode node
     ) {
         SQLQueryObjectDataModel procedure;
+        SQLQueryComplexName name;
         SQLQueryLexicalScope nameScope;
         try (SQLQueryModelRecognizer.LexicalScopeHolder h = recognizer.openScope()) {
             nameScope = h.lexicalScope;
             STMTreeNode nameNode = node.findFirstChildOfName(STMKnownRuleNames.qualifiedName);
-            SQLQueryComplexName name = nameNode == null ? null : recognizer.collectQualifiedName(nameNode);
+            name = nameNode == null ? null : recognizer.collectQualifiedName(nameNode);
             procedure = name == null
                 ? null
                 : new SQLQueryObjectDataModel(
@@ -135,17 +143,23 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
         STMTreeNode paramsNode = node.findLastChildOfName(STMKnownRuleNames.callStatementParams);
         List<SQLQueryValueExpression> exprs;
         if (paramsNode == null) {
-            tailScope = procedure == null ? nameScope : null;
+            tailScope = name == null ? nameScope : null;
             exprs = Collections.emptyList();
         } else {
             tailScope = null;
             exprs = paramsNode.findChildrenOfName(STMKnownRuleNames.anyValue)
                 .stream()
+                // anyValue is only a grammar wrapper, not a supported expression root.
+                .flatMap(value -> value.findNonErrorChildren().stream())
+                .filter(value -> value.getNodeName().equals(STMKnownRuleNames.rowValueConstructor)
+                    || value.getNodeName().equals(STMKnownRuleNames.searchCondition))
                 .map(cn -> recognizer.collectValueExpression(cn, null))
                 .toList();
         }
 
-        STMTreeNode firstKeyword = node.findLastNonErrorChild();
+        STMTreeNode firstKeyword = node.findNonErrorChildren().stream()
+            .filter(child -> child instanceof STMTreeTermNode)
+            .reduce((first, last) -> last).orElse(null);
         if (firstKeyword != null) {
             nameScope.setInterval(
                 Interval.of(

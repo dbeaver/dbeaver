@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 
+import java.util.Map;
+
 /**
  * Listener which consumer HTTP traffic from AI engines.
  * Chunk is a streamed text/object.
@@ -27,6 +29,9 @@ import org.jkiss.dbeaver.model.ai.AIUsage;
 public interface AIEngineResponseConsumer {
 
     void nextChunk(@NotNull AIEngineResponseChunk chunk);
+
+    default void messageMetadata(@NotNull Map<String, String> metadata) {
+    }
 
     void error(@NotNull Throwable throwable);
 

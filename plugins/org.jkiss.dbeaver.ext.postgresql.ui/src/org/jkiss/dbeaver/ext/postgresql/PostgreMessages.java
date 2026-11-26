@@ -21,6 +21,87 @@ import org.eclipse.osgi.util.NLS;
 public class PostgreMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.PostgresResources"; //$NON-NLS-1$
 
+    public static String wizard_restore_msgbox_title;
+    public static String wizard_restore_msgbox_message;
+    public static String table_list_title;
+    public static String table_list_error;
+    public static String fdw_error_title;
+    public static String fdw_script_error;
+    public static String fdw_collect_data_sources_title;
+    public static String fdw_collect_data_sources_error;
+    public static String fdw_save_script_title;
+    public static String fdw_save_script_error;
+    public static String session_editor_action_cancel_query;
+    public static String session_editor_action_terminate;
+    public static String session_editor_cancel_query_confirm_message;
+    public static String session_editor_terminate_confirm_message;
+
+    public static String dialog_create_publication_tables;
+    public static String dialog_create_publication_filter_tables;
+    public static String dialog_create_publication_error_all_tables;
+    public static String dialog_create_publication_error_title;
+    public static String dialog_create_publication_loading_tables;
+    public static String dialog_create_publication_selected_tables;
+    public static String dialog_create_publication_clear_selection;
+    public static String dialog_create_subscription_publisher_setup;
+    public static String dialog_create_subscription_publisher_setup_tip;
+    public static String dialog_create_subscription_publisher_setup_instructions;
+    public static String dialog_create_subscription_title;
+    public static String dialog_create_subscription_settings_tab;
+    public static String dialog_create_subscription_publications_tab;
+    public static String dialog_create_subscription_filter_publications;
+    public static String dialog_create_subscription_publications_empty;
+    public static String dialog_create_subscription_publications_no_matches;
+    public static String dialog_create_subscription_testing_connection;
+    public static String dialog_create_subscription_connection_verified;
+    public static String dialog_create_subscription_load_publications;
+    public static String dialog_create_subscription_load_publications_tip;
+    public static String dialog_create_subscription_publications_source;
+    public static String dialog_create_subscription_publications_datasource;
+    public static String dialog_create_subscription_publications_datasource_tip;
+    public static String dialog_create_subscription_loading_publications;
+    public static String dialog_create_subscription_load_publications_error;
+    public static String dialog_create_subscription_load_publications_configuration_error;
+    public static String dialog_create_subscription_no_publications;
+    public static String dialog_create_subscription_name;
+    public static String dialog_create_subscription_name_tip;
+    public static String dialog_create_subscription_subscriber;
+    public static String dialog_create_subscription_subscriber_tip;
+    public static String dialog_create_subscription_publisher;
+    public static String dialog_create_subscription_existing_connection;
+    public static String dialog_create_subscription_existing_connection_tip;
+    public static String dialog_create_subscription_manual_connection;
+    public static String dialog_create_subscription_endpoint_tip;
+    public static String dialog_create_subscription_test_connection;
+    public static String dialog_create_subscription_test_connection_tip;
+    public static String dialog_create_subscription_test_connection_success;
+    public static String dialog_create_subscription_ssl_tab;
+    public static String dialog_create_subscription_ssl_paths_tip;
+    public static String dialog_create_subscription_publications;
+    public static String dialog_create_subscription_connect;
+    public static String dialog_create_subscription_connect_tip;
+    public static String dialog_create_subscription_enabled;
+    public static String dialog_create_subscription_enabled_tip;
+    public static String dialog_create_subscription_copy_data;
+    public static String dialog_create_subscription_copy_data_tip;
+    public static String dialog_create_subscription_copy_data_description;
+    public static String dialog_create_subscription_advanced;
+    public static String dialog_create_subscription_create_slot;
+    public static String dialog_create_subscription_create_slot_tip;
+    public static String dialog_create_subscription_create_slot_description;
+    public static String dialog_create_subscription_slot;
+    public static String dialog_create_subscription_slot_tip;
+    public static String dialog_create_subscription_slot_description;
+    public static String dialog_create_subscription_binary;
+    public static String dialog_create_subscription_binary_tip;
+    public static String dialog_create_subscription_streaming;
+    public static String dialog_create_subscription_streaming_tip;
+    public static String dialog_create_subscription_commit;
+    public static String dialog_create_subscription_commit_tip;
+    public static String dialog_create_subscription_error_name;
+    public static String dialog_create_subscription_error_publisher;
+    public static String dialog_create_subscription_error_publications;
+
     /*backup wizard*/
     public static String wizard_backup_title;
     public static String wizard_backup_msgbox_success_title;
@@ -40,6 +121,9 @@ public class PostgreMessages extends NLS {
     public static String wizard_backup_page_setting_label_encoding;
     public static String wizard_backup_page_setting_checkbox_use_insert;
     public static String wizard_backup_page_setting_checkbox_use_insert_tip;
+    public static String wizard_backup_page_setting_label_rows_per_insert;
+    public static String wizard_backup_page_setting_label_rows_per_insert_tip;
+    public static String wizard_backup_page_setting_label_rows_per_insert_requires_pg_dump_12;
     public static String wizard_backup_page_setting_checkbox_no_privileges;
     public static String wizard_backup_page_setting_checkbox_no_privileges_tip;
     public static String wizard_backup_page_setting_checkbox_no_owner;
@@ -130,6 +214,9 @@ public class PostgreMessages extends NLS {
     /* PostgresSSLConfigurator */
     public static String dialog_connection_network_postgres_ssl_advanced;
     public static String dialog_connection_network_postgres_ssl_advanced_ssl_mode;
+    public static String dialog_connection_network_postgres_ssl_advanced_ssl_negotiation;
+    public static String dialog_connection_network_postgres_ssl_advanced_ssl_negotiation_tip;
+    public static String dialog_connection_network_postgres_ssl_advanced_ssl_negotiation_hint;
     public static String dialog_connection_network_postgres_ssl_advanced_ssl_factory;
     public static String dialog_connection_network_postgres_ssl_advanced_use_proxy;
     public static String dialog_connection_network_postgres_ssl_advanced_use_proxy_tip;
@@ -252,5 +339,22 @@ public class PostgreMessages extends NLS {
 
     private PostgreMessages() {
     }
+
+    public static String dialog_create_subscription_publisher_description;
+    public static String dialog_create_subscription_publications_description;
+    public static String dialog_create_subscription_settings_description;
+    public static String dialog_create_subscription_connection_not_tested;
+    public static String dialog_create_subscription_custom_publication_name;
+    public static String dialog_create_subscription_add_publication;
+    public static String dialog_create_subscription_slot_placeholder;
+    public static String dialog_create_subscription_host_mode;
+    public static String dialog_create_subscription_url_tip;
+    public static String dialog_create_subscription_connect_by;
+    public static String dialog_create_subscription_url_placeholder;
+    public static String dialog_create_subscription_error_slot;
+    public static String dialog_refresh_subscription_title;
+    public static String dialog_refresh_subscription_description;
+    public static String dialog_refresh_subscription_copy_data;
+    public static String dialog_refresh_subscription_two_phase;
 
 }

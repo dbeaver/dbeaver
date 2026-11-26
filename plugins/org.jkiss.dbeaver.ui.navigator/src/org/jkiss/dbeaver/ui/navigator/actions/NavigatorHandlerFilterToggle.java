@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,15 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.UIServiceFilterConfig;
 
 import java.util.Collections;
 
@@ -46,7 +49,16 @@ public class NavigatorHandlerFilterToggle extends AbstractHandler {
                 final DBSObjectFilter nodeFilter = folder.getNodeFilter(itemsMeta, true);
                 if (nodeFilter != null) {
                     nodeFilter.setEnabled(!nodeFilter.isEnabled());
-                    NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(folder));
+                    UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
+                    if (nodeFilter.isUserFilter() && service != null) {
+                        try {
+                            service.setParentNodeFilter(folder, itemsMeta, nodeFilter);
+                        } catch (DBException e) {
+                            throw new ExecutionException("Error toggling user filter", e);
+                        }
+                    } else {
+                        NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(folder));
+                    }
                 }
             }
 

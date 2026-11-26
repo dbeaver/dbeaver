@@ -82,6 +82,11 @@ public interface IGridContentProvider extends IContentProvider {
     @Nullable
     Object[] getChildren(@NotNull IGridItem item);
 
+    /** Whether this row represents an array whose elements may have different counts across grid columns. */
+    default boolean isArrayRow(@NotNull IGridRow row) {
+        return false;
+    }
+
     /**
      * Return for collection cell values returns size of collection.
      * Called for all cells of columns for which isCollectionElement() returns true.
@@ -109,9 +114,11 @@ public interface IGridContentProvider extends IContentProvider {
     boolean isGridReadOnly();
 
     /**
-     * Checks for additional data read according to the specified cell/row
+     * Checks for additional data read according to the specified cell/row.
+     * The column is null when the grid has rows but no columns.
+     * The row is null when the grid has columns but no rows (e.g. zero-column results in record mode).
      */
-    void validateDataPresence(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement);
+    void validateDataPresence(@Nullable IGridColumn colElement, @Nullable IGridRow rowElement);
 
     /**
      * Returns cell information.

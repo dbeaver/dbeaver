@@ -632,7 +632,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 true
             );
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't set filter", "Cannot set custom filter", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_set_filter_title, ResultSetMessages.error_set_filter_message, e);
             return;
         }
         if (currentCondition.toString().trim().equals(condition.trim())) {
@@ -955,7 +955,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             try {
                 editControl = createObjectPanel(popup);
             } catch (PartInitException e1) {
-                DBWorkbench.getPlatformUI().showError("Object info", "Error opening object info", e1);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_object_info_title, ResultSetMessages.error_object_info_message, e1);
                 popup.dispose();
                 return;
             }
@@ -1114,7 +1114,37 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (viewer.getFilterManager().isPersistent() && context != null && editControl.getItemCount() > 0) {
                 var manageButton = new Button(composite, SWT.PUSH);
                 manageButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-                manageButton.setText("Manage Filters");
+                manageButton.setText(ResultSetMessages.filter_panel_manage_filters);
+                editControl.addKeyListener(KeyListener.keyPressedAdapter(e -> {
+                    if (e.keyCode == SWT.ARROW_DOWN && editControl.getSelectionIndex() == editControl.getItemCount() - 1) {
+                        e.doit = false;
+                        manageButton.setFocus();
+                    }
+                }));
+                editControl.addTraverseListener(e -> {
+                    if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                        e.doit = false;
+                        manageButton.setFocus();
+                    }
+                });
+                manageButton.addTraverseListener(e -> {
+                    if (e.detail == SWT.TRAVERSE_ARROW_NEXT || e.detail == SWT.TRAVERSE_ARROW_PREVIOUS) {
+                        e.doit = false;
+                    } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                        e.doit = false;
+                        editControl.setSelection(e.detail == SWT.TRAVERSE_TAB_NEXT ? 0 : editControl.getItemCount() - 1);
+                        editControl.showSelection();
+                        editControl.setFocus();
+                    }
+                });
+                manageButton.addKeyListener(KeyListener.keyPressedAdapter(e -> {
+                    if (e.keyCode == SWT.ARROW_DOWN || e.keyCode == SWT.ARROW_UP) {
+                        e.doit = false;
+                        editControl.setSelection(e.keyCode == SWT.ARROW_DOWN ? 0 : editControl.getItemCount() - 1);
+                        editControl.showSelection();
+                        editControl.setFocus();
+                    }
+                }));
                 manageButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     closeHistoryPopup();
 
@@ -1143,6 +1173,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 UIUtils.asyncExec(() -> composite.setBackground(editControl.getBackground()));
             }
 
+            UIUtils.applyMainFont(composite);
             Point parentRect = getDisplay().map(filtersText, null, new Point(0, 0));
             Rectangle displayRect = getMonitor().getClientArea();
 
@@ -1190,10 +1221,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
 
             popup.setVisible(true);
-            if (compChildren.length > 1) {
-                // Set focus to button
-                compChildren[1].setFocus();
+            if (editControl.getItemCount() > 0) {
+                editControl.setSelection(0);
             }
+            editControl.setFocus();
         }
 
         private void closeHistoryPopup() {
@@ -1217,7 +1248,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 @Override
                 public void update(@NotNull ViewerCell cell) {
                     cell.setText(((QMQueryFilter) cell.getElement()).text());
-                    cell.setFont(BaseThemeSettings.instance.monospaceFont);
                 }
             });
 
@@ -1238,13 +1268,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             historyViewer.setInput(entries);
 
             historyTable.addKeyListener(KeyListener.keyPressedAdapter(e -> {
-                TableItem item = hoverItem;
-                if (item == null) {
-                    final int selectionIndex = historyTable.getSelectionIndex();
-                    if (selectionIndex != -1) {
-                        item = historyTable.getItem(selectionIndex);
-                    }
-                }
+                final int selectionIndex = historyTable.getSelectionIndex();
+                TableItem item = selectionIndex == -1 ? null : historyTable.getItem(selectionIndex);
                 if (item != null && !item.isDisposed()) {
                     switch (e.keyCode) {
                         case SWT.CR, SWT.SPACE -> {

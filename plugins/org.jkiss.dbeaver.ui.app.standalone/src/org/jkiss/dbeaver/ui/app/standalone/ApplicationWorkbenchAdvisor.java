@@ -34,6 +34,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.internal.IWorkbenchGraphicConstants;
 import org.eclipse.ui.internal.SaveableHelper;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchImages;
@@ -48,7 +49,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreFeatures;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -69,6 +69,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIFonts;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
@@ -278,6 +279,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WorkbenchImages.getImageRegistry().put(IDEInternalWorkbenchImages.IMG_OBJS_ERROR_PATH, DBeaverIcons.getImageDescriptor(DBIcon.SMALL_ERROR));
         WorkbenchImages.getDescriptors().put(IDEInternalWorkbenchImages.IMG_OBJS_ERROR_PATH, DBeaverIcons.getImageDescriptor(DBIcon.SMALL_ERROR));
 
+        patchSharedIcons();
+
         FontPreferenceOverrides.overrideFontPrefValues(fontOverrides);
             
 /*
@@ -328,6 +331,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
             platformDesktop.setWorkbenchStarted(true);
+            UIExecutionQueue.onWorkbenchStarted();
         }
     }
 
@@ -363,7 +367,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WorkbenchUtils.movePreferencePage(
             PrefPageConstants.WORKBENCH_PREF_PAGE_ID,
             PrefPageGeneral.PAGE_ID,
-            CoreMessages.pref_page_general_workbench
+            CoreApplicationMessages.pref_page_general_workbench
         );
         WorkbenchUtils.movePreferencePages(
             WORKBENCH_PREF_PAGES,
@@ -400,6 +404,41 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             Collections.addAll(results, getAllWizards(wizardCategory.getCategories()));
         }
         return results.toArray(new IWizardDescriptor[0]);
+    }
+
+    private void patchSharedIcons() {
+        // Shared-image consumers bypass DBeaverIcons. Replace both registries before window controls are created.
+        Map<String, DBIcon> icons = Map.of(
+            ISharedImages.IMG_ELCL_REMOVE, UIIcon.SHARED_REMOVE,
+            ISharedImages.IMG_ELCL_REMOVEALL, UIIcon.SHARED_REMOVE_ALL,
+            ISharedImages.IMG_ELCL_STOP, UIIcon.SHARED_STOP,
+            IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU, UIIcon.SHARED_VIEW_MENU,
+            ISharedImages.IMG_TOOL_COPY, UIIcon.SHARED_COPY,
+            ISharedImages.IMG_TOOL_PASTE, UIIcon.SHARED_PASTE,
+            ISharedImages.IMG_ETOOL_DEF_PERSPECTIVE, UIIcon.SHARED_DEFAULT_PERSPECTIVE,
+            ISharedImages.IMG_DEF_VIEW, UIIcon.SHARED_DEFAULT_VIEW,
+            ISharedImages.IMG_OBJS_ERROR_TSK, UIIcon.SHARED_ERROR,
+            ISharedImages.IMG_OBJ_FILE, UIIcon.SHARED_FILE
+        );
+        for (Map.Entry<String, DBIcon> entry : icons.entrySet()) {
+            registerSharedImage(entry.getKey(), DBeaverIcons.getImageDescriptor(entry.getValue()));
+        }
+
+        Map<String, String> disabledIcons = Map.of(
+            ISharedImages.IMG_ELCL_REMOVE_DISABLED, ISharedImages.IMG_ELCL_REMOVE,
+            ISharedImages.IMG_ELCL_REMOVEALL_DISABLED, ISharedImages.IMG_ELCL_REMOVEALL,
+            ISharedImages.IMG_ELCL_STOP_DISABLED, ISharedImages.IMG_ELCL_STOP,
+            ISharedImages.IMG_TOOL_COPY_DISABLED, ISharedImages.IMG_TOOL_COPY,
+            ISharedImages.IMG_TOOL_PASTE_DISABLED, ISharedImages.IMG_TOOL_PASTE
+        );
+        for (Map.Entry<String, String> entry : disabledIcons.entrySet()) {
+            registerSharedImage(entry.getKey(), WorkbenchImages.getImageDescriptor(entry.getValue()).asDisabledDescriptor());
+        }
+    }
+
+    private void registerSharedImage(@NotNull String key, @NotNull ImageDescriptor descriptor) {
+        WorkbenchImages.getImageRegistry().remove(key);
+        WorkbenchImages.declareImage(key, descriptor, true);
     }
 
     private void patchJFaceIcons() {

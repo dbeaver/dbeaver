@@ -53,7 +53,7 @@ public abstract class SQLQuerySymbolOrigin {
 
         void visitColumnNameFromRowsData(ColumnNameFromRowsData origin);
 
-        void visitSyntaxBasedFromRowsData(SyntaxBasedFromRowsData origin);
+        void visitUpdateTarget(UpdateTarget origin);
 
         void visitScriptVariableRef(ScriptVariableRef origin);
     }
@@ -75,6 +75,7 @@ public abstract class SQLQuerySymbolOrigin {
         VALUE,
         FUNCTION,
         TABLE,
+        TYPE,
         OBJECT
     }
 
@@ -171,6 +172,11 @@ public abstract class SQLQuerySymbolOrigin {
 
         public boolean isIncludingRowsets() {
             return this.includingRowsets;
+        }
+
+        @Override
+        public boolean isApplicable(@NotNull LSMInspections.SyntaxInspectionResult syntaxInspectionResult) {
+            return this.objectTypes.contains(RelationalObjectType.TYPE_DATA_TYPE) || super.isApplicable(syntaxInspectionResult);
         }
 
         @Override
@@ -358,12 +364,10 @@ public abstract class SQLQuerySymbolOrigin {
         }
     }
 
-    /**
-     * Context is a scope for strictly simple separate column name
-     */
-    public static class SyntaxBasedFromRowsData extends RowsDataRef {
+    /** Scope for UPDATE assignment targets, including qualified columns and variable targets. */
+    public static class UpdateTarget extends RowsDataRef {
 
-        public SyntaxBasedFromRowsData(@NotNull SQLQueryRowsDataContext dataContext) {
+        public UpdateTarget(@NotNull SQLQueryRowsDataContext dataContext) {
             super(dataContext);
         }
 
@@ -374,7 +378,7 @@ public abstract class SQLQuerySymbolOrigin {
 
         @Override
         public void apply(Visitor visitor) {
-            visitor.visitSyntaxBasedFromRowsData(this);
+            visitor.visitUpdateTarget(this);
         }
     }
 

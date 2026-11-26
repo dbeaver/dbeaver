@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsLocalTableModel;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
@@ -76,7 +77,11 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @NotNull
     @Override
     public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem subqueryAlias) {
-        return this.prepareDefiningEntryName(subqueryAlias.symbol);
+        if (subqueryAlias.sourceInfo.source instanceof SQLQueryRowsLocalTableModel localTable) {
+            return localTable.getName().getRawName();
+        } else {
+            return this.prepareDefiningEntryName(subqueryAlias.symbol);
+        }
     }
 
     @NotNull
@@ -296,5 +301,11 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @Nullable
     public String visitScriptVariable(@NotNull SQLScriptVariableCompletionItem scriptVariable) {
         return scriptVariable.variableDefinition.rawName();
+    }
+
+    @NotNull
+    @Override
+    public String visitLocalVariable(@NotNull SQLLocalVariableCompletionItem localVariable) {
+        return localVariable.binding.declaration().getRawName();
     }
 }

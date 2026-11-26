@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import java.util.concurrent.Future;
  */
 public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
     private static final int COPY_LINK_ID = IDialogConstants.CLIENT_ID + 1;
+    private static final int MAX_LINK_TEXT_LENGTH = 100;
     private final URI browserUrl;
     private final String userCode;
     private final Future<Void> future;
@@ -63,7 +64,8 @@ public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    @NotNull
+    protected Control createDialogArea(@NotNull Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
 
         getShell().setText(UIMessages.dialog_auth_code_title);
@@ -73,8 +75,14 @@ public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
             .layoutData(GridDataFactory.fillDefaults().grab(true, false).create())
             .create(composite);
 
+        String linkText = browserUrl.toString();
+        if (linkText.length() > MAX_LINK_TEXT_LENGTH) {
+            linkText = linkText.substring(0, MAX_LINK_TEXT_LENGTH) + "...";
+        }
         LinkFactory.newLink(SWT.NONE)
-            .text("<a>" + browserUrl + "</a>")
+            .text("<a>" + linkText + "</a>")
+            .layoutData(GridDataFactory.fillDefaults().grab(true, false)
+                .hint(convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH), SWT.DEFAULT).create())
             .onSelect(e -> ShellUtils.launchProgram(browserUrl.toString()))
             .create(composite);
 

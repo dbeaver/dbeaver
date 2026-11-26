@@ -50,6 +50,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
@@ -115,6 +116,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     public static final long MAX_FILE_LENGTH_FOR_RULES = 1024 * 1000 * 2; // 2MB
     private static final int SCROLL_ON_RESIZE_THRESHOLD_PX = 10;
+    private static final String MATCHING_CHARACTER_COLOR = "writeOccurrenceIndicationColor";
 
     static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
@@ -155,6 +157,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private SQLEditorControl editorControl;
 
     private ICharacterPairMatcher characterPairMatcher;
+    private SQLMatchingCharacterPainter matchingCharacterPainter;
     private SQLCompletionContext completionContext;
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
@@ -203,9 +206,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private void refreshSyntaxColors() {
         ISourceViewer sourceViewer = getSourceViewer();
         if (sourceViewer != null && !sourceViewer.getTextWidget().isDisposed()) {
+            refreshMatchingCharacterColor();
             reloadSyntaxRules();
             // Reconfigure to let comments/strings colors to take effect
             sourceViewer.configure(getSourceViewerConfiguration());
+        }
+    }
+
+    private void refreshMatchingCharacterColor() {
+        if (matchingCharacterPainter != null) {
+            matchingCharacterPainter.setColor(getSharedColors().getColor(
+                PreferenceConverter.getColor(getPreferenceStore(), MATCHING_CHARACTER_COLOR)));
+            matchingCharacterPainter.paint(IPainter.CONFIGURATION);
         }
     }
 
@@ -330,7 +342,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Override
-    protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
+    protected void handlePreferenceStoreChanged(@NotNull PropertyChangeEvent event) {
+        if (MATCHING_CHARACTER_COLOR.equals(event.getProperty())) {
+            refreshMatchingCharacterColor();
+        }
         if (!occurrencesHighlighter.handlePreferenceStoreChanged(event)) {
             super.handlePreferenceStoreChanged(event);
         }
@@ -501,6 +516,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                 }
             });
         }
+
+        updateVerticalRulerColors();
     }
 
     protected void loadActivePreferenceSettings() {
@@ -566,7 +583,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         return UIUtils.getSharedTextColors();
     }
 
-    protected void updateVerticalRulerColors() {
+    private void updateVerticalRulerColors() {
         if (!UIStyles.isDarkTheme()) {
             return;
         }
@@ -629,11 +646,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         getSourceViewerDecorationSupport(sourceViewer);
 
-        SQLMatchingCharacterPainter matchPainter = new SQLMatchingCharacterPainter(sourceViewer, characterPairMatcher);
-        matchPainter.setColor(getSharedColors().getColor(
-            PreferenceConverter.getColor(getPreferenceStore(), "writeOccurrenceIndicationColor")));
-        matchPainter.setHighlightCharacterAtCaretLocation(true);
-        sourceViewer.addPainter(matchPainter);
+        matchingCharacterPainter = new SQLMatchingCharacterPainter(sourceViewer, characterPairMatcher);
+        matchingCharacterPainter.setColor(getSharedColors().getColor(
+            PreferenceConverter.getColor(getPreferenceStore(), MATCHING_CHARACTER_COLOR)));
+        matchingCharacterPainter.setHighlightCharacterAtCaretLocation(true);
+        sourceViewer.addPainter(matchingCharacterPainter);
 
         return sourceViewer;
     }
@@ -735,9 +752,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     @NotNull
     public IContentOutlinePage getOverviewOutlinePage() {
-        if (this.getSyntaxContext() == null) {
-            this.reloadSyntaxRules();
-        }
         if ((outlinePage == null || outlinePage.getControl() == null || outlinePage.getControl().isDisposed())) {
             outlinePage = new SQLEditorOutlinePage(this);
         }
@@ -830,6 +844,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, action);
 
         setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new ShowPreferencesAction());
+        IAction propertiesAction = new ShowPreferencesAction();
+        propertiesAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_PROPERTIES);
+        setAction(ITextEditorActionConstants.PROPERTIES, propertiesAction);
 
         SQLEditorCustomActions.registerCustomActions(this);
     }
@@ -972,6 +989,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         if (this.semanticMarkersManager != null) {
             this.semanticMarkersManager.refresh();
+        }
+        if (this.outlinePage != null) {
+            this.outlinePage.refresh();
         }
     }
 
@@ -1464,10 +1484,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         public void run() {
             Shell shell = getSourceViewer().getTextWidget().getShell();
-            String[] preferencePages = collectContextMenuPreferencePages();
-            if (preferencePages.length > 0 && (shell == null || !shell.isDisposed())) {
-                PropertyDialog.createDialogOn(shell, null, new StructuredSelection(getEditorInput())).open();
-                //PreferencesUtil.createPreferenceDialogOn(shell, preferencePages[0], preferencePages, getEditorInput()).open();
+            if (shell == null || !shell.isDisposed()) {
+                // Unassociated consoles still have editor properties, but no connection-specific properties.
+                boolean hasDataSource = SQLEditorBase.this instanceof SQLEditor sqlEditor
+                    ? sqlEditor.getDataSourceContainer() != null
+                    : EditorUtils.getInputDataSource(getEditorInput()) != null;
+                Object target = hasDataSource ? getEditorInput() : SQLEditorBase.this;
+                PropertyDialog dialog = PropertyDialog.createDialogOn(shell, null, new StructuredSelection(target));
+                if (dialog != null) {
+                    dialog.open();
+                }
             }
         }
     }

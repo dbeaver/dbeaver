@@ -175,6 +175,9 @@ public class Spreadsheet extends LightGrid implements Listener {
         if (xOffset == 0 && yOffset == 0) {
             return false;
         }
+        if (getColumnCount() == 0) {
+            setDefaultFocusRow();
+        }
         GridPos curPos = getCursorPosition();
         if (curPos == null) {
             return false;
@@ -206,8 +209,17 @@ public class Spreadsheet extends LightGrid implements Listener {
         GridCell newCell = posToCell(newPos);
         if (newCell != null) {
             setCursor(newCell, keepSelection, true, true);
+        } else if (getColumnCount() == 0 && newPos.row >= 0) {
+            setRowCursor(newPos.row);
         }
         return true;
+    }
+
+    void setRowCursor(int row) {
+        super.setFocusItem(row);
+        super.showItem(row);
+        super.redraw();
+        notifyListeners(SWT.Selection, new Event());
     }
 
     void setCursor(@NotNull GridCell cell, boolean keepSelection, boolean showColumn, boolean notify) {
@@ -251,10 +263,31 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     @Override
-    public void handleEvent(final Event event) {
+    public void handleEvent(@NotNull final Event event) {
         switch (event.type) {
 //            case SWT.KeyUp:
             case SWT.KeyDown:
+                if (getColumnCount() == 0 && getItemCount() > 0) {
+                    boolean moved = switch (event.keyCode) {
+                        case SWT.ARROW_UP -> shiftCursor(0, -1, false);
+                        case SWT.ARROW_DOWN -> shiftCursor(0, 1, false);
+                        case SWT.PAGE_UP -> shiftCursor(0, -getMaxVisibleRows(), false);
+                        case SWT.PAGE_DOWN -> shiftCursor(0, getMaxVisibleRows(), false);
+                        case SWT.HOME -> {
+                            setRowCursor(0);
+                            yield true;
+                        }
+                        case SWT.END -> {
+                            setRowCursor(getItemCount() - 1);
+                            yield true;
+                        }
+                        default -> false;
+                    };
+                    if (moved) {
+                        event.doit = false;
+                        return;
+                    }
+                }
                 boolean ctrlPressed = ((event.stateMask & SWT.CTRL) != 0);
 
                 if (!ctrlPressed &&

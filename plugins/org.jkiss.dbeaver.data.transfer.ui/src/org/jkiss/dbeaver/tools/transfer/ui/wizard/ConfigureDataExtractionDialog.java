@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIObservables;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import org.jkiss.dbeaver.ui.forms.UIRowBuilder;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.List;
@@ -194,7 +195,7 @@ public class ConfigureDataExtractionDialog extends BaseDialog {
     @NotNull
     private Consumer<UIRowBuilder> buildAdvancedRow(@NotNull UIObservable<Boolean> queryDatabase) {
         return rb -> rb
-            .titledPanel("Advanced", buildAdvancedPanel(queryDatabase));
+            .titledPanel(UIConnectionMessages.dialog_connection_advanced_tab, buildAdvancedPanel(queryDatabase));
     }
 
     @NotNull
@@ -202,7 +203,7 @@ public class ConfigureDataExtractionDialog extends BaseDialog {
         var canChangeThreads = UIObservables.predicate(() -> settings.getDataPipes().size() > 1);
 
         return pb -> pb
-            .row(DTMessages.data_transfer_wizard_output_label_max_threads, rb -> rb
+            .row(DTUIMessages.data_transfer_wizard_output_label_max_threads, rb -> rb
                 .enabled(UIObservables.and(queryDatabase, canChangeThreads))
                 .intTextField(threadCount, tb -> tb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip)))
@@ -211,8 +212,8 @@ public class ConfigureDataExtractionDialog extends BaseDialog {
                 .intTextField(fetchSize, tb -> tb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_tooltip)))
             .row(rb -> rb
-                .checkBox(DTMessages.data_transfer_wizard_output_checkbox_extract_in_batches, bb -> bb
-                    .tooltip(DTMessages.data_transfer_wizard_output_checkbox_extract_in_batches_tip)
+                .checkBox(DTUIMessages.data_transfer_wizard_output_checkbox_extract_in_batches, bb -> bb
+                    .tooltip(DTUIMessages.data_transfer_wizard_output_checkbox_extract_in_batches_tip)
                     .selected(extractInSegments))
                 .enabled(queryDatabase)
                 .intTextField(segmentSize, tb -> tb.enabled(extractInSegments)));
