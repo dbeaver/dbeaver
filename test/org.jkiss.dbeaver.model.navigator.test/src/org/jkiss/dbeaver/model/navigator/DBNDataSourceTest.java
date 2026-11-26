@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
@@ -34,20 +35,42 @@ import org.mockito.Mockito;
 
 public class DBNDataSourceTest {
     @Test
+    public void supportsConnectionDropFromAnotherRegistry() {
+        DBNDataSource source = createDataSourceNode(null, Mockito.mock(DBPDataSourceRegistry.class));
+        DBPDataSourceRegistry targetRegistry = Mockito.mock(DBPDataSourceRegistry.class);
+
+        Assertions.assertTrue(createDataSourceNode(null, targetRegistry).supportsDrop(source));
+        Assertions.assertTrue(createDataSourceNode(Mockito.mock(DBPDataSourceFolder.class), targetRegistry).supportsDrop(source));
+    }
+
+    @Test
     public void supportsFolderDropOntoRootConnection() {
-        DBNDataSource node = createDataSourceNode(null);
+        DBPDataSourceRegistry registry = Mockito.mock(DBPDataSourceRegistry.class);
+        DBNDataSource node = createDataSourceNode(null, registry);
         DBNLocalFolder folderNode = Mockito.mock(DBNLocalFolder.class);
+        Mockito.when(folderNode.getDataSourceRegistry()).thenReturn(registry);
 
         Assertions.assertTrue(node.supportsDrop(folderNode));
     }
 
     @Test
+    public void rejectsFolderDropOntoRootConnectionInAnotherRegistry() {
+        DBNDataSource node = createDataSourceNode(null, Mockito.mock(DBPDataSourceRegistry.class));
+        DBNLocalFolder folderNode = Mockito.mock(DBNLocalFolder.class);
+        Mockito.when(folderNode.getDataSourceRegistry()).thenReturn(Mockito.mock(DBPDataSourceRegistry.class));
+
+        Assertions.assertFalse(node.supportsDrop(folderNode));
+    }
+
+    @Test
     public void folderDropOntoNestedConnectionChecksDestinationFolder() {
+        DBPDataSourceRegistry registry = Mockito.mock(DBPDataSourceRegistry.class);
         DBPDataSourceFolder destination = Mockito.mock(DBPDataSourceFolder.class);
-        DBNDataSource node = createDataSourceNode(destination);
+        DBNDataSource node = createDataSourceNode(destination, registry);
         DBPDataSourceFolder folder = Mockito.mock(DBPDataSourceFolder.class);
         DBNLocalFolder folderNode = Mockito.mock(DBNLocalFolder.class);
         Mockito.when(folderNode.getFolder()).thenReturn(folder);
+        Mockito.when(folderNode.getDataSourceRegistry()).thenReturn(registry);
 
         Assertions.assertFalse(node.supportsDrop(folderNode));
 
@@ -55,12 +78,26 @@ public class DBNDataSourceTest {
         Assertions.assertTrue(node.supportsDrop(folderNode));
     }
 
+    @Test
+    public void rejectsFolderDropOntoNestedConnectionInAnotherRegistry() {
+        DBPDataSourceFolder destination = Mockito.mock(DBPDataSourceFolder.class);
+        DBNDataSource node = createDataSourceNode(destination, Mockito.mock(DBPDataSourceRegistry.class));
+        DBPDataSourceFolder folder = Mockito.mock(DBPDataSourceFolder.class);
+        DBNLocalFolder folderNode = Mockito.mock(DBNLocalFolder.class);
+        Mockito.when(folderNode.getFolder()).thenReturn(folder);
+        Mockito.when(folderNode.getDataSourceRegistry()).thenReturn(Mockito.mock(DBPDataSourceRegistry.class));
+        Mockito.when(folder.canMoveTo(destination)).thenReturn(true);
+
+        Assertions.assertFalse(node.supportsDrop(folderNode));
+    }
+
     @NotNull
-    private DBNDataSource createDataSourceNode(@Nullable DBPDataSourceFolder folder) {
+    private DBNDataSource createDataSourceNode(@Nullable DBPDataSourceFolder folder, @NotNull DBPDataSourceRegistry registry) {
         DBPDriver driver = Mockito.mock(DBPDriver.class);
         DBPDataSourceContainer dataSource = Mockito.mock(DBPDataSourceContainer.class);
         Mockito.when(dataSource.getDriver()).thenReturn(driver);
         Mockito.when(dataSource.getFolder()).thenReturn(folder);
+        Mockito.when(dataSource.getRegistry()).thenReturn(registry);
         return new DBNDataSource(Mockito.mock(DBNNode.class), dataSource);
     }
 
