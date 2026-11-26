@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -87,6 +89,7 @@ public class PostgreTriggerManagerTest extends DBeaverUnitTest {
         Assertions.assertTrue(script.contains("COMMENT ON EVENT TRIGGER test_evt_trg IS ''"), script);
     }
 
+    @NotNull
     private PostgreTrigger createTrigger() {
         PostgreTableRegular table = new PostgreTableRegular(testSchema);
         table.setName("test_table");
@@ -97,7 +100,11 @@ public class PostgreTriggerManagerTest extends DBeaverUnitTest {
         return trigger;
     }
 
-    private String generateDescriptionChangeScript(DBSObject object, String newDescription) throws DBException {
+    @NotNull
+    private String generateDescriptionChangeScript(
+        @NotNull DBSObject object,
+        @Nullable String newDescription
+    ) throws DBException {
         TestCommandContext commandContext = new TestCommandContext(postgreExecutionContext, false);
 
         PropertySourceEditable pse = new PropertySourceEditable(commandContext, object, object);
