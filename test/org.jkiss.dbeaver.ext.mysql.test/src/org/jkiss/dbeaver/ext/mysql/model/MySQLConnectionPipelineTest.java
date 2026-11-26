@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConstants;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConnectionValidator;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,6 +70,10 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
         Mockito.doReturn(authModel).when(descriptor).getInstance();
         Mockito.when(driver.isInstantiable()).thenReturn(true);
         Mockito.when(driver.getDriverClassName()).thenReturn("com.example.CustomDriver");
+        Mockito.when(driver.getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR)).thenReturn(
+            DataSourceProviderRegistry.getInstance().getDataSourceProvider("mysql").getDriver("mysql8")
+                .getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR)
+        );
         Mockito.when(driver.getConnectionURL(configuration)).thenReturn("jdbc:mysql://localhost/test");
         Mockito.when(driver.getDriverLoader(container).getDriverInstance(monitor)).thenReturn(jdbcDriver);
         Mockito.when(driver.getDriverLoader(container).getClassLoader()).thenReturn(getClass().getClassLoader());
@@ -80,11 +83,27 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void adapterAcceptsOnlyMysqlDataSourcesIncludingSubclasses() {
-        JDBCDataSource other = createOtherDataSource();
+    public void declaredValidatorAppliesToOtherJdbcDataSources() {
+        configuration.setProperty("allowLoadLocalInfile", "true");
 
-        Assertions.assertInstanceOf(MySQLConnectionValidator.class, GeneralUtils.adapt(dataSource, JDBCConnectionValidator.class));
-        Assertions.assertNull(GeneralUtils.adapt(other, JDBCConnectionValidator.class));
+        Assertions.assertThrows(DBCException.class, () -> open(createOtherDataSource(), true, false));
+        Mockito.verifyNoInteractions(jdbcDriver);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"true,false,true", "false,true,true", "false,false,false"})
+    public void missingValidatorRejectsConnectionOnlyWhenPolicyIsEnabled(boolean sanitize, boolean multiuser, boolean rejected)
+            throws Exception {
+        Mockito.when(driver.getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR)).thenReturn("missing-validator");
+
+        if (rejected) {
+            DBCException error = Assertions.assertThrows(DBCException.class, () -> open(sanitize, multiuser));
+            Assertions.assertTrue(error.getMessage().contains("missing-validator"));
+            Mockito.verify(driver.getDriverLoader(container), Mockito.never()).getDriverInstance(monitor);
+            Mockito.verifyNoInteractions(jdbcDriver);
+        } else {
+            Assertions.assertSame(connection, open(sanitize, multiuser));
+        }
     }
 
     @ParameterizedTest
@@ -124,6 +143,7 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
     @ParameterizedTest
     @ValueSource(strings = {"jdbc:mysql://localhost/test", "jdbc:custom:template;ALLOWLOCALINFILE=true"})
     public void otherJdbcDataSourcesAreNotRestrictedOrGivenDefaults(@NotNull String url) throws Exception {
+        Mockito.when(driver.getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR)).thenReturn(null);
         TestJDBCDataSource other = createOtherDataSource();
         Mockito.when(driver.getConnectionURL(configuration)).thenReturn(url);
         Mockito.when(authModel.initAuthentication(
@@ -154,7 +174,7 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
             Assertions.assertEquals("false", defaults.get(name));
         }
         Mockito.when(driver.getConnectionProperties()).thenReturn(defaults);
-        // The adapter's data source type, rather than the URL prefix, determines whether the policy applies.
+        // The driver's validator declaration, rather than the URL prefix, determines whether the policy applies.
         Mockito.when(driver.getConnectionURL(configuration)).thenReturn("jdbc:custom:test");
         configuration.setProperty("password", "example%password+");
         Properties expected = new Properties();

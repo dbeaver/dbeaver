@@ -35,7 +35,7 @@
                         class="com.clickhouse.jdbc.ClickHouseDriver"
                         sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
                         defaultPort="8123"
-                        description="ClickHouse legacy driver (server version &lt; 21.3)"
+                        description="%driver.yandex_clickhouse.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://github.com/yandex/clickhouse-jdbc"
                         databaseDocumentationSuffixURL="Clickhouse"
@@ -58,7 +58,7 @@
                     class="com.clickhouse.jdbc.ClickHouseDriver"
                     sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
                     defaultPort="8123"
-                    description="Official ClickHouse driver (server version 21.3+)"
+                    description="%driver.com_clickhouse.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/ClickHouse/clickhouse-java"
                     databaseDocumentationSuffixURL="Clickhouse"
@@ -169,6 +169,9 @@
             <type name="TUPLE*"/>
             <type name="MAP*"/>
             <type name="JSON"/>
+            <type name="JSON(*"/>
+            <type name="NULLABLE(JSON)"/>
+            <type name="NULLABLE(JSON(*"/>
 
             <!-- https://clickhouse.com/docs/sql-reference/data-types/geo -->
             <type name="POINT"/>

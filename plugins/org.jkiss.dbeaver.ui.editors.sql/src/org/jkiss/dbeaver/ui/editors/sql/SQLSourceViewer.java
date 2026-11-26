@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -185,6 +186,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
 
                             @Override
                             public void run() {
+                                if (!confirmSourceRefresh(this)) {
+                                    return;
+                                }
                                 showFullDDL = isChecked();
                                 getPreferenceStore().setValue(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, showFullDDL);
                                 refreshPart(SQLSourceViewer.this, true);
@@ -202,6 +206,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
 
                             @Override
                             public void run() {
+                                if (!confirmSourceRefresh(this)) {
+                                    return;
+                                }
                                 showPermissions = isChecked();
                                 getPreferenceStore().setValue(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, showPermissions);
                                 refreshPart(SQLSourceViewer.this, true);
@@ -220,6 +227,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
 
                         @Override
                         public void run() {
+                            if (!confirmSourceRefresh(this)) {
+                                return;
+                            }
                             separateFKStmts = isChecked();
                             getPreferenceStore().setValue(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, separateFKStmts);
                             refreshPart(SQLSourceViewer.this, true);
@@ -237,6 +247,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
 
                         @Override
                         public void run() {
+                            if (!confirmSourceRefresh(this)) {
+                                return;
+                            }
                             separateConstraintIndexes = isChecked();
                             getPreferenceStore().setValue(DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINT_INDEXES, separateConstraintIndexes);
                             refreshPart(SQLSourceViewer.this, true);
@@ -254,6 +267,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
 
                             @Override
                             public void run() {
+                                if (!confirmSourceRefresh(this)) {
+                                    return;
+                                }
                                 showColumnComments = isChecked();
                                 getPreferenceStore().setValue(DBPScriptObject.OPTION_INCLUDE_COMMENTS, showColumnComments);
                                 refreshPart(SQLSourceViewer.this, true);
@@ -271,6 +287,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
 
                         @Override
                         public void run() {
+                            if (!confirmSourceRefresh(this)) {
+                                return;
+                            }
                             showPartitionsDDL = isChecked();
                             getPreferenceStore().setValue(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, showPartitionsDDL);
                             refreshPart(SQLSourceViewer.this, true);
@@ -278,6 +297,22 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
                     }, true));
             }
         }
+    }
+
+    private boolean confirmSourceRefresh(@NotNull Action action) {
+        if (!isDirty()) {
+            return true;
+        }
+        if (!UIUtils.confirmAction(
+            getSite().getShell(),
+            SQLEditorMessages.source_viewer_unsaved_changes_title,
+            SQLEditorMessages.source_viewer_unsaved_changes_message,
+            DBIcon.STATUS_WARNING
+        )) {
+            action.setChecked(!action.isChecked());
+            return false;
+        }
+        return true;
     }
 
     protected boolean getShowPermissions() {

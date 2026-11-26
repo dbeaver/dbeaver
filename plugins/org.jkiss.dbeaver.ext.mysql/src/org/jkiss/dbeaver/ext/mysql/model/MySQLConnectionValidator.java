@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.AbstractJDBCConnectionValidator;
 import java.util.List;
 
 /** Enforces restricted parameters for MySQL data sources, allowing explicitly disabled boolean options. */
-final class MySQLConnectionValidator extends AbstractJDBCConnectionValidator {
+public final class MySQLConnectionValidator extends AbstractJDBCConnectionValidator {
     private static final List<String> BOOLEAN_PROPERTIES = List.of(
         "autoDeserialize", "allowLocalInfile", "allowLoadLocalInfile", "allowUrlInLocalInfile"
     );

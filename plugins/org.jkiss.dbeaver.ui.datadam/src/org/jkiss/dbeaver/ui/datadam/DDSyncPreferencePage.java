@@ -85,7 +85,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private final UIObservable<Boolean> mcpUnavailable = UIObservable.of(false);
     private final UIObservable<Boolean> mcpGloballyDisabled = UIObservable.of(false);
     private final UIObservable<Boolean> mcpVisible = UIObservable.of(false);
-    private AbstractJob userViewJob;
     @Nullable
     private AbstractJob damNameJob;
     @Nullable
@@ -260,9 +259,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     public void dispose() {
         accessService.removeAccessListener(accessListener);
         stopObservingDamConnection();
-        if (userViewJob != null) {
-            userViewJob.cancel();
-        }
         if (mcpJob != null) {
             mcpJob.cancel();
         }
@@ -308,8 +304,10 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         boolean enabled = DDProductConfig.isIntegrationEnabled();
         DBDamAccessService.Status status = accessService.getStatus();
         boolean signedIn = status == DBDamAccessService.Status.SIGNED_IN;
-        userText.setText(signedIn ? DDTrackingUIMessages.sync_preference_page_account_signed_in
-            : DDTrackingUIMessages.sync_preference_page_account_not_signed_in);
+        var user = signedIn ? accessService.getLoggedUserIdentity() : null;
+        userText.setText(!signedIn ? DDTrackingUIMessages.sync_preference_page_account_not_signed_in
+            : user.userName() == null ? DDTrackingUIMessages.sync_preference_page_account_signed_in
+            : NLS.bind(DDTrackingUIMessages.sync_preference_page_account_signed_in_as, user.userName()));
         accountActionButton.setText(signedIn
             ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
             : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);
@@ -335,11 +333,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             showMcpStatus(null);
         }
         content.layout(true, true);
-        if (enabled && signedIn) {
-            loadLoggedUserView();
-        } else if (userViewJob != null) {
-            userViewJob.cancel();
-        }
     }
 
     private boolean observeDamRegistration() {
@@ -409,9 +402,19 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private void loadDamName() {
         cancelDamNameJob();
+        DDConnectedRemoteDam cached = null;
+        try {
+            cached = DBDamService.getInstance().getCachedDam();
+        } catch (DBException e) {
+            log.debug("Cannot read cached DataDam desktop name", e);
+        }
+        if (cached != null) {
+            showDam(cached);
+        } else {
+            damIdText.setText("");
+            setDamNameText(DDTrackingUIMessages.sync_preference_page_dam_name_connecting);
+        }
         damNameText.setEnabled(false);
-        damIdText.setText("");
-        setDamNameText(DDTrackingUIMessages.sync_preference_page_dam_name_connecting);
         damNameJob = new AbstractJob("Read DataDam desktop name") {
             @NotNull
             @Override
@@ -540,11 +543,19 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         if (mcpJob != null) {
             mcpJob.cancel();
         }
+        try {
+            var cached = DBDamService.getInstance().getCachedDamSettings();
+            if (cached != null) {
+                showMcpStatus(cached);
+                return;
+            }
+        } catch (DBException e) {
+            log.debug("Cannot read cached DataDam MCP status", e);
+        }
         showMcpLoading();
         mcpJob = DBDamService.getInstance().createJob(
             "Read DataDam MCP status",
-            account -> account.getDamSettings(
-                DBDamSessionService.getInstance().getClientDamId()),
+            account -> DBDamService.getInstance().getDamSettings(),
             status -> {
                 if (!mcpCheck.isDisposed() && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN) {
                     showMcpStatus(status);
@@ -603,34 +614,5 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         mcpUnavailable.set(state == null);
         mcpGloballyDisabled.set(state != null && !accountEnabled);
         content.layout(true, true);
-    }
-
-    private void loadLoggedUserView() {
-        if (userViewJob != null) {
-            userViewJob.cancel();
-        }
-        userViewJob = new AbstractJob("Read DataDam user information") {
-            @NotNull
-            @Override
-            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    return Status.CANCEL_STATUS;
-                }
-                var user = accessService.getLoggedUserView();
-                UIUtils.asyncExec(() -> {
-                    if (!userText.isDisposed() && userViewJob == this && !monitor.isCanceled()
-                        && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN) {
-                        userText.setText(user.userName() == null
-                            ? DDTrackingUIMessages.sync_preference_page_account_signed_in
-                            : NLS.bind(
-                                DDTrackingUIMessages.sync_preference_page_account_signed_in_as, user.userName()));
-                        userText.getParent().layout(true, true);
-                    }
-                });
-                return Status.OK_STATUS;
-            }
-        };
-        userViewJob.setSystem(true);
-        userViewJob.schedule();
     }
 }

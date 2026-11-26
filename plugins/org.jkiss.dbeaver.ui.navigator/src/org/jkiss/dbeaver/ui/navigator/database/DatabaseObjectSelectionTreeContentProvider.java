@@ -53,17 +53,21 @@ class DatabaseObjectSelectionTreeContentProvider extends TreeContentProvider {
     private final TreeViewer viewer;
     private final DBSObjectContainer root;
     private final Runnable onChildrenLoaded;
+    @Nullable
+    private final DatabaseObjectSelectionTree.ProgressListener progressListener;
     private final Map<DBSObject, List<DBSObject>> children = new ConcurrentHashMap<>();
     private final Map<DBSObject, LoadingJob<Object[]>> jobs = new HashMap<>();
 
     DatabaseObjectSelectionTreeContentProvider(
         @NotNull TreeViewer viewer,
         @NotNull DBSObjectContainer root,
-        @NotNull Runnable onChildrenLoaded
+        @NotNull Runnable onChildrenLoaded,
+        @Nullable DatabaseObjectSelectionTree.ProgressListener progressListener
     ) {
         this.viewer = viewer;
         this.root = root;
         this.onChildrenLoaded = onChildrenLoaded;
+        this.progressListener = progressListener;
     }
 
     @NotNull
@@ -116,6 +120,7 @@ class DatabaseObjectSelectionTreeContentProvider extends TreeContentProvider {
     }
 
     private void startLoading(@NotNull DBSObjectContainer container) {
+        boolean wasIdle = jobs.isEmpty();
         DatabaseLoadService<Object[]> service = new DatabaseLoadService<>(
             UINavigatorMessages.ui_navigator_loading_text_loading.trim() + ": " + container.getName(), container.getDataSource()
         ) {
@@ -133,7 +138,7 @@ class DatabaseObjectSelectionTreeContentProvider extends TreeContentProvider {
             @NotNull
             @Override
             public DBRProgressMonitor overwriteMonitor(@NotNull DBRProgressMonitor monitor) {
-                return monitor;
+                return progressListener == null ? monitor : progressListener.wrapMonitor(monitor);
             }
 
             @Override
@@ -152,6 +157,9 @@ class DatabaseObjectSelectionTreeContentProvider extends TreeContentProvider {
                 if (viewer.getControl().isDisposed()) {
                     return;
                 }
+                if (progressListener != null && jobs.isEmpty()) {
+                    progressListener.loadingFinished();
+                }
                 if (result == null) {
                     // Avoid retrying a failed/cancelled load on every filter refresh.
                     children.putIfAbsent(container, List.of());
@@ -161,6 +169,9 @@ class DatabaseObjectSelectionTreeContentProvider extends TreeContentProvider {
             }
         });
         jobs.put(container, job);
+        if (progressListener != null && wasIdle) {
+            progressListener.loadingStarted();
+        }
         job.schedule();
     }
 
