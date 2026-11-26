@@ -117,16 +117,14 @@ public class FireBirdMetaModel extends GenericMetaModel
         }
         String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
         boolean isSystem = JDBCUtils.safeGetBoolean(dbResult, "RDB$SYSTEM_FLAG");
-        return new FireBirdSequence(
-            container,
-            name,
-            description,
-            null,
-            0,
-            -1,
-            1,
-            isSystem
-        );
+        Long startValue = null;
+        Long incrementBy = FireBirdConstants.SEQUENCE_DEFAULT_INCREMENT;
+        if (container.getDataSource().isServerVersionAtLeast(3, 0)) {
+            // Start value and increment are stored since Firebird 3, older versions always increment by 1
+            startValue = JDBCUtils.safeGetLong(dbResult, "RDB$INITIAL_VALUE");
+            incrementBy = (long) JDBCUtils.safeGetInt(dbResult, "RDB$GENERATOR_INCREMENT");
+        }
+        return new FireBirdSequence(container, name, description, startValue, incrementBy, isSystem);
     }
 
     @Override

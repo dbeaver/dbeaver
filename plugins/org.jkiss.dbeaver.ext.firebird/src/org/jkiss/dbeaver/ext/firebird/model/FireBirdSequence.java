@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
@@ -34,27 +36,55 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * FireBirdDataSource
+ * Firebird sequence (generator).
+ * Firebird has no minimum, maximum or cycle options, the start value can only be set when the sequence is created.
  */
 public class FireBirdSequence extends GenericSequence implements DBPSystemObject {
 
     private String description;
-    private boolean isSystem;
+    private final boolean isSystem;
+    @Nullable
+    private Long startValue;
 
-    public FireBirdSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy, boolean isSystem) {
-        super(container, name, description, lastValue, minValue, maxValue, incrementBy);
+    public FireBirdSequence(
+        @NotNull GenericStructContainer container,
+        @NotNull String name,
+        @Nullable String description,
+        @Nullable Long startValue,
+        @Nullable Long incrementBy,
+        boolean isSystem
+    ) {
+        super(container, name, description, null, null, null, incrementBy);
         this.description = description;
+        this.startValue = startValue;
         this.isSystem = isSystem;
+    }
+
+    /**
+     * Creates a new sequence which does not exist in the database yet.
+     */
+    public FireBirdSequence(@NotNull GenericStructContainer container, @NotNull String name) {
+        super(container, name);
+        setLastValue(null);
+        this.startValue = FireBirdConstants.SEQUENCE_DEFAULT_START_VALUE;
+        this.isSystem = false;
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    public String getName() {
+        return super.getName();
     }
 
     @Nullable
     @Override
-    @Property(viewable = true, updatable = true, length = PropertyLength.MULTILINE, order = 10)
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 10)
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(@Nullable String description) {
         this.description = description;
     }
 
@@ -63,9 +93,10 @@ public class FireBirdSequence extends GenericSequence implements DBPSystemObject
         return super.getLastValue();
     }
 
+    @Nullable
     @Property(viewable = true, order = 2)
-    public Number getLastValue(DBRProgressMonitor monitor) throws DBCException {
-        if (super.getLastValue() == null) {
+    public Number getLastValue(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        if (super.getLastValue() == null && isPersisted()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read sequence last value")) {
                 try (JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT GEN_ID(" + DBUtils.getQuotedIdentifier(this) + ", 0) from RDB$DATABASE",
                     ResultSet.TYPE_FORWARD_ONLY,
@@ -83,6 +114,43 @@ public class FireBirdSequence extends GenericSequence implements DBPSystemObject
             }
         }
         return super.getLastValue();
+    }
+
+    /**
+     * Start value of the sequence (RDB$INITIAL_VALUE). Not available before Firebird 3.
+     */
+    @Nullable
+    @Property(viewable = true, editable = true, order = 3)
+    public Long getStartValue() {
+        return startValue;
+    }
+
+    public void setStartValue(@Nullable Long startValue) {
+        this.startValue = startValue;
+    }
+
+    @Override
+    @Property(hidden = true)
+    public Number getMinValue() {
+        return super.getMinValue();
+    }
+
+    @Override
+    @Property(hidden = true)
+    public Number getMaxValue() {
+        return super.getMaxValue();
+    }
+
+    @Nullable
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 5)
+    public Long getIncrementBy() {
+        Number incrementBy = super.getIncrementBy();
+        return incrementBy == null ? null : incrementBy.longValue();
+    }
+
+    public void setIncrementBy(@Nullable Long incrementBy) {
+        super.setIncrementBy(incrementBy);
     }
 
     @Override
