@@ -46,12 +46,11 @@ public class DBNDataSourceTest {
         DBNLocalFolder folderNode = Mockito.mock(DBNLocalFolder.class);
         Mockito.when(folderNode.getFolder()).thenReturn(folder);
 
-        try (var model = Mockito.mockStatic(DBNModel.class)) {
-            target.dropNodes(new VoidProgressMonitor(), List.of(source, folderNode));
+        target.dropNodes(new VoidProgressMonitor(), List.of(source, folderNode));
 
-            Mockito.verify(folder).setParent(null);
-            model.verify(() -> DBNModel.updateConfigAndRefreshDatabases(target));
-        }
+        Mockito.verify(folder).setParent(null);
+        Mockito.verify(registry).flushConfig();
+        Mockito.verify((DBNProjectDatabases) target.getParentNode()).refreshChildren();
     }
 
     @Test
@@ -118,7 +117,9 @@ public class DBNDataSourceTest {
         Mockito.when(dataSource.getDriver()).thenReturn(driver);
         Mockito.when(dataSource.getFolder()).thenReturn(folder);
         Mockito.when(dataSource.getRegistry()).thenReturn(registry);
-        return new DBNDataSource(Mockito.mock(DBNNode.class), dataSource);
+        DBNProjectDatabases parent = Mockito.mock(DBNProjectDatabases.class);
+        Mockito.when(parent.getDataSourceRegistry()).thenReturn(registry);
+        return new DBNDataSource(parent, dataSource);
     }
 
     @Test
