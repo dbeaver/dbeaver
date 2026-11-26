@@ -2463,6 +2463,9 @@ public abstract class LightGrid extends Canvas {
         if (gridRows.length > 0) {
             int lastRow = row >= gridRows.length ? gridRows.length - 1 : row;
             getContentProvider().validateDataPresence(columns.isEmpty() ? null : columns.getLast(), gridRows[lastRow]);
+        } else if (!columns.isEmpty()) {
+            // Record mode can have records as columns without any attribute rows.
+            getContentProvider().validateDataPresence(columns.getLast(), null);
         }
     }
 

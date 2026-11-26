@@ -279,7 +279,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
 
             {
                 // Highlight row
-                if (curLineRange == null || curLineRange.start != lineOffset + horOffsetBegin) {
+                if (colWidths.length > 0 && (curLineRange == null || curLineRange.start != lineOffset + horOffsetBegin)) {
                     curLineRange = new StyleRange(
                         lineOffset + horOffsetBegin,
                         horOffsetEnd - horOffsetBegin - 1,

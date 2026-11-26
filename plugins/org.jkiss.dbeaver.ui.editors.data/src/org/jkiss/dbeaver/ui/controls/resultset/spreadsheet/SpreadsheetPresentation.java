@@ -2451,7 +2451,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Override
-        public void validateDataPresence(@Nullable IGridColumn gridColumn, @NotNull IGridRow gridRow) {
+        public void validateDataPresence(@Nullable IGridColumn gridColumn, @Nullable IGridRow gridRow) {
             // Check for next segment read
             ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
             if (row == null) {
