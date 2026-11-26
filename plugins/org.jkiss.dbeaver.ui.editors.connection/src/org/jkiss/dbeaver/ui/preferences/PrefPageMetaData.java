@@ -147,7 +147,7 @@ public class PrefPageMetaData extends TargetPrefPage
                 performanceGroup,
                 UIConnectionMessages.pref_page_database_general_checkbox_preload_table_attributes,
                 UIConnectionMessages.pref_page_database_general_checkbox_preload_table_attributes_tip,
-                false,
+                true,
                 1);
             readExpensiveCheck = UIUtils.createCheckbox(
                 performanceGroup,

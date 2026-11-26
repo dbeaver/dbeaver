@@ -340,7 +340,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, SeparateConnectionBehavior.DEFAULT.name());
         PrefUtils.setDefaultPreferenceValue(store, META_CASE_SENSITIVE, false);
         PrefUtils.setDefaultPreferenceValue(store, META_DISABLE_EXTRA_READ, false);
-        PrefUtils.setDefaultPreferenceValue(store, META_PRELOAD_TABLE_ATTRIBUTES, false);
+        PrefUtils.setDefaultPreferenceValue(store, META_PRELOAD_TABLE_ATTRIBUTES, true);
         PrefUtils.setDefaultPreferenceValue(store, META_EXTRA_DDL_INFO, true);
         PrefUtils.setDefaultPreferenceValue(store, META_USE_SERVER_SIDE_FILTERS, true);
 
