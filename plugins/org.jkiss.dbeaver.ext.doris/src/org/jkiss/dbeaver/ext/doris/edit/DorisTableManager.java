@@ -18,12 +18,10 @@ package org.jkiss.dbeaver.ext.doris.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.doris.model.DorisDataSource;
 import org.jkiss.dbeaver.ext.doris.model.DorisTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
@@ -70,7 +68,7 @@ public class DorisTableManager extends GenericTableManager {
         @NotNull List<DBEPersistAction> actions,
         @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
         @NotNull Map<String, Object> options
-    ) throws DBException {
+    ) {
         GenericTableBase table = command.getObject();
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             actions.add(new SQLDatabasePersistAction(
@@ -78,13 +76,6 @@ public class DorisTableManager extends GenericTableManager {
                 "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
                     + " MODIFY COMMENT " + SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription()))
             ));
-        }
-        if (!table.isPersisted()) {
-            for (GenericTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-                if (CommonUtils.isNotEmpty(column.getDescription())) {
-                    DorisTableColumnManager.addCommentAction(actions, column);
-                }
-            }
         }
     }
 

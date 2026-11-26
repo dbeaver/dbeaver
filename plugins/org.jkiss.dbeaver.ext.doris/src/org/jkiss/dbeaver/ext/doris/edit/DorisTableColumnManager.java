@@ -18,12 +18,14 @@ package org.jkiss.dbeaver.ext.doris.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -48,20 +50,22 @@ public class DorisTableColumnManager extends GenericTableColumnManager {
     }
 
     @Override
-    protected void addObjectExtraActions(
+    @NotNull
+    public StringBuilder getNestedDeclaration(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actions,
-        @NotNull NestedObjectCommand<GenericTableColumn, PropertyHandler> command,
+        @NotNull GenericTableBase owner,
+        @NotNull DBECommandAbstract<GenericTableColumn> command,
         @NotNull Map<String, Object> options
     ) {
+        StringBuilder declaration = super.getNestedDeclaration(monitor, owner, command, options);
         GenericTableColumn column = command.getObject();
-        if (!column.isPersisted() && CommonUtils.isNotEmpty(column.getDescription())) {
-            addCommentAction(actions, column);
+        if (CommonUtils.isNotEmpty(column.getDescription())) {
+            declaration.append(" COMMENT ").append(SQLUtils.quoteString(column, column.getDescription()));
         }
+        return declaration;
     }
 
-    static void addCommentAction(@NotNull List<DBEPersistAction> actions, @NotNull GenericTableColumn column) {
+    private static void addCommentAction(@NotNull List<DBEPersistAction> actions, @NotNull GenericTableColumn column) {
         actions.add(new SQLDatabasePersistAction(
             "Comment column",
             "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)
