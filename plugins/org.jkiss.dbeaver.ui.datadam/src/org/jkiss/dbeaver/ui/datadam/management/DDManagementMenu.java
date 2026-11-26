@@ -93,7 +93,7 @@ public class DDManagementMenu extends CompoundContributionItem {
         mcp.setEnabled(false);
         if (enabled) {
             DBDamService.getInstance().createJob("Read DataDam MCP status",
-                account -> account.getDamSettings(DBDamSessionService.getInstance().getClientDamId()),
+                account -> DBDamService.getInstance().getDamSettings(),
                 state -> {
                     settings.set(state);
                     boolean accountEnabled = state.settings().isAccountEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true);

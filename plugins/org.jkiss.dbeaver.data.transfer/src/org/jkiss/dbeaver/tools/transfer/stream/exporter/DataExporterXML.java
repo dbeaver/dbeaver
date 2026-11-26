@@ -63,26 +63,24 @@ public class DataExporterXML extends StreamExporterAbstract {
     private void printHeader()
     {
         PrintWriter out = getWriter();
-        out.write("<?xml version=\"1.0\" encoding=\"" + getSite().getOutputEncoding() + "\"?>\n");
-        tableName = escapeXmlElementName(getSite().getSource().getName());
+        String outputEncoding = getSite().getOutputEncoding();
+        out.write("<?xml version=\"1.0\" encoding=\"" + outputEncoding + "\"?>\n");
+        tableName = DTUtils.escapeXmlElementName(getSite().getSource().getName(), outputEncoding);
         if (includeDoctype) {
             out.write("<!DOCTYPE " + tableName + " [\n");
             out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
             out.write("  <!ELEMENT DATA_RECORD (");
             int columnsSize = columns.length;
             for (int i = 0; i < columnsSize; i++) {
-                String colName = columns[i].getLabel();
-                if (CommonUtils.isEmpty(colName)) {
-                    colName = columns[i].getName();
-                }
-                out.write(escapeXmlElementName(colName) + "?");
+                // The same name as the element declarations below and the rows use
+                out.write(DTUtils.escapeXmlElementName(columns[i].getName(), outputEncoding) + "?");
                 if (i < columnsSize - 1) {
                     out.write(",");
                 }
             }
             out.write(")+>\n");
             for (int i = 0; i < columnsSize; i++) {
-                out.write("  <!ELEMENT " + escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
+                out.write("  <!ELEMENT " + DTUtils.escapeXmlElementName(columns[i].getName(), outputEncoding) + " (#PCDATA)>\n");
             }
             out.write("]>\n");
         }
@@ -96,7 +94,7 @@ public class DataExporterXML extends StreamExporterAbstract {
         out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns[i];
-            String columnName = escapeXmlElementName(column.getName());
+            String columnName = DTUtils.escapeXmlElementName(column.getName(), getSite().getOutputEncoding());
             out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
                 writeTextCell(null);
@@ -162,15 +160,5 @@ public class DataExporterXML extends StreamExporterAbstract {
                 }
             }
         }
-    }
-
-    private String escapeXmlElementName(String name) {
-        String escapedName = name.replaceAll("[^\\p{Alpha}\\p{Digit}]+", "_");
-        char firstCharacter = escapedName.charAt(0);
-        if (Character.isAlphabetic(firstCharacter) || firstCharacter == '_') {
-            return escapedName;
-        }
-
-        return "_" + escapedName;
     }
 }

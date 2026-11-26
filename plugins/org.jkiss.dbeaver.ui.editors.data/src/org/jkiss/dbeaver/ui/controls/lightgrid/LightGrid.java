@@ -2460,9 +2460,12 @@ public abstract class LightGrid extends Canvas {
             gc.drawLine(rowHeaderWidth + pinnedColumnsWidth, 0, rowHeaderWidth + pinnedColumnsWidth, y);
         }
 
-        if (!columns.isEmpty() && gridRows.length > 0) {
+        if (gridRows.length > 0) {
             int lastRow = row >= gridRows.length ? gridRows.length - 1 : row;
-            getContentProvider().validateDataPresence(columns.getLast(), gridRows[lastRow]);
+            getContentProvider().validateDataPresence(columns.isEmpty() ? null : columns.getLast(), gridRows[lastRow]);
+        } else if (!columns.isEmpty()) {
+            // Record mode can have records as columns without any attribute rows.
+            getContentProvider().validateDataPresence(columns.getLast(), null);
         }
     }
 
@@ -2690,7 +2693,7 @@ public abstract class LightGrid extends Canvas {
         int stateMask,
         boolean dragging,
         boolean reverseDuplicateSelections,
-        EventSource eventSource
+        @NotNull EventSource eventSource
     ) {
         if (RuntimeUtils.isMacOS() && (stateMask & SWT.CTRL) == SWT.CTRL) {
             /*
@@ -2730,6 +2733,9 @@ public abstract class LightGrid extends Canvas {
             }
 
         } else if (shift) {
+            if (newCells.isEmpty()) {
+                return null;
+            }
 
             GridPos newCell = newCells.getFirst(); //shift selection should only occur with one cell, ignoring others
             oldSelection = new ArrayList<>(selectedCells);
@@ -3766,7 +3772,10 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    private void onKeyDown(Event e) {
+    private void onKeyDown(@NotNull Event e) {
+        if (getItemCount() == 0) {
+            return;
+        }
         if (focusColumn == null) {
             if (columns.isEmpty())
                 return;

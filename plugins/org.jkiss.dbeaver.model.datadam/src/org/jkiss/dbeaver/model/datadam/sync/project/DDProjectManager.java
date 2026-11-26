@@ -306,7 +306,7 @@ public class DDProjectManager {
     private UUID requireAccountId() throws DBException {
         DDKeyBundle bundle = accessService.getKeyBundle();
         if (bundle == null) {
-            throw new DBException("Import encryption keys for the current DataDam account in Preferences > DataDam > Projects");
+            throw new DBException("Import the encryption key for the current DataDam account in Preferences > DataDam > Projects");
         }
         return bundle.accountId();
     }
