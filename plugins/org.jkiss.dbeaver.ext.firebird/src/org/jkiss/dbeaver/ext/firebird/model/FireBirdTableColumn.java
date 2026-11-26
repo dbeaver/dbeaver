@@ -96,6 +96,14 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
         return null;
     }
 
+    /**
+     * Collation of the column's data type, or null if unknown. Used when a domain's underlying type is declared.
+     */
+    @Nullable
+    public String getCollation() {
+        return dataType == null ? null : dataType.getCollationName();
+    }
+
     @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = FireBirdColumnTypeNameListProvider.class)
     @Override

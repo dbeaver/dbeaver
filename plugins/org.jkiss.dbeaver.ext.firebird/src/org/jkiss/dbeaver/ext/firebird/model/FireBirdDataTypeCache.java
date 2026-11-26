@@ -59,7 +59,9 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                 // Use CAST to improve performance, binaries are too slow
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT RDB$FIELD_NAME,RDB$FIELD_LENGTH,RDB$FIELD_SCALE,RDB$FIELD_PRECISION,RDB$FIELD_TYPE,RDB$FIELD_SUB_TYPE,RDB$CHARACTER_LENGTH,RDB$CHARACTER_SET_ID,\n" +
-                        "CAST(RDB$VALIDATION_SOURCE AS VARCHAR(512)) VALIDATION_SOURCE,SUBSTRING(RDB$COMPUTED_SOURCE FROM 1 FOR 512) COMPUTED_SOURCE,CAST(RDB$DEFAULT_SOURCE AS VARCHAR(512)) DEFAULT_SOURCE\n" +
+                        "CAST(RDB$VALIDATION_SOURCE AS VARCHAR(512)) VALIDATION_SOURCE,SUBSTRING(RDB$COMPUTED_SOURCE FROM 1 FOR 512) COMPUTED_SOURCE,CAST(RDB$DEFAULT_SOURCE AS VARCHAR(512)) DEFAULT_SOURCE,\n" +
+                        "(SELECT TRIM(CO.RDB$COLLATION_NAME) FROM RDB$COLLATIONS CO\n" +
+                        " WHERE CO.RDB$CHARACTER_SET_ID = F.RDB$CHARACTER_SET_ID AND CO.RDB$COLLATION_ID = F.RDB$COLLATION_ID) COLLATION_NAME\n" +
                         "FROM RDB$FIELDS F ORDER BY RDB$FIELD_NAME"))
                 {
                     monitor.subTask("Load Firebird domain types");
@@ -98,6 +100,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                                 computedSource, validationSource, defaultSource,
                                 charsetName,
                                 notNull);
+                            dataType.setCollationName(JDBCUtils.safeGetString(dbResult, "COLLATION_NAME"));
                             tmpObjectList.add(dataType);
                         }
                     }
