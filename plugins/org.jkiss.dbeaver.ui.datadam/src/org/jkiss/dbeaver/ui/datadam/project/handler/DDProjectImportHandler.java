@@ -112,6 +112,7 @@ public class DDProjectImportHandler extends AbstractHandler {
     @NotNull
     public IStatus importProjects(@NotNull List<DDSharedProject> selected, @NotNull DBRProgressMonitor monitor) {
         ProjectJobBatchResult<?> result = uiManager.importProjects(selected, monitor);
+        uiManager.refreshProjectVisibility();
         UIUtils.asyncExec(() -> {
             if (!result.canceled()) {
                 if (!result.results().isEmpty()) {

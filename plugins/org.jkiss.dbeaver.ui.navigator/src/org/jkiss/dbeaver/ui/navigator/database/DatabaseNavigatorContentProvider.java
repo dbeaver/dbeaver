@@ -84,7 +84,7 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
         if (parent instanceof TreeNodeSpecial) {
             return EMPTY_CHILDREN;
         }
-        if (!(parent instanceof DBNNode parentNode)) {
+        if (!(parent instanceof DBNNode parentNode) || parentNode.isDisposed()) {
             return EMPTY_CHILDREN;
         }
 
@@ -107,6 +107,9 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
                 // and no blocking process will occur
                 DBNNode[] children = DBNUtils.getNodeChildrenFiltered(
                     new VoidProgressMonitor(), parentNode, true);
+                if (parentNode.isDisposed()) {
+                    return EMPTY_CHILDREN;
+                }
                 if (children == null) {
                     Throwable lastLoadError = parentNode.getLastLoadError();
                     if (lastLoadError != null) {
@@ -137,6 +140,9 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
 
     @Override
     public boolean hasChildren(Object parent) {
+        if (parent instanceof DBNNode node && node.isDisposed()) {
+            return false;
+        }
         if (parent instanceof DBNDatabaseNode dbNode) {
             if (navigatorTree.getNavigatorFilter() != null && navigatorTree.getNavigatorFilter().isLeafObject(parent)) {
                 return false;
