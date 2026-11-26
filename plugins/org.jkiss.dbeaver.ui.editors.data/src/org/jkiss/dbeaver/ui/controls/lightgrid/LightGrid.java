@@ -2693,7 +2693,7 @@ public abstract class LightGrid extends Canvas {
         int stateMask,
         boolean dragging,
         boolean reverseDuplicateSelections,
-        EventSource eventSource
+        @NotNull EventSource eventSource
     ) {
         if (RuntimeUtils.isMacOS() && (stateMask & SWT.CTRL) == SWT.CTRL) {
             /*
@@ -2733,6 +2733,9 @@ public abstract class LightGrid extends Canvas {
             }
 
         } else if (shift) {
+            if (newCells.isEmpty()) {
+                return null;
+            }
 
             GridPos newCell = newCells.getFirst(); //shift selection should only occur with one cell, ignoring others
             oldSelection = new ArrayList<>(selectedCells);
