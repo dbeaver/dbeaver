@@ -208,6 +208,23 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void preservesBackslashesInAclRoleNames() throws DBException {
+        for (String roleName : new String[]{"a\\", "a\\\\", "a\\\"b", "a\\\"/b=c"}) {
+            PostgreRole owner = new PostgreRole(testSchema.getDatabase(), roleName, "test", true);
+            // aclitem doubles embedded quotes; backslashes are literal after JDBC decodes the array.
+            String quotedRoleName = "\"" + roleName.replace("\"", "\"\"") + "\"";
+            String ddl = generatePermissionsDDL(
+                PostgreProcedureKind.f, owner, createAclArray(new String[]{quotedRoleName + "=X/" + quotedRoleName}));
+
+            Assertions.assertTrue(ddl.endsWith(
+                "ALTER FUNCTION public.acltest() OWNER TO " + quotedRoleName + "\n"
+                    + "REVOKE ALL ON FUNCTION public.acltest() FROM PUBLIC\n"
+                    + "GRANT ALL ON FUNCTION public.acltest() TO " + quotedRoleName
+            ), ddl);
+        }
+    }
+
+    @Test
     public void keepsGrantOption() throws DBException {
         // proacl after GRANT EXECUTE ... TO qa_acl_user WITH GRANT OPTION (#42798)
         String ddl = generatePermissionsDDL(PostgreProcedureKind.f, "tester=X/tester", "qa_acl_user=X*/tester");

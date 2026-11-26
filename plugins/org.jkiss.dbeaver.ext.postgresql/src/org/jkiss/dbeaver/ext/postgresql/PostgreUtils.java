@@ -822,8 +822,8 @@ public class PostgreUtils {
         for (int i = 0; i < aclValuesCount; i++) {
             Object aclItem = Array.get(itemArray, i);
             String aclValue = CommonUtils.toString(extractPGObjectValue(aclItem, owner.getDataSource()));
-            // Quoted role names are stored with escaped quotes. We don't need quotes here (#13477)
-            aclValue = aclValue.replace("\\\"", "\"");
+            // JDBC has already decoded array escaping. Backslashes in aclitem role names are literal;
+            // embedded double quotes are doubled and decoded by the SQL dialect when extracting names.
             aclValues[i] = aclValue;
         }
         return extractPermissionsFromACL(owner, aclValues, isDefault);
