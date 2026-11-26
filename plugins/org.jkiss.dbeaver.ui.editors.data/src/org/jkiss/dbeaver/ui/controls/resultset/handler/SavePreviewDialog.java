@@ -131,9 +131,9 @@ public class SavePreviewDialog extends DetailsViewDialog {
         }*/
     }
 
-    private static String appendReportLine(String report, int count, String info) {
-        if (!report.isEmpty()) report += ", ";
-        return report + count + " " + info;
+    private static String appendReportLine(String report, int count, String pattern) {
+        if (!report.isEmpty()) report += ", "; //$NON-NLS-1$
+        return report + NLS.bind(pattern, count);
     }
 
     protected String getDetailsLabel(boolean show) {
