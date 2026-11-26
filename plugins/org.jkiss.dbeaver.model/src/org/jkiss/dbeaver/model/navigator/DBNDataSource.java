@@ -277,8 +277,8 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     @Override
     public boolean supportsDrop(@Nullable DBNNode otherNode) {
         return otherNode == null || otherNode instanceof DBNDataSource ||
-            (dataSource.getFolder() != null && otherNode instanceof DBNLocalFolder oln &&
-                oln.getFolder().canMoveTo(dataSource.getFolder()));
+            (otherNode instanceof DBNLocalFolder oln &&
+                (dataSource.getFolder() == null || oln.getFolder().canMoveTo(dataSource.getFolder())));
     }
 
     @Override

@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
@@ -30,6 +33,37 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 public class DBNDataSourceTest {
+    @Test
+    public void supportsFolderDropOntoRootConnection() {
+        DBNDataSource node = createDataSourceNode(null);
+        DBNLocalFolder folderNode = Mockito.mock(DBNLocalFolder.class);
+
+        Assertions.assertTrue(node.supportsDrop(folderNode));
+    }
+
+    @Test
+    public void folderDropOntoNestedConnectionChecksDestinationFolder() {
+        DBPDataSourceFolder destination = Mockito.mock(DBPDataSourceFolder.class);
+        DBNDataSource node = createDataSourceNode(destination);
+        DBPDataSourceFolder folder = Mockito.mock(DBPDataSourceFolder.class);
+        DBNLocalFolder folderNode = Mockito.mock(DBNLocalFolder.class);
+        Mockito.when(folderNode.getFolder()).thenReturn(folder);
+
+        Assertions.assertFalse(node.supportsDrop(folderNode));
+
+        Mockito.when(folder.canMoveTo(destination)).thenReturn(true);
+        Assertions.assertTrue(node.supportsDrop(folderNode));
+    }
+
+    @NotNull
+    private DBNDataSource createDataSourceNode(@Nullable DBPDataSourceFolder folder) {
+        DBPDriver driver = Mockito.mock(DBPDriver.class);
+        DBPDataSourceContainer dataSource = Mockito.mock(DBPDataSourceContainer.class);
+        Mockito.when(dataSource.getDriver()).thenReturn(driver);
+        Mockito.when(dataSource.getFolder()).thenReturn(folder);
+        return new DBNDataSource(Mockito.mock(DBNNode.class), dataSource);
+    }
+
     @Test
     public void connectionStateDoesNotModifySharedDriverIcon() {
         DBPImage vendorOverlay = Mockito.mock(DBPImage.class);
