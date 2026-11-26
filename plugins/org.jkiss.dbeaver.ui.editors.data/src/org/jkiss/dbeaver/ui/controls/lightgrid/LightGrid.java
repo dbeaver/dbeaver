@@ -4765,6 +4765,7 @@ public abstract class LightGrid extends Canvas {
 
             private Image dragImage;
             private long lastDragEndTime;
+            private String rowDragText;
 
             @Override
             public void dragStart(DragSourceEvent event) {
@@ -4778,6 +4779,13 @@ public abstract class LightGrid extends Canvas {
                         columnBounds = hoveringColumn.getBounds();
                     } else if (rowHeaderDragStarted && hoveringRow != null) {
                         draggingRow = hoveringRow;
+                        rowDragText = getRowDragText();
+                        if (rowDragText.isEmpty()) {
+                            draggingRow = null;
+                            rowDragText = null;
+                            event.doit = false;
+                            return;
+                        }
                         int rowFromTop = hoveringRow - getTopIndex();
                         columnBounds = new Rectangle(0, rowFromTop * getItemHeight(), getRowHeaderWidth(), getItemHeight());
                     } else if (cellSelectionDragStarted) {
@@ -4851,32 +4859,7 @@ public abstract class LightGrid extends Canvas {
                         }
                         event.data = elements;
                     } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                        List<GridColumn> columns = selectedColumns;
-                        if (columns.isEmpty()) {
-                            columns = LightGrid.this.columns;
-                        }
-                        Set<Integer> rows = new TreeSet<>(selectedRows.keySet());
-                        if (rows.isEmpty()) {
-                            rows.add(draggingRow);
-                        }
-                       
-                        StringBuilder text = new StringBuilder();
-                        for (Integer row : rows) {
-                            if (!text.isEmpty()) text.append("\n");
-                            for (int i = 0; i < columns.size(); i++) {
-                                GridColumn column = columns.get(i);
-                                Object cellText = getContentProvider().
-                                    getCellValue(column, gridRows[row], true);
-
-                                if (i > 0) text.append(", ");
-                                text.append(cellText);
-                            }
-                        }
-                        if (text.isEmpty()) {
-                            event.doit = false;
-                        } else {
-                            event.data = text.toString();
-                        }
+                        event.data = rowDragText;
                     }
                 } else if (cellSelectionDragStarted) {
                     if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
@@ -4896,6 +4879,7 @@ public abstract class LightGrid extends Canvas {
             public void dragFinished(DragSourceEvent event) {
                 draggingColumn = null;
                 draggingRow = null;
+                rowDragText = null;
                 headerColumnDragStarted = false;
                 rowHeaderDragStarted = false;
                 cellSelectionDragStarted = false;
@@ -4988,6 +4972,32 @@ public abstract class LightGrid extends Canvas {
                 draggingColumn = null;
             }
         });
+    }
+
+    @NotNull
+    private String getRowDragText() {
+        List<GridColumn> columns = selectedColumns;
+        if (columns.isEmpty()) {
+            columns = this.columns;
+        }
+        Set<Integer> rows = new TreeSet<>(selectedRows.keySet());
+        if (rows.isEmpty()) {
+            rows.add(draggingRow);
+        }
+
+        StringBuilder text = new StringBuilder();
+        for (Integer row : rows) {
+            if (!text.isEmpty()) text.append("\n");
+            for (int i = 0; i < columns.size(); i++) {
+                GridColumn column = columns.get(i);
+                Object cellText = getContentProvider().
+                    getCellValue(column, gridRows[row], true);
+
+                if (i > 0) text.append(", ");
+                text.append(cellText);
+            }
+        }
+        return text.toString();
     }
 
     private boolean isDragSingleColumn() {
