@@ -27,13 +27,33 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.util.List;
+
 public class DBNDataSourceTest {
+    @Test
+    public void mixedDropContinuesPastConnectionAlreadyAtDestination() {
+        DBPDataSourceRegistry registry = Mockito.mock(DBPDataSourceRegistry.class);
+        DBNDataSource target = createDataSourceNode(null, registry);
+        DBNDataSource source = createDataSourceNode(null, registry);
+        DBPDataSourceFolder folder = Mockito.mock(DBPDataSourceFolder.class);
+        DBNLocalFolder folderNode = Mockito.mock(DBNLocalFolder.class);
+        Mockito.when(folderNode.getFolder()).thenReturn(folder);
+
+        try (var model = Mockito.mockStatic(DBNModel.class)) {
+            target.dropNodes(new VoidProgressMonitor(), List.of(source, folderNode));
+
+            Mockito.verify(folder).setParent(null);
+            model.verify(() -> DBNModel.updateConfigAndRefreshDatabases(target));
+        }
+    }
+
     @Test
     public void supportsConnectionDropFromAnotherRegistry() {
         DBNDataSource source = createDataSourceNode(null, Mockito.mock(DBPDataSourceRegistry.class));

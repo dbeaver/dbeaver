@@ -287,6 +287,9 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         DBPDataSourceFolder folder = dataSource.getFolder();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource dsNode) {
+                if (dsNode.getDataSourceContainer().getFolder() == folder) {
+                    continue;
+                }
                 if (!dsNode.moveToFolder(getOwnerProject(), folder)) {
                     return;
                 }
