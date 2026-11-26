@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ext.firebird.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -29,7 +29,7 @@ public class FireBirdTableManager extends GenericTableManager {
     private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         FireBirdTableColumn.class,
         GenericUniqueKey.class,
-        GenericTableForeignKey.class,
+        FireBirdTableForeignKey.class,
         GenericTableIndex.class
     );
 

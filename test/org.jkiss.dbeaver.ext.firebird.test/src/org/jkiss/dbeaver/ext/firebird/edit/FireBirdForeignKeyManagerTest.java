@@ -30,6 +30,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.Arrays;
+
 public class FireBirdForeignKeyManagerTest extends DBeaverUnitTest {
 
     private GenericTableBase table;
@@ -67,6 +69,15 @@ public class FireBirdForeignKeyManagerTest extends DBeaverUnitTest {
 
         Assertions.assertInstanceOf(FireBirdTableForeignKey.class, foreignKey);
         Assertions.assertEquals(DBSForeignKeyModifyRule.CASCADE, foreignKey.getDeleteRule());
+    }
+
+    @Test
+    public void tableManagerUsesFireBirdForeignKeys() {
+        // Table DDL picks the foreign key manager by the child types of the table manager
+        Assertions.assertTrue(
+            Arrays.asList(new FireBirdTableManager().getChildTypes()).contains(FireBirdTableForeignKey.class));
+        Assertions.assertFalse(
+            Arrays.asList(new FireBirdTableManager().getChildTypes()).contains(GenericTableForeignKey.class));
     }
 
     @NotNull
