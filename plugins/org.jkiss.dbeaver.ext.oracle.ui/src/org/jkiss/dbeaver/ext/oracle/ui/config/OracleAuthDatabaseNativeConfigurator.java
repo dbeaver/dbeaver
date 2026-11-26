@@ -31,8 +31,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
-import java.util.Locale;
-
 /**
  * Oracle database native auth model config
  */
@@ -68,9 +66,7 @@ public class OracleAuthDatabaseNativeConfigurator extends DatabaseNativeAuthMode
     public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.loadSettings(dataSource);
 
-        String roleName = OracleAuthModelDatabaseNative.getConnectionRole(dataSource.getConnectionConfiguration());
-        userRoleCombo.setText(OracleConnectionRole.NORMAL.getTitle().equalsIgnoreCase(roleName)
-            ? OracleConnectionRole.NORMAL.getTitle() : roleName.toUpperCase(Locale.ENGLISH));
+        userRoleCombo.setText(OracleAuthModelDatabaseNative.getConnectionRole(dataSource.getConnectionConfiguration()));
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -46,7 +47,8 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<Oracl
         if (CommonUtils.isEmpty(role)) {
             role = configuration.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
         }
-        return CommonUtils.isEmpty(role) ? OracleConnectionRole.NORMAL.getTitle() : role;
+        return CommonUtils.isEmpty(role) || OracleConnectionRole.NORMAL.getTitle().equalsIgnoreCase(role)
+            ? OracleConnectionRole.NORMAL.getTitle() : role.toUpperCase(Locale.ENGLISH);
     }
 
     public static void setConnectionRole(@NotNull DBPConnectionConfiguration configuration, @NotNull String role) {

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
@@ -41,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -126,6 +128,15 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider<OracleDataS
             }
         }
         return url.toString();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getConnectionProviderProperties(@NotNull DBPConnectionConfiguration configuration) {
+        Map<String, String> properties = new LinkedHashMap<>(configuration.getProviderProperties());
+        properties.put(OracleConstants.PROP_AUTH_LOGON_AS, OracleAuthModelDatabaseNative.getConnectionRole(configuration));
+        properties.putIfAbsent(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
+        return properties;
     }
 
     @NotNull
