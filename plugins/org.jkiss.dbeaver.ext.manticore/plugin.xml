@@ -56,6 +56,7 @@
                     <parameter name="supports-table-constraints" value="false"/>
                     <parameter name="supports-schema-selection" value="false"/>
                     <parameter name="supports-catalog-selection" value="false"/>
+                    <parameter name="connection-validator" value="mysql"/>
                 </driver>
 
             </drivers>
