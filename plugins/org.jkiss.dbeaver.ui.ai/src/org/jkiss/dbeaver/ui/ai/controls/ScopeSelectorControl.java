@@ -25,9 +25,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.ai.AIChatContextProvider;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AITextUtils;
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -46,14 +45,11 @@ import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ScopeSelectorControl extends Composite {
-    private static final Log log = Log.getLog(ScopeSelectorControl.class);
-
     private DBSLogicalDataSource dataSource;
     private DBCExecutionContext executionContext;
 
@@ -194,25 +190,19 @@ public class ScopeSelectorControl extends Composite {
         @NotNull DBCExecutionContext executionContext,
         @NotNull Set<String> ids
     ) {
-        DBPDataSource dataSource = executionContext.getDataSource();
-        DBNModel navigator = Objects.requireNonNull(dataSource.getContainer().getProject().getNavigatorModel());
-        List<DBNDatabaseNode> nodes = new ArrayList<>();
+        return chooseCustomEntities(shell, context, executionContext.getDataSource().getContainer(),
+            container -> executionContext, ids);
+    }
 
-        try {
-            // Find nodes of already selected objects
-            context.run(true, true, monitor -> {
-                for (DBSObject entity : AITextUtils.loadCustomEntities(monitor, dataSource, ids)) {
-                    DBNDatabaseNode node = navigator.getNodeByObject(monitor, entity, true);
-                    if (node != null) {
-                        nodes.add(node);
-                    }
-                }
-            });
-        } catch (InvocationTargetException | InterruptedException e) {
-            log.warn("Error loading custom entities", e);
-        }
-
-        ScopeSelectorDialog dialog = new ScopeSelectorDialog(shell, context, dataSource.getContainer(), executionContext, nodes);
+    @Nullable
+    public static List<String> chooseCustomEntities(
+        @NotNull Shell shell,
+        @NotNull DBRRunnableContext context,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull AIChatContextProvider contextProvider,
+        @NotNull Set<String> ids
+    ) {
+        ScopeSelectorDialog dialog = new ScopeSelectorDialog(shell, context, container, contextProvider, ids);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }

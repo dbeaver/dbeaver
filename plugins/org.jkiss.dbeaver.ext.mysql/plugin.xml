@@ -158,6 +158,7 @@
             <driver-properties>
                 <propertyGroup label="Parameters" description="Custom driver parameters">
                     <property id="cache-meta-data" label="%parameters.all.caches" description="%parameters.all.caches.tip" type="boolean" required="false" defaultValue="true"/>
+                    <property id="connection-validator" type="string" hidden="true" defaultValue="mysql"/>
                 </propertyGroup>
             </driver-properties>
             <drivers managable="true">
@@ -174,7 +175,7 @@
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
                         databaseDocumentationSuffixURL="Database-driver-MySQL"
-                        description="Driver for MySQL 5.x+"
+                        description="Legacy MySQL Connector/J 5.1 JDBC driver for MySQL 5.x relational databases."
                         categories="sql">
 
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.49]" bundle="!drivers.mysql"/>
@@ -205,7 +206,7 @@
                         webURL="https://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                         databaseDocumentationSuffixURL="Database-driver-MySQL"
-                        description="Driver for MySQL 8 and later"
+                        description="MySQL Connector/J JDBC driver for MySQL 8 and later relational databases."
                         promoted="1"
                         categories="sql">
                     <replace provider="mysql" driver="mysql3"/>
@@ -237,7 +238,7 @@
                     webURL="https://dev.mysql.com/doc/ndbapi/en/mccj-using-connectorj.html"
                     propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                     databaseDocumentationSuffixURL="Database-driver-MySQL"
-                    description="Driver for MySQL NDB cluster"
+                    description="MySQL Connector/J JDBC driver for MySQL NDB Cluster, with load-balanced SQL access."
                     categories="sql">
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>
@@ -263,7 +264,7 @@
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     propertiesURL="https://mariadb.com/kb/en/library/about-mariadb-connector-j/#optional-url-parameters"
                     databaseDocumentationSuffixURL="Database-driver-MariaDB"
-                    description="MariaDB JDBC driver"
+                    description="MariaDB Connector/J JDBC driver for MariaDB relational databases."
                     promoted="1"
                     categories="sql">
                     <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.5.11]" bundle="!drivers.mariadb"/>
@@ -424,6 +425,10 @@
         <factory adaptableType="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" class="org.jkiss.dbeaver.ext.mysql.sql.MySQLDialectAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
         </factory>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.connectionValidator">
+        <validator id="mysql" class="org.jkiss.dbeaver.ext.mysql.model.MySQLConnectionValidator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dashboard">
