@@ -84,6 +84,9 @@ public class SqlServerProceduralTest extends ProceduralDialectTestBase {
         Assertions.assertTrue(request.requestNewStrings(columns).contains("id"), columns);
         String deletedColumns = "CREATE TRIGGER tr ON tab AFTER INSERT AS BEGIN SELECT | FROM DELETED; END";
         Assertions.assertTrue(request.requestNewStrings(deletedColumns).contains("id"), deletedColumns);
+        String insertSelectColumns = "CREATE TRIGGER tr ON tab AFTER INSERT AS BEGIN " +
+            "INSERT INTO tab (id) SELECT i.| FROM INSERTED AS i; END";
+        Assertions.assertTrue(request.requestNewStrings(insertSelectColumns).contains("id"), insertSelectColumns);
     }
 
     @Test
