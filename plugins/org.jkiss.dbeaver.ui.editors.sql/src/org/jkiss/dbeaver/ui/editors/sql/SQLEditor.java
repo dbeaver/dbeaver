@@ -2672,9 +2672,19 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     protected void doSetInput(@NotNull IEditorInput editorInput) throws CoreException {
+        // Setting input can reload the document even when the file is already open, so the
+        // memory check applies to both initial loading and subsequent input changes.
         if (!SQLScriptMemoryEstimate.confirmLargeScriptOpen(this.getSite().getShell(), editorInput)) {
-            // This must stay outside the catch(Throwable) below: a refusal is not a load error.
-            throw new CoreException(CANCEL_LARGE_SCRIPT_OPEN_STATUS);
+            // setInputWithNotify displays a CoreException as an input error. Keep the existing input
+            // on refusal; only initial editor creation needs an exception to abort initialization.
+            if (this.getEditorInput() != null) {
+                // Save As may already have written the new file, and a file move may have changed its
+                // location. Neither requires replacing this editor's document with one the user
+                // declined to load; leave the current input and document untouched.
+                return;
+            } else {
+                throw new CoreException(CANCEL_LARGE_SCRIPT_OPEN_STATUS);
+            }
         }
         checkInputFileExistence(editorInput);
         try {
