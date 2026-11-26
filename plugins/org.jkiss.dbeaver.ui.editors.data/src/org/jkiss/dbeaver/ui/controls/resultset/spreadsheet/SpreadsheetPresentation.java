@@ -193,7 +193,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     Object value = activeInlineEditor.extractEditorValue();
                     valueController.updateValue(value, true);
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Error extracting editor value", null, e);
+                    DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_extract_value_message, null, e);
                 }
             }
             spreadsheet.cancelInlineEditor();
@@ -227,7 +227,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         spreadsheet.addDisposeListener(e -> controller.removeListener(columnFilterListener));
 
         this.spreadsheet.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN && e.data != null) {
+                if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN
+                    && (e.data != null || (!controller.isRecordMode() && spreadsheet.getColumnCount() == 0))) {
                     updateGridCursor((GridCell) e.data);
                 }
                 fireSelectionChanged(new SpreadsheetSelectionImpl());
@@ -349,6 +350,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, gridRow.getVisualPosition()));
                             if (newCell != null) {
                                 spreadsheet.setCursor(newCell, false, true, true);
+                            } else if (spreadsheet.getColumnCount() == 0) {
+                                spreadsheet.setRowCursor(gridRow.getVisualPosition());
                             }
                         }
                     }
@@ -499,13 +502,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
         spreadsheet.setDefaultFocusRow();
     }
 
-    private void updateGridCursor(GridCell cell) {
+    private void updateGridCursor(@Nullable GridCell cell) {
         boolean changed;
         IGridColumn newCol;
         IGridRow newRow;
         if (cell == null) {
             newCol = null;
-            newRow = null;
+            newRow = !controller.isRecordMode() && spreadsheet.getColumnCount() == 0 ? spreadsheet.getFocusRow() : null;
         } else if (isArrayColAndFirstRow(cell.getColumn(), cell.getRow())) {
             newCol = cell.getColumn().getParent();
             newRow = cell.getRow();
@@ -722,8 +725,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 if (targetRange == null) {
                     DBWorkbench.getPlatformUI().showWarningMessageBox(
-                        "Advanced paste",
-                        "You can't perform this operation on a multiple range selection.\n\nPlease select a single range and try again."
+                        ResultSetMessages.dialog_paste_as_title,
+                        ResultSetMessages.error_paste_multiple_ranges
                     );
                     return;
                 }
@@ -853,7 +856,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             controller.updatePanelsContent(false);
             controller.refreshHintCache(updatedAttrs, updatedRows, null);
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Cannot replace cell value", null, e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_replace_cell_value, null, e);
         }
     }
 
@@ -1111,6 +1114,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             spreadsheet.setCursor(
                 new GridCell(gridColumn, gridRow), false, true, true);
+        } else if (oldRow != null && !recordMode) {
+            IGridRow gridRow = spreadsheet.getRowByElement(oldRow.getVisualNumber(), oldRow);
+            if (gridRow != null) {
+                spreadsheet.setRowCursor(gridRow.getVisualPosition());
+            }
         }
         spreadsheet.layout(true, true);
     }
@@ -1386,7 +1394,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         try {
             activeInlineEditor = valueController.getValueManager().createEditor(valueController);
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Cannot edit value", null, e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_edit_value, null, e);
             return null;
         }
         if (activeInlineEditor != null) {
@@ -1481,7 +1489,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         } else if (isAttributeExpandable(cell.row, attr)) {
             spreadsheet.toggleCellValue(cell.col, cell.row);
         } else if (DBUtils.isNullValue(value)) {
-            UIUtils.showMessageBox(getSpreadsheet().getShell(), "Wrong link", "Can't navigate to NULL value", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(getSpreadsheet().getShell(), ResultSetMessages.error_open_link_title, ResultSetMessages.error_navigate_null, SWT.ICON_ERROR);
         } else {
             IGridContentProvider.CellInformation cellInfo = spreadsheet.getContentProvider().getCellInfo(cell.col, cell.row, false);
             if ((cellInfo.state & IGridContentProvider.STATE_HYPER_LINK) != 0) {
@@ -2009,6 +2017,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @NotNull
         @Override
         public List<ResultSetRow> getSelectedRows() {
+            if (controller.getModel().getVisibleAttributeCount() == 0) {
+                ResultSetRow currentRow = controller.getCurrentRow();
+                return currentRow == null ? Collections.emptyList() : Collections.singletonList(currentRow);
+            }
             {
                 List<ResultSetRow> rows = new ArrayList<>();
                 if (controller.isRecordMode()) {
@@ -2451,7 +2463,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Override
-        public void validateDataPresence(@NotNull IGridColumn gridColumn, @NotNull IGridRow gridRow) {
+        public void validateDataPresence(@Nullable IGridColumn gridColumn, @Nullable IGridRow gridRow) {
             // Check for next segment read
             ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
             if (row == null) {

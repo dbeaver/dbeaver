@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,27 @@ package org.jkiss.dbeaver.ui.gis.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class GISMessages extends NLS {
-	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.gis.internal.GISResources"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.gis.internal.GISResources"; //$NON-NLS-1$
+
+    public static String gis_viewer_title;
+    public static String gis_viewer_initialization_error;
+    public static String gis_render_data_error_title;
+    public static String gis_render_data_error_message;
+    public static String gis_srid_set_title;
+    public static String gis_srid_set_error;
+    public static String gis_refresh_title;
+    public static String gis_refresh_error;
+    public static String gis_image_save_error_title;
+    public static String gis_image_save_error_message;
+    public static String gis_render_error_title;
+    public static String gis_render_error_message;
+    public static String gis_crs_warning_title;
+    public static String gis_crs_different_srid_message;
+    public static String gis_crs_error_title;
+    public static String gis_srid_details_error;
+    public static String gis_crs_invalid_title;
+    public static String gis_crs_read_error;
+
 
 	public static String panel_leaflet_viewer_tool_bar_action_text_open;
 	public static String panel_leaflet_viewer_tool_bar_action_text_copy_as;

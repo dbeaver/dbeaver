@@ -856,7 +856,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         UIUtils.applyDialogFont(panel);
                         UIUtils.configureScrolledComposite(panel, page.getControl());
                     } catch (Throwable e) {
-                        DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
+                        DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_configuration_page_error, null, e);
                     } finally {
                         panel.setRedraw(true);
                     }

@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -29,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
@@ -54,7 +56,9 @@ public class TaskHandlerEdit extends AbstractHandler implements IElementUpdater 
     public static void openTaskEditor(@NotNull IWorkbenchWindow window, @NotNull DBTTask task) {
         DBTTaskType taskTypeDescriptor = task.getType();
         if (!TaskUIRegistry.getInstance().supportsConfigurator(taskTypeDescriptor)) {
-            DBWorkbench.getPlatformUI().showError("No configurator", "Task '" + taskTypeDescriptor.getName() + "' has no configurator");
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIViewMessages.task_no_configurator_title,
+                NLS.bind(TaskUIViewMessages.task_no_configurator_message, taskTypeDescriptor.getName()));
             return;
         }
         try {
@@ -66,7 +70,9 @@ public class TaskHandlerEdit extends AbstractHandler implements IElementUpdater 
                 dialog.open();
             }
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Task configuration", "Error opening task '" + task.getName() + "' configuration editor", e);
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIViewMessages.task_configuration_error_title,
+                NLS.bind(TaskUIViewMessages.task_configuration_error_message, task.getName()), e);
         }
     }
 

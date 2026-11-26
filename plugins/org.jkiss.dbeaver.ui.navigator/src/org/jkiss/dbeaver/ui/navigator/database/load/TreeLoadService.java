@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator.database.load;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -43,15 +44,29 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
     }
 
     @Override
+    @NotNull
     public Object[] evaluate(@NotNull DBRProgressMonitor monitor)
         throws InvocationTargetException, InterruptedException
     {
+        if (monitor.isCanceled() || parentNode.isDisposed()) {
+            throw new InterruptedException("Navigator node is no longer available");
+        }
+        DBNNode[] children;
         try {
-            DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, parentNode, true);
-            return children == null ? new Object[0] : children;
+            children = DBNUtils.getNodeChildrenFiltered(monitor, parentNode, true);
+        } catch (DBException ex) {
+            // A project can be deleted while its previously scheduled tree load is running.
+            if (parentNode.isDisposed()) {
+                throw new InterruptedException("Navigator node was disposed while loading");
+            }
+            throw new InvocationTargetException(ex);
         } catch (Throwable ex) {
             throw new InvocationTargetException(ex);
         }
+        if (monitor.isCanceled() || parentNode.isDisposed()) {
+            throw new InterruptedException("Navigator node is no longer available");
+        }
+        return children == null ? new Object[0] : children;
     }
 
 }

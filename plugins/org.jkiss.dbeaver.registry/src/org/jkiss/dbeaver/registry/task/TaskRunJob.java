@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.UUIDv7;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -44,7 +45,6 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -103,7 +103,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         }
         Date startTime = new Date();
         taskStartTime = startTime.toInstant();
-        runId = UUID.randomUUID().toString();
+        runId = UUIDv7.randomUUID().toString();
         TaskRunImpl taskRun = new TaskRunImpl(
             runId,
             startTime,

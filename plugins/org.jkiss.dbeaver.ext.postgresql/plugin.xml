@@ -420,7 +420,7 @@
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
                     webURL="https://jdbc.postgresql.org/"
-                    description="PostgreSQL generic driver. Can be used for old (7.x) or non-standard PostgreSQL servers."
+                    description="%driver.postgresql.legacy.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
@@ -438,7 +438,7 @@
                     defaultDatabase="postgres"
                     defaultUser="postgres"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                    description="Obsolete"
+                    description="%driver.postgres-greenplum-jdbc.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     dialect="postgresql">
                     <parameter name="serverType" value="greenplum"/>
@@ -479,7 +479,7 @@
                     defaultPort="5432"
                     webURL="https://yellowbrick.com/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                    description="Yellowbrick JDBC driver"
+                    description="%driver.yellowbrick-jdbc.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
@@ -574,7 +574,7 @@
                     defaultDatabase="dev"
                     defaultUser="awsuser"
                     threadSafe="false"
-                    description="AWS Redshift JDBC driver"
+                    description="%driver.postgres-redshift-jdbc.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                     databaseDocumentationSuffixURL="Database-driver-Amazon-Redshift"
@@ -718,19 +718,18 @@
 
             <nativeClients>
                 <client id="postgresql_client" label="PostgreSQL Binaries">
-                    <dist os="win32" targetPath="clients/postgresql/win/17" remotePath="repo:/drivers/postgresql/client/win/17" resourcePath="clients/postgresql/win/17">
+                    <dist os="win32" targetPath="clients/postgresql/win/19.0" remotePath="repo:/drivers/postgresql/client/win/19.0" resourcePath="clients/postgresql/win/19.0">
                         <file type="exec" name="psql.exe"/>
                         <file type="exec" name="pg_dump.exe"/>
                         <file type="exec" name="pg_dumpall.exe"/>
                         <file type="exec" name="pg_restore.exe"/>
                         <file type="lib" name="libcrypto-3-x64.dll"/>
                         <file type="lib" name="libiconv-2.dll"/>
-                        <file type="lib" name="libintl-9.dll"/>
+                        <file type="lib" name="libintl-8.dll"/>
                         <file type="lib" name="libzstd.dll"/>
                         <file type="lib" name="liblz4.dll"/>
                         <file type="lib" name="libpq.dll"/>
                         <file type="lib" name="libssl-3-x64.dll"/>
-                        <file type="lib" name="libwinpthread-1.dll"/>
                     </dist>
                 </client>
             </nativeClients>
@@ -833,6 +832,8 @@
             </propertyGroup>
             <propertyGroup label="Advanced SSL Settings">
                 <property id="sslMode" label="SSL Mode" type="string" description="SSL Mode" validValues="disable,allow,prefer,require,verify-ca,verify-full" defaultValue=""/>
+                <property id="sslNegotiation" label="%handler.ssl.property.sslNegotiation.name" type="string"
+                          description="%handler.ssl.property.sslNegotiation.description" validValues="postgres,direct" defaultValue=""/>
                 <property id="sslFactory" label="SSL Factory" type="file" description="SSL Factory"/>
             </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"/>

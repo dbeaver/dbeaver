@@ -353,7 +353,8 @@ public class NewConnectionWizard extends ConnectionWizard
             try {
                 dataSourceRegistry.addDataSource(dataSourceNew);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Create failed", "Error adding new connections", e);
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_create_error_title,
+                    UIConnectionMessages.dialog_connection_create_error, e);
                 return PersistResult.ERROR;
             }
 
@@ -365,7 +366,8 @@ public class NewConnectionWizard extends ConnectionWizard
             try {
                 dataSourceRegistry.checkForErrors();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Persist failed", "Error persisting connection", e);
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_persist_error_title,
+                    UIConnectionMessages.dialog_connection_persist_error, e);
                 return PersistResult.ERROR;
             }
         }

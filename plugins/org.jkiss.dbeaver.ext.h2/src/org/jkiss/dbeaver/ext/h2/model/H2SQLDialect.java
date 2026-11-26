@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLScriptVariableScope;
 
 
@@ -28,6 +29,23 @@ import org.jkiss.dbeaver.model.sql.SQLScriptVariableScope;
  * H2 dialect
  */
 public class H2SQLDialect extends GenericSQLDialect {
+
+    @NotNull
+    @Override
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
+    }
+
+    private static final class DialectFeatures extends SQLDialectFeatures {
+        private static final DialectFeatures INSTANCE = new DialectFeatures();
+
+        /** @see <a href="https://h2database.com/html/grammar.html#array_value_constructor_by_query">H2 array value constructor by query</a> */
+        @NotNull
+        @Override
+        public ArraySubquerySemantics getArraySubquerySemantics() {
+            return ArraySubquerySemantics.SQL_STANDARD_SINGLE_COLUMN;
+        }
+    }
 
     @NotNull
     @Override

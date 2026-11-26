@@ -20,6 +20,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionListener;
@@ -116,7 +117,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                             DBNFileSystems fsRootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot()
                                 .getExtraNode(DBNFileSystems.class);
                             if (fsRootNode == null) {
-                                DBWorkbench.getPlatformUI().showMessageBox("Cloud support required", "Project file system node not found", true);
+                                DBWorkbench.getPlatformUI().showMessageBox(AthenaMessages.cloud_support_required, AthenaMessages.project_file_system_not_found, true);
                                 return;
                             }
                             DBNNode selectedNode = null;
@@ -161,7 +162,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                                                 URI patchedURI = new URI(uri.getScheme(), null, null, 0, uri.getPath(), uri.getQuery(), null);
                                                 s3LocationText.setText(patchedURI.toString());
                                             } catch (URISyntaxException ex) {
-                                                DBWorkbench.getPlatformUI().showError("Bad URI", "Bad URI '" + newS3Path + "'", ex);
+                                                DBWorkbench.getPlatformUI().showError(AthenaMessages.bad_uri_title, NLS.bind(AthenaMessages.bad_uri_message, newS3Path), ex);
                                             }
                                         }
                                     }
@@ -189,7 +190,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             return DBWorkbench.getPlatformUI().runWithProgress(monitor ->
                 fsRootNode.findNodeByPath(monitor, s3Path, true));
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Error opening file system", "Error while opening S3 file system", e);
+            DBWorkbench.getPlatformUI().showError(AthenaMessages.file_system_error_title, AthenaMessages.file_system_error_message, e);
             return null;
         }
     }

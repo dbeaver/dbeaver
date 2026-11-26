@@ -48,7 +48,8 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         super(user, grant ? "Grant" : "Revoke");
         this.grant = grant;
         this.privilege = privilege;
-        this.privilegeTypes = new HashSet<>();
+        // EnumSet keeps privileges in declaration order, so generated statements are stable
+        this.privilegeTypes = EnumSet.noneOf(PostgrePrivilegeType.class);
         this.privilegeOwner = privilegeOwner;
 
         if (privilegeTypes != null) {
@@ -246,13 +247,12 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
     /**
      * Returns the grantee name for the generated DDL.
-     * The PUBLIC pseudo-role is a PostgreSQL keyword and must never be quoted:
-     * {@code GRANT SELECT ON TABLE mytab TO "PUBLIC"} is invalid,
-     * the only correct form is {@code GRANT SELECT ON TABLE mytab TO PUBLIC}.
+     * The pseudo-role {@code public} is written as {@code PUBLIC} to match pg_dump output.
+     * Other role names are quoted as needed.
      */
     @NotNull
     private static String getGranteeName(@NotNull PostgrePrivilegeOwner object, @Nullable String roleName) {
-        if (PostgreConstants.PUBLIC_ROLE_NAME.equalsIgnoreCase(roleName)) {
+        if (PostgreConstants.PUBLIC_ROLE_NAME.equals(roleName)) {
             return PostgreConstants.PUBLIC_ROLE_NAME.toUpperCase();
         }
         return DBUtils.getQuotedIdentifier(object.getDataSource(), roleName);

@@ -19,21 +19,20 @@ package org.jkiss.dbeaver.model.sql.semantics.model.dml;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTargetReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.stm.STMUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Describes UPDATE statement
@@ -49,21 +48,21 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
     private final SQLQueryValueExpression whereClause;
     @Nullable
     private final SQLQueryValueExpression orderByClause;
-    @Nullable
-    private final SQLQueryLexicalScope targetsScope;
+    @NotNull
+    private final List<SQLQueryLexicalScope> targetGapScopes;
     @Nullable
     private final SQLQueryLexicalScope conditionsScope;
     @Nullable
     private final SQLQueryLexicalScope tailScope;
 
-    public SQLQueryUpdateModel(
+    private SQLQueryUpdateModel(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsSourceModel targetRows,
         @Nullable List<SQLQueryUpdateSetClauseModel> setClauseList,
         @Nullable SQLQueryRowsSourceModel sourceRows,
         @Nullable SQLQueryValueExpression whereClause,
         @Nullable SQLQueryValueExpression orderByClause,
-        @Nullable SQLQueryLexicalScope targetsScope,
+        @NotNull List<SQLQueryLexicalScope> targetGapScopes,
         @Nullable SQLQueryLexicalScope conditionsScope,
         @Nullable SQLQueryLexicalScope tailScope
     ) {
@@ -73,12 +72,18 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
         this.sourceRows = sourceRows;
         this.whereClause = whereClause;
         this.orderByClause = orderByClause;
-        this.targetsScope = targetsScope;
+        this.targetGapScopes = targetGapScopes;
         this.conditionsScope = conditionsScope;
         this.tailScope = tailScope;
 
-        if (targetsScope != null) {
-            this.registerLexicalScope(targetsScope);
+        if (setClauseList != null) {
+            for (SQLQueryUpdateSetClauseModel clause : setClauseList) {
+                this.registerSubnode(clause);
+            }
+        }
+        // Parsed `SET a.BAT=1`/`SET @value=1` targets own their symbols; only missing targets use UPDATE gaps.
+        for (SQLQueryLexicalScope scope : targetGapScopes) {
+            this.registerLexicalScope(scope);
         }
         if (conditionsScope != null) {
             this.registerLexicalScope(conditionsScope);
@@ -91,81 +96,63 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
         SQLQueryRowsSourceModel targetSet = targetTableNode == null ? null : recognizer.collectQueryExpression(targetTableNode);
 
         SQLQueryLexicalScope tailScope;
-        SQLQueryLexicalScope targetsScope;
         STMTreeNode setTermNode = node.findFirstChildOfName(STMKnownRuleNames.SET_TERM);
-        Interval targetsScopeInterval = Interval.of(setTermNode != null
-            ? setTermNode.getRealInterval().b + 2
-            : Integer.MAX_VALUE, Integer.MAX_VALUE);
+        STMTreeNode fromClauseNode = node.findFirstChildOfName(STMKnownRuleNames.fromClause);
+        STMTreeNode whereClauseNode = node.findFirstChildOfName(STMKnownRuleNames.whereClause);
+        STMTreeNode orderByClauseNode = node.findFirstChildOfName(STMKnownRuleNames.orderByClause);
+        STMTreeNode limitClauseNode = node.findFirstChildOfName(STMKnownRuleNames.limitClause);
+        // Inclusive caret offsets: `SET x=1| WHERE` is still in SET; `SET x=1 |WHERE` starts the keyword.
+        // No following clause means the last editor scope remains open past the parsed text.
+        int endOfAssignments = Stream.of(fromClauseNode, whereClauseNode, orderByClauseNode, limitClauseNode)
+            .filter(Objects::nonNull).mapToInt(n -> n.getRealInterval().a - 1).min().orElse(Integer.MAX_VALUE);
+        // Missing SET targets end on the caret before the next clause, not on its keyword.
+        int endOfTargetGap = endOfAssignments;
 
         List<SQLQueryUpdateSetClauseModel> setClauseList = new ArrayList<>();
+        List<SQLQueryLexicalScope> targetGapScopes = new ArrayList<>();
         STMTreeNode setClauseListNode = node.findFirstChildOfName(STMKnownRuleNames.setClauseList);
+        String commaTerm = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.Comma);
+        List<STMTreeNode> children = setClauseListNode == null ? Collections.emptyList() : setClauseListNode.getChildren();
+        List<STMTreeNode> clauses = setClauseListNode == null
+            ? Collections.emptyList() : setClauseListNode.findChildrenOfName(STMKnownRuleNames.setClause);
+        if (setTermNode != null && (clauses.isEmpty() || !hasSetTarget(clauses.getFirst()))) {
+            // `SET|` with no parsed target starts here and ends at the next assignment comma or statement clause.
+            STMTreeNode nextComma = findNextComma(children, 0, commaTerm);
+            addTargetGap(targetGapScopes, setTermNode.getRealInterval().b + 1,
+                nextComma == null ? endOfTargetGap : Math.min(endOfTargetGap, nextComma.getRealInterval().a),
+                clauses.isEmpty() ? null : clauses.getFirst(), nextComma != null);
+        }
         if (setClauseListNode != null) {
-            try (SQLQueryModelRecognizer.LexicalScopeHolder holder = recognizer.openScope()) {
-                targetsScope = holder.lexicalScope;
-                for (STMTreeNode setClauseNode : setClauseListNode.findChildrenOfName(STMKnownRuleNames.setClause)) {
-                    STMTreeNode setTargetNode = setClauseNode.findFirstNonErrorChild();
-                    List<SQLQueryValueExpression> targets = setTargetNode == null
-                        ? Collections.emptyList()
-                        : switch (setTargetNode.getNodeKindId()) {
-                            case SQLStandardParser.RULE_setTarget -> {
-                                STMTreeNode targetNameNode = setTargetNode.findFirstNonErrorChild();
-                                STMTreeNode identifier = targetNameNode == null ? null
-                                    : STMKnownRuleNames.identifier.equals(targetNameNode.getNodeName()) ? targetNameNode
-                                    : targetNameNode.findFirstChildOfName(STMKnownRuleNames.identifier);
-                                SQLQuerySymbolEntry targetName = identifier == null
-                                    ? null : recognizer.collectLocalVariableName(identifier);
-                                yield List.of(new SQLQueryValueTargetReferenceExpression(setTargetNode, targetName));
-                            }
-                            case SQLStandardParser.RULE_setTargetList ->
-                                STMUtils.expandSubtree(
-                                    setTargetNode,
-                                    Set.of(STMKnownRuleNames.setTargetList),
-                                    Set.of(STMKnownRuleNames.valueReference)
-                                ).stream().map(cn -> recognizer.collectValueExpression(cn, targetsScope)).collect(Collectors.toList());
-                            case SQLStandardParser.RULE_anyUnexpected ->
-                                // error in query text, ignoring it
-                                Collections.emptyList();
-                            default -> throw new UnsupportedOperationException(
-                                "Set target list expected while facing with " + setTargetNode.getNodeName()
-                            );
-                        };
-                    STMTreeNode updateSourceNode = setClauseNode.findFirstChildOfName(STMKnownRuleNames.updateSource);
-                    List<SQLQueryValueExpression> sources = updateSourceNode == null
-                        ? Collections.emptyList()
-                        : STMUtils.expandSubtree(
-                            updateSourceNode,
-                            Set.of(STMKnownRuleNames.updateSource),
-                            Set.of(STMKnownRuleNames.updateValue)
-                        ).stream()
-                        .map(STMTreeNode::findFirstNonErrorChild)
-                        .filter(Objects::nonNull)
-                        .map(cn -> recognizer.collectValueExpression(cn, targetsScope))
-                        .collect(Collectors.toList());
-                    setClauseList.add(
-                        new SQLQueryUpdateSetClauseModel(
-                            setClauseNode,
-                            targets,
-                            sources,
-                            setClauseNode.getTextContent()
-                        )
-                    );
+            // `SET a=1, b=2` separates clauses; commas in `SET (a,b)=(1,2)` stay inside one clause.
+            for (int i = 0; i < children.size(); i++) {
+                STMTreeNode child = children.get(i);
+                if (STMKnownRuleNames.setClause.equals(child.getNodeName())) {
+                    // `SET a=1|, b=2`: the preceding clause owns the caret at comma.a, not after it.
+                    int end = endOfAssignments;
+                    if (i + 1 < children.size() && commaTerm.equals(children.get(i + 1).getNodeName())) {
+                        end = children.get(i + 1).getRealInterval().a;
+                    }
+                    setClauseList.add(SQLQueryUpdateSetClauseModel.recognize(recognizer, child, end));
+                } else if (commaTerm.equals(child.getNodeName())) {
+                    STMTreeNode nextClause = i + 1 < children.size() ? children.get(i + 1) : null;
+                    if (!hasSetTarget(nextClause)) {
+                        // `SET a=1,|  , c=3`: with no `=`, only target completion applies up to the next comma.
+                        STMTreeNode nextComma = findNextComma(children, i + 1, commaTerm);
+                        addTargetGap(targetGapScopes, child.getRealInterval().b + 1,
+                            nextComma == null ? endOfTargetGap : Math.min(endOfTargetGap, nextComma.getRealInterval().a),
+                            nextClause, nextComma != null);
+                    }
                 }
             }
-        } else {
-            targetsScope = null;
         }
 
         // updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;
 
-        STMTreeNode fromClauseNode = node.findFirstChildOfName(STMKnownRuleNames.fromClause);
         SQLQueryRowsSourceModel sourceSet = fromClauseNode == null ? null : recognizer.collectQueryExpression(fromClauseNode);
 
         SQLQueryValueExpression whereClauseExpr;
         SQLQueryValueExpression orderByExpr;
 
-        STMTreeNode whereClauseNode = node.findFirstChildOfName(STMKnownRuleNames.whereClause);
-        STMTreeNode orderByClauseNode = node.findFirstChildOfName(STMKnownRuleNames.orderByClause);
-        STMTreeNode limitClauseNode = node.findFirstChildOfName(STMKnownRuleNames.limitClause);
         SQLQueryLexicalScope conditionsScope;
 
         if (whereClauseNode != null || orderByClauseNode != null) {
@@ -174,6 +161,7 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
                 whereClauseExpr = whereClauseNode == null ? null : recognizer.collectValueExpression(whereClauseNode, conditionsScope);
                 orderByExpr = orderByClauseNode == null ? null : recognizer.collectValueExpression(orderByClauseNode, conditionsScope);
             }
+            // Start after `WHERE`/`ORDER`; bound at `LIMIT`'s start or leave the tail open for typing.
             STMTreeNode lastConditionKwNode =  (whereClauseNode != null ? whereClauseNode : orderByClauseNode).findFirstNonErrorChild();
             int from = lastConditionKwNode != null ? lastConditionKwNode.getRealInterval().b + 2 : whereClauseNode.getRealInterval().a;
             int to;
@@ -189,20 +177,59 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
             whereClauseExpr = null;
             orderByExpr = null;
             conditionsScope = null;
-            tailScope = limitClauseNode == null ? targetsScope : null;
-        }
-
-        if (targetsScope != null) {
-            STMTreeNode firstConditionNode = whereClauseNode != null
-                ? whereClauseNode
-                : orderByClauseNode != null ? orderByClauseNode : limitClauseNode != null ? limitClauseNode : null;
-            if (firstConditionNode != null) {
-                targetsScopeInterval.b = firstConditionNode.getRealInterval().a - 1;
+            if (limitClauseNode != null || fromClauseNode != null) {
+                tailScope = null;
+            } else {
+                // At `SET a=1,|` EOF, the empty target gap wins over the preceding RHS scope.
+                SQLQueryLexicalScope clauseTail = setClauseList.isEmpty() ? null : setClauseList.getLast().getLastScope();
+                SQLQueryLexicalScope gapTail = targetGapScopes.isEmpty() ? null : targetGapScopes.getLast();
+                tailScope = gapTail != null && (clauseTail == null ||
+                    gapTail.getInterval().a > setClauseList.getLast().getInterval().b) ? gapTail : clauseTail;
             }
-            targetsScope.setInterval(targetsScopeInterval);
         }
+        return new SQLQueryUpdateModel(node, targetSet, setClauseList, sourceSet, whereClauseExpr, orderByExpr,
+            targetGapScopes, conditionsScope, tailScope);
+    }
 
-        return new SQLQueryUpdateModel(node, targetSet, setClauseList, sourceSet, whereClauseExpr, orderByExpr, targetsScope, conditionsScope, tailScope);
+    private static boolean hasSetTarget(@Nullable STMTreeNode clause) {
+        return clause != null && (clause.findFirstChildOfName(STMKnownRuleNames.setTarget) != null ||
+            clause.findFirstChildOfName(STMKnownRuleNames.setTargetList) != null);
+    }
+
+    @Nullable
+    private static STMTreeNode findNextComma(@NotNull List<STMTreeNode> children, int from, @NotNull String commaTerm) {
+        for (int i = from; i < children.size(); i++) {
+            if (commaTerm.equals(children.get(i).getNodeName())) {
+                return children.get(i);
+            }
+        }
+        return null;
+    }
+
+    private static void addTargetGap(
+        @NotNull List<SQLQueryLexicalScope> gaps, int start, int end, @Nullable STMTreeNode followingClause,
+        boolean boundedByComma
+    ) {
+        if (followingClause != null) {
+            STMTreeNode first = followingClause.findFirstNonErrorChild();
+            // Between assignment commas even unknown text is target-side; otherwise stop before unknown text/keywords.
+            if (!boundedByComma && first != null && first.getNodeKindId() == SQLStandardParser.RULE_anyUnexpected &&
+                !first.getTextContent().isEmpty()) {
+                end = Math.min(end, first.getRealInterval().a - 1);
+            }
+            // A missing target never extends past `=` into the RHS scope.
+            STMTreeNode equals = followingClause.findFirstChildOfName(
+                SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.EqualsOperator));
+            if (equals != null) {
+                end = Math.min(end, equals.getRealInterval().a - 1);
+            }
+        }
+        // Adjacent tokens can leave no caret position in the gap; avoid registering an inverted interval.
+        if (start <= end) {
+            SQLQueryLexicalScope gap = new SQLQueryLexicalScope();
+            gap.setInterval(Interval.of(start, end));
+            gaps.add(gap);
+        }
     }
 
     @Nullable
@@ -283,11 +310,17 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
             }
             targetContext = this.targetRows.getRowsDataContext();
 
-            if (this.targetsScope != null) {
-                this.targetsScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.SyntaxBasedFromRowsData(targetContext));
+            // `UPDATE t a JOIN u b SET |` draws target proposals from both updated row sources.
+            SQLQuerySymbolOrigin.UpdateTarget targetOrigin = new SQLQuerySymbolOrigin.UpdateTarget(targetContext);
+            for (SQLQueryLexicalScope scope : this.targetGapScopes) {
+                scope.setSymbolsOrigin(targetOrigin);
             }
             if (this.setClauseList != null) {
                 for (SQLQueryUpdateSetClauseModel updateSetClauseModel : this.setClauseList) {
+                    SQLQueryLexicalScope targetScope = updateSetClauseModel.getTargetScope();
+                    if (targetScope != null) {
+                        targetScope.setSymbolsOrigin(targetOrigin);
+                    }
                     // resolve target columns against target set
                     for (SQLQueryValueExpression valueExpression : updateSetClauseModel.targets) {
                         if (!valueExpression.tryResolveValueRelations(targetContext, statistics)) {
@@ -314,9 +347,15 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
         if (targetContext != context || sourceContext != context) {
             context = targetContext.combine(sourceContext);
         }
-        
+
+        // `SET a.BAT = | FROM u` uses the combined target/FROM context, unlike the target before `=`.
+        SQLQuerySymbolOrigin.RowsDataRef sourceOrigin = new SQLQuerySymbolOrigin.RowsDataRef(context);
         if (this.setClauseList != null) {
             for (SQLQueryUpdateSetClauseModel setClauseModel : this.setClauseList) {
+                SQLQueryLexicalScope sourceScope = setClauseModel.getSourceScope();
+                if (sourceScope != null) {
+                    sourceScope.setSymbolsOrigin(sourceOrigin);
+                }
                 // resolve source value expressions against combined participating sets
                 for (SQLQueryValueExpression valueExpression : setClauseModel.sources) {
                     if (!valueExpression.tryResolveValueRelations(context, statistics)) {
@@ -338,7 +377,7 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
         }
 
         if (this.conditionsScope != null) {
-            this.conditionsScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(context));
+            this.conditionsScope.setSymbolsOrigin(sourceOrigin);
         }
 
         if (this.tailScope != null) {

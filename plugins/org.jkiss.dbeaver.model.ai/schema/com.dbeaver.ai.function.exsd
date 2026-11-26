@@ -107,15 +107,31 @@
          </attribute>
          <attribute name="purpose">
             <annotation>
-               <documentation>Function purpose: TOOL (AI assistant tool), MCP (MCP protocol only), ALL (both). Defaults to TOOL</documentation>
+               <documentation>Function purpose: TOOL (AI assistant tool), MCP (MCP protocol only), DAM (DataDam MCP only), ALL (TOOL and MCP). Defaults to TOOL</documentation>
             </annotation>
             <simpleType>
                <restriction base="string">
                   <enumeration value="TOOL"/>
                   <enumeration value="MCP"/>
+                  <enumeration value="DAM"/>
                   <enumeration value="ALL"/>
                </restriction>
             </simpleType>
+         </attribute>
+         <attribute name="readOnlyHint" type="boolean">
+            <annotation>
+               <documentation>MCP hint: the function does not modify its environment. Defaults to false.</documentation>
+            </annotation>
+         </attribute>
+         <attribute name="destructiveHint" type="boolean">
+            <annotation>
+               <documentation>MCP hint: the function may perform destructive updates. Defaults to true. Only meaningful when readOnlyHint is false.</documentation>
+            </annotation>
+         </attribute>
+         <attribute name="idempotentHint" type="boolean">
+            <annotation>
+               <documentation>MCP hint: repeated calls with the same arguments have no additional side effects. Defaults to false. Only meaningful when readOnlyHint is false.</documentation>
+            </annotation>
          </attribute>
          <attribute name="system" type="boolean">
             <annotation>

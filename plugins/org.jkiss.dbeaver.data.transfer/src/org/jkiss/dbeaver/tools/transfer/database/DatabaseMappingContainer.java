@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -53,11 +54,13 @@ import java.util.*;
 public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private static final Log log = Log.getLog(DatabaseMappingContainer.class);
+    private static final String SETTING_TARGET_NAME_IS_RAW = "targetNameIsRaw";
 
     private final DatabaseConsumerSettings consumerSettings;
     private final DBSDataContainer source;
     private DBSDataManipulator target;
     private String targetName;
+    private boolean targetNameIsRaw;
     private DatabaseMappingType mappingType;
     private final List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
     private Map<DBPPropertyDescriptor, Object> changedPropertiesMap;
@@ -74,6 +77,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
+        this.targetNameIsRaw = targetObject != null;
         refreshMappingType(monitor, DatabaseMappingType.existing, false, false);
     }
 
@@ -82,6 +86,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.source = sourceObject;
         this.target = container.target;
         this.targetName = container.targetName;
+        this.targetNameIsRaw = container.targetNameIsRaw;
         this.mappingType = container.mappingType;
         for (DatabaseMappingAttribute attribute : container.attributeMappings) {
             this.attributeMappings.add(new DatabaseMappingAttribute(attribute, this));
@@ -101,6 +106,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     public void setTarget(DBSDataManipulator target) {
         this.target = target;
         this.targetName = null;
+        this.targetNameIsRaw = target != null;
     }
 
     @NotNull
@@ -223,7 +229,43 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void setTargetName(@NotNull String targetName) {
+        setTargetName(targetName, false);
+    }
+
+    void setTargetName(@NotNull String targetName, boolean isRaw) {
         this.targetName = targetName;
+        this.targetNameIsRaw = isRaw;
+    }
+
+    /**
+     * Returns true if the stored target name is a raw database name rather than a SQL-encoded value.
+     */
+    boolean isTargetNameRaw() {
+        return targetNameIsRaw;
+    }
+
+    /**
+     * Returns true if the source name must be quoted to preserve its case or special characters.
+     * Target names derived from such sources must not be case-transformed.
+     */
+    public boolean isSourceNameQuoted() {
+        if (!(source instanceof DBSEntity)) {
+            return false;
+        }
+        DBPDataSource sourceDataSource = source.getDataSource();
+        String sourceName = source.getName();
+        return sourceDataSource != null
+            && CommonUtils.isNotEmpty(sourceName)
+            && sourceDataSource.getSQLDialect().mustBeQuoted(sourceName, true);
+    }
+
+    /**
+     * Returns true if the target name must keep the case of a quoted source name.
+     * Only an unchanged auto-derived target name is preserved: existing and recreated mappings
+     * already hold a real database name, and explicitly typed names follow the target naming rules.
+     */
+    public boolean shouldPreserveSourceCase(@NotNull String targetName) {
+        return isSourceNameQuoted() && targetName.equals(getTargetName());
     }
 
     @Nullable
@@ -299,10 +341,14 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
 
     public void saveSettings(@NotNull Map<String, Object> settings) {
-        if (!CommonUtils.isEmpty(targetName)) {
-            settings.put("targetName", targetName);
-        } else if (target != null) {
+        if (target != null) {
+            // The target object holds the real database name; targetName may be a stale encoded value.
+            targetNameIsRaw = true;
             settings.put("targetName", target.getName());
+            settings.put(SETTING_TARGET_NAME_IS_RAW, true);
+        } else if (!CommonUtils.isEmpty(targetName)) {
+            settings.put("targetName", targetName);
+            settings.put(SETTING_TARGET_NAME_IS_RAW, targetNameIsRaw);
         }
         if (mappingType != null) {
             settings.put("mappingType", mappingType.name());
@@ -338,10 +384,23 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         if (settings.get("mappingType") != null) {
             try {
                 DatabaseMappingType newMappingType = DatabaseMappingType.valueOf((String) settings.get("mappingType"));
+                // New tasks persist the provenance. Legacy tasks stored raw target names for
+                // existing/recreate mappings and encoded names for generated targets.
+                targetNameIsRaw = JSONUtils.getBoolean(
+                    settings,
+                    SETTING_TARGET_NAME_IS_RAW,
+                    newMappingType == DatabaseMappingType.existing
+                        || newMappingType == DatabaseMappingType.recreate);
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSObjectContainer objectContainer = consumerSettings.getContainer();
                     if (objectContainer != null) {
-                        DBSObject child = objectContainer.getChild(new VoidProgressMonitor(), targetName);
+                        boolean storedNameIsRaw = targetNameIsRaw;
+                        VoidProgressMonitor monitor = new VoidProgressMonitor();
+                        DBSObject child = DatabaseTransferUtils.findChildByStoredName(
+                            objectContainer,
+                            monitor,
+                            targetName,
+                            storedNameIsRaw);
                         target = DatabaseTransferUtils.isValidTargetTable(child)
                             ? (DBSDataManipulator) child
                             : null;
@@ -401,10 +460,11 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     public String getTargetFullName() {
         DBSObjectContainer container = consumerSettings.getContainer();
+        String name = getTargetName();
 
         if (container instanceof DBSSchema || container instanceof DBSCatalog) {
-            return DBUtils.getObjectFullName(container, DBPEvaluationContext.DML) + "." + targetName;
+            return DBUtils.getObjectFullName(container, DBPEvaluationContext.DML) + "." + name;
         }
-        return getTargetName();
+        return name;
     }
 }

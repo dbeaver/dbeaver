@@ -485,13 +485,16 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     private void configureAggregateQuery(DBRProgressMonitor monitor) throws DBCException {
+        boolean legacyServer = !getDataSource().isServerVersionAtLeast(9, 3);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read aggregate function body")) {
-            String query = "SELECT (pg_identify_object('pg_proc'::regclass, aggfnoid, 0)).identity,\n" +
+            String query = (legacyServer ? "SELECT NULL AS identity,\n"
+                : "SELECT (pg_identify_object('pg_proc'::regclass, aggfnoid, 0)).identity,\n") +
                 "aggtransfn::regproc,\n" +
                 "format_type(aggtranstype, NULL) as aggtranstype,\n" +
-                "CASE aggfinalfn WHEN '-'::regproc THEN NULL ELSE aggfinalfn::text END,\n" +
+                (legacyServer ? "CASE aggfinalfn WHEN 0 THEN NULL ELSE aggfinalfn END AS aggfinalfn,\n"
+                    : "CASE aggfinalfn WHEN '-'::regproc THEN NULL ELSE aggfinalfn::text END,\n") +
                 "CASE aggsortop WHEN 0 THEN NULL ELSE oprname END,\n" +
-                "agginitval, " +
+                (legacyServer ? "agginitval " : "agginitval, ") +
                 (getDataSource().isServerVersionAtLeast(9, 4) ? "aggmtransfn, aggminvtransfn,\n" +
                 "aggfinalextra, aggmfinalextra, aggserialfn, aggdeserialfn, aggmfinalfn,\n" +
                 "format_type(aggmtranstype, NULL) as aggmtranstype\n" : "") +
@@ -500,12 +503,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 "FROM pg_aggregate\n" +
                 "LEFT JOIN pg_proc ON pg_proc.oid = pg_aggregate.aggfnoid\n" +
                 "LEFT JOIN pg_operator ON pg_operator.oid = aggsortop\n" +
-                "WHERE aggfnoid = ?::regproc";
+                (legacyServer ? "WHERE aggfnoid = ?::bigint" : "WHERE aggfnoid = ?::regproc");
             try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
-                dbStat.setString(1, getFullyQualifiedName(DBPEvaluationContext.DDL));
+                dbStat.setString(1, legacyServer ? Long.toString(getObjectId()) : getFullyQualifiedName(DBPEvaluationContext.DDL));
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        String fullName = JDBCUtils.safeGetString(dbResult, "identity");
+                        String fullName = legacyServer ? getFullQualifiedSignature() : JDBCUtils.safeGetString(dbResult, "identity");
                         String aggtransfn = JDBCUtils.safeGetString(dbResult, "aggtransfn"); // Transition function
 
                         // Data type of the aggregate function's internal transition (state) data
@@ -546,7 +549,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                         boolean finalextra = JDBCUtils.safeGetBoolean(dbResult, "aggfinalextra"); // arguments to aggfinalfn
                         boolean mfinalextra = JDBCUtils.safeGetBoolean(dbResult, "aggmfinalextra"); // arguments to aggmfinalfn
 
-                        StringBuilder aggregateBody = new StringBuilder("CREATE OR REPLACE AGGREGATE ");
+                        StringBuilder aggregateBody = new StringBuilder(legacyServer
+                            ? "CREATE AGGREGATE " : "CREATE OR REPLACE AGGREGATE ");
                         final String delim = ",\n\t";
                         aggregateBody.append(fullName).append(" (\n")
                             .append("\tSFUNC = ").append(aggtransfn).append(delim)
@@ -884,6 +888,23 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         @NotNull DBRProgressMonitor monitor, boolean includeNestedObjects
     ) throws DBException {
         return PostgreUtils.extractPermissionsFromACL(monitor, this, acl, false);
+    }
+
+    /**
+     * True when proacl was read as an array, including an empty one ({}).
+     * False for NULL (default privileges) or a value that couldn't be decoded,
+     * because then the privileges are unknown and nothing may be revoked.
+     */
+    public boolean hasExplicitAcl() {
+        if (!(acl instanceof java.sql.Array array)) {
+            return false;
+        }
+        try {
+            array.getArray();
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
     @Override

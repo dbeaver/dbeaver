@@ -17,8 +17,11 @@
 package org.jkiss.dbeaver.ext.clickhouse;
 
 import com.google.gson.Gson;
+import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -64,6 +67,58 @@ public class ClickhouseTypeParser {
                 typeName.startsWith(ClickhouseConstants.DATA_TYPE_NULLABLE) ||
                 typeName.startsWith(ClickhouseConstants.DATA_TYPE_LOW_CARDINALITY)
             );
+    }
+
+    /** Recognizes scalar JSON types, but not collections or LowCardinality(JSON). */
+    public static boolean isScalarJsonType(@NotNull String typeName) {
+        if ("JSON".equalsIgnoreCase(typeName)) {
+            return true;
+        }
+        if (!typeName.startsWith("JSON(") && !typeName.startsWith("Nullable(")) {
+            return false;
+        }
+        if (isParsedScalarJsonType(typeName)) {
+            return true;
+        }
+        // clickhouse-jdbc can omit the outer Nullable close when its inner type has parameters,
+        // including JSON. The driver bug is open: https://github.com/ClickHouse/clickhouse-java/issues/3382
+        // FIXME: Revisit this workaround when the driver issue is closed and the fix is available.
+        return typeName.startsWith("Nullable(JSON(") && typeName.endsWith(")")
+            && isParsedScalarJsonType(typeName + ")");
+    }
+
+    private static boolean isParsedScalarJsonType(@NotNull String typeName) {
+        final boolean[] lexerError = {false};
+        final var lexer = new ClickhouseDataTypesLexer(CharStreams.fromString(typeName));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(new BaseErrorListener() {
+            @Override
+            public void syntaxError(
+                Recognizer<?, ?> recognizer,
+                Object offendingSymbol,
+                int line,
+                int charPositionInLine,
+                String msg,
+                RecognitionException e
+            ) {
+                lexerError[0] = true;
+            }
+        });
+        final var parser = new ClickhouseDataTypesParser(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        final var root = parser.type();
+        if (lexerError[0] || parser.getNumberOfSyntaxErrors() > 0 || root.anyType() == null) {
+            return false;
+        }
+        final var type = root.anyType();
+        if (type.simpleType() != null) {
+            return type.simpleType().jsonType() != null;
+        }
+        final var marker = type.markerType();
+        return marker != null
+            && marker.markerTypePrefix() instanceof ClickhouseDataTypesParser.NullableMarkerContext
+            && marker.anyType().simpleType() != null
+            && marker.anyType().simpleType().jsonType() != null;
     }
 
     @Nullable

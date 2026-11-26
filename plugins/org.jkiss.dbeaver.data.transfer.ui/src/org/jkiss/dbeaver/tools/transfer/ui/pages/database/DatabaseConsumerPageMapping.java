@@ -289,7 +289,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             settings.setContainer(DBUtils.getAdapter(DBSObjectContainer.class, node.getObject()));
                         });
                     } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Container init failed", null, e);
+                        DBWorkbench.getPlatformUI().showError(DTUIMessages.database_container_init_error_title, null, e);
                     }
                     loadSettings(false);
                     setContainerInfo(node);
@@ -700,9 +700,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     String name = CommonUtils.toString(value);
                     DatabaseMappingObject dmo = (DatabaseMappingObject) element;
                     DBPDataSource dataSource = settings.getTargetDataSource(dmo);
+                    boolean keepSourceCase = dmo instanceof DatabaseMappingContainer container
+                        && container.shouldPreserveSourceCase(name);
                     if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE)
                         && !isConfigurationRow(dmo)
                         && dataSource != null && !DBUtils.isQuotedIdentifier(dataSource, name)
+                        && !keepSourceCase
                     ) {
                         name = DBObjectNameCaseTransformer.transformName(dataSource, name);
                     }
@@ -1252,7 +1255,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             } else if (name.equals(TARGET_NAME_BROWSE)) {
                 mapExistingTable((DatabaseMappingContainer) mapping);
             } else {
-                name = transformTargetName(name, mapping.getMappingType());
+                boolean skipCaseChanging = mapping instanceof DatabaseMappingContainer container
+                    && container.isSourceNameQuoted();
+                name = transformTargetName(name, mapping.getMappingType(), skipCaseChanging);
                 if (mapping instanceof DatabaseMappingContainer containerMapping) {
                     if (settings.getContainer() != null) {
                         if (setMappingTargetContainer(monitor, containerMapping, settings, name, forceRefresh)) {
@@ -1306,7 +1311,14 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     ) throws DBException {
         // container's tables
         DBSObjectContainer container = settings.getContainer();
-        String unQuotedNameForSearch = DBUtils.getUnQuotedIdentifier(container.getDataSource(), name);
+        String unquotedName = container.getDataSource().getSQLDialect().getUnquotedIdentifier(name, true);
+        DatabaseMappingType mappingType = containerMapping.getMappingType();
+        // Auto-generated/encoded target names must be decoded. Raw names are used unchanged only
+        // when they come from a resolved target and have not been edited.
+        boolean storedNameIsRaw = (mappingType == DatabaseMappingType.existing
+            || mappingType == DatabaseMappingType.recreate)
+            && containerMapping.getTarget() != null
+            && name.equals(containerMapping.getTargetName());
 
         DBSDataManipulator targetDataContainer = null;
 
@@ -1316,13 +1328,29 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         if (namespaceContainer != null) {
             ns = namespaceContainer.getNamespaceForObjectType(RelationalObjectType.TYPE_TABLE);
             if (ns != null) {
-                DBSObject existingObject = ns.getObjectByName(monitor, unQuotedNameForSearch);
+                String lookupName;
+                DBSObject existingObject;
+                if (storedNameIsRaw) {
+                    // A raw name may literally start and end with the quote delimiter, so resolve it first.
+                    lookupName = name;
+                    existingObject = ns.getObjectByName(monitor, lookupName);
+                    if (!DatabaseTransferUtils.isValidTargetTable(existingObject) && !unquotedName.equals(name)) {
+                        DBSObject unquotedObject = ns.getObjectByName(monitor, unquotedName);
+                        if (DatabaseTransferUtils.isValidTargetTable(unquotedObject) || existingObject == null) {
+                            lookupName = unquotedName;
+                            existingObject = unquotedObject;
+                        }
+                    }
+                } else {
+                    lookupName = unquotedName;
+                    existingObject = ns.getObjectByName(monitor, lookupName);
+                }
                 if (existingObject != null) {
                     if (DatabaseTransferUtils.isValidTargetTable(existingObject)
                         && existingObject instanceof DBSDataManipulator targetTable) {
                         targetDataContainer = targetTable;
                     } else {
-                        return reportTargetNameConflict(monitor, containerMapping, name, unQuotedNameForSearch, existingObject);
+                        return reportTargetNameConflict(monitor, containerMapping, name, lookupName, existingObject);
                     }
                 }
             }
@@ -1331,14 +1359,25 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         if (targetDataContainer == null && ns == null) {
             // Without a namespace, search for an existing data manipulator (writable table).
             // A namespace lookup already covers a missing name without loading every child in the container.
+            String primaryName = storedNameIsRaw ? name : unquotedName;
+            String secondaryName = storedNameIsRaw && !unquotedName.equals(name) ? unquotedName : null;
             DBSObject conflictingObject = null;
             for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
-                if (!unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
+                String childName = child.getName();
+                boolean exactPrimary = primaryName.equals(childName);
+                boolean matchesPrimary = exactPrimary || primaryName.equalsIgnoreCase(childName);
+                boolean matchesSecondary = secondaryName != null && secondaryName.equalsIgnoreCase(childName);
+                if (!matchesPrimary && !matchesSecondary) {
                     continue;
                 }
                 if (DatabaseTransferUtils.isValidTargetTable(child)) {
-                    targetDataContainer = (DBSDataManipulator) child;
-                    break;
+                    if (exactPrimary) {
+                        targetDataContainer = (DBSDataManipulator) child;
+                        break;
+                    }
+                    if (targetDataContainer == null) {
+                        targetDataContainer = (DBSDataManipulator) child;
+                    }
                 } else if (conflictingObject == null) {
                     conflictingObject = child;
                 }
@@ -1346,7 +1385,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             if (targetDataContainer == null && conflictingObject != null) {
                 // The name is taken by an object which cannot be used as a target (for instance a view).
                 // Report the conflict instead of silently switching the mapping to "create".
-                return reportTargetNameConflict(monitor, containerMapping, name, unQuotedNameForSearch, conflictingObject);
+                return reportTargetNameConflict(monitor, containerMapping, name, primaryName, conflictingObject);
             }
         }
         if (targetDataContainer != null) {
@@ -1383,7 +1422,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DatabaseMappingContainer containerMapping,
         @NotNull String name,
-        @NotNull String unQuotedNameForSearch,
+        @NotNull String conflictName,
         @NotNull DBSObject existingObject
     ) throws DBException {
         containerMapping.setTarget(null);
@@ -1394,7 +1433,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             false,
             false);
         mappingErrorMessage =
-            "Name '" + unQuotedNameForSearch + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
+            "Name '" + conflictName + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
         mappingErrorSource = containerMapping;
 
         UIUtils.asyncExec(() -> mappingViewer.refresh());
@@ -1524,14 +1563,19 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     private String transformTargetName(String name, @NotNull DatabaseMappingType mappingType) {
+        return transformTargetName(name, mappingType, false);
+    }
+
+    private String transformTargetName(String name, @NotNull DatabaseMappingType mappingType, boolean skipCaseChanging) {
         DBSObjectContainer container = getDatabaseConsumerSettings().getContainer();
         if (container == null || container.getDataSource() == null) {
             return name;
         }
-        if (mappingType == DatabaseMappingType.create) {
-            return DatabaseTransferUtils.getTransformedName(container.getDataSource(), name, false);
-        }
-        return DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+        return DatabaseTransferUtils.getTransformedTargetName(
+            container.getDataSource(),
+            name,
+            mappingType,
+            skipCaseChanging);
     }
 
     protected void mapColumnsAndTable(DatabaseMappingContainer mapping) {
