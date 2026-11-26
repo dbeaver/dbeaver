@@ -61,7 +61,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
     private static final long CONNECT_TIMEOUT_MILLIS = 30_000;
     private static final long READY_TIMEOUT_MILLIS = 10_000;
     private static final long SEND_TIMEOUT_MILLIS = 10_000;
-    private static final Duration IDLE_TIMEOUT = Duration.ofSeconds(90);
+    private static final Duration HEARTBEAT_TIMEOUT = Duration.ofSeconds(90);
     private static final long MIN_RETRY_MILLIS = 1_000;
     private static final long MAX_RETRY_MILLIS = 60_000;
 
@@ -72,6 +72,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
     private final String helloMessage;
     private final TokenProvider tokens;
     private final Supplier<BaseWebSocketClient> clients;
+    private final Duration heartbeatTimeout;
     private final List<Registration<DDRemoteDamMessageListener>> messageListeners = new ArrayList<>();
     private final List<Registration<DDRemoteDamSessionListener>> sessionListeners = new ArrayList<>();
     private final List<StateObservation> stateObservers = new ArrayList<>();
@@ -103,12 +104,23 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         @NotNull TokenProvider tokens,
         @NotNull Supplier<BaseWebSocketClient> clients
     ) throws DBException {
+        this(endpoint, hello, tokens, clients, HEARTBEAT_TIMEOUT);
+    }
+
+    DBDamChannel(
+        @NotNull URI endpoint,
+        @NotNull DDRemoteDamHandshakeRequest hello,
+        @NotNull TokenProvider tokens,
+        @NotNull Supplier<BaseWebSocketClient> clients,
+        @NotNull Duration heartbeatTimeout
+    ) throws DBException {
         DDEndpoints.requireSecureWebSocketTransport(endpoint);
         this.endpoint = endpoint;
         this.hello = hello;
         this.helloMessage = DDRemoteDamProtocol.encodeHandshakeRequest(hello);
         this.tokens = tokens;
         this.clients = clients;
+        this.heartbeatTimeout = heartbeatTimeout;
         if (helloMessage.getBytes(StandardCharsets.UTF_8).length > MAX_MESSAGE_BYTES) {
             throw new DBException("Desktop hello exceeds the message size limit");
         }
@@ -128,6 +140,41 @@ public final class DBDamChannel implements DDRemoteDamChannel {
 
     public void pause() {
         stop(false);
+    }
+
+    /** Obtains and sends renewed credentials off the access-service notification thread. */
+    public void refreshAuthentication() {
+        synchronized (lock) {
+            if (current != null) {
+                current.authenticationRequested = true;
+                if (current.session != null && current.authenticationRefresh) {
+                    current.authentication.schedule();
+                }
+            }
+        }
+    }
+
+    private void refreshAuthentication(@NotNull Attempt attempt) {
+        try {
+            String token = tokens.getAccessToken(endpoint);
+            if (token == null || token.isBlank()) {
+                return;
+            }
+            String encoded = DDRemoteDamProtocol.encodeAuthenticationRequest(token);
+            if (encoded.getBytes(StandardCharsets.UTF_8).length > MAX_MESSAGE_BYTES) {
+                log.warn("DataDam authentication message exceeds the message size limit");
+                return;
+            }
+            synchronized (lock) {
+                if (current == attempt && attempt.session != null) {
+                    // Keep one priority control frame so application traffic cannot delay token renewal until expiry.
+                    attempt.authenticationMessage = new Outgoing(encoded, new CompletableFuture<>());
+                    wakeSender(attempt);
+                }
+            }
+        } catch (DBException e) {
+            log.debug("Cannot renew DataDam desktop channel authentication", e);
+        }
     }
 
     @Override
@@ -361,11 +408,16 @@ public final class DBDamChannel implements DDRemoteDamChannel {
             Outgoing outgoing;
             WebSocket socket;
             synchronized (lock) {
-                if (current != attempt || attempt.outgoing.isEmpty()) {
+                if (current != attempt || attempt.outgoing.isEmpty() && attempt.authenticationMessage == null) {
                     attempt.senderScheduled = false;
                     return;
                 }
-                outgoing = attempt.outgoing.removeFirst();
+                if (attempt.authenticationMessage != null) {
+                    outgoing = attempt.authenticationMessage;
+                    attempt.authenticationMessage = null;
+                } else {
+                    outgoing = attempt.outgoing.removeFirst();
+                }
                 attempt.sending = outgoing;
                 socket = attempt.socket;
             }
@@ -465,6 +517,10 @@ public final class DBDamChannel implements DDRemoteDamChannel {
                     return;
                 }
                 attempt.session = ready;
+                attempt.authenticationRefresh = response.authenticationRefresh();
+                if (attempt.authenticationRequested && attempt.authenticationRefresh) {
+                    attempt.authentication.schedule();
+                }
                 updateStatus(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.CONNECTED, ready));
                 retryMillis = MIN_RETRY_MILLIS;
                 listeners = List.copyOf(sessionListeners);
@@ -552,6 +608,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         attempt.incoming.clear();
         attempt.failed.addAll(attempt.outgoing);
         attempt.outgoing.clear();
+        attempt.authenticationMessage = null;
         if (attempt.sending != null) {
             attempt.failed.add(attempt.sending);
             attempt.sending = null;
@@ -574,6 +631,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         attempt.connectDeadline.cancel();
         attempt.readyDeadline.cancel();
         attempt.sender.cancel();
+        attempt.authentication.cancel();
         if (attempt.socket != null) {
             try {
                 attempt.listener.dispose(attempt.socket, attempt.failed.isEmpty());
@@ -601,6 +659,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         private final ChannelJob connectDeadline = new ChannelJob("Desktop Dam session deadline", () -> deadline(this, false));
         private final ChannelJob readyDeadline = new ChannelJob("Desktop ready deadline", () -> deadline(this, true));
         private final ChannelJob sender = new ChannelJob("Send Desktop messages", () -> sendPending(this));
+        private final ChannelJob authentication = new ChannelJob("Renew Desktop authentication", () -> refreshAuthentication(this));
         private final ArrayDeque<String> incoming = new ArrayDeque<>();
         private final ArrayDeque<Outgoing> outgoing = new ArrayDeque<>();
         private final List<Outgoing> failed = new ArrayList<>();
@@ -612,7 +671,11 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         private DDRemoteDamSessionInfo session;
         @Nullable
         private Outgoing sending;
+        @Nullable
+        private Outgoing authenticationMessage;
         private boolean senderScheduled;
+        private boolean authenticationRefresh;
+        private boolean authenticationRequested;
     }
 
     private final class AttemptListener extends BaseWebSocketClient.Listener {
@@ -623,7 +686,8 @@ public final class DBDamChannel implements DDRemoteDamChannel {
 
         private AttemptListener(@NotNull Attempt attempt) {
             this.attempt = attempt;
-            setIdleTimeout(IDLE_TIMEOUT);
+            // Ping/pong frames count as activity in the base listener: only a lost heartbeat expires the connection.
+            setIdleTimeout(heartbeatTimeout);
         }
 
         @Override
