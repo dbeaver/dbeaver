@@ -4872,7 +4872,11 @@ public abstract class LightGrid extends Canvas {
                                 text.append(cellText);
                             }
                         }
-                        event.data = text.toString();
+                        if (text.isEmpty()) {
+                            event.doit = false;
+                        } else {
+                            event.data = text.toString();
+                        }
                     }
                 } else if (cellSelectionDragStarted) {
                     if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
