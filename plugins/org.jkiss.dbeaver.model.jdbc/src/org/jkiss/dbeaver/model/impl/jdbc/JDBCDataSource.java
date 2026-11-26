@@ -354,7 +354,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected void validateConnectionProperties(@Nullable String url, @NotNull Properties connectProps) throws DBCException {
         if (DBWorkbench.getPlatform().getApplication().isMultiuser()
             || DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES)) {
-            JDBCConnectionValidator validator = GeneralUtils.adapt(this, JDBCConnectionValidator.class);
+            Object validatorId = container.getDriver().getDriverParameter(DBPDriverConstants.PARAM_CONNECTION_VALIDATOR);
+            JDBCConnectionValidator validator = validatorId == null
+                ? GeneralUtils.adapt(this, JDBCConnectionValidator.class)
+                : JDBCConnectionValidatorRegistry.getInstance().createValidator(CommonUtils.toString(validatorId));
             if (validator != null) {
                 validator.validateConnectionProperties(url, connectProps);
             }

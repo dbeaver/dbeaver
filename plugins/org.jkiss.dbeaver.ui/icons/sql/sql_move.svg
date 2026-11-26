@@ -1,10 +1,3 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(16, 0) scale(-1, 1)">
-<g>
-<path d="M13 3V6H9V3H13ZM14 2H8V7H14V2Z" fill="#338ECC"/>
-<path d="M5 5.5L5 10.5L8 8L5 5.5Z" fill="#3387C5"/>
-<path d="M7 8L2 8" stroke="#3387C5" stroke-miterlimit="10"/>
-<path d="M13 10V13H9V10H13ZM14 9H8V14H14V9Z" fill="#338ECC"/>
-</g>
-</g>
+<path d="M7 15H1V9H7V15ZM2 14H6V10H2V14ZM11.3535 4.85352L9.20703 7H15V8H9.20703L11.3535 10.1465L10.6465 10.8535L7.29297 7.5L10.6465 4.14648L11.3535 4.85352ZM7 7H1V1H7V7ZM2 6H6V2H2V6Z" fill="#3387C5"/>
 </svg>

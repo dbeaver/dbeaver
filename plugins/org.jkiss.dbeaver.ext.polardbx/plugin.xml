@@ -28,7 +28,7 @@
                     sampleURL="jdbc:polardbx://{host}[:{port}][/{database}]"
                     categories="sql"
                     webURL="https://github.com/ApsaraDB/galaxysql"
-                    description="PolarDB-X JDBC driver for distributed relational databases with a MySQL-derived SQL dialect."
+                    description="%driver.polardbx.description"
                     icon="icons/polardbx_icon.svg"
                     iconBig="icons/polardbx_icon_big.svg"
                     logoImage="icons/polardbx_logo.svg">

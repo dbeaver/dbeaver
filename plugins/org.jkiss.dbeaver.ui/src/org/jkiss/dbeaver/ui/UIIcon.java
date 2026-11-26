@@ -293,6 +293,17 @@ public class UIIcon {
     public static final DBIcon CUSTOM_MODE = new DBIcon("misc/custom_mode.svg");
     public static final DBIcon ADVANCED_MODE = new DBIcon("misc/advanced_mode.svg");
 
+    public static final DBIcon SHARED_REMOVE = new DBIcon("eclipse/elcl16/remove.svg");
+    public static final DBIcon SHARED_REMOVE_ALL = new DBIcon("eclipse/elcl16/removeall.svg");
+    public static final DBIcon SHARED_STOP = new DBIcon("eclipse/elcl16/stop.svg");
+    public static final DBIcon SHARED_VIEW_MENU = new DBIcon("eclipse/elcl16/view_menu.svg");
+    public static final DBIcon SHARED_COPY = new DBIcon("eclipse/etool16/copy_edit.svg");
+    public static final DBIcon SHARED_PASTE = new DBIcon("eclipse/etool16/paste_edit.svg");
+    public static final DBIcon SHARED_DEFAULT_PERSPECTIVE = new DBIcon("eclipse/eview16/default_persp.svg");
+    public static final DBIcon SHARED_DEFAULT_VIEW = new DBIcon("eclipse/eview16/defaultview_misc.svg");
+    public static final DBIcon SHARED_ERROR = new DBIcon("eclipse/obj16/error_tsk.svg");
+    public static final DBIcon SHARED_FILE = new DBIcon("eclipse/obj16/file_obj.svg");
+
     static  {
         DBIcon.loadIcons(UIIcon.class);
     }

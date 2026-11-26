@@ -30,7 +30,7 @@
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
                         supportedConfigurationTypes="MANUAL,URL"
                         defaultPort="446"
-                        description="IBM Toolbox for Java JDBC driver for Db2 relational databases on IBM i."
+                        description="%driver.db2_iseries.description"
                         databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
                         categories="sql">
                     <replace provider="generic" driver="db2_iseries"/>

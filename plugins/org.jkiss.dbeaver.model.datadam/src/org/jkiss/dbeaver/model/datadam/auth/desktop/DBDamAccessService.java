@@ -239,7 +239,7 @@ public class DBDamAccessService {
     private void requireRecoveryKeys(@NotNull DDKeyBundle expectedKeys, @Nullable DDKeyBundle replacement) throws DBException {
         if (getStatus() != Status.SIGNED_IN || !expectedKeys.equals(keyBundle)
             || replacement != null && !expectedKeys.accountId().equals(replacement.accountId())) {
-            throw new DBException("DataDam account or encryption keys changed during recovery");
+            throw new DBException("DataDam account or encryption key changed during import");
         }
     }
 
