@@ -130,15 +130,17 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void alterSizeAfterSwitchingToDomainUsesUnderlyingTypeAndCharset() throws DBException {
+    public void alterSizeAfterSwitchingToDomainSwitchesDomainFirst() throws DBException {
         FireBirdTableColumn column = loadColumn(IMPLICIT_DOMAIN_NAME);
         // The type name is the domain name now, which must not get a size modifier.
-        // The column's old character set must be replaced with the one of the selected domain.
+        // Switching to the domain first takes over its character set and collation, the resize keeps them.
         column.setTypeName(DOMAIN_NAME);
         column.setMaxLength(20);
 
         Assertions.assertEquals(
-            List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE CHAR(20) CHARACTER SET OCTETS"),
+            List.of(
+                "ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE DOM_UUID",
+                "ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE CHAR(20)"),
             getModifyScripts(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, DOMAIN_NAME, "maxLength", 20L)));
     }
 

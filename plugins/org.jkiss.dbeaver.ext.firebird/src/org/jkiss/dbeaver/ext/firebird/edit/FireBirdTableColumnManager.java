@@ -134,16 +134,18 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
             + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
         boolean typeSizeChanged = isTypeSizeChanged(command);
         boolean typeNameChanged = command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null;
-        String typeClause = getAlterTypeClause(column, typeNameChanged, typeSizeChanged);
+        String typeClause = getAlterTypeClause(column, typeSizeChanged);
         String computedDefinition = column.getComputedDefinition(monitor);
+        if (typeNameChanged && typeSizeChanged && column.getDomainName() != null) {
+            // Switched to a domain and resized in one change. The resize detaches the column from the domain,
+            // and ALTER COLUMN ... TYPE doesn't accept COLLATE. So the column is switched to the domain first,
+            // which takes over the domain's character set and collation; the resize below then keeps both.
+            actionList.add(new SQLDatabasePersistAction("Set column domain", getAlterTypeStatement(
+                prefix, DBUtils.getQuotedIdentifier(column.getDataSource(), column.getDomainName()), computedDefinition)));
+        }
         if (typeNameChanged || typeSizeChanged) {
-            final StringBuilder ddl = new StringBuilder()
-                .append(prefix).append("TYPE ").append(typeClause);
-            if (CommonUtils.isNotEmpty(computedDefinition)) {
-                // Can't change type for computed columns without this clause.
-                ddl.append(" GENERATED ALWAYS AS ").append(computedDefinition);
-            }
-            actionList.add(new SQLDatabasePersistAction("Set column type", ddl.toString()));
+            actionList.add(new SQLDatabasePersistAction(
+                "Set column type", getAlterTypeStatement(prefix, typeClause, computedDefinition)));
         }
         if (command.getProperty(DBConstants.PROP_ID_DEFAULT_VALUE) != null) {
             if (CommonUtils.isEmpty(column.getDefaultValue())) {
@@ -216,17 +218,27 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         processObjectReorder(commandContext, object, siblingObjects, newPosition);
     }
 
+    @NotNull
+    private static String getAlterTypeStatement(
+        @NotNull String prefix,
+        @NotNull String typeClause,
+        @Nullable String computedDefinition
+    ) {
+        String ddl = prefix + "TYPE " + typeClause;
+        if (CommonUtils.isNotEmpty(computedDefinition)) {
+            // Can't change type for computed columns without this clause.
+            ddl += " GENERATED ALWAYS AS " + computedDefinition;
+        }
+        return ddl;
+    }
+
     /**
      * Returns the type for ALTER COLUMN TYPE. A column declared with a domain keeps referencing the domain.
      * An explicit size change detaches the column from its domain: then the domain's underlying type is used
      * with the new size, because a domain name can't take size modifiers (DOM_NAME(20) is invalid).
      */
     @NotNull
-    private static String getAlterTypeClause(
-        @NotNull FireBirdTableColumn column,
-        boolean typeNameChanged,
-        boolean typeSizeChanged
-    ) {
+    private static String getAlterTypeClause(@NotNull FireBirdTableColumn column, boolean typeSizeChanged) {
         String domainName = column.getDomainName();
         if (domainName == null) {
             return column.getFullTypeName();
@@ -234,10 +246,9 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         if (!typeSizeChanged) {
             return DBUtils.getQuotedIdentifier(column.getDataSource(), domainName);
         }
-        // Without CHARACTER SET, ALTER COLUMN ... TYPE keeps the column's current character set and collation
-        // (it does not fall back to the database default). That is right while the column keeps its domain,
-        // but if the domain was switched in the same change, the new domain's character set must be used
-        return getUnderlyingTypeClause(column, typeNameChanged);
+        // No CHARACTER SET is appended on purpose: without it, ALTER COLUMN ... TYPE keeps the column's current
+        // character set and collation (it does not fall back to the database default)
+        return getUnderlyingTypeClause(column, false);
     }
 
     private static boolean isTypeSizeChanged(@NotNull DBECommandComposite<?, ?> command) {
