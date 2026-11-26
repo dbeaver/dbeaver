@@ -123,7 +123,8 @@ public class DorisTableColumn extends GenericTableColumn {
 
     @Nullable
     @Override
-    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view",
+    @Property(viewable = true, editableExpr = "!object.table.view && object.table.catalog != null && object.table.catalog.internal",
+        updatableExpr = "!object.table.view && object.table.catalog != null && object.table.catalog.internal",
         length = PropertyLength.MULTILINE, order = 100)
     public String getDescription() {
         return super.getDescription();

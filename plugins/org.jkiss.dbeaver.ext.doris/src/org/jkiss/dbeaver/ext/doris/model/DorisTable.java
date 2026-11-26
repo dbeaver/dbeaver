@@ -84,7 +84,8 @@ public class DorisTable extends GenericTable {
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
+    @Property(viewable = true, editableExpr = "object.catalog != null && object.catalog.internal",
+        updatableExpr = "object.catalog != null && object.catalog.internal", length = PropertyLength.MULTILINE, order = 100)
     public String getDescription() {
         return super.getDescription();
     }

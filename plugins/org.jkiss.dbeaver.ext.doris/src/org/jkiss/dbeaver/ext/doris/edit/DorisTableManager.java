@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.doris.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.doris.model.DorisCatalog;
 import org.jkiss.dbeaver.ext.doris.model.DorisDataSource;
 import org.jkiss.dbeaver.ext.doris.model.DorisTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
@@ -70,7 +71,8 @@ public class DorisTableManager extends GenericTableManager {
         @NotNull Map<String, Object> options
     ) {
         GenericTableBase table = command.getObject();
-        if (table.isPersisted() && command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+        if (table.isPersisted() && command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)
+            && table.getCatalog() instanceof DorisCatalog catalog && catalog.isInternal()) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.doris.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.doris.model.DorisCatalog;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -44,7 +45,8 @@ public class DorisTableColumnManager extends GenericTableColumnManager {
         @NotNull ObjectChangeCommand command,
         @NotNull Map<String, Object> options
     ) {
-        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)
+            && command.getObject().getTable().getCatalog() instanceof DorisCatalog catalog && catalog.isInternal()) {
             addCommentAction(actions, command.getObject());
         }
     }
