@@ -74,8 +74,9 @@ class DBDamSessionServiceTest {
         service.close();
     }
 
-    @Test
-    void reusesDamInformationOnlyForTheCurrentConnectedSession() {
+    @ParameterizedTest
+    @ValueSource(strings = {"first", "second"})
+    void reusesDamInformationOnlyForTheCurrentConnectedSession(@NotNull String recoveredSessionId) {
         ready("first");
         var first = status.get().session();
         var dam = namedDam("Desktop");
@@ -85,7 +86,7 @@ class DBDamSessionServiceTest {
         status.set(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
         Assertions.assertNull(service.getCachedDam());
 
-        ready("second");
+        ready(recoveredSessionId);
         Assertions.assertNull(service.getCachedDam());
         var renamed = namedDam("Renamed desktop");
         service.cacheDam(status.get().session(), renamed);

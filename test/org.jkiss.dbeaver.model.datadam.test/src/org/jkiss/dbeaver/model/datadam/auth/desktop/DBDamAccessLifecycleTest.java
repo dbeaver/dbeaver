@@ -407,6 +407,8 @@ class DBDamAccessLifecycleTest {
             var access = new DBDamAccessService(manager);
             List<String> events = new CopyOnWriteArrayList<>();
             access.addAccessListener(listener(events));
+            var credentialEvents = Mockito.mock(DBDamAccessListener.class);
+            access.addAccessListener(credentialEvents);
 
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
             Assertions.assertSame(bundle, access.getKeyBundle());
@@ -423,7 +425,8 @@ class DBDamAccessLifecycleTest {
             Assertions.assertEquals(3, jobs.count());
             Assertions.assertTrue(jobs.latestDelay() > 30_000L);
             Assertions.assertSame(bundle, access.getKeyBundle());
-            Assertions.assertEquals(List.of("changing", "changed", "changing", "changed"), events);
+            Assertions.assertEquals(List.of("changing", "changed"), events);
+            Mockito.verify(credentialEvents).accessTokenRefreshed();
             keys.verify(DDKeyStore::clear, Mockito.never());
         }
     }
@@ -461,7 +464,7 @@ class DBDamAccessLifecycleTest {
     }
 
     @Test
-    void rotatedTokenReconnectsTheChannelAndSchedulesItsNewExpiry() throws Exception {
+    void rotatedTokenRenewsAuthenticationWithoutReconnectingAndSchedulesItsNewExpiry() throws Exception {
         var status = new AtomicReference<>(DBDamTokenManager.Status.SIGNED_IN);
         var expiresAt = new AtomicReference<>(Instant.now().plusSeconds(3600));
         DBDamAccessService access = access(status, expiresAt);
@@ -479,10 +482,11 @@ class DBDamAccessLifecycleTest {
             expiresAt.set(expiresAt.get().plusSeconds(3600));
             wake(expiry);
 
-            Assertions.assertEquals(List.of("changing", "changed", "changing", "changed"), events);
+            Assertions.assertEquals(List.of("changing", "changed"), events);
             Assertions.assertEquals(2, jobs.count());
-            Mockito.verify(channel).pause();
-            Mockito.verify(channel, Mockito.times(2)).start();
+            Mockito.verify(channel).refreshAuthentication();
+            Mockito.verify(channel, Mockito.never()).pause();
+            Mockito.verify(channel).start();
         }
     }
 
