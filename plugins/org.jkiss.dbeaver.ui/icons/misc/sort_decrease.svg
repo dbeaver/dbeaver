@@ -1,6 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-  <rect x="8" y="1.87" width="1" height="13.13" fill="#3387c5"/>
-  <rect x="5.29" y="2.26" width="3.96" height=".94" transform="translate(.2 5.94) rotate(-45)" fill="#3387c5"/>
-  <rect x="9.28" y=".48" width=".94" height="4.28" transform="translate(1 7.66) rotate(-45)" fill="#3387c5"/>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 12.293L6.64648 10.6465L7.35352 11.3535L4.5 14.207L1.64648 11.3535L2.35352 10.6465L4 12.293V2H5V12.293ZM14 10H8V9H14V10ZM12 7H8V6H12V7ZM10 4H8V3H10V4Z" fill="#3387C5"/>
 </svg>

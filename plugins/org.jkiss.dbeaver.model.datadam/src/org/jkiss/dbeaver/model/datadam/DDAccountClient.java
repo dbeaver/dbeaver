@@ -118,9 +118,9 @@ public class DDAccountClient extends DDClient {
     @NotNull
     public DDCryptoState getCryptoState() throws DBException {
         CryptoData data = executeGraphQl(CRYPTO_STATE_QUERY, CryptoData.class,
-            "Could not read encryption keys from DataDam Account");
+            "Could not read the encryption key from DataDam Account");
         if (data.gatewayCryptoState() == null) {
-            throw new DBException("Could not read encryption keys from DataDam Account");
+            throw new DBException("Could not read the encryption key from DataDam Account");
         }
         DDCryptoState state = data.gatewayCryptoState();
         if (state.accountId() == null) {
