@@ -180,7 +180,7 @@ public class DatabaseTransferUtils {
     /**
      * Finds a container child by a name stored in task settings or derived from a source name.
      * Raw database names may literally start and end with the dialect quote delimiter, so they are
-     * resolved first and the unquoted form is used only as a fallback for non-target matches.
+     * resolved first and the unquoted form is used only as a fallback for non-manipulator matches.
      * SQL-encoded names (auto-generated target names) are decoded before lookup and never fall back
      * to the encoded form, which may denote an unrelated literal-quoted table.
      *
@@ -203,11 +203,11 @@ public class DatabaseTransferUtils {
                 : container.getChild(monitor, unquotedName);
         }
         DBSObject child = container.getChild(monitor, storedName);
-        if (isValidTargetTable(child) || dataSource == null || unquotedName.equals(storedName)) {
+        if (child instanceof DBSDataManipulator || dataSource == null || unquotedName.equals(storedName)) {
             return child;
         }
         DBSObject unquotedChild = container.getChild(monitor, unquotedName);
-        if (isValidTargetTable(unquotedChild) || child == null) {
+        if (unquotedChild instanceof DBSDataManipulator || child == null) {
             return unquotedChild;
         }
         return child;

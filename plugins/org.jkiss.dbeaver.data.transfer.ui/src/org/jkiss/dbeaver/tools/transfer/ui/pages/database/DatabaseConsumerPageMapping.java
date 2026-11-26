@@ -1362,6 +1362,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             String primaryName = storedNameIsRaw ? name : unquotedName;
             String secondaryName = storedNameIsRaw && !unquotedName.equals(name) ? unquotedName : null;
             DBSObject conflictingObject = null;
+            String conflictingName = null;
             for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
                 String childName = child.getName();
                 boolean exactPrimary = primaryName.equals(childName);
@@ -1380,12 +1381,18 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                 } else if (conflictingObject == null) {
                     conflictingObject = child;
+                    conflictingName = matchesPrimary ? primaryName : secondaryName;
                 }
             }
             if (targetDataContainer == null && conflictingObject != null) {
                 // The name is taken by an object which cannot be used as a target (for instance a view).
                 // Report the conflict instead of silently switching the mapping to "create".
-                return reportTargetNameConflict(monitor, containerMapping, name, primaryName, conflictingObject);
+                return reportTargetNameConflict(
+                    monitor,
+                    containerMapping,
+                    name,
+                    conflictingName != null ? conflictingName : primaryName,
+                    conflictingObject);
             }
         }
         if (targetDataContainer != null) {
