@@ -91,6 +91,11 @@ public class StyledTextSelectionPainter implements IStartup {
 
     private static void paintSelection(@NotNull PaintEvent event) {
         StyledText text = (StyledText) event.widget;
+        // SWT already preserves styled glyphs under a translucent rectangle in block-selection mode.
+        // Keep that rectangle uniform, including its virtual whitespace beyond the line ends.
+        if (text.getBlockSelection()) {
+            return;
+        }
         // These listeners supply layout information which is not exposed by StyledText's getters.
         // Keep native painting rather than replace their styles with an incomplete layout.
         if (text.isListening(ST.LineGetStyle) || text.isListening(ST.LineGetSegments)) {
