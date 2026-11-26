@@ -364,11 +364,8 @@ public class DBDamAccessService {
             if (version != expiryVersion) {
                 return;
             }
-            // An early wake keeps the deadline; a rotated token needs a new WebSocket handshake.
+            // Credential rotation does not change desktop access or the running session.
             boolean refreshed = !Objects.equals(expiresAt, tokenManager.getExpiresAt());
-            if (refreshed) {
-                notifyAccessListeners(DBDamAccessListener::accessChanging);
-            }
             if (tokenAvailable && keyBundleLoadPending) {
                 try {
                     updateKeyBundle(DDKeyStore.load());
@@ -378,8 +375,10 @@ public class DBDamAccessService {
                 }
             }
             scheduleExpiry();
-            if (refreshed || tokenManager.getStatus() != DBDamTokenManager.Status.SIGNED_IN) {
+            if (tokenManager.getStatus() != DBDamTokenManager.Status.SIGNED_IN) {
                 notifyAccessListeners(DBDamAccessListener::accessChanged);
+            } else if (refreshed) {
+                notifyAccessListeners(DBDamAccessListener::accessTokenRefreshed);
             }
         } finally {
             operationLock.writeLock().unlock();

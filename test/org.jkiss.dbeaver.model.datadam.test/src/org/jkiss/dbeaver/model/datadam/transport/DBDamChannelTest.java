@@ -21,6 +21,7 @@ import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeResponse;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamMessage;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSessionListener;
@@ -65,6 +66,97 @@ class DBDamChannelTest extends DBeaverUnitTest {
     private static final DDRemoteDamHandshakeRequest HELLO = new DDRemoteDamHandshakeRequest(
         "deployment", "app-instance", "workspace", "d29ya3NwYWNlOjAwMDEyMzQ1NjdhYg", "DBeaver", GeneralUtils.getProductVersion().toString());
     private static final DDRemoteDamMessage MESSAGE = message("topic", "value");
+
+    @Test
+    void credentialRotationDuringHandshakeIsAppliedWhenTheConnectionBecomesReady() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        AtomicReference<String> token = new AtomicReference<>("initial-token");
+        try (var channel = channel(clients, resource -> token.get())) {
+            channel.addSessionListener(events);
+            channel.start();
+            Peer peer = clients.next();
+            token.set("renewed-token");
+            channel.refreshAuthentication();
+            peer.open();
+            peer.nextSent();
+            peer.ready("desktop-session");
+            take(events.connected);
+
+            Assertions.assertEquals("renewed-token", DDRemoteDamProtocol.decodeAuthenticationRequest(peer.nextSent().text));
+            Assertions.assertTrue(events.disconnected.isEmpty());
+            Assertions.assertEquals("desktop-session", channel.getStatus().session().damSessionId());
+        }
+    }
+
+    @Test
+    void credentialRotationDoesNotForceReconnectOrSendUnsupportedFramesToLegacyServers() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        try (var channel = channel(clients, resource -> "token")) {
+            channel.addSessionListener(events);
+            channel.start();
+            Peer peer = clients.next();
+            peer.open();
+            peer.nextSent();
+            peer.text(DDRemoteDamProtocol.encodeHandshakeResponse(new DDRemoteDamHandshakeResponse("legacy")));
+            take(events.connected);
+
+            channel.refreshAuthentication();
+
+            Assertions.assertTrue(peer.sent.isEmpty());
+            Assertions.assertTrue(events.disconnected.isEmpty());
+            Mockito.verify(peer.socket, Mockito.never()).sendClose(ArgumentMatchers.anyInt(), ArgumentMatchers.anyString());
+            Mockito.verify(peer.socket, Mockito.never()).abort();
+        }
+    }
+
+    @Test
+    void tokenRenewalAuthenticatesTheExistingConnectionWithoutAnotherHandshake() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        AtomicReference<String> token = new AtomicReference<>("initial-token");
+        try (var channel = channel(clients, resource -> token.get())) {
+            channel.addSessionListener(events);
+            channel.start();
+            Peer peer = ready(clients, events, "desktop-session");
+            DDRemoteDamSessionInfo session = channel.getStatus().session();
+            token.set("renewed-token");
+
+            channel.refreshAuthentication();
+
+            Assertions.assertEquals("renewed-token", DDRemoteDamProtocol.decodeAuthenticationRequest(peer.nextSent().text));
+            Assertions.assertSame(session, channel.getStatus().session());
+            Assertions.assertTrue(events.disconnected.isEmpty());
+            Assertions.assertTrue(events.connected.isEmpty());
+            Mockito.verify(peer.socket, Mockito.never()).sendClose(ArgumentMatchers.anyInt(), ArgumentMatchers.anyString());
+            Mockito.verify(peer.socket, Mockito.never()).abort();
+        }
+    }
+
+    @Test
+    void serverHeartbeatsKeepTheSameDesktopSessionWithoutApplicationTraffic() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        try (var channel = channel(clients, resource -> "token")) {
+            channel.addSessionListener(events);
+            channel.start();
+            Peer peer = ready(clients, events, "desktop-session");
+            DDRemoteDamSessionInfo session = channel.getStatus().session();
+
+            for (int i = 0; i < 3; i++) {
+                peer.listener.onPing(peer.socket, ByteBuffer.wrap(new byte[] {(byte) i}));
+                peer.listener.onPong(peer.socket, ByteBuffer.wrap(new byte[] {(byte) i}));
+            }
+
+            Assertions.assertTrue(peer.listener.isOpen());
+            Assertions.assertSame(session, channel.getStatus().session());
+            Assertions.assertTrue(events.connected.isEmpty());
+            Assertions.assertTrue(events.disconnected.isEmpty());
+            Mockito.verify(peer.socket, Mockito.never()).sendClose(ArgumentMatchers.anyInt(), ArgumentMatchers.anyString());
+            Mockito.verify(peer.socket, Mockito.never()).abort();
+        }
+    }
 
     @Test
     void stateSnapshotTracksReadinessPauseResumeAndTerminalClose() throws Exception {
@@ -1027,7 +1119,8 @@ class DBDamChannelTest extends DBeaverUnitTest {
         }
 
         private void ready(@NotNull String damSessionId) {
-            text(DDRemoteDamProtocol.encodeHandshakeResponse(new DDRemoteDamHandshakeResponse(damSessionId)));
+            text(DDRemoteDamProtocol.encodeHandshakeResponse(new DDRemoteDamHandshakeResponse(
+                damSessionId, DDRemoteDamSettings.EMPTY, true)));
         }
 
         private void text(@NotNull String text) {
