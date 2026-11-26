@@ -2460,9 +2460,9 @@ public abstract class LightGrid extends Canvas {
             gc.drawLine(rowHeaderWidth + pinnedColumnsWidth, 0, rowHeaderWidth + pinnedColumnsWidth, y);
         }
 
-        if (!columns.isEmpty() && gridRows.length > 0) {
+        if (gridRows.length > 0) {
             int lastRow = row >= gridRows.length ? gridRows.length - 1 : row;
-            getContentProvider().validateDataPresence(columns.getLast(), gridRows[lastRow]);
+            getContentProvider().validateDataPresence(columns.isEmpty() ? null : columns.getLast(), gridRows[lastRow]);
         }
     }
 
