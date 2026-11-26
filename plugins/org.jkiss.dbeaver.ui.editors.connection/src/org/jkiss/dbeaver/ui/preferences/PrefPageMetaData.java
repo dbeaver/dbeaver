@@ -147,7 +147,7 @@ public class PrefPageMetaData extends TargetPrefPage
                 performanceGroup,
                 UIConnectionMessages.pref_page_database_general_checkbox_preload_table_attributes,
                 UIConnectionMessages.pref_page_database_general_checkbox_preload_table_attributes_tip,
-                true,
+                false,
                 1);
             readExpensiveCheck = UIUtils.createCheckbox(
                 performanceGroup,
@@ -223,7 +223,7 @@ public class PrefPageMetaData extends TargetPrefPage
         ));
         caseSensitiveNamesCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_CASE_SENSITIVE));
         disableExtraMetadataRead.setSelection(store.getDefaultBoolean(ModelPreferences.META_DISABLE_EXTRA_READ));
-        preloadTableAttributesCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_PRELOAD_TABLE_ATTRIBUTES));
+        preloadTableAttributesCheck.setSelection(getTargetPreferenceStore().getDefaultBoolean(ModelPreferences.META_PRELOAD_TABLE_ATTRIBUTES));
         addExtraDDLInfo.setSelection(store.getDefaultBoolean(ModelPreferences.META_EXTRA_DDL_INFO));
         serverSideFiltersCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS));
         super.performDefaults();
