@@ -65,6 +65,15 @@ import java.util.stream.Collectors;
  * Checkable, lazily loaded catalog/schema/table/view hierarchy, independent of navigator display settings.
  */
 public class DatabaseObjectSelectionTree extends FilteredTree {
+    public interface ProgressListener {
+        void loadingStarted();
+
+        @NotNull
+        DBRProgressMonitor wrapMonitor(@NotNull DBRProgressMonitor monitor);
+
+        void loadingFinished();
+    }
+
     private final DBSObjectContainer root;
     private final DBRRunnableContext runnableContext;
     private final DatabaseObjectSelectionTreeContentProvider contentProvider;
@@ -75,6 +84,15 @@ public class DatabaseObjectSelectionTree extends FilteredTree {
         @NotNull Composite parent,
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DBSObjectContainer root
+    ) {
+        this(parent, runnableContext, root, null);
+    }
+
+    public DatabaseObjectSelectionTree(
+        @NotNull Composite parent,
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DBSObjectContainer root,
+        @Nullable ProgressListener progressListener
     ) {
         super(parent, SWT.MULTI | SWT.BORDER | SWT.CHECK | SWT.NO_SCROLL | SWT.V_SCROLL, new EntityPatternFilter(), true, true);
         this.root = root;
@@ -139,7 +157,7 @@ public class DatabaseObjectSelectionTree extends FilteredTree {
             if (pattern != null && !pattern.isEmpty() && !pattern.equals(getInitialText())) {
                 textChanged();
             }
-        });
+        }, progressListener);
         viewer.setContentProvider(contentProvider);
         selection = new DBSObjectSelection(contentProvider::getParent, object -> contentProvider.getCachedChildren(object).stream()
             .filter(child -> isShowSystemObjects() || !DatabaseObjectSelectionTreeContentProvider.isSystemObject(child))

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,22 +146,14 @@ public class DB2Utils {
 
         monitor.beginTask("Generating DDL", 3);
 
-        int token;
         StringBuilder sb = new StringBuilder(2048);
-        String command = String.format(
-            (includeViews ? "" : "-noview ") + "-e -x -xd -td %s -t %s",
-            statementDelimiter,
-            db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        String tableName = db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL);
+        String command = buildDDLCommand(includeViews, true, statementDelimiter, tableName);
+        String fallbackCommand = buildDDLCommand(includeViews, false, statementDelimiter, tableName);
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Generate DDL")) {
-            log.debug("Calling DB2LK_GENERATE_DDL with command : " + command);
-
-            try (JDBCCallableStatement stmtSP = session.prepareCall("CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)")) {
-                stmtSP.registerOutParameter(2, java.sql.Types.INTEGER);
-                stmtSP.setString(1, command);
-                stmtSP.executeUpdate();
-                token = stmtSP.getInt(2);
-            }
+            DDLGenerationResult generation = generateDDL(session, command, fallbackCommand);
+            int token = generation.token();
 
             log.debug("Token = " + token);
             monitor.worked(1);
@@ -208,13 +200,59 @@ public class DB2Utils {
             monitor.worked(3);
             log.debug("Terminated OK");
 
-            return sb.toString();
+            return formatDDLResult(sb.toString(), generation.fallbackUsed());
 
         } catch (SQLException e) {
             throw new DBDatabaseException(e, dataSource);
         } finally {
             monitor.done();
         }
+    }
+
+    static @NotNull String buildDDLCommand(boolean includeViews, boolean includeAuthorization, @NotNull String statementDelimiter,
+        @NotNull String tableName)
+    {
+        return String.format(
+            (includeViews ? "" : "-noview ") + "-e " + (includeAuthorization ? "-x -xd " : "") + "-td %s -t %s",
+            statementDelimiter, tableName);
+    }
+
+    static @NotNull DDLGenerationResult generateDDL(@NotNull JDBCSession session, @NotNull String command, @NotNull String fallbackCommand)
+        throws SQLException
+    {
+        try {
+            return new DDLGenerationResult(callDDLProcedure(session, command), false);
+        } catch (SQLException originalError) {
+            // This SQLSTATE is also returned for other invalid arguments. Only accept a fallback if it actually succeeds.
+            if (originalError.getErrorCode() != -443 || !"38553".equals(originalError.getSQLState())) {
+                throw originalError;
+            }
+            try {
+                DDLGenerationResult result = new DDLGenerationResult(callDDLProcedure(session, fallbackCommand), true);
+                log.warn("DB2LK_GENERATE_DDL rejected authorization options; generated DDL may omit grants");
+                return result;
+            } catch (SQLException fallbackError) {
+                originalError.addSuppressed(fallbackError);
+                throw originalError;
+            }
+        }
+    }
+
+    private static int callDDLProcedure(@NotNull JDBCSession session, @NotNull String command) throws SQLException {
+        log.debug("Calling DB2LK_GENERATE_DDL with command : " + command);
+        try (JDBCCallableStatement stmtSP = session.prepareCall("CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)")) {
+            stmtSP.registerOutParameter(2, java.sql.Types.INTEGER);
+            stmtSP.setString(1, command);
+            stmtSP.executeUpdate();
+            return stmtSP.getInt(2);
+        }
+    }
+
+    static @NotNull String formatDDLResult(@NotNull String ddl, boolean fallbackUsed) {
+        return fallbackUsed ? DB2Messages.ddl_authorization_statements_missing + "\n\n" + ddl : ddl;
+    }
+
+    record DDLGenerationResult(int token, boolean fallbackUsed) {
     }
 
     // ------------------------

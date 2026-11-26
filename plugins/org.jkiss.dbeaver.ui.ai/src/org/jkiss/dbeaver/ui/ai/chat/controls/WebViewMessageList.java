@@ -96,7 +96,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
             cssInitializer.close();
         });
-        renderer = new WebViewMessageRenderer(browser, thumbnailBrowser, this::getDataSource, cssInitializer);
+        renderer = new WebViewMessageRenderer(browser, this::getDataSource, cssInitializer);
 
         messageChunkBuffer = new AIMessageChunkBuffer(getDisplay(), renderer::addMessageChunk, this::isDisposed);
         chat.getChatSession().addListener(new AIChatListener() {
@@ -801,7 +801,11 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             }
         }
 
-        submission.whenComplete((ignored, error) -> chat.getChatSession().setBusy(false));
+        submission.whenComplete((ignored, error) -> UIUtils.asyncExec(() -> {
+            if (!chat.isDisposed() && chat.getActiveConversation() == conversation) {
+                chat.getChatSession().setBusy(false);
+            }
+        }));
     }
 
     @NotNull

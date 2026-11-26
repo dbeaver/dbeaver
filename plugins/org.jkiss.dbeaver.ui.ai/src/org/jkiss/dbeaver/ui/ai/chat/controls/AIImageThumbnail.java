@@ -17,15 +17,12 @@
 package org.jkiss.dbeaver.ui.ai.chat.controls;
 
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIImageDimensions;
 import org.jkiss.dbeaver.ui.swt.ImageConverter;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Iterator;
@@ -50,15 +47,6 @@ final class AIImageThumbnail {
     private static final int MAX_WEBP_FRAMES = 64;
 
     private AIImageThumbnail() {
-    }
-
-    @NotNull
-    static String toDataUrl(@NotNull byte[] bytes, int size) throws IOException {
-        ImageLoader loader = new ImageLoader();
-        loader.data = new ImageData[]{read(bytes, size)};
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        loader.save(output, SWT.IMAGE_PNG);
-        return "data:image/png;base64," + Base64.getEncoder().encodeToString(output.toByteArray());
     }
 
     @NotNull

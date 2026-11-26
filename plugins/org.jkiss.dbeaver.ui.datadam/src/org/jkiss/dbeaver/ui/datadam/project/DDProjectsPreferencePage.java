@@ -45,10 +45,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
+import org.jkiss.dbeaver.model.app.DBPProjectListener;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSettingsStore;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
@@ -60,7 +62,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
+import org.jkiss.dbeaver.ui.datadam.DBDamService;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
 import org.jkiss.dbeaver.ui.datadam.DDUIConstants;
 import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
@@ -88,8 +90,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
     private final DDProjectUIManager uiManager = DDProjectUIManager.getInstance();
     private final DDProjectConflictResolver conflictResolver = new DDProjectConflictResolver(uiManager);
-    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-    private final DDRemoteDamSettingsStore settingsStore = DDRemoteDamSettingsStore.getInstance();
+    private final DBDamAccessService accessService = DBDamAccessService.getInstance();
+    private final DBDamSettingsStore settingsStore = DBDamSettingsStore.getInstance();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private Composite content;
@@ -124,7 +126,24 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private ActionContributionItem unbindItem;
     private ActionContributionItem importAllItem;
     private boolean operationRunning;
-    private final DDRemoteDamSettingsStore.Listener settingsListener = settings -> UIUtils.asyncExec(() -> {
+    @Nullable
+    private AbstractJob projectRefreshJob;
+    private boolean projectRefreshPending;
+    private boolean loadingProjects;
+    private long projectRefreshVersion;
+    private final DBPProjectListener projectListener = new DBPProjectListener() {
+        @Override
+        public void handleProjectVisibilityChange() {
+            UIUtils.asyncExec(() -> {
+                if (viewer != null && !viewer.getControl().isDisposed()) {
+                    projectRefreshVersion++;
+                    projectRefreshPending = true;
+                    scheduleProjectRefresh();
+                }
+            });
+        }
+    };
+    private final DBDamSettingsStore.Listener settingsListener = settings -> UIUtils.asyncExec(() -> {
         if (streamSyncCheck != null && !streamSyncCheck.isDisposed()) {
             showStreamSyncStatus(settings);
         }
@@ -257,6 +276,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         viewer.addSelectionChangedListener(e -> updateSelectionActions());
 
         settingsStore.addListener(settingsListener);
+        DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
         refreshKeys();
         return content;
     }
@@ -271,6 +291,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
     @Override
     public void dispose() {
+        DBPPlatformDesktop.getInstance().getWorkspace().removeProjectListener(projectListener);
+        if (projectRefreshJob != null) {
+            projectRefreshJob.cancel();
+        }
         settingsStore.removeListener(settingsListener);
         if (actionsToolbar != null) {
             actionsToolbar.dispose();
@@ -412,10 +436,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         boolean enabled = streamSyncCheck.getSelection();
         streamSyncUpdating = true;
         streamSyncCheck.setEnabled(false);
-        streamSyncJob = DDDesktopDamService.getInstance().createJob(
+        streamSyncJob = DBDamService.getInstance().createJob(
             "Update DataDam project stream sync setting",
             account -> account.setDamSetting(
-                DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.PROJECTS_STREAM_SYNC,
+                DBDamSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.PROJECTS_STREAM_SYNC,
                 Boolean.toString(enabled), accountId),
             ignored -> {
                 if (!streamSyncCheck.isDisposed() && Objects.equals(accountId, accessService.getAccountId())) {
@@ -457,7 +481,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         boolean present = accountId != null;
         accountRow.setVisible(present);
         ((GridData) accountRow.getLayoutData()).exclude = !present;
-        boolean signedIn = accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
+        boolean signedIn = accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN;
         importKeysButton.setEnabled(!present && signedIn);
         importKeysButton.setVisible(!present);
         ((GridData) importKeysButton.getLayoutData()).exclude = present;
@@ -474,6 +498,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         content.layout(true, true);
 
         if (!Objects.equals(displayedAccountId, accountId)) {
+            projectRefreshVersion++;
             displayedAccountId = accountId;
             if (streamSyncJob != null) {
                 streamSyncJob.cancel();
@@ -516,7 +541,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             streamSyncPermissionJob.cancel();
         }
         canManageStreamSync = false;
-        streamSyncPermissionJob = DDDesktopDamService.getInstance().createJob(
+        streamSyncPermissionJob = DBDamService.getInstance().createJob(
             "Check DataDam project sync setting permission",
             account -> account.canManageDamSettings(),
             allowed -> {
@@ -569,9 +594,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private void forgetKeys() {
         if (UIUtils.confirmAction(
             getShell(), DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_title,
-            DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_message
+            DDTrackingUIMessages.sync_preference_page_project_deletion_confirm_message
         )) {
-            runKeyOperation(DDTrackingUIMessages.sync_preference_page_cannot_forget_keys, accessService::forgetKeys);
+            DDProjectKeyUIManager.getInstance().forgetKeysWithProgress();
+            refreshKeys();
         }
     }
 
@@ -597,6 +623,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     }
 
     private void loadProjects() {
+        projectRefreshVersion++;
+        projectRefreshPending = false;
         if (!uiManager.isProjectSyncReady()) {
             viewer.setInput(List.of());
             updateTableHeight();
@@ -619,6 +647,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
                 }
             }
         };
+        loadingProjects = true;
         try {
             UIUtils.runInProgressDialog(loader);
             if (!viewer.getControl().isDisposed() && loader.getResult() != null) {
@@ -627,11 +656,53 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         } catch (InvocationTargetException e) {
             showError(DDTrackingUIMessages.project_sync_import_list_failed, e.getTargetException());
         } finally {
+            loadingProjects = false;
             if (!viewer.getControl().isDisposed()) {
                 updateTableHeight();
                 updateSelectionActions();
+                scheduleProjectRefresh();
             }
         }
+    }
+
+    private void scheduleProjectRefresh() {
+        if (!projectRefreshPending || projectRefreshJob != null || loadingProjects || operationRunning
+            || viewer.getControl().isDisposed()) {
+            return;
+        }
+        projectRefreshPending = false;
+        long version = projectRefreshVersion;
+        var keys = accessService.getKeyBundle();
+        projectRefreshJob = new AbstractJob(DDTrackingUIMessages.project_sync_import_list_job) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                List<DDProjectView> projects = null;
+                try {
+                    projects = uiManager.refreshProjectViews(monitor);
+                } catch (DBException e) {
+                    log.debug("Could not refresh DataDam projects", e);
+                } finally {
+                    List<DDProjectView> result = projects;
+                    UIUtils.asyncExec(() -> {
+                        if (viewer.getControl().isDisposed() || projectRefreshJob != this) {
+                            return;
+                        }
+                        projectRefreshJob = null;
+                        if (!monitor.isCanceled() && version == projectRefreshVersion
+                            && Objects.equals(keys, accessService.getKeyBundle()) && result != null) {
+                            viewer.setInput(result);
+                            updateTableHeight();
+                            updateSelectionActions();
+                        }
+                        scheduleProjectRefresh();
+                    });
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        projectRefreshJob.setSystem(true);
+        projectRefreshJob.schedule();
     }
 
     private void updateTableHeight() {

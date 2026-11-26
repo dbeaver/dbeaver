@@ -16,11 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.ai.chat.controls;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.Document;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.browser.Browser;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -31,14 +28,12 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
+import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
 import org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.utils.DurationFormat;
@@ -55,27 +50,23 @@ import java.util.stream.Stream;
 final class WebViewMessageRenderer {
 
     private static final Log log = Log.getLog(WebViewMessageRenderer.class);
-    private static final int MESSAGE_IMAGE_SIZE = 128;
 
     private final Browser browser;
-    private final AIImageThumbnailBrowser thumbnailBrowser;
     private final Supplier<DBPDataSource> dataSourceSupplier;
     private final WebCSSInitializer cssInitializer;
-    private final Map<Integer, AbstractJob> thumbnailJobs = new HashMap<>();
+    private final Map<Integer, LocalResourceHttpServer.Handle> imageResources = new HashMap<>();
     private SQLSyntaxManager syntaxManager;
     private SQLRuleScanner ruleScanner;
 
     WebViewMessageRenderer(
         @NotNull Browser browser,
-        @NotNull AIImageThumbnailBrowser thumbnailBrowser,
         @NotNull Supplier<DBPDataSource> dataSourceSupplier,
         @NotNull WebCSSInitializer cssInitializer
     ) {
         this.browser = browser;
-        this.thumbnailBrowser = thumbnailBrowser;
         this.dataSourceSupplier = dataSourceSupplier;
         this.cssInitializer = cssInitializer;
-        browser.addDisposeListener(event -> cancelImageJobs());
+        browser.addDisposeListener(event -> clearImageResources());
     }
 
     @Nullable
@@ -154,95 +145,41 @@ final class WebViewMessageRenderer {
             default -> addUsualMessage(args, message);
         }
 
-        args.put("images", message.message().getImages().stream()
-            .map(image -> Map.of("name", image.name())).toList());
+        args.put("images", registerMessageImages(message));
         args.put("id", message.id());
         args.put("role", message.message().getRole().name().toLowerCase(Locale.ROOT));
         args.put("icon", iconPath);
         args.put("meta", buildMessageMeta(message));
         execute("addMessage", args);
-        loadMessageImages(message);
 
         return true;
     }
 
-    private void loadMessageImages(@NotNull AIChatMessage message) {
-        List<AIImageAttachment> images = message.message().getImages();
-        if (images.isEmpty() || browser.isDisposed()) {
-            return;
-        }
-        AbstractJob previous = thumbnailJobs.remove(message.id());
-        if (previous != null) {
-            previous.cancel();
-        }
-        AbstractJob job = new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
-            private int remainingImages = images.size();
-
-            private void imageLoaded() {
-                if (--remainingImages == 0) {
-                    thumbnailJobs.remove(message.id(), this);
+    @NotNull
+    private List<Map<String, String>> registerMessageImages(@NotNull AIChatMessage message) {
+        LocalResourceHttpServer.Handle resources = imageResources.get(message.id());
+        List<Map<String, String>> previews = new ArrayList<>();
+        for (AIImageAttachment image : message.message().getImages()) {
+            Map<String, String> preview = new HashMap<>();
+            preview.put("name", image.name());
+            try {
+                if (resources == null) {
+                    resources = LocalResourceHttpServer.acquire();
+                    imageResources.put(message.id(), resources);
                 }
+                preview.put("src", AIImageAttachmentViewer.registerImage(resources, Integer.toString(previews.size()), image,
+                    exception -> log.debug("Cannot display message image", exception)));
+            } catch (IOException exception) {
+                log.debug("Cannot register message image", exception);
             }
-
-            @NotNull
-            @Override
-            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                for (int index = 0; index < images.size(); index++) {
-                    if (monitor.isCanceled()) {
-                        return Status.CANCEL_STATUS;
-                    }
-                    int imageIndex = index;
-                    try {
-                        AIImageAttachment image = images.get(index);
-                        int size = MESSAGE_IMAGE_SIZE * 2;
-                        boolean webp = "image/webp".equals(image.mediaType());
-                        String source = webp ? null : AIImageThumbnail.toDataUrl(image.getBytes(), size);
-                        if (monitor.isCanceled()) {
-                            return Status.CANCEL_STATUS;
-                        }
-                        UIUtils.asyncExec(() -> {
-                            if (browser.isDisposed() || monitor.isCanceled() || thumbnailJobs.get(message.id()) != this) {
-                                imageLoaded();
-                                return;
-                            }
-                            if (webp) {
-                                thumbnailBrowser.load(image, size,
-                                    () -> monitor.isCanceled() || thumbnailJobs.get(message.id()) != this)
-                                    .whenComplete((thumbnail, exception) -> {
-                                        try {
-                                            if (thumbnail != null && !browser.isDisposed() && thumbnailJobs.get(message.id()) == this) {
-                                                execute("setMessageImage", Map.of("id", message.id(), "index", imageIndex,
-                                                    "src", thumbnail.dataUrl()));
-                                            }
-                                        } finally {
-                                            imageLoaded();
-                                        }
-                                    });
-                            } else {
-                                try {
-                                    execute("setMessageImage", Map.of("id", message.id(), "index", imageIndex, "src", source));
-                                } finally {
-                                    imageLoaded();
-                                }
-                            }
-                        });
-                    } catch (IOException | SWTException | IllegalArgumentException exception) {
-                        log.debug("Cannot create message image thumbnail", exception);
-                        UIUtils.asyncExec(this::imageLoaded);
-                    }
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        thumbnailJobs.put(message.id(), job);
-        job.setRule(AIImageThumbnail.DECODING_RULE);
-        job.setSystem(true);
-        job.schedule();
+            previews.add(preview);
+        }
+        return previews;
     }
 
-    private void cancelImageJobs() {
-        thumbnailJobs.values().forEach(AbstractJob::cancel);
-        thumbnailJobs.clear();
+    private void clearImageResources() {
+        imageResources.values().forEach(LocalResourceHttpServer.Handle::close);
+        imageResources.clear();
     }
 
     @Nullable
@@ -427,6 +364,28 @@ final class WebViewMessageRenderer {
             ),
             "notice",
             AIChatMessagesUI.ai_chat_ai_notice,
+            "strings",
+            Map.ofEntries(
+                Map.entry("allowOptions", AIChatMessagesUI.ai_chat_confirm_allow_options),
+                Map.entry("allowTitlePrefix", AIChatMessagesUI.ai_chat_confirm_title_prefix),
+                Map.entry("allowTitleMiddle", AIChatMessagesUI.ai_chat_confirm_title_middle),
+                Map.entry("parameters", AIChatMessagesUI.ai_chat_confirm_params),
+                Map.entry("result", AIChatMessagesUI.ai_chat_confirm_result),
+                Map.entry("invalidAttachmentData", AIChatMessagesUI.ai_chat_attachment_invalid_data),
+                Map.entry("unknownFile", AIChatMessagesUI.ai_chat_attachment_unknown_file),
+                Map.entry("showInExplorer", AIChatMessagesUI.ai_chat_attachment_show_in_explorer),
+                Map.entry("attachmentError", AIChatMessagesUI.ai_chat_attachment_create_error),
+                Map.entry("chooseType", AIChatMessagesUI.ai_chat_attachment_choose_type),
+                Map.entry("chooseTypeTip", AIChatMessagesUI.ai_chat_attachment_choose_type_tip),
+                Map.entry("noHandlers", AIChatMessagesUI.ai_chat_attachment_no_handlers),
+                Map.entry("noActions", AIChatMessagesUI.ai_chat_attachment_no_actions),
+                Map.entry("noTypeActions", AIChatMessagesUI.ai_chat_attachment_no_type_actions),
+                Map.entry("openAsTable", AIChatMessagesUI.ai_chat_attachment_open_as_table),
+                Map.entry("importFile", AIChatMessagesUI.ai_chat_attachment_import_file),
+                Map.entry("importFiles", AIChatMessagesUI.ai_chat_attachment_import_files),
+                Map.entry("openCompleted", AIChatMessagesUI.ai_chat_attachment_open_completed),
+                Map.entry("importCompleted", AIChatMessagesUI.ai_chat_attachment_import_completed)
+            ),
             "a11y",
             Map.of(
                 "notifyOutsideWebView", "edge".equals(browser.getBrowserType()),
@@ -471,15 +430,15 @@ final class WebViewMessageRenderer {
     }
 
     void removeMessage(@NotNull AIChatMessage message) {
-        AbstractJob job = thumbnailJobs.remove(message.id());
-        if (job != null) {
-            job.cancel();
+        LocalResourceHttpServer.Handle resources = imageResources.remove(message.id());
+        if (resources != null) {
+            resources.close();
         }
         execute("removeMessage", Map.of("id", message.id()));
     }
 
     void clearChat() {
-        cancelImageJobs();
+        clearImageResources();
         execute("clearChat", Map.of());
     }
 

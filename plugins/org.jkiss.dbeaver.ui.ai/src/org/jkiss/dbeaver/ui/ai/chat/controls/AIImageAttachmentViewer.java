@@ -16,11 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.ai.chat.controls;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.browser.ProgressListener;
@@ -36,29 +33,32 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.ai.AIImageDimensions;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
+import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.function.Consumer;
 
 final class AIImageAttachmentViewer {
     static final String ERROR_FUNCTION = "imagePreviewError";
-    static final int MAX_DISPLAY_SIZE = 2048;
+    // a small file can expand to gigabytes when the browser decodes it
+    private static final long MAX_DISPLAY_PIXELS = 100_000_000;
 
     private AIImageAttachmentViewer() {
     }
 
     static void open(@NotNull Shell shell, @NotNull AIImageAttachment image) {
         new AbstractPopupPanel(shell, image.name()) {
-            @Nullable
-            private AbstractJob imageJob;
             private boolean imageErrorShown;
 
             {
@@ -108,41 +108,16 @@ final class AIImageAttachmentViewer {
                         return null;
                     }
                 };
-                browser.setText(createStatusHtml(AIChatMessagesUI.ai_chat_image_loading));
-                imageJob = new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
-                    @NotNull
-                    @Override
-                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                        if (monitor.isCanceled()) {
-                            return Status.CANCEL_STATUS;
-                        }
-                        try {
-                            byte[] bytes = image.getBytes();
-                            String source = AIImageThumbnail.isWebp(bytes)
-                                ? AIImageThumbnail.toWebpSource(bytes) : AIImageThumbnail.toDataUrl(bytes, MAX_DISPLAY_SIZE);
-                            UIUtils.asyncExec(() -> {
-                                if (!browser.isDisposed() && !monitor.isCanceled()) {
-                                    browser.setText(createImageHtml(source));
-                                }
-                            });
-                        } catch (IOException | SWTException | IllegalArgumentException exception) {
-                            UIUtils.asyncExec(() -> {
-                                if (!monitor.isCanceled()) {
-                                    showImageError(browser, exception);
-                                }
-                            });
-                        }
-                        return Status.OK_STATUS;
-                    }
-                };
-                imageJob.setRule(AIImageThumbnail.DECODING_RULE);
-                imageJob.setSystem(true);
-                browser.addDisposeListener(event -> {
-                    if (imageJob != null) {
-                        imageJob.cancel();
-                    }
-                });
-                imageJob.schedule();
+                try {
+                    LocalResourceHttpServer.Handle resources = LocalResourceHttpServer.acquire();
+                    browser.addDisposeListener(event -> resources.close());
+                    String imageHtml = createImageHtml(registerImage(resources, "image", image,
+                        exception -> UIUtils.asyncExec(() -> showImageError(browser, exception))));
+                    resources.addTextResource("preview.html", () -> imageHtml);
+                    browser.setUrl(resources.getUrl("preview.html"));
+                } catch (IOException exception) {
+                    UIUtils.asyncExec(() -> showImageError(browser, exception));
+                }
                 return area;
             }
 
@@ -198,42 +173,73 @@ final class AIImageAttachmentViewer {
             CommonUtils.escapeHtml(message));
     }
 
+    // the browser decodes the original bytes, so animations and full resolution are preserved
     @NotNull
-    static String createImageHtml(@NotNull String source) {
+    static String registerImage(
+        @NotNull LocalResourceHttpServer.Handle resources,
+        @NotNull String name,
+        @NotNull AIImageAttachment image,
+        @NotNull Consumer<IOException> errorHandler
+    ) {
+        String path = name + '.' + image.mediaType().substring(image.mediaType().indexOf('/') + 1);
+        resources.addResource(path, () -> {
+            byte[] bytes = image.getBytes();
+            try {
+                checkDisplaySize(bytes);
+            } catch (IOException exception) {
+                errorHandler.accept(exception);
+                throw exception;
+            }
+            return new ByteArrayInputStream(bytes);
+        });
+        return resources.getUrl(path);
+    }
+
+    private static void checkDisplaySize(@NotNull byte[] bytes) throws IOException {
+        AIImageDimensions dimensions = AIImageDimensions.read(bytes);
+        long pixels = (long) dimensions.width() * dimensions.height();
+        if (bytes.length >= 10 && bytes[0] == 'G' && bytes[1] == 'I' && bytes[2] == 'F') {
+            // the browser allocates the whole canvas, which can be larger than the first frame
+            ByteBuffer header = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+            pixels = Math.max(pixels, (long) Short.toUnsignedInt(header.getShort(6)) * Short.toUnsignedInt(header.getShort(8)));
+        }
+        if (pixels > MAX_DISPLAY_PIXELS) {
+            throw new IOException("Image is too large to display: " + pixels + " pixels.");
+        }
+    }
+
+    @NotNull
+    private static String createImageHtml(@NotNull String source) {
         return """
             <html><head><script>
             let zoom = 1;
+            let minZoom = 0.1;
             let imageWidth = 0;
             let imageHeight = 0;
+            let zoomed = false;
             function setZoom(value) {
-                zoom = Math.max(0.1, Math.min(8, value));
+                zoom = Math.max(minZoom, Math.min(8, value));
                 const image = document.getElementById('preview');
                 image.style.width = Math.max(1, Math.round(imageWidth * zoom)) + 'px';
                 image.style.height = Math.max(1, Math.round(imageHeight * zoom)) + 'px';
             }
-            function resizeImage(image) {
-                const size = %d;
-                const scale = Math.min(1, size / Math.max(image.naturalWidth, image.naturalHeight));
-                if (scale === 1) {
-                    imageWidth = image.naturalWidth;
-                    imageHeight = image.naturalHeight;
-                    setZoom(Math.min(1, innerWidth / imageWidth, innerHeight / imageHeight));
-                    document.body.focus();
+            function fitImage() {
+                const image = document.getElementById('preview');
+                // the page can load before the popup gets its size
+                if ((zoomed && imageWidth) || !image?.naturalWidth || !innerWidth || !innerHeight) {
                     return;
                 }
-                try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-                    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
-                    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
-                    image.src = canvas.toDataURL('image/png');
-                } catch (error) {
-                    %s();
-                }
+                imageWidth = image.naturalWidth;
+                imageHeight = image.naturalHeight;
+                const fitZoom = Math.min(1, innerWidth / imageWidth, innerHeight / imageHeight);
+                minZoom = Math.min(0.1, fitZoom);
+                setZoom(fitZoom);
             }
+            addEventListener('resize', fitImage);
             document.addEventListener('wheel', event => {
                 if (event.ctrlKey || event.metaKey) {
                     event.preventDefault();
+                    zoomed = true;
                     setZoom(zoom * (event.deltaY < 0 ? 1.2 : 1 / 1.2));
                 }
             }, {passive: false});
@@ -250,12 +256,12 @@ final class AIImageAttachmentViewer {
                 } else {
                     return;
                 }
+                zoomed = true;
                 event.preventDefault();
             });
             </script></head><body tabindex='-1' style='margin:0;background:%s;display:flex;align-items:center;justify-content:center;min-width:100vw;min-height:100vh;width:max-content;outline:none'>
-            <img id='preview' style='display:block;flex-shrink:0' onload='resizeImage(this)' onerror='%s()' src='%s'>
+            <img id='preview' style='display:block;flex-shrink:0' onload='fitImage(); document.body.focus()' onerror='%s()' src='%s'>
             </body></html>
-            """.formatted(MAX_DISPLAY_SIZE, ERROR_FUNCTION,
-            WebCSSInitializer.colorToHex(UIStyles.getDefaultTextBackground()), ERROR_FUNCTION, source);
+            """.formatted(WebCSSInitializer.colorToHex(UIStyles.getDefaultTextBackground()), ERROR_FUNCTION, source);
     }
 }

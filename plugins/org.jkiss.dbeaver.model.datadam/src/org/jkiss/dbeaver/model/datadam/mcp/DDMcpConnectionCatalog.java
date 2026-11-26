@@ -21,9 +21,10 @@ import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionErrorCode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
@@ -32,7 +33,7 @@ public class DDMcpConnectionCatalog {
     @Nullable
     private static DDMcpConnectionCatalog instance;
 
-    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+    private final DBDamAccessService accessService = DBDamAccessService.getInstance();
     private final DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
 
     private DDMcpConnectionCatalog() {
@@ -48,16 +49,27 @@ public class DDMcpConnectionCatalog {
 
     @NotNull
     public List<AvailableConnection> getAllowedConnections() throws DDMcpFunctionException {
-        if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+        return getAllowedConnections(null);
+    }
+
+    @NotNull
+    public List<AvailableConnection> getAllowedConnections(@Nullable String projectId) throws DDMcpFunctionException {
+        if (accessService.getStatus() != DBDamAccessService.Status.SIGNED_IN) {
             return List.of();
         }
-        return workspace.getProjects().stream()
+        return workspace.getVisibleProjects().stream()
+            .filter(project -> projectId == null || projectId.equals(project.getId()))
             .filter(this::canReadProjectConnections)
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
-                .filter(DDMcpConnectionSettings::isEnabled)
+                .filter(this::isAllowedConnection)
                 .map(connection -> new AvailableConnection(project, connection,
                     !connection.isConnected())))
             .toList();
+    }
+
+    private boolean isAllowedConnection(@NotNull DBPDataSourceContainer connection) {
+        AIContextSettingsDataSource settings = new AIContextSettingsDataSource(connection);
+        return settings.isMetaTransferConfirmed() && settings.isDatadamMcpEnabled();
     }
 
     private boolean canReadProjectConnections(@NotNull DBPProject project) {
@@ -67,12 +79,12 @@ public class DDMcpConnectionCatalog {
     @NotNull
     public AvailableConnection getAllowedConnection(@NotNull String projectId, @NotNull String datasourceId)
         throws DDMcpFunctionException {
-        for (AvailableConnection available : getAllowedConnections()) {
+        for (AvailableConnection available : getAllowedConnections(projectId)) {
             if (available.project().getId().equals(projectId) && available.connection().getId().equals(datasourceId)) {
                 return available;
             }
         }
-        throw new DDMcpFunctionException(DDMcpFunctionErrorCode.ACCESS_DENIED, "Datasource is unavailable", null);
+        throw new DDMcpFunctionException(DDMcpFunctionErrorCode.ACCESS_DENIED, "Datasource is unavailable");
     }
 
     public record AvailableConnection(
