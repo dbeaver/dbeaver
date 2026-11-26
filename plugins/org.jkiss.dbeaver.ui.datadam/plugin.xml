@@ -40,11 +40,6 @@
             class="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectDeleteContentsAdapterFactory">
             <adapter type="org.jkiss.dbeaver.ui.navigator.actions.ProjectDeleteContentsPolicy"/>
         </factory>
-        <factory
-            adaptableType="org.jkiss.dbeaver.model.navigator.DBNProject"
-            class="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectVisibilityAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.ui.navigator.project.ProjectVisibilityPolicy"/>
-        </factory>
     </extension>
 
     <extension point="org.eclipse.ui.decorators">
@@ -73,6 +68,10 @@
         <propertyConfigurator
             class="org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI"
             uiClass="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionConfigurator"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.ai.mcpConnectionsPage">
+        <contribution id="datadam" class="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionsContribution"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
@@ -254,7 +253,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer" order="100"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DBDamInitializer" order="100"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

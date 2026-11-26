@@ -337,6 +337,13 @@ public interface SQLDialect {
 
     boolean supportsOrderByIndex();
 
+    /**
+     * Whether generated ascending ORDER BY items must include the ASC keyword.
+     */
+    default boolean requiresExplicitOrderByAsc() {
+        return false;
+    }
+
     boolean supportsNestedComments();
 
     /**

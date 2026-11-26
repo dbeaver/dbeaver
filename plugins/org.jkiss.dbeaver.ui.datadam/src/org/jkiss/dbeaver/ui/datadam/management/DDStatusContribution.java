@@ -32,7 +32,7 @@ import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.impl.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -57,7 +57,7 @@ public class DDStatusContribution extends ContributionItem {
                 @Override
                 @NotNull
                 public EvaluationResult evaluate(@NotNull IEvaluationContext context) {
-                    return EvaluationResult.valueOf(DDProductConfig.isIntegrationAvailable());
+                    return EvaluationResult.valueOf(DDProductConfig.isIntegrationEnabled());
                 }
 
                 @Override
@@ -108,7 +108,7 @@ public class DDStatusContribution extends ContributionItem {
         String details = "";
         if (!DDProductConfig.isIntegrationEnabled()) {
             status = DDTrackingUIMessages.status_disabled;
-        } else if (DDDesktopAccessService.getInstance().getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+        } else if (DBDamAccessService.getInstance().getStatus() != DBDamAccessService.Status.SIGNED_IN) {
             status = DDTrackingUIMessages.status_not_logged_in;
         } else {
             var monitor = DDManagementActions.getMonitor();

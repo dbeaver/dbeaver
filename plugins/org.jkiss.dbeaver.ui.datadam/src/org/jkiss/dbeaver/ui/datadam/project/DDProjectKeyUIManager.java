@@ -16,31 +16,47 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
+import org.jkiss.dbeaver.ui.datadam.DBDamTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 /** Interactive recovery for account encryption resets, before project operations start. */
 public final class DDProjectKeyUIManager {
+    private static final Log log = Log.getLog(DDProjectKeyUIManager.class);
     private static final DDProjectKeyUIManager INSTANCE = new DDProjectKeyUIManager();
+    private final AtomicBoolean cleanupInProgress = new AtomicBoolean();
+    private final AtomicBoolean activeProjectCheckRunning = new AtomicBoolean();
+    // Acquired only by worker operations; UI callbacks must never wait for this lock.
+    private final ReentrantLock projectOperationLock = new ReentrantLock();
 
     private DDProjectKeyUIManager() {
     }
@@ -50,9 +66,116 @@ public final class DDProjectKeyUIManager {
         return INSTANCE;
     }
 
+    boolean isCleanupInProgress() {
+        return cleanupInProgress.get();
+    }
+
+    public void scheduleActiveProjectCheck() {
+        if (cleanupInProgress.get() || DBDamAccessService.getInstance().getStatus() == DBDamAccessService.Status.UNLOADED
+            || !activeProjectCheckRunning.compareAndSet(false, true)) {
+            return;
+        }
+        AbstractJob job = new AbstractJob(DDTrackingUIMessages.project_sync_title) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                projectOperationLock.lock();
+                try {
+                    if (cleanupInProgress.get() || monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    ensureActiveProject(DBPPlatformDesktop.getInstance().getWorkspace().getVisibleProjects());
+                    return Status.OK_STATUS;
+                } catch (DBException e) {
+                    return Status.error("Could not create a local project", e);
+                } finally {
+                    projectOperationLock.unlock();
+                    activeProjectCheckRunning.set(false);
+                }
+            }
+        };
+        job.setSystem(true);
+        job.schedule();
+    }
+
+    /** Invoked from a progress operation after the user confirms local project deletion. */
+    public void forgetKeys() throws DBException {
+        var access = DBDamAccessService.getInstance();
+        changeAccessAndRemoveProjects(access.getKeyBundle(), access::forgetKeys);
+    }
+
+    /** Invoked from a progress operation after the user confirms sign-out and project deletion. */
+    public void signOut() throws DBException {
+        signOut(DBDamAccessService.getInstance().getKeyBundle());
+    }
+
+    /** Uses the bundle captured when the user was warned about local project deletion. */
+    public void signOut(@Nullable DDKeyBundle keys) throws DBException {
+        changeAccessAndRemoveProjects(keys, DBDamAccessService.getInstance()::signOut);
+    }
+
+    private void changeAccessAndRemoveProjects(@Nullable DDKeyBundle keys, @NotNull AccessOperation operation) throws DBException {
+        if (!cleanupInProgress.compareAndSet(false, true)) {
+            throw new DBException("DataDam project cleanup is already in progress");
+        }
+        projectOperationLock.lock();
+        try {
+            if (keys != null) {
+                removeLocalAccountProjects(keys.accountId());
+            }
+            operation.run();
+        } finally {
+            projectOperationLock.unlock();
+            finishProjectCleanup();
+        }
+    }
+
+    private void finishProjectCleanup() {
+        cleanupInProgress.set(false);
+        DDProjectUIManager.getInstance().refreshProjectVisibility();
+    }
+
+    public void signOutWithProgress() {
+        runWithProgress(this::signOut, DDTrackingUIMessages.sync_preference_page_logout_failed);
+    }
+
+    public void forgetKeysWithProgress() {
+        runWithProgress(this::forgetKeys, DDTrackingUIMessages.sync_preference_page_cannot_forget_keys);
+    }
+
+    private void runWithProgress(@NotNull AccessOperation operation, @NotNull String errorMessage) {
+        // Keep queued navigator updates outside the progress dialog's nested event loop.
+        UIExecutionQueue.blockQueue();
+        try {
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    operation.run();
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DDUIUtils.showError(DDTrackingUIMessages.sync_preference_page_title, errorMessage, e.getTargetException());
+        } finally {
+            UIExecutionQueue.unblockQueue();
+        }
+    }
+
+    @FunctionalInterface
+    private interface AccessOperation {
+        void run() throws DBException;
+    }
+
+    /** Removes local account projects before discarding the credentials needed to retry cleanup. */
+    private void removeLocalAccountProjects(@NotNull UUID accountId) throws DBException {
+        DDProjectManager manager = DDProjectManager.getInstance();
+        prepareProjectDeletion(manager, accountId);
+        manager.deleteAccountProjects(accountId);
+    }
+
     public synchronized boolean ensureKeysReady(@NotNull DBRProgressMonitor monitor) throws DBException {
-        var access = DDDesktopAccessService.getInstance();
-        if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+        var access = DBDamAccessService.getInstance();
+        if (!DBDamTokenUIManager.getInstance().ensureTokenReady(monitor)) {
             return false;
         }
         var bundle = access.getKeyBundle();
@@ -95,9 +218,19 @@ public final class DDProjectKeyUIManager {
         if (monitor.isCanceled() || !bundle.equals(access.getKeyBundle())) {
             return false;
         }
-        DDProjectManager manager = DDProjectManager.getInstance();
-        prepareProjectDeletion(manager, bundle.accountId());
-        access.recoverProjectKeys(bundle, replacement, () -> manager.deleteAccountProjects(bundle.accountId()));
+        if (!cleanupInProgress.compareAndSet(false, true)) {
+            throw new DBException("DataDam project cleanup is already in progress");
+        }
+        projectOperationLock.lock();
+        try {
+            DDProjectManager manager = DDProjectManager.getInstance();
+            // Activate the replacement before acquiring the access lock: this step needs the UI thread.
+            prepareProjectDeletion(manager, bundle.accountId());
+            access.recoverProjectKeys(bundle, replacement, () -> manager.deleteAccountProjects(bundle.accountId()));
+        } finally {
+            projectOperationLock.unlock();
+            finishProjectCleanup();
+        }
         // Callers may already hold project objects that were removed during recovery.
         return false;
     }
@@ -106,7 +239,7 @@ public final class DDProjectKeyUIManager {
         var accountProjects = manager.getAccountProjects(accountId);
         var workspace = DBPPlatformDesktop.getInstance().getWorkspace();
         DBPProject currentProject = workspace.getActiveProject();
-        if (currentProject == null || !accountProjects.contains(currentProject)) {
+        if (currentProject != null && !accountProjects.contains(currentProject)) {
             return;
         }
         DBPProject replacement = null;
@@ -116,16 +249,36 @@ public final class DDProjectKeyUIManager {
                 break;
             }
         }
-        if (replacement == null) {
+        ensureActiveProject(replacement == null ? List.of() : List.of(replacement));
+    }
+
+    private void ensureActiveProject(@NotNull List<? extends DBPProject> candidates) throws DBException {
+        DBPWorkspace workspace = DBPPlatformDesktop.getInstance().getWorkspace();
+        DBPProject currentProject = workspace.getActiveProject();
+        if (currentProject != null && candidates.contains(currentProject)) {
+            return;
+        }
+        DBPProject project;
+        if (candidates.isEmpty()) {
+            if (!workspace.canManageProjects()) {
+                log.debug("Cannot create a local project: project management is not available");
+                return;
+            }
             String name = DBConstants.DEFAULT_PROJECT_NAME;
             int suffix = 1;
             while (workspace.getProject(name) != null) {
                 name = DBConstants.DEFAULT_PROJECT_NAME + " " + suffix++;
             }
-            replacement = workspace.createProject(name, null);
+            log.debug("Creating local project '" + name + "': no suitable active project is available");
+            project = workspace.createProject(name, null);
+            log.debug("Created local project '" + project.getName() + "'");
+        } else {
+            project = candidates.getFirst();
         }
-        DBPProject activeProject = replacement;
-        UIUtils.syncExec(() -> NavigatorHandlerProjectSetActive.setActiveProject(activeProject));
+        UIUtils.syncExec(() -> {
+            log.debug("Activating local project '" + project.getName() + "'");
+            NavigatorHandlerProjectSetActive.setActiveProject(project);
+        });
     }
 
     private record Recovery(@Nullable String phrase) {

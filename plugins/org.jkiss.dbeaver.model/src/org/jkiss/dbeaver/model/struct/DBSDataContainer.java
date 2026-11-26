@@ -43,6 +43,10 @@ public interface DBSDataContainer extends DBSObject {
     String FEATURE_KEY_VALUE = "data.key.value";
     String FEATURE_DATA_MODIFIED_ON_REFRESH = "data.modifying";
     String FEATURE_DATA_READ_FETCHED = "data.read.fetched";
+    /** Opt-in attribute on an execution source for caching prepared column metadata during a read. */
+    String CONTEXT_READ_PREPARED_COLUMN_METADATA = "data.read.prepared-column-metadata";
+    /** Opt-in attribute on an execution source for SQL-paginated JDBC table reads. */
+    String CONTEXT_READ_ATTEMPT_LIMIT_TRANSFORMER = "data.read.attempt-limit-transformer";
 
     long FLAG_NONE                  = 0;
     long FLAG_READ_PSEUDO           = 1 << 1;
@@ -91,25 +95,6 @@ public interface DBSDataContainer extends DBSObject {
         long flags,
         int fetchSize
     ) throws DBException;
-
-    /**
-     * Read data with optional advance preparation of result column metadata.
-     * Non-JDBC containers can ignore the request.
-     */
-    @NotNull
-    default DBCStatistics readData(
-        @Nullable DBCExecutionSource source,
-        @NotNull DBCSession session,
-        @NotNull DBDDataReceiver dataReceiver,
-        @Nullable DBDDataFilter dataFilter,
-        long firstRow,
-        long maxRows,
-        long flags,
-        int fetchSize,
-        boolean prepareColumnMetadata
-    ) throws DBException {
-        return readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
-    }
 
     /**
      * Counts data rows in container.

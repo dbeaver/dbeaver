@@ -22,10 +22,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
+import org.jkiss.dbeaver.ui.datadam.DBDamTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
@@ -79,10 +79,10 @@ public abstract class DDProjectOperationJob<T> extends AbstractJob {
 
     protected boolean canRun(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (validatedKeys != null) {
-            if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+            if (!DBDamTokenUIManager.getInstance().ensureTokenReady(monitor)) {
                 return false;
             }
-            if (validatedKeys.equals(DDDesktopAccessService.getInstance().getKeyBundle())) {
+            if (validatedKeys.equals(DBDamAccessService.getInstance().getKeyBundle())) {
                 return true;
             }
         }
