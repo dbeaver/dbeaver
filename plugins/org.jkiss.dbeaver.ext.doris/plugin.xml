@@ -22,6 +22,9 @@
             <treeInjection path="generic/catalog/schema/table"
                 changeFolderType="org.jkiss.dbeaver.ext.doris.model.DorisTable"/>
 
+            <treeInjection path="generic/catalog/schema/table/attribute"
+                changeFolderType="org.jkiss.dbeaver.ext.doris.model.DorisTableColumn"/>
+
             <drivers managable="true">
                 <driver
                         id="doris"
