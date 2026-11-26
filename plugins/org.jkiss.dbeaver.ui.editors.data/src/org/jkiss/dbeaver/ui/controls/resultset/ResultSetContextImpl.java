@@ -48,7 +48,7 @@ class ResultSetContextImpl implements IResultSetContext {
 
     @Override
     public boolean hasRows() {
-        return viewer.getModel().getRowCount() > 0;
+        return viewer.getModel().getFetchedRowCount() > 0;
     }
 
     @Override
