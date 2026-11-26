@@ -49,6 +49,7 @@ import java.net.http.WebSocket;
 import java.net.http.WebSocketHandshakeException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,6 +67,29 @@ class DBDamChannelTest extends DBeaverUnitTest {
     private static final DDRemoteDamHandshakeRequest HELLO = new DDRemoteDamHandshakeRequest(
         "deployment", "app-instance", "workspace", "d29ya3NwYWNlOjAwMDEyMzQ1NjdhYg", "DBeaver", GeneralUtils.getProductVersion().toString());
     private static final DDRemoteDamMessage MESSAGE = message("topic", "value");
+
+    @Test
+    void heartbeatsKeepQuietConnectionAliveButSilentTransportFailureIsDetected() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        try (var channel = new DBDamChannel(ENDPOINT, HELLO, resource -> "token", clients, Duration.ofMillis(400))) {
+            channel.addSessionListener(events);
+            channel.start();
+            Peer peer = ready(clients, events, "desktop-session");
+            for (int i = 0; i < 3; i++) {
+                Assertions.assertNull(events.disconnected.poll(200, TimeUnit.MILLISECONDS));
+                if (i % 2 == 0) {
+                    peer.listener.onPing(peer.socket, ByteBuffer.allocate(0));
+                } else {
+                    peer.listener.onPong(peer.socket, ByteBuffer.allocate(0));
+                }
+            }
+            Assertions.assertEquals("desktop-session", channel.getStatus().session().damSessionId());
+
+            Assertions.assertEquals("desktop-session", take(events.disconnected).damSessionId());
+            Assertions.assertFalse(channel.getStatus().isReady());
+        }
+    }
 
     @Test
     void credentialRotationDuringHandshakeIsAppliedWhenTheConnectionBecomesReady() throws Exception {

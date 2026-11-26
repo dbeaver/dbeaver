@@ -40,6 +40,7 @@ import java.net.http.WebSocket;
 import java.net.http.WebSocketHandshakeException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +61,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
     private static final long CONNECT_TIMEOUT_MILLIS = 30_000;
     private static final long READY_TIMEOUT_MILLIS = 10_000;
     private static final long SEND_TIMEOUT_MILLIS = 10_000;
+    private static final Duration HEARTBEAT_TIMEOUT = Duration.ofSeconds(90);
     private static final long MIN_RETRY_MILLIS = 1_000;
     private static final long MAX_RETRY_MILLIS = 60_000;
 
@@ -70,6 +72,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
     private final String helloMessage;
     private final TokenProvider tokens;
     private final Supplier<BaseWebSocketClient> clients;
+    private final Duration heartbeatTimeout;
     private final List<Registration<DDRemoteDamMessageListener>> messageListeners = new ArrayList<>();
     private final List<Registration<DDRemoteDamSessionListener>> sessionListeners = new ArrayList<>();
     private final List<StateObservation> stateObservers = new ArrayList<>();
@@ -101,12 +104,23 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         @NotNull TokenProvider tokens,
         @NotNull Supplier<BaseWebSocketClient> clients
     ) throws DBException {
+        this(endpoint, hello, tokens, clients, HEARTBEAT_TIMEOUT);
+    }
+
+    DBDamChannel(
+        @NotNull URI endpoint,
+        @NotNull DDRemoteDamHandshakeRequest hello,
+        @NotNull TokenProvider tokens,
+        @NotNull Supplier<BaseWebSocketClient> clients,
+        @NotNull Duration heartbeatTimeout
+    ) throws DBException {
         DDEndpoints.requireSecureWebSocketTransport(endpoint);
         this.endpoint = endpoint;
         this.hello = hello;
         this.helloMessage = DDRemoteDamProtocol.encodeHandshakeRequest(hello);
         this.tokens = tokens;
         this.clients = clients;
+        this.heartbeatTimeout = heartbeatTimeout;
         if (helloMessage.getBytes(StandardCharsets.UTF_8).length > MAX_MESSAGE_BYTES) {
             throw new DBException("Desktop hello exceeds the message size limit");
         }
@@ -663,7 +677,8 @@ public final class DBDamChannel implements DDRemoteDamChannel {
 
         private AttemptListener(@NotNull Attempt attempt) {
             this.attempt = attempt;
-            // The server owns heartbeat and authentication deadlines. A quiet desktop must not expire locally.
+            // Ping/pong frames count as activity in the base listener: only a lost heartbeat expires the connection.
+            setIdleTimeout(heartbeatTimeout);
         }
 
         @Override
