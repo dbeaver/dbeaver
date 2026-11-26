@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -207,6 +208,24 @@ public class DamengMetaModel extends GenericMetaModel {
             return DamengUtils.getDDL(monitor, sourceObject, DamengConstants.ObjectType.TRIGGER, ((DamengTable) sourceObject.getContainer()).getContainer().getName());
         }
         return DamengUtils.getDDL(monitor, sourceObject, DamengConstants.ObjectType.TRIGGER, sourceObject.getContainer().getName());
+    }
+
+    @NotNull
+    @Override
+    public String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase table,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
+        GenericSchema schema = table.getSchema();
+        if (schema == null
+            || CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS)
+            || CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS)
+            || CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_UNIQUE_KEYS)) {
+            return super.getTableDDL(monitor, table, options);
+        }
+
+        return DamengUtils.getTableDDL(monitor, table, schema.getName(), options);
     }
 
     @Override

@@ -99,7 +99,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer"; //$NON-NLS-1$
     private static final String CMD_FILTER_ID = "org.jkiss.dbeaver.core.qm.filter";
-    private static final String QM_UNAVAILABLE_TITLE = "Query Manager is unavailable";
+    private static final String QM_UNAVAILABLE_TITLE = SQLEditorMessages.controls_querylog_unavailable_title;
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
     private final IWorkbenchPartSite site;
@@ -1255,7 +1255,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         private final QMEventCriteria criteria;
 
         protected EventHistoryReadService(@NotNull QMEventCriteria criteria) {
-            super("Load query history"); //$NON-NLS-1$
+            super(SQLEditorMessages.controls_querylog_load_history_title);
             this.criteria = criteria;
         }
 

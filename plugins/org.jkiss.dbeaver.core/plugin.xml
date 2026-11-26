@@ -2,14 +2,6 @@
 <?eclipse version="3.2"?>
 <plugin>
     <!-- UI extensions -->
-    <extension-point id="org.jkiss.dbeaver.statusBar" name="Status bar contributions" schema="schema/org.jkiss.dbeaver.statusBar.exsd"/>
-    <extension point="org.jkiss.dbeaver.statusBar">
-        <item id="org.jkiss.dbeaver.core.ui.Projects" class="org.jkiss.dbeaver.ui.controls.ProjectSelectorContributor" order="100">
-            <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.standalone" forcePluginActivation="true"/>
-            </enabledWhen>
-        </item>
-    </extension>
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="Workbench handlers" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.clearHistoryHandler" name="Clear history handlers" schema="schema/org.jkiss.dbeaver.clearHistoryHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.toolBarConfiguration" name="Toolbar configurations" schema="schema/org.jkiss.dbeaver.toolBarConfiguration.exsd" />

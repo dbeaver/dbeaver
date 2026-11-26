@@ -174,10 +174,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
                     false,
                     "");
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError(
-                    ResultSetMessages.dialog_save_sql_panel_error_title,
-                    ResultSetMessages.dialog_save_sql_panel_error_message,
-                    e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_sql_panel_title, ResultSetMessages.error_sql_panel_message, e);
             }
         }
         populateSQL();
@@ -212,10 +209,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
                 }
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(
-                ResultSetMessages.dialog_save_script_error_title,
-                ResultSetMessages.dialog_save_preview_script_error_message,
-                e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_generate_script_title, ResultSetMessages.error_generate_changes_script, e);
         }
     }
 

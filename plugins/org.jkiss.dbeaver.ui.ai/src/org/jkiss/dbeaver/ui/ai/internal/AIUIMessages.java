@@ -19,6 +19,20 @@ package org.jkiss.dbeaver.ui.ai.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class AIUIMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.internal.AIUIMessages"; //$NON-NLS-1$
+
+    public static String ai_mcp_connections_info;
+    public static String ai_mcp_connections_connection;
+    public static String ai_mcp_connections_filter;
+    public static String ai_mcp_connections_driver;
+    public static String ai_mcp_connections_save_error_message;
+    public static String ai_mcp_connections_ungrouped;
+    public static String ai_mcp_connections_load_all;
+    public static String ai_mcp_connections_open_failed;
+    public static String ai_mcp_connections_scope;
+    public static String ai_mcp_connections_add;
+    public static String ai_mcp_connections_remove;
+    public static String ai_mcp_connections_count;
     public static String ai_connection_settings_group;
     public static String ai_connection_settings_mcp_group;
     public static String ai_connection_settings_enable_label;
@@ -37,7 +51,6 @@ public class AIUIMessages extends NLS {
     public static String ai_engine_configurator_use_env;
     public static String ai_engine_configurator_use_env_tip;
     public static String ai_engine_configurator_use_env_variables_tip;
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.internal.AIUIMessages"; //$NON-NLS-1$
 
     public static String gpt_preference_page_checkbox_enable_ai_label;
     public static String gpt_preference_page_checkbox_enable_ai_tip;
@@ -96,6 +109,12 @@ public class AIUIMessages extends NLS {
     public static String ai_function_allow_menu_always;
     public static String ai_function_allow_menu_configure;
     public static String scope_selector_customize;
+    public static String scope_selector_hint;
+    public static String scope_selector_title;
+    public static String scope_selector_selection_catalogs;
+    public static String scope_selector_selection_schemas;
+    public static String scope_selector_selection_tables;
+    public static String scope_selector_empty_scope;
     public static String scope_selector_not_available;
     public static String scope_selector_custom_objects;
     public static String scope_selector_loading;
@@ -160,6 +179,9 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_duplicate_error_title;
     public static String ai_engines_page_duplicate_error_message;
     public static String ai_engines_page_delete_confirm_title;
+    public static String ai_engines_page_delete_error_title;
+    public static String ai_profiles_no_personal_profiles;
+    public static String ai_profiles_select_personal_profile;
     public static String ai_engines_page_delete_confirm_message;
     public static String ai_engines_page_save_error_title;
     public static String ai_engines_page_save_error_message;
@@ -169,6 +191,12 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_configurator_error_message;
     public static String ai_engines_page_configurator_not_found_title;
     public static String ai_engines_page_configurator_not_found_message;
+
+    public static String ai_profiles_default;
+    public static String ai_profiles_credentials;
+    public static String ai_profiles_credentials_personal;
+    public static String ai_profiles_credentials_shared;
+    public static String ai_settings_user_save_error_title;
 
     static {
         // initialize resource bundle

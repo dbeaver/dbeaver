@@ -234,7 +234,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
             SQLEditorHandlerOpenEditor.openNewEditor(new SQLNavigatorContext(forObject), null);
             return true;
         } catch (CoreException e) {
-            DBWorkbench.getPlatformUI().showError("Open new SQL editor", "Can't open new SQL editor", e);
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_editor_open_new_title, SQLEditorMessages.sql_editor_open_new_error, e);
             return false;
         }
     }
@@ -248,7 +248,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
                 null);
             return true;
         } catch (CoreException e) {
-            DBWorkbench.getPlatformUI().showError("Open SQL editor", "Can't open SQL editor", e);
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_editor_open_title, SQLEditorMessages.sql_editor_open_error, e);
             return false;
         }
     }

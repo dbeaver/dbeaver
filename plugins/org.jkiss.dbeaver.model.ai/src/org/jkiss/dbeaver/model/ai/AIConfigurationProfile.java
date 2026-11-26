@@ -45,6 +45,7 @@ public class AIConfigurationProfile {
 
     private transient AIEngineDescriptor engineDescriptor;
     private transient JsonObject unavailableProfile;
+    private transient boolean userCredentialsLoaded;
 
     public AIConfigurationProfile() {
     }
@@ -148,13 +149,23 @@ public class AIConfigurationProfile {
     }
 
     public void saveSecrets() throws DBException {
-        if (configuration != null) {
+        if (AIUserProfileCredentials.isUserProfile(this)) {
+            AIUserProfileCredentials.save(this);
+        } else if (configuration != null) {
             configuration.saveSecrets(this);
         }
     }
 
     public void resolveSecrets() throws DBException {
-        getConfiguration().resolveSecrets(this);
+        if (AIUserProfileCredentials.isUserProfile(this)) {
+            // secrets are requested from the server, so read them once per loaded settings
+            if (!userCredentialsLoaded) {
+                AIUserProfileCredentials.load(this);
+                userCredentialsLoaded = true;
+            }
+        } else {
+            getConfiguration().resolveSecrets(this);
+        }
     }
 
     @Override

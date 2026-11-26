@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,5 +37,14 @@ public interface SQLScriptExecutor<CONTAINER extends DBSObject> {
      * @throws DBException if failed to open the wizard
      */
     void execute(@NotNull CONTAINER container, @Nullable Path file) throws DBException;
+
+    default void execute(
+        @NotNull CONTAINER container,
+        @Nullable Path file,
+        @NotNull String resourceProjectId,
+        @NotNull String resourcePath
+    ) throws DBException {
+        execute(container, file);
+    }
 
 }

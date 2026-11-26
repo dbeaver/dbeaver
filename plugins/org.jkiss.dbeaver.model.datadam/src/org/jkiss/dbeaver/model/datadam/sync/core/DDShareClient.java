@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.datadam.DDClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.utils.GsonUtils;
 import org.jkiss.utils.Pair;
 
@@ -122,7 +122,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
             }
         }""".formatted(REVISION_FIELDS.indent(8));
 
-    public DDShareClient(@NotNull String url, @NotNull DDDesktopAccessService accessService) {
+    public DDShareClient(@NotNull String url, @NotNull DBDamAccessService accessService) {
         super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of(), HttpClient.Redirect.NEVER, accessService);
         this.gson = GsonUtils.gsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeIsoAdapter())
@@ -368,7 +368,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     private DDKeyBundle requireCredentialBundle() throws DBException {
         DDKeyBundle bundle = accessService.getKeyBundle();
         if (bundle == null || bundle.apiKeyId() == null) {
-            throw new DBException("Import the current DataDam recovery phrase before sharing projects");
+            throw new DBException("Import the current DataDam encryption key before sharing projects");
         }
         return bundle;
     }
@@ -377,7 +377,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     private SecretKey getDataKey() throws DBException {
         DDKeyBundle bundle = accessService.getKeyBundle();
         if (bundle == null) {
-            throw new DBException("Import encryption keys for the current DataDam account before transferring files");
+            throw new DBException("Import the encryption key for the current DataDam account before transferring files");
         }
         return new DDBundleCredentials(bundle).getDataKey();
     }

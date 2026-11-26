@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -343,7 +344,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 awp.updatePageCompletion();
             }
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
+            DBWorkbench.getPlatformUI().showError(
+                UIMessages.wizard_page_switch_error_title, UIMessages.wizard_page_switch_error_message, e);
         } finally {
             pageArea.setRedraw(true);
         }

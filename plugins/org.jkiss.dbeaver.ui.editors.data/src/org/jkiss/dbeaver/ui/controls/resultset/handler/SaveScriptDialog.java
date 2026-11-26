@@ -96,10 +96,7 @@ class SaveScriptDialog extends BaseDialog {
                     false,
                     "");
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError(
-                    ResultSetMessages.dialog_save_sql_panel_error_title,
-                    ResultSetMessages.dialog_save_sql_panel_error_message,
-                    e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_sql_panel_title, ResultSetMessages.error_sql_panel_message, e);
             }
         }
         populateSQL();
@@ -206,8 +203,8 @@ class SaveScriptDialog extends BaseDialog {
             }
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
-                ResultSetMessages.dialog_save_script_error_title,
-                ResultSetMessages.dialog_save_script_error_message,
+                ResultSetMessages.error_generate_script_title,
+                ResultSetMessages.error_generate_changes_script,
                 e
             );
         }

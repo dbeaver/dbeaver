@@ -25,12 +25,16 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.preferences.McpConnectionsPreferencePage;
+import org.jkiss.dbeaver.ui.datadam.DBDamService;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.dialogs.WizardDialogModeless;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -39,7 +43,13 @@ public class DDManagementMenu extends CompoundContributionItem {
     @NotNull
     protected IContributionItem[] getContributionItems() {
         boolean enabled = DDProductConfig.isIntegrationEnabled();
-        boolean signedIn = DDDesktopAccessService.getInstance().getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
+        boolean signedIn = DBDamAccessService.getInstance().getStatus() == DBDamAccessService.Status.SIGNED_IN;
+        Action login = action(signedIn ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
+            : DDTrackingUIMessages.sync_preference_page_desktop_sign_in, IAction.AS_PUSH_BUTTON, DDManagementActions::toggleLogin);
+        login.setEnabled(enabled);
+        if (!signedIn) {
+            return new IContributionItem[] {new ActionContributionItem(login)};
+        }
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         Action configure = action(DDTrackingUIMessages.configuration, IAction.AS_PUSH_BUTTON, DDManagementActions::configure);
         Action tracking = action(DDTrackingUIMessages.tracking_title, IAction.AS_CHECK_BOX, () -> {
@@ -52,39 +62,49 @@ public class DDManagementMenu extends CompoundContributionItem {
         });
         var view = page.findView(DDTrackingView.ID);
         tracking.setChecked(view != null && page.isPartVisible(view));
-        Action login = action(signedIn ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
-            : DDTrackingUIMessages.sync_preference_page_desktop_sign_in, IAction.AS_PUSH_BUTTON, DDManagementActions::toggleLogin);
-        login.setEnabled(enabled);
+        Action manageConnections = action(DDTrackingUIMessages.manage_database_connections, IAction.AS_PUSH_BUTTON,
+            () -> {
+                try {
+                    WizardDialogModeless.showPage(UIUtils.getActiveWorkbenchShell(), McpConnectionsPreferencePage.PAGE_ID);
+                } catch (DBException e) {
+                    DDManagementActions.showError(e);
+                }
+            });
+        manageConnections.setEnabled(false);
         AtomicReference<DDAccountClient.DamSettingsState> settings = new AtomicReference<>();
         Action mcp = new Action(DDTrackingUIMessages.sync_preference_page_mcp_enabled, IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
                 var previous = settings.get();
                 if (previous == null || !DDProductConfig.isIntegrationEnabled()
-                    || DDDesktopAccessService.getInstance().getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+                    || DBDamAccessService.getInstance().getStatus() != DBDamAccessService.Status.SIGNED_IN) {
                     return;
                 }
                 setEnabled(false);
-                DDDesktopDamService.getInstance().createJob("Update DataDam MCP status",
-                    account -> account.setDamSetting(DDRemoteDamDesktopSessionService.getInstance().getClientDamId(),
+                manageConnections.setEnabled(false);
+                DBDamService.getInstance().createJob("Update DataDam MCP status",
+                    account -> account.setDamSetting(DBDamSessionService.getInstance().getClientDamId(),
                         DDRemoteDamSettingKeys.MCP_ENABLED, Boolean.toString(isChecked()), previous.accountId()),
-                    updated -> {}, DDManagementActions::showError);
+                    updated -> manageConnections.setEnabled(DDProductConfig.isIntegrationEnabled()
+                        && updated.isAccountEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true)
+                        && updated.isDamEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, false)), DDManagementActions::showError);
             }
         };
         mcp.setEnabled(false);
-        if (enabled && signedIn) {
-            DDDesktopDamService.getInstance().createJob("Read DataDam MCP status",
-                account -> account.getDamSettings(DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
+        if (enabled) {
+            DBDamService.getInstance().createJob("Read DataDam MCP status",
+                account -> DBDamService.getInstance().getDamSettings(),
                 state -> {
                     settings.set(state);
                     boolean accountEnabled = state.settings().isAccountEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true);
                     mcp.setChecked(accountEnabled && state.settings().isDamEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, false));
                     mcp.setEnabled(accountEnabled && state.canManage() && DDProductConfig.isIntegrationEnabled());
+                    manageConnections.setEnabled(mcp.isChecked() && DDProductConfig.isIntegrationEnabled());
                 }, error -> mcp.setEnabled(false));
         }
         return new IContributionItem[] {
             new ActionContributionItem(configure), new ActionContributionItem(tracking),
-            new ActionContributionItem(mcp),
+            new ActionContributionItem(mcp), new ActionContributionItem(manageConnections),
             new Separator(), new ActionContributionItem(login)
         };
     }
