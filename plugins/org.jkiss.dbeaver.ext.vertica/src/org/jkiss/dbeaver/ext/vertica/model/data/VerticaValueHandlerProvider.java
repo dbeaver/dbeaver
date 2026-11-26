@@ -23,8 +23,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCUUIDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-
-import java.util.Locale;
+import org.jkiss.utils.CommonUtils;
 
 public class VerticaValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
@@ -33,8 +32,8 @@ public class VerticaValueHandlerProvider implements DBDValueHandlerProvider {
         @NotNull DBDFormatSettings preferences,
         @NotNull DBSTypedObject type
     ) {
-        String lowerTypeName = type.getTypeName().toLowerCase(Locale.ENGLISH);
-        if ("uuid".equals(lowerTypeName)) {
+        String typeName = type.getTypeName();
+        if (CommonUtils.isNotEmpty(typeName) && "uuid".equalsIgnoreCase(typeName.trim())) {
             return JDBCUUIDValueHandler.INSTANCE;
         }
         return null;

@@ -420,7 +420,7 @@
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
                     webURL="https://jdbc.postgresql.org/"
-                    description="Legacy PostgreSQL JDBC connector for PostgreSQL relational databases."
+                    description="%driver.postgresql.legacy.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
@@ -438,7 +438,7 @@
                     defaultDatabase="postgres"
                     defaultUser="postgres"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                    description="Legacy PostgreSQL JDBC connector for Greenplum distributed analytical databases."
+                    description="%driver.postgres-greenplum-jdbc.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     dialect="postgresql">
                     <parameter name="serverType" value="greenplum"/>
@@ -479,7 +479,7 @@
                     defaultPort="5432"
                     webURL="https://yellowbrick.com/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                    description="Yellowbrick JDBC driver for analytical databases with a PostgreSQL SQL dialect."
+                    description="%driver.yellowbrick-jdbc.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
@@ -574,7 +574,7 @@
                     defaultDatabase="dev"
                     defaultUser="awsuser"
                     threadSafe="false"
-                    description="AWS JDBC driver for Amazon Redshift cloud data warehouses and SQL analytics."
+                    description="%driver.postgres-redshift-jdbc.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                     databaseDocumentationSuffixURL="Database-driver-Amazon-Redshift"
