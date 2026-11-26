@@ -73,9 +73,16 @@ public class StyledTextSelectionPainter implements IStartup {
         Listener filter = event -> {
             if (event.widget instanceof StyledText text && text.getData(INSTALLED) == null) {
                 text.setData(INSTALLED, Boolean.TRUE);
-                // A filter runs before the widget's listeners. Appending here paints after SWT,
-                // including on the first paint, without replacing the widget's renderer.
+                // StyledText installs its own paint listener first. Insert our repaint immediately
+                // after it so existing annotation and editor overlay painters still run last.
+                Listener[] painters = text.getListeners(SWT.Paint);
+                for (int i = 1; i < painters.length; i++) {
+                    text.removeListener(SWT.Paint, painters[i]);
+                }
                 text.addPaintListener(StyledTextSelectionPainter::paintSelection);
+                for (int i = 1; i < painters.length; i++) {
+                    text.addListener(SWT.Paint, painters[i]);
+                }
             }
         };
         display.addFilter(SWT.Paint, filter);
