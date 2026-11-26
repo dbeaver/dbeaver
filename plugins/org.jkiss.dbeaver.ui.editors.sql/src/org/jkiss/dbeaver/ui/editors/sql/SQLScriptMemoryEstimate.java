@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -121,14 +125,19 @@ public final class SQLScriptMemoryEstimate {
         }
         if (choice == 1) {
             Path path = file.toPath();
-            UIUtils.asyncExec(() -> {
-                if (!ShellUtils.openExternalFile(path)) {
-                    DBWorkbench.getPlatformUI().showError(
-                        SQLEditorMessages.sql_editor_large_file_title,
-                        SQLEditorMessages.sql_editor_large_file_external_error
-                    );
+            new AbstractJob(SQLEditorMessages.sql_editor_large_file_open_externally) {
+                @NotNull
+                @Override
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                    if (!ShellUtils.openExternalFile(path)) {
+                        UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showError(
+                            SQLEditorMessages.sql_editor_large_file_title,
+                            SQLEditorMessages.sql_editor_large_file_external_error
+                        ));
+                    }
+                    return Status.OK_STATUS;
                 }
-            });
+            }.schedule();
         }
         return false;
     }
