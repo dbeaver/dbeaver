@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.rpc;
 
+import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
@@ -36,6 +37,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -69,6 +72,45 @@ class DBDamSessionServiceTest {
     @AfterEach
     void close() {
         service.close();
+    }
+
+    @Test
+    void reusesDamInformationOnlyForTheCurrentConnectedSession() {
+        ready("first");
+        var first = status.get().session();
+        var dam = namedDam("Desktop");
+        service.cacheDam(first, dam);
+        Assertions.assertSame(dam, service.getCachedDam());
+
+        status.set(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
+        Assertions.assertNull(service.getCachedDam());
+
+        ready("second");
+        Assertions.assertNull(service.getCachedDam());
+        var renamed = namedDam("Renamed desktop");
+        service.cacheDam(status.get().session(), renamed);
+        service.cacheDam(first, dam);
+        Assertions.assertSame(renamed, service.getCachedDam(), "A late response must not overwrite the current session");
+    }
+
+    @Test
+    void cachesRenamedDamAndIgnoresUnavailableResults() {
+        ready("session");
+        var session = status.get().session();
+        service.cacheDam(session, namedDam("Desktop"));
+        var renamed = namedDam("Renamed desktop");
+        service.cacheDam(session, renamed);
+        service.cacheDam(session, null);
+        Assertions.assertSame(renamed, service.getCachedDam());
+        service.close();
+        Assertions.assertNull(service.getCachedDam());
+    }
+
+    @NotNull
+    private static DDConnectedRemoteDam namedDam(@NotNull String name) {
+        var now = OffsetDateTime.now();
+        return new DDConnectedRemoteDam("dam", "deployment", "instance", "workspace", null, true, 1,
+            List.of(new DDConnectedRemoteDam.Application("DBeaver Test", "1.0")), now, now, null, "client", List.of(), name);
     }
 
     @Test
