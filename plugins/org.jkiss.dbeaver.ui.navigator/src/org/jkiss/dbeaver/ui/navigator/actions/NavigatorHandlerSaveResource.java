@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ByteNumberFormat;
@@ -96,7 +98,8 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
 
         Path targetFile = Path.of(targetPath);
         if (Files.exists(targetFile)) {
-            if (!UIUtils.confirmAction(shell, "File exists", "Overwrite file '" + targetFile.toAbsolutePath() + "'?")) {
+            if (!UIUtils.confirmAction(shell, UINavigatorMessages.file_exists_confirm_title,
+                NLS.bind(UINavigatorMessages.file_overwrite_confirm_message, targetFile.toAbsolutePath()))) {
                 return;
             }
         }
@@ -114,7 +117,7 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
                 }
             });
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("File save IO error", null, e);
+            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_file_save_title, null, e);
         }
     }
 
@@ -157,7 +160,7 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
                 }
             });
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("File save IO error", null, e);
+            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_file_save_title, null, e);
         }
     }
 
@@ -213,7 +216,7 @@ public class NavigatorHandlerSaveResource extends AbstractHandler implements IEl
                         }
                     }
                 } catch (IOException e) {
-                    DBWorkbench.getPlatformUI().showError("IO error", null, e);
+                    DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_io_title, null, e);
                 }
             }
 

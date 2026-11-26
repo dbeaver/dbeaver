@@ -25,7 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.utils.GsonUtils;
 
 import java.net.URI;
@@ -71,6 +71,11 @@ public class DDAccountClient extends DDClient {
             canManageSettings
         }
         """;
+    private static final String CAN_MANAGE_DAM_SETTINGS_QUERY = """
+        query CanManageDamSettings {
+            canManageSettings
+        }
+        """;
     private static final String SET_DAM_SETTING = """
         mutation SetDamSetting($clientDamId: String!, $key: String!, $value: String!, $expectedAccountId: ID!) {
             setDamSetting(clientDamId: $clientDamId, key: $key, value: $value, expectedAccountId: $expectedAccountId) { account dam }
@@ -97,10 +102,10 @@ public class DDAccountClient extends DDClient {
         """.formatted(DAM_FIELDS);
 
     public DDAccountClient(@NotNull URI accountUrl) {
-        this(accountUrl, DDDesktopAccessService.getInstance());
+        this(accountUrl, DBDamAccessService.getInstance());
     }
 
-    public DDAccountClient(@NotNull URI accountUrl, @NotNull DDDesktopAccessService accessService) {
+    public DDAccountClient(@NotNull URI accountUrl, @NotNull DBDamAccessService accessService) {
         super(accountUrl.resolve("/").toString(), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER,
             accessService);
         gson = GsonUtils.gsonBuilder()
@@ -113,9 +118,9 @@ public class DDAccountClient extends DDClient {
     @NotNull
     public DDCryptoState getCryptoState() throws DBException {
         CryptoData data = executeGraphQl(CRYPTO_STATE_QUERY, CryptoData.class,
-            "Could not read encryption keys from DataDam Account");
+            "Could not read the encryption key from DataDam Account");
         if (data.gatewayCryptoState() == null) {
-            throw new DBException("Could not read encryption keys from DataDam Account");
+            throw new DBException("Could not read the encryption key from DataDam Account");
         }
         DDCryptoState state = data.gatewayCryptoState();
         if (state.accountId() == null) {
@@ -162,6 +167,15 @@ public class DDAccountClient extends DDClient {
             throw new DBException("Could not read Dam settings from DataDam Account");
         }
         return new DamSettingsState(data.accountInfo().accountId(), data.damSettings(), data.canManageSettings());
+    }
+
+    public boolean canManageDamSettings() throws DBException {
+        DamSettingsData data = executeGraphQl(CAN_MANAGE_DAM_SETTINGS_QUERY, DamSettingsData.class,
+            "Could not check Dam settings permission in DataDam Account");
+        if (data.canManageSettings() == null) {
+            throw new DBException("Could not check Dam settings permission in DataDam Account");
+        }
+        return data.canManageSettings();
     }
 
     @NotNull

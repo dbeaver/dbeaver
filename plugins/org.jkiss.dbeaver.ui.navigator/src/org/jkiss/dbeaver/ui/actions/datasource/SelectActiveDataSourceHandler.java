@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -251,7 +251,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                     menuItems.remove(menuItems.size() - 1);
                 }
                 menuItems.add(new Separator());
-                menuItems.add(new ActionContributionItem(new Action("Other ...") {
+                menuItems.add(new ActionContributionItem(new Action(UINavigatorMessages.toolbar_datasource_selector_other) {
                     @Override
                     public void run() {
                         openDataSourceSelector(workbenchWindow, getActiveProject(curDataSource, activeEditor), curDataSource);

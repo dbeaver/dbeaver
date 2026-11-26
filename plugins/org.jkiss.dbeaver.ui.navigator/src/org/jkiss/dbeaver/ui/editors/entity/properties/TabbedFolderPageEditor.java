@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 
 /**
  * EditorWrapperSection
@@ -93,7 +94,7 @@ public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabas
             }
             editor.init(nestedEditorSite, editorInput);
         } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Create SQL viewer", null, e);
+            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.error_create_sql_viewer_title, null, e);
         }
         editor.createPartControl(parent);
 

@@ -115,7 +115,7 @@ public class ProgressEditorPart extends EditorPart {
     }
 
     public synchronized boolean scheduleEditorLoad() {
-        if (pendingJob != null) {
+        if (pendingJob != null || parentControl == null || parentControl.isDisposed()) {
             return false;
         }
         InitNodeService loadingService = new InitNodeService();
@@ -152,7 +152,7 @@ public class ProgressEditorPart extends EditorPart {
             ownerEditor.init(ownerEditor.getEditorSite(), result);
             ownerEditor.recreateEditorControl();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Editor init", "Can't initialize editor", e);
+            DBWorkbench.getPlatformUI().showError(EditorsMessages.editor_init_error_title, EditorsMessages.editor_init_error_message, e);
         }
     }
 
@@ -197,6 +197,9 @@ public class ProgressEditorPart extends EditorPart {
         @Override
         public void completeLoading(@Nullable IDatabaseEditorInput result) {
             super.completeLoading(result);
+            if (parentControl == null || parentControl.isDisposed()) {
+                return;
+            }
             super.visualizeLoading();
             if (!progressCanvas.isDisposed()) {
                 progressCanvas.removePaintListener(this);

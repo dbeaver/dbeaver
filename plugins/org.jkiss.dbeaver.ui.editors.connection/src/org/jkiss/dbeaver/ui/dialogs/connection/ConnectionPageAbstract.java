@@ -384,7 +384,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         if (passHidden) {
             if (!serviceSecurity.validatePassword(
                 site.getProject(),
-                "Enter project password",
+                UIConnectionMessages.dialog_connection_project_password_title,
                 "Enter project password to unlock connection password view",
                 true))
             {

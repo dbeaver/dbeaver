@@ -217,7 +217,10 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         BaseThemeSettings.instance.addPropertyListener(
             BaseEditorColors.COLOR_ERROR,
-            s -> tasksTree.refresh(),
+            s -> {
+                tasksTree.refresh();
+                taskRunViewer.refresh();
+            },
             taskrunTree
         );
 
@@ -555,7 +558,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                     try {
                         runLog = receiveLogFile(task, taskRun);
                     } catch (InvocationTargetException e) {
-                        DBWorkbench.getPlatformUI().showError("Open log error", "Error while retrieving task run log", e.getCause());
+                        DBWorkbench.getPlatformUI().showError(
+                            TaskUIViewMessages.task_log_open_error_title,
+                            TaskUIViewMessages.task_log_retrieve_error_message, e.getCause());
                         return;
                     }
                 }
@@ -601,11 +606,12 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                     }
                 }
             } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Open log error", "Error while opening task execution log", e);
+                DBWorkbench.getPlatformUI().showError(
+                    TaskUIViewMessages.task_log_open_error_title, TaskUIViewMessages.task_log_open_error_message, e);
             }
         } else {
-            UIUtils.showMessageBox(window.getShell(), "Log file not found",
-                "Can't find log file '" + runLog.toAbsolutePath() + "'", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(window.getShell(), TaskUIViewMessages.task_log_not_found_title,
+                NLS.bind(TaskUIViewMessages.task_log_not_found_message, runLog.toAbsolutePath()), SWT.ICON_ERROR);
         }
     }
 

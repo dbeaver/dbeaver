@@ -221,7 +221,8 @@ public class NavigatorObjectsDeleter {
                 dbrMonitor.done();
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Delete error", e.getTargetException().getMessage(), e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.actions_navigator_error_dialog_delete_object_title,
+                e.getTargetException().getMessage(), e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }

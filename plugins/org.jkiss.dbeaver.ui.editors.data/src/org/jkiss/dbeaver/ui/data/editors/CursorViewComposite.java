@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -153,8 +154,8 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         final DBNDatabaseNode targetNode = dataContainer.getDataSource().getContainer().getProject()
             .getNavigatorModel().getNodeByObject(monitor, dataContainer, false);
         if (targetNode == null) {
-            UIUtils.showMessageBox(null, "Open link", "Cannot navigate to '" +
-                DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI) + "' - navigator node not found", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(null, ResultSetMessages.error_open_link_title,
+                NLS.bind(ResultSetMessages.error_navigator_node_not_found, DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI)), SWT.ICON_ERROR);
             return;
         }
         AbstractDataEditor.openNewDataEditor(targetNode, newFilter);

@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -281,7 +282,8 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                                     log.warn("Unable to disconnect from datasource");
                                 }
                             }
-                            DBWorkbench.getPlatformUI().showError("Refresh", "Error refreshing node", ex);
+                            DBWorkbench.getPlatformUI().showError(
+                                UINavigatorMessages.error_refresh_title, UINavigatorMessages.error_refresh_node_message, ex);
                         }
                         monitor.worked(1);
                     }

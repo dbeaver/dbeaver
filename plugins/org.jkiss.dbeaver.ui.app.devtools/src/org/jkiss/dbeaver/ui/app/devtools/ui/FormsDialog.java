@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.forms.*;
 
 import java.util.List;
@@ -216,7 +217,8 @@ public class FormsDialog extends TrayDialog {
                     e -> enabled.set(!enabled.get()))
                 .button(
                     "Show message",
-                    e -> UIUtils.showMessageBox(UIUtils.getActiveShell(), "Hello", "Hello from forms", SWT.ICON_INFORMATION),
+                    e -> UIUtils.showMessageBox(UIUtils.getActiveShell(), UIMessages.devtools_forms_hello_title,
+                        UIMessages.devtools_forms_hello_message, SWT.ICON_INFORMATION),
                     bb -> bb.enabled(enabled)));
         // @formatter:on
     }
