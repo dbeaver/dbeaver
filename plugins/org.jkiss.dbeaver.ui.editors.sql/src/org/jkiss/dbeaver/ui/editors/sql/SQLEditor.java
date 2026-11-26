@@ -151,6 +151,14 @@ public class SQLEditor extends SQLEditorBase implements
     DBCSmartTransactionManager,
     IStatefulEditor
 {
+    private static final IStatus CANCEL_LARGE_SCRIPT_OPEN_STATUS = new Status(
+        IStatus.CANCEL,
+        SQLEditorActivator.PLUGIN_ID,
+        IStatus.CANCEL,
+        SQLEditorMessages.sql_editor_large_file_open_cancelled,
+        null
+    );
+
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
     static final String NOTIFICATION_SQL_METADATA_REFRESH = "sql.metadata.refresh";
@@ -2666,7 +2674,7 @@ public class SQLEditor extends SQLEditorBase implements
     protected void doSetInput(@NotNull IEditorInput editorInput) throws CoreException {
         if (!SQLScriptMemoryEstimate.confirmLargeScriptOpen(this.getSite().getShell(), editorInput)) {
             // This must stay outside the catch(Throwable) below: a refusal is not a load error.
-            throw new CoreException(Status.CANCEL_STATUS);
+            throw new CoreException(CANCEL_LARGE_SCRIPT_OPEN_STATUS);
         }
         checkInputFileExistence(editorInput);
         try {

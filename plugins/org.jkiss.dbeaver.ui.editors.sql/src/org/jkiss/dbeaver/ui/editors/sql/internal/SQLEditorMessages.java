@@ -41,6 +41,7 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_large_file_message;
     public static String sql_editor_large_file_open_anyway;
     public static String sql_editor_large_file_open_externally;
+    public static String sql_editor_large_file_open_cancelled;
     public static String sql_editor_large_file_external_error;
     public static String sql_console_open_title;
     public static String sql_outline_toggle_title;
