@@ -3997,12 +3997,8 @@ public class SQLEditor extends SQLEditorBase implements
         boolean caretAtStart = selection.y > 0 && textWidget != null
             && textWidget.getCaretOffset() == textWidget.getSelection().x;
 
-        // The formatter replaces the text at once, so document positions do not survive it.
-        // It changes mostly whitespace, so the number of non-whitespace characters before
-        // an offset identifies the same place in the formatted text.
+        // The formatter replaces the text at once, so document positions do not survive it
         String text = viewer.getDocument().get();
-        int startCount = countNonWhitespace(text, selection.x);
-        int endCount = countNonWhitespace(text, selection.x + selection.y);
 
         // With a selection only the selected text is formatted
         viewer.setSelectedRange(selection.x, 0);
@@ -4015,12 +4011,12 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         String formatted = viewer.getDocument().get();
-        int end = offsetAfterNonWhitespace(formatted, endCount);
+        int end = mapOffset(text, formatted, selection.x + selection.y);
         if (selection.y == 0) {
             viewer.setSelectedRange(end, 0);
             return;
         }
-        int start = Math.min(offsetBeforeNonWhitespace(formatted, startCount), end);
+        int start = Math.min(mapOffset(text, formatted, selection.x), end);
         if (caretAtStart) {
             viewer.setSelectedRange(end, start - end);
         } else {
@@ -4028,15 +4024,30 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private static int countNonWhitespace(@NotNull String text, int offset) {
+    /**
+     * Maps an offset in the original text to the same place in the formatted text.
+     * The formatter changes mostly whitespace, so the place is identified by the number of
+     * non-whitespace characters before it and by its position in the whitespace run that
+     * follows them. An offset right before a token stays before that token, other offsets keep
+     * their distance from the start of the run, limited by the length of the formatted run.
+     * If the formatter left the text unchanged, the offset is kept as is.
+     */
+    private static int mapOffset(@NotNull String original, @NotNull String formatted, int offset) {
+        offset = Math.min(offset, original.length());
         int count = 0;
-        int limit = Math.min(offset, text.length());
-        for (int i = 0; i < limit; i++) {
-            if (!Character.isWhitespace(text.charAt(i))) {
+        int runStart = 0;
+        for (int i = 0; i < offset; i++) {
+            if (!Character.isWhitespace(original.charAt(i))) {
                 count++;
+                runStart = i + 1;
             }
         }
-        return count;
+        int gap = offset - runStart;
+        boolean beforeToken = gap == whitespaceRunLength(original, runStart) && offset < original.length();
+
+        int base = offsetAfterNonWhitespace(formatted, count);
+        int run = whitespaceRunLength(formatted, base);
+        return base + (beforeToken ? run : Math.min(gap, run));
     }
 
     /**
@@ -4055,17 +4066,12 @@ public class SQLEditor extends SQLEditorBase implements
         return text.length();
     }
 
-    /**
-     * Returns the offset of the non-whitespace character that follows the given number of them.
-     */
-    private static int offsetBeforeNonWhitespace(@NotNull String text, int count) {
-        int seen = 0;
-        for (int i = 0; i < text.length(); i++) {
-            if (!Character.isWhitespace(text.charAt(i)) && seen++ == count) {
-                return i;
-            }
+    private static int whitespaceRunLength(@NotNull String text, int offset) {
+        int i = offset;
+        while (i < text.length() && Character.isWhitespace(text.charAt(i))) {
+            i++;
         }
-        return text.length();
+        return i - offset;
     }
 
     @Override
