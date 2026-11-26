@@ -104,4 +104,14 @@ public class FireBirdUserTest extends DBeaverUnitTest {
         Assertions.assertEquals("Srp", user.getPlugin());
         Assertions.assertEquals("Sales lead", user.getDescription());
     }
+
+    @Test
+    public void uniqueNameIncludesPlugin() {
+        Assertions.assertEquals("ALICE (Srp)",
+            new FireBirdUser(dataSource, "ALICE", null, null, null, true, false, "Srp", null).getUniqueName());
+        Assertions.assertEquals("ALICE (Legacy_UserManager)",
+            new FireBirdUser(dataSource, "ALICE", null, null, null, true, false, "Legacy_UserManager", null).getUniqueName());
+        Assertions.assertEquals("BOB",
+            new FireBirdUser(dataSource, "BOB", null, null, null, true, false, null, null).getUniqueName());
+    }
 }

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericScriptObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
  * Firebird user from the security database (SEC$USERS, Firebird 3+).
  * A user is identified by its name together with the user manager plugin.
  */
-public class FireBirdUser implements GenericScriptObject, DBPQualifiedObject {
+public class FireBirdUser implements GenericScriptObject, DBPQualifiedObject, DBPUniqueObject {
 
     /** Placeholder for the password in generated DDL: passwords are stored as hashes and can't be read */
     static final String PASSWORD_PLACEHOLDER = "********";
@@ -94,6 +95,15 @@ public class FireBirdUser implements GenericScriptObject, DBPQualifiedObject {
     @Property(viewable = true, order = 1)
     public String getName() {
         return name;
+    }
+
+    /**
+     * The same user name may exist for several user manager plugins, so the plugin is part of the unique name.
+     */
+    @NotNull
+    @Override
+    public String getUniqueName() {
+        return CommonUtils.isEmpty(plugin) ? name : name + " (" + plugin + ")";
     }
 
     @Nullable
