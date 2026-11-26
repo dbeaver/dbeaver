@@ -129,7 +129,22 @@ public final class SQLScriptMemoryEstimate {
                 @NotNull
                 @Override
                 protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                    if (!ShellUtils.openExternalFile(path)) {
+                    boolean showUnknownError;
+                    try {
+                        boolean opened = ShellUtils.openExternalFile(path);
+                        showUnknownError = !opened;
+                    } catch (RuntimeException e) {
+                        // The desktop launcher may fail with an unchecked exception (e.g. unsupported
+                        // platform or a removed file); report it instead of silently logging it in the job.
+                        // Leave fatal Errors, including OutOfMemoryError, to AbstractJob.
+                        UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showError(
+                            SQLEditorMessages.sql_editor_large_file_title,
+                            SQLEditorMessages.sql_editor_large_file_external_error,
+                            e
+                        ));
+                        showUnknownError = false;
+                    }
+                    if (showUnknownError) {
                         UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showError(
                             SQLEditorMessages.sql_editor_large_file_title,
                             SQLEditorMessages.sql_editor_large_file_external_error
