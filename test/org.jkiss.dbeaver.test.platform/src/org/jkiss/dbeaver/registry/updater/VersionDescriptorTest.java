@@ -73,6 +73,59 @@ public class VersionDescriptorTest extends DBeaverUnitTest {
             """));
     }
 
+    @Test
+    public void testMajorUpdateClassification() throws IOException {
+        VersionDescriptor descriptor = parse("<version><number>26.2.0</number></version>");
+        assertTrue(descriptor.isMajorUpdate());
+
+        descriptor.setProgramVersion(new Version("26.2.0.beta"));
+        assertTrue(descriptor.isMajorUpdate());
+
+        descriptor.setProgramVersion(new Version("26.2.1"));
+        assertFalse(descriptor.isMajorUpdate());
+        descriptor.setProgramVersion(new Version("27.0.1"));
+        assertFalse(descriptor.isMajorUpdate());
+    }
+
+    @Test
+    public void testPatchesInheritReleaseClassification() throws IOException {
+        VersionDescriptor descriptor = parse("""
+            <version>
+                <number>26.2.0</number>
+                <patches><patch><patch-version>1</patch-version></patch></patches>
+            </version>
+            """);
+        assertEquals("26.2.0.1", descriptor.getUpdateVersion());
+        assertTrue(descriptor.isMajorUpdate());
+
+        descriptor.setProgramVersion(new Version("26.2.1"));
+        assertEquals("26.2.1.1", descriptor.getUpdateVersion());
+        assertFalse(descriptor.isMajorUpdate());
+    }
+
+    @Test
+    public void testApplicablePatchesWithoutSeverity() throws IOException {
+        VersionDescriptor descriptor = parse("""
+            <version>
+                <number>26.2.0</number>
+                <patches>
+                    <patch><patch-version>1</patch-version></patch>
+                    <patch><patch-version>2</patch-version></patch>
+                </patches>
+            </version>
+            """);
+        Version installed = new Version("26.2.0");
+
+        assertEquals(VersionDescriptor.PatchSeverity.NONE, descriptor.getMaxSeverity(installed, 0));
+        assertEquals(2, descriptor.getApplicablePatches(installed, 0).size());
+        assertEquals(2, descriptor.getApplicablePatches(installed, 1).getFirst().number());
+        assertTrue(descriptor.getApplicablePatches(installed, 2).isEmpty());
+        assertTrue(descriptor.getApplicablePatches(installed, 3).isEmpty());
+        assertEquals(2, descriptor.getApplicablePatches(new Version("26.1.0"), 4).size());
+        assertTrue(descriptor.getApplicablePatches(new Version("26.2.1"), 0).isEmpty());
+        assertTrue(parse("<version><number>26.2.1</number></version>").getApplicablePatches(installed, 0).isEmpty());
+    }
+
     @NotNull
     private static VersionDescriptor parse(@NotNull String xml) throws IOException {
         return new VersionDescriptor(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));

@@ -205,7 +205,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                                 pseudoColumn.source == null ? "" : (" derived from the " + (
                                     pseudoColumn.realSource == null
                                         ? "query part: \n" + pseudoColumn.source.getSyntaxNode().getTextContent()
-                                        : (pseudoColumn.realSource.getName()
+                                        : (pseudoColumn.realSource.getName() + " "
                                             + SQLQuerySemanticUtils.getObjectTypeName(pseudoColumn.realSource))
                                 ))
                             );

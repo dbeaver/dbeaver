@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
@@ -113,8 +114,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
 
         UIUtils.createLabelText(formPanel, TaskUIMessages.edit_task_config_dialog_label_type, taskType.getCategory().getName() + " / " + taskType.getName(), SWT.BORDER | SWT.READ_ONLY);
 
-        boolean taskSaved = task != null && !CommonUtils.isEmpty(task.getId());
-        taskLabelCombo = UIUtils.createLabelCombo(formPanel, TaskUIMessages.edit_task_config_dialog_label_name, "", SWT.BORDER | (taskSaved ? SWT.READ_ONLY : SWT.NONE));
+        taskLabelCombo = UIUtils.createLabelCombo(formPanel, TaskUIMessages.edit_task_config_dialog_label_name, "", SWT.BORDER);
         ((GridData)taskLabelCombo.getLayoutData()).widthHint = 300;
         if (task != null) {
             taskLabelCombo.setText(task.getName());
@@ -125,6 +125,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
             for (DBTTask tc : allTasks) {
                 taskLabelCombo.add(tc.getName());
             }
+            taskLabelCombo.setText(DBTaskUtils.generateTaskName(taskManager, taskType));
 
             UIUtils.createControlLabel(formPanel, TaskUIMessages.edit_task_config_dialog_task_folders_label_name);
             taskFoldersCombo = new Combo(formPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -157,9 +158,6 @@ public class EditTaskConfigurationDialog extends BaseDialog
         }
 
         taskLabelCombo.addModifyListener(modifyListener);
-        if (taskSaved) {
-            taskLabelCombo.setEnabled(false);
-        }
 
 //        if (!CommonUtils.isEmpty(task.getId())) {
 //            UIUtils.createLabelText(formPanel, "ID", task.getId(), SWT.BORDER | SWT.READ_ONLY);
@@ -185,7 +183,8 @@ public class EditTaskConfigurationDialog extends BaseDialog
     }
 
     private void updateButtons() {
-        boolean isReady = !taskLabelCombo.getText().isEmpty();// && !taskDescriptionText.getText().isEmpty();
+        DBTTask existingTask = project.getTaskManager().getTaskByName(taskLabelCombo.getText());
+        boolean isReady = !CommonUtils.isEmptyTrimmed(taskLabelCombo.getText()) && (existingTask == null || existingTask == task);
         getButton(IDialogConstants.OK_ID).setEnabled(isReady);
     }
 
@@ -203,7 +202,8 @@ public class EditTaskConfigurationDialog extends BaseDialog
             task.setMaxExecutionTime(maxExecutionTime);
             taskManager.updateTaskConfiguration(task);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);
+            DBWorkbench.getPlatformUI().showError(
+                TaskUIMessages.edit_task_config_dialog_title_create_task, TaskUIMessages.task_create_transfer_error_message, e);
             return;
         }
 

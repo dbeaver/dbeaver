@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class SQLEditorHandlerDeleteCurrentFile extends AbstractDataSourceHandler
                     }
                 }
             } else {
-                DBWorkbench.getPlatformUI().showError("Rename", "Can't rename - no source file");
+                DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_file_rename_title, SQLEditorMessages.sql_file_rename_no_source);
             }
         } else {
             if (UIUtils.confirmAction(null, SQLEditorMessages.editor_file_delete_confirm_delete_title, NLS.bind(SQLEditorMessages.editor_file_delete_confirm_delete_text, file.getName()), DBIcon.STATUS_ERROR)) {

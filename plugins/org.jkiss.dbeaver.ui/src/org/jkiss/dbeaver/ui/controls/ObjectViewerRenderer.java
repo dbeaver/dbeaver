@@ -105,6 +105,7 @@ public abstract class ObjectViewerRenderer {
 
         final IPropertyChangeListener styleChangeListener = event -> {
             booleanStyles = BooleanStyleSet.getDefaultStyles(DBWorkbench.getPlatform().getPreferenceStore());
+            viewer.getControl().redraw();
         };
 
         BooleanStyleSet.installStyleChangeListener(viewer.getControl(), styleChangeListener);

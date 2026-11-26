@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.cloudflare.d1.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class CloudflareD1UIMessages extends NLS {
+    private static final String BUNDLE_NAME = CloudflareD1UIMessages.class.getName();
+
     public static String connection_authentication;
     public static String connection_database;
     public static String connection_account_id;
@@ -34,7 +36,7 @@ public class CloudflareD1UIMessages extends NLS {
     public static String connection_loaded;
 
     static {
-        initializeMessages(CloudflareD1UIMessages.class.getName(), CloudflareD1UIMessages.class);
+        initializeMessages(BUNDLE_NAME, CloudflareD1UIMessages.class);
     }
 
     private CloudflareD1UIMessages() {

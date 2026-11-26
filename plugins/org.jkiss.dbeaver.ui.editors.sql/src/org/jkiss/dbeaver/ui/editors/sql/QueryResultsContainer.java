@@ -142,7 +142,7 @@ abstract class QueryResultsContainer implements
                 IWorkbenchPage.MATCH_NONE
             );
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Detached results", "Can't open results view", e);
+            DBWorkbench.getPlatformUI().showError(SQLEditorMessages.sql_results_detached_title, SQLEditorMessages.sql_results_detached_error, e);
             detached = false;
         }
     }
@@ -339,7 +339,13 @@ abstract class QueryResultsContainer implements
         if (!(query instanceof SQLQuery sqlQuery)) {
             throw new DBCException("Can't count rows for control command");
         }
-        if (!(sqlQuery.getStatement() instanceof PlainSelect) && !(sqlQuery.getStatement() instanceof SetOperationList)) {
+        boolean isSelect = sqlQuery.getStatement() instanceof PlainSelect || sqlQuery.getStatement() instanceof SetOperationList;
+        if (!isSelect && sqlQuery.getType() == SQLQueryType.UNKNOWN) {
+            // Not parsed (e.g. ClickHouse JOIN ... USING without parentheses). The count query wraps the original text.
+            String firstKeyword = SQLUtils.getFirstKeyword(dataSource.getSQLDialect(), sqlQuery.getText());
+            isSelect = "SELECT".equalsIgnoreCase(firstKeyword) || "WITH".equalsIgnoreCase(firstKeyword);
+        }
+        if (!isSelect) {
             throw new DBCException("Can't count rows for non-SELECT queries");
         }
         try {

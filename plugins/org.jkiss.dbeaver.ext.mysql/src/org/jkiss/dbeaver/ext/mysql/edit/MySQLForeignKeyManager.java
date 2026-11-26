@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEngine;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
@@ -60,8 +61,7 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
         MySQLTable table = (MySQLTable) container;
         try {
             if (MySQLEngine.MYISAM.equalsIgnoreCase(table.getAdditionalInfo(monitor).getEngine().getName())) {
-                DBWorkbench.getPlatformUI().showError("Create foreign key", "Foreign keys are not supported by MyISAM engine.\n" +
-                    "You could change table's engine to INNODB or some other relational engine");
+                DBWorkbench.getPlatformUI().showError(MySQLMessages.create_foreign_key_title, MySQLMessages.create_foreign_key_myisam_error);
                 return null;
             }
         } catch (DBCException e) {

@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.registry.updater;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.WebUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLException;
@@ -37,6 +39,8 @@ import java.util.*;
  * Version descriptor
  */
 public class VersionDescriptor {
+
+    private static final Log log = Log.getLog(VersionDescriptor.class);
 
     public enum PatchSeverity {
         NONE, MEDIUM, HIGH, CRITICAL;
@@ -109,6 +113,10 @@ public class VersionDescriptor {
 
     public boolean isPatchUpdate(@NotNull Version installedVersion, int installedPatch) {
         return hasSameBaseVersion(installedVersion) && getPatchNumber() > installedPatch;
+    }
+
+    public boolean isMajorUpdate() {
+        return programVersion.getMicro() == 0;
     }
 
     public boolean isNewerThan(@NotNull Version installedVersion, int installedPatch) {
@@ -227,7 +235,7 @@ public class VersionDescriptor {
                     }
                 } else if (patch != null && depth == 3) {
                     VersionPatch descriptor = parsePatch(patch);
-                    if (parsedPatches.putIfAbsent(descriptor.number(), descriptor) != null) {
+                    if (descriptor != null && parsedPatches.putIfAbsent(descriptor.number(), descriptor) != null) {
                         throw new XMLException("Duplicate patch number: " + descriptor.number());
                     }
                     patch = null;
@@ -257,12 +265,17 @@ public class VersionDescriptor {
         }
     }
 
-    @NotNull
-    private static VersionPatch parsePatch(@NotNull Map<String, String> fields) throws XMLException {
+    @Nullable
+    private static VersionPatch parsePatch(@NotNull Map<String, String> fields) {
         String value = fields.getOrDefault("patch-version", "").trim();
-        int number = Integer.parseInt(value);
+        if (CommonUtils.isEmpty(value)) {
+            log.debug("Empty patch number");
+            return null;
+        }
+        int number = CommonUtils.toInt(value);
         if (number <= 0 || !value.matches("[0-9]+")) {
-            throw new XMLException("Invalid patch number: " + value);
+            log.debug("Invalid patch number: " + value);
+            return null;
         }
         return new VersionPatch(
             number,

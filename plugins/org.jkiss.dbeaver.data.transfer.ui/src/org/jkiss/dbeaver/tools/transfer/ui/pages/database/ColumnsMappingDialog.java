@@ -146,7 +146,8 @@ class ColumnsMappingDialog extends DialogPage {
                         try {
                             attribute.updateMappingType(new VoidProgressMonitor(), false, false);
                         } catch (DBException e1) {
-                            DBWorkbench.getPlatformUI().showError("Bad mapping", "Invalid column mapping", e1);
+                            DBWorkbench.getPlatformUI().showError(
+                                DTUIMessages.columns_mapping_error_title, DTUIMessages.columns_mapping_error_message, e1);
                         }
                     }
                     mappingViewer.refresh();
@@ -207,7 +208,9 @@ class ColumnsMappingDialog extends DialogPage {
                         items.toArray(new String[0]),
                         SWT.DROP_DOWN);
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Bad value", "Wrong target column", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        DTUIMessages.columns_mapping_value_error_title,
+                        DTUIMessages.columns_mapping_target_column_error_message, e);
                     return null;
                 }
             }
@@ -246,7 +249,8 @@ class ColumnsMappingDialog extends DialogPage {
                         attrMapping.setTargetName(name);
                     }
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Bad value", "Wrong target", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        DTUIMessages.columns_mapping_value_error_title, DTUIMessages.columns_mapping_target_error_message, e);
                 } finally {
                     mappingViewer.refresh();
                 }

@@ -298,13 +298,17 @@ abstract class QueryProcessor implements SQLResultsConsumer, DBCSmartTransaction
                         element = controlResult.getTransformed();
                     }
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Command error", "Error processing control command", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        SQLEditorMessages.sql_control_command_error_title,
+                        SQLEditorMessages.sql_control_command_error_message, e);
                     return;
                 }
             }
             if (element instanceof SQLScript) {
                 DBWorkbench.getPlatformUI()
-                    .showError("Embedded scripts are not allowed", "Query contains script element: " + element.getText());
+                    .showError(
+                        SQLEditorMessages.sql_embedded_script_error_title,
+                        NLS.bind(SQLEditorMessages.sql_embedded_script_error_message, element.getText()));
                 return;
             }
             if (element instanceof SQLQuery query) {

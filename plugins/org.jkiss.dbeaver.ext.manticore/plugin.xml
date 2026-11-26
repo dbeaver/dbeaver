@@ -32,7 +32,7 @@
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="9306"
-                        description="Manticore Search"
+                        description="MySQL Connector/J JDBC driver for Manticore Search over its MySQL-compatible SQL interface."
                         webURL="https://manual.manticoresearch.com/Connecting_to_the_server"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                         supportedConfigurationTypes="MANUAL,URL"
@@ -56,6 +56,7 @@
                     <parameter name="supports-table-constraints" value="false"/>
                     <parameter name="supports-schema-selection" value="false"/>
                     <parameter name="supports-catalog-selection" value="false"/>
+                    <parameter name="connection-validator" value="mysql"/>
                 </driver>
 
             </drivers>

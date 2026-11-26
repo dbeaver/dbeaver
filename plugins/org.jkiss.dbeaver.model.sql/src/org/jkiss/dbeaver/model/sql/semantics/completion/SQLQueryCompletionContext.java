@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.*;
@@ -980,10 +981,16 @@ public abstract class SQLQueryCompletionContext {
                     }
 
                     @Override
-                    public void visitSyntaxBasedFromRowsData(SQLQuerySymbolOrigin.SyntaxBasedFromRowsData origin) {
+                    public void visitUpdateTarget(SQLQuerySymbolOrigin.UpdateTarget origin) {
                         SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsDataContext());
                         setContextInfo(contextInfo);
-                        prepareInspectedFreeCompletions(monitor, request, results);
+                        boolean qualify = request.getContext().isForceQualifiedColumnNames()
+                            || contextInfo.getKnownSources().getResolutionResults().size() > 1;
+                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(contextInfo, filterOrNull, qualify), results);
+                        if (origin.getRowsDataContext().getConnection().dialect.getDialectFeatures().getProceduralSyntaxFamily()
+                            == SQLDialectFeatures.ProceduralSyntaxFamily.TSQL) {
+                            makeFilteredCompletionSet(filterOrNull, prepareVariableCompletions(contextInfo, filterOrNull), results);
+                        }
                     }
 
                     @Override
