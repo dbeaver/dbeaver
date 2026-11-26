@@ -63,7 +63,9 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                         "CAST(RDB$VALIDATION_SOURCE AS VARCHAR(512)) VALIDATION_SOURCE,\n" +
                         "SUBSTRING(RDB$COMPUTED_SOURCE FROM 1 FOR 512) COMPUTED_SOURCE,\n" +
                         "CAST(RDB$DEFAULT_SOURCE AS VARCHAR(512)) DEFAULT_SOURCE,\n" +
-                        "RDB$NULL_FLAG,RDB$DESCRIPTION,RDB$SYSTEM_FLAG\n" +
+                        "RDB$NULL_FLAG,RDB$DESCRIPTION,RDB$SYSTEM_FLAG,\n" +
+                        "(SELECT TRIM(CO.RDB$COLLATION_NAME) FROM RDB$COLLATIONS CO\n" +
+                        " WHERE CO.RDB$CHARACTER_SET_ID = F.RDB$CHARACTER_SET_ID AND CO.RDB$COLLATION_ID = F.RDB$COLLATION_ID) COLLATION_NAME\n" +
                         "FROM RDB$FIELDS F ORDER BY RDB$FIELD_NAME"))
                 {
                     monitor.subTask("Load Firebird domain types");
@@ -103,6 +105,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                             dataType.setCharsetName(dataSource.getMetaFieldValue(FireBirdConstants.TYPE_CHARACTER_SET_NAME, charsetId));
                             dataType.setNotNull(JDBCUtils.safeGetInt(dbResult, "RDB$NULL_FLAG") == 1);
                             dataType.setSystemDomain(JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG") != 0);
+                            dataType.setCollationName(JDBCUtils.safeGetString(dbResult, "COLLATION_NAME"));
                             tmpObjectList.add(dataType);
                         }
                     }

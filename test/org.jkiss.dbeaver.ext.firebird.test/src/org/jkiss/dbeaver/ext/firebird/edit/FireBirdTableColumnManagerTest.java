@@ -171,6 +171,26 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
             getCreateDeclaration(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, DOMAIN_NAME, DBConstants.PROP_ID_MAX_LENGTH, 20L)));
     }
 
+    @Test
+    public void newDomainColumnWithSizeChangeAppendsCollationLast() {
+        FireBirdDataType domain = domainType(DOMAIN_NAME);
+        domain.setCollationName("UNICODE_CI");
+        FireBirdTableColumn column = newColumn(DOMAIN_NAME);
+        column.setDataType(domain);
+        column.setMaxLength(20);
+        column.setDefaultValue("'x'");
+        column.setRequired(true);
+
+        // Firebird accepts COLLATE only at the end of the column definition
+        Assertions.assertEquals(
+            "TEST_NAME CHAR(20) CHARACTER SET OCTETS DEFAULT 'x' NOT NULL COLLATE UNICODE_CI",
+            getCreateDeclaration(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, DOMAIN_NAME, DBConstants.PROP_ID_MAX_LENGTH, 20L)));
+        // Without a size change the domain brings its own collation
+        Assertions.assertEquals(
+            "TEST_NAME DOM_UUID DEFAULT 'x' NOT NULL",
+            getCreateDeclaration(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, DOMAIN_NAME)));
+    }
+
     @NotNull
     private List<String> getModifyScripts(@NotNull FireBirdTableColumn column, @NotNull Map<String, Object> properties)
         throws DBException {

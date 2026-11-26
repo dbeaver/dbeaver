@@ -63,10 +63,23 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         final String domainName = fbColumn.getDomainName();
         if (domainName == null) {
             DataTypeModifier.appendModifier(monitor, column, sql, command);
-        } else if (command instanceof DBECommandComposite<?, ?> composite && isTypeSizeChanged(composite)) {
+        } else if (isDetachedFromDomain(fbColumn, command)) {
             sql.append(' ').append(getUnderlyingTypeClause(fbColumn, true));
         } else {
             sql.append(' ').append(DBUtils.getQuotedIdentifier(column.getDataSource(), domainName));
+        }
+    };
+
+    /**
+     * Adds the domain's collation to a column declared with the domain's underlying type (see above).
+     * Firebird accepts COLLATE only at the end of a column definition, after DEFAULT and NOT NULL.
+     */
+    private final ColumnModifier<GenericTableColumn> domainCollateModifier = (monitor, column, sql, command) -> {
+        final FireBirdTableColumn fbColumn = (FireBirdTableColumn) column;
+        final String collation = fbColumn.getCollation();
+        if (isDetachedFromDomain(fbColumn, command) && CommonUtils.isNotEmpty(collation)
+            && isCharacterType(fbColumn.getBaseTypeName())) {
+            sql.append(" COLLATE ").append(DBUtils.getQuotedIdentifier(column.getDataSource(), collation));
         }
     };
 
@@ -100,7 +113,7 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
             return new ColumnModifier[] {domainDataTypeModifier, IncrementModifier, NotNullModifier};
         }
         // According to SQL92 DEFAULT comes before constraints
-        return new ColumnModifier[] {domainDataTypeModifier, DefaultModifier, NotNullModifier};
+        return new ColumnModifier[] {domainDataTypeModifier, DefaultModifier, NotNullModifier, domainCollateModifier};
     }
 
     @Override
@@ -249,6 +262,16 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         // No CHARACTER SET is appended on purpose: without it, ALTER COLUMN ... TYPE keeps the column's current
         // character set and collation (it does not fall back to the database default)
         return getUnderlyingTypeClause(column, false);
+    }
+
+    /**
+     * True if a column with a domain is declared with the domain's underlying type,
+     * because its size was edited when it was created.
+     */
+    private static boolean isDetachedFromDomain(@NotNull FireBirdTableColumn column, @NotNull DBECommandAbstract<?> command) {
+        return column.getDomainName() != null
+            && command instanceof DBECommandComposite<?, ?> composite
+            && isTypeSizeChanged(composite);
     }
 
     private static boolean isTypeSizeChanged(@NotNull DBECommandComposite<?, ?> command) {

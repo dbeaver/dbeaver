@@ -35,6 +35,7 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
     private String validationSource;
     private String defaultSource;
     private String charsetName;
+    private String collationName;
     private boolean notNull;
 
     /**
@@ -98,6 +99,18 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
     @Property(order = 60)
     public String getCharsetName() {
         return charsetName;
+    }
+
+    /**
+     * Collation of a character domain, read from RDB$COLLATIONS.
+     */
+    @Property(order = 61)
+    public String getCollationName() {
+        return collationName;
+    }
+
+    public void setCollationName(String collationName) {
+        this.collationName = collationName;
     }
 
     @Property(order = 16)
