@@ -91,7 +91,7 @@ public class DDKeyStore {
         try {
             bundle = DDCrypto.decrypt(kek, encryptedBundle);
         } catch (DBException e) {
-            throw new DBException("Incorrect recovery phrase", e);
+            throw new DBException("Incorrect encryption key", e);
         }
 
         String[] parts = new String(bundle, StandardCharsets.UTF_8).split(BUNDLE_SEPARATOR, 2);

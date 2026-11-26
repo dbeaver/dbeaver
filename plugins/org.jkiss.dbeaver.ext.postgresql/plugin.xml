@@ -420,7 +420,7 @@
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
                     webURL="https://jdbc.postgresql.org/"
-                    description="PostgreSQL generic driver. Can be used for old (7.x) or non-standard PostgreSQL servers."
+                    description="Legacy PostgreSQL JDBC connector for PostgreSQL relational databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
@@ -438,7 +438,7 @@
                     defaultDatabase="postgres"
                     defaultUser="postgres"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                    description="Obsolete"
+                    description="Legacy PostgreSQL JDBC connector for Greenplum distributed analytical databases."
                     supportedConfigurationTypes="MANUAL,URL"
                     dialect="postgresql">
                     <parameter name="serverType" value="greenplum"/>
@@ -479,7 +479,7 @@
                     defaultPort="5432"
                     webURL="https://yellowbrick.com/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                    description="Yellowbrick JDBC driver"
+                    description="Yellowbrick JDBC driver for analytical databases with a PostgreSQL SQL dialect."
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
@@ -574,7 +574,7 @@
                     defaultDatabase="dev"
                     defaultUser="awsuser"
                     threadSafe="false"
-                    description="AWS Redshift JDBC driver"
+                    description="AWS JDBC driver for Amazon Redshift cloud data warehouses and SQL analytics."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                     databaseDocumentationSuffixURL="Database-driver-Amazon-Redshift"
@@ -832,6 +832,8 @@
             </propertyGroup>
             <propertyGroup label="Advanced SSL Settings">
                 <property id="sslMode" label="SSL Mode" type="string" description="SSL Mode" validValues="disable,allow,prefer,require,verify-ca,verify-full" defaultValue=""/>
+                <property id="sslNegotiation" label="%handler.ssl.property.sslNegotiation.name" type="string"
+                          description="%handler.ssl.property.sslNegotiation.description" validValues="postgres,direct" defaultValue=""/>
                 <property id="sslFactory" label="SSL Factory" type="file" description="SSL Factory"/>
             </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"/>

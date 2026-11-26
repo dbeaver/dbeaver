@@ -89,9 +89,7 @@ public class AIContextSettingsDataSource extends AIContextSettings {
     public void saveSettings() {
         // Save settings as map
         dataSourceContainer.setExtension(AI_DS_EXTENSION, saveSettingsToMap());
-        if (dataSourceContainer.persistConfiguration()) {
-            AIProjectConnectionCount.refresh(dataSourceContainer.getRegistry());
-        }
+        dataSourceContainer.persistConfiguration();
     }
 
     // Deprecated methods - kept for backward compatibility
