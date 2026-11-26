@@ -48,7 +48,7 @@ public final class DDRecoveryPhrase {
         String normalized = normalize(phrase);
         String[] words = normalized.split(" ");
         if (words.length != WORD_COUNT) {
-            throw new DBException("The recovery phrase must contain " + WORD_COUNT + " words");
+            throw new DBException("The encryption key must contain " + WORD_COUNT + " words");
         }
 
         byte[] entropy = new byte[ENTROPY_BYTES];
@@ -57,7 +57,7 @@ public final class DDRecoveryPhrase {
             for (int wordIndex = 0; wordIndex < words.length; wordIndex++) {
                 Integer index = WORD_INDICES.get(words[wordIndex]);
                 if (index == null) {
-                    throw new DBException("The recovery phrase contains an unknown word: " + words[wordIndex]);
+                    throw new DBException("The encryption key contains an unknown word. Check the words and try again.");
                 }
                 for (int bit = 0; bit < 11; bit++) {
                     int valueBit = (index >> (10 - bit)) & 1;
@@ -77,7 +77,7 @@ public final class DDRecoveryPhrase {
                 throw new IllegalStateException(e);
             }
             if (checksum != expectedChecksum) {
-                throw new DBException("The recovery phrase checksum is invalid - check the words and try again");
+                throw new DBException("Invalid encryption key. Check the words and try again.");
             }
             return normalized;
         } finally {

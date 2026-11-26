@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AILegacyEngineConfiguration;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.AIUserProfileCredentials;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
@@ -249,6 +250,14 @@ public class AISettingsManager {
         }
     }
 
+    @NotNull
+    private static AIEngineProperties getPropertiesForSave(@NotNull AIEngineProperties properties) throws DBException {
+        // personal credentials must never get into the shared configuration
+        return AIUserProfileCredentials.isAvailable() && !properties.isGlobal()
+            ? AIUserProfileCredentials.copyWithoutCredentials(properties)
+            : properties;
+    }
+
     private interface AISettingsHolder {
         AISettings getSettings();
 
@@ -347,7 +356,12 @@ public class AISettingsManager {
                 if (properties != null) {
                     out.beginObject();
                     out.name("properties");
-                    SAVE_PROPS_GSON.toJson(properties, properties.getClass(), out);
+                    try {
+                        AIEngineProperties propertiesForSave = getPropertiesForSave(properties);
+                        SAVE_PROPS_GSON.toJson(propertiesForSave, propertiesForSave.getClass(), out);
+                    } catch (DBException e) {
+                        throw new IOException("Error saving AI engine '" + entry.getKey() + "'", e);
+                    }
                     out.endObject();
                 } else {
                     writePreservedJson(out, Objects.requireNonNull(configuration.getUnavailableConfiguration()));
@@ -414,7 +428,7 @@ public class AISettingsManager {
             }
             out.name("configuration");
             try {
-                AIEngineProperties configuration = value.getConfiguration();
+                AIEngineProperties configuration = getPropertiesForSave(value.getConfiguration());
                 SAVE_PROPS_GSON.toJson(configuration, configuration.getClass(), out);
             } catch (DBException e) {
                 throw new IOException("Error saving AI profile '" + value.getProfileId() + "'", e);

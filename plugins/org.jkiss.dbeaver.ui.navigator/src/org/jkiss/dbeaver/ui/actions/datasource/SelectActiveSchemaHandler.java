@@ -95,7 +95,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         try {
             UIUtils.runInProgressService(contextDefaultObjectsReader);
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Schema list", "Error reading schema list", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.error_schema_list_title, UINavigatorMessages.error_schema_list_message, e.getTargetException());
             return null;
         } catch (InterruptedException e) {
             return null;
@@ -299,8 +300,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         DBExecUtils.commitContextTransaction(monitor, executionContext);
                     } catch (DBCException e) {
                         DBWorkbench.getPlatformUI().showError(
-                            "Commit transaction",
-                            "Error committing transaction after changing active database",
+                            UINavigatorMessages.error_commit_title,
+                            UINavigatorMessages.error_commit_message,
                             e
                         );
                     }

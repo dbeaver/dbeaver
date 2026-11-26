@@ -630,7 +630,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             });
             MessageDialog.openInformation(getShell(), "Database Create", "Database '" + databaseName + "' created!");
         } catch (InvocationTargetException e1) {
-            DBWorkbench.getPlatformUI().showError("Create database", "Error creating database", e1.getTargetException());
+            DBWorkbench.getPlatformUI().showError(GenericMessages.create_database_confirm_title, GenericMessages.create_database_error, e1.getTargetException());
         } catch (InterruptedException e1) {
             // Just ignore
         }

@@ -591,8 +591,9 @@ topExpression: TOP anyValue PERCENT? (WITH TIES)?;
 updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;
 setClauseList: setClause (Comma setClause)*;
 setClause: ((setTarget | setTargetList) (EqualsOperator updateSource?)?)|anyUnexpected??;
-setTarget: columnName;
-setTargetList: LeftParen columnNameList? RightParen?;
+// Keep columnName for bare-target completion predictions alongside qualified value references.
+setTarget: valueReference|columnName|variableExpression;
+setTargetList: LeftParen (setTarget (Comma setTarget?)*)? RightParen?;
 updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen?);
 updateValue: valueExpression|DEFAULT;
 

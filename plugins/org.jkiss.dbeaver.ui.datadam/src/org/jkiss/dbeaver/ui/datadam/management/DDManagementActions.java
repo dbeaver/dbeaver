@@ -22,8 +22,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.jkiss.dbeaver.model.impl.GlobalPropertyTester;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 
 import java.lang.reflect.InvocationTargetException;
@@ -57,10 +57,10 @@ public final class DDManagementActions {
             @NotNull
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
-                    DDRemoteDamDesktopSessionService.getInstance();
+                    DBDamSessionService.getInstance();
                     boolean active = DDProductConfig.isIntegrationEnabled();
                     if (active) {
-                        DDDesktopAccessService.getInstance().load();
+                        DBDamAccessService.getInstance().load();
                     }
                     return Status.OK_STATUS;
                 } catch (DBException e) {
@@ -74,37 +74,41 @@ public final class DDManagementActions {
     }
 
     public static void toggleLogin() {
-        boolean signedIn = DDDesktopAccessService.getInstance().getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
-        String failure = signedIn ? DDTrackingUIMessages.sync_preference_page_logout_failed
-            : DDTrackingUIMessages.sync_preference_page_login_failed;
+        boolean signedIn = DBDamAccessService.getInstance().getStatus() == DBDamAccessService.Status.SIGNED_IN;
+        if (signedIn && !UIUtils.confirmAction(
+            UIUtils.getActiveWorkbenchShell(), DDTrackingUIMessages.sync_preference_page_logout_confirm_title,
+            DDTrackingUIMessages.sync_preference_page_project_deletion_confirm_message
+        )) {
+            return;
+        }
+        if (signedIn) {
+            if (DDProductConfig.isIntegrationEnabled()) {
+                DDProjectKeyUIManager.getInstance().signOutWithProgress();
+            }
+            return;
+        }
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 if (!DDProductConfig.isIntegrationEnabled()) {
                     return;
                 }
                 try {
-                    var access = DDDesktopAccessService.getInstance();
-                    if (signedIn) {
-                        access.signOut();
-                    } else {
-                        access.signIn(monitor);
-                    }
+                    var access = DBDamAccessService.getInstance();
+                    access.signIn(monitor);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.sync_preference_page_title, failure, e.getTargetException());
-        }
-        if (signedIn && DDDesktopAccessService.getInstance().getStatus() == DDDesktopAccessService.Status.SIGNED_OUT) {
-            DDProjectUIManager.getInstance().refreshProjectVisibility();
+            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.sync_preference_page_title,
+                DDTrackingUIMessages.sync_preference_page_login_failed, e.getTargetException());
         }
     }
 
     @Nullable
     public static DDConnectionMonitor getMonitor() {
         try {
-            return DDRemoteDamDesktopSessionService.getInstance().getMonitor();
+            return DBDamSessionService.getInstance().getMonitor();
         } catch (DBException e) {
             return null;
         }

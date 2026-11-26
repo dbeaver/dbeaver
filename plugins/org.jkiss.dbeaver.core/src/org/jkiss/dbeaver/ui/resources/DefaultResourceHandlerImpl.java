@@ -162,14 +162,17 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                     );
                 }
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Error opening resource", "Can't open resource using external editor", e);
+                DBWorkbench.getPlatformUI().showError(
+                    CoreMessages.resource_open_error_title, CoreMessages.resource_open_external_error_message, e);
             }
         } else if (resource instanceof IFile) {
             IDE.openEditor(UIUtils.getActiveWorkbenchWindow().getActivePage(), (IFile) resource);
         } else if (resource instanceof IFolder && location != null) {
             DBWorkbench.getPlatformUI().executeShellProgram(location.toOSString());
         } else {
-            DBWorkbench.getPlatformUI().showError("Error opening resource", "Do not know how to open resource '" + resource + "'");
+            DBWorkbench.getPlatformUI().showError(
+                CoreMessages.resource_open_error_title,
+                NLS.bind(CoreMessages.resource_open_unknown_error_message, resource));
         }
     }
 

@@ -20,8 +20,10 @@ package org.jkiss.dbeaver.ext.db2.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class DB2Messages extends NLS {
-    public static String editors_db2_application_editor_confirm_title;
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.db2.ui.internal.DB2Resources"; //$NON-NLS-1$
+
+    public static String dialog_read_system_info_error;
+    public static String editors_db2_application_editor_confirm_title;
 
     static {
         // initialize resource bundle

@@ -77,8 +77,8 @@ public class AssociationDeleteCommand extends Command {
             if (vEntity == null) {
                 UIUtils.showMessageBox(
                     UIUtils.getActiveWorkbenchShell(),
-                    "No virtual entity",
-                    "Can't find association owner virtual entity",
+                    ERDUIMessages.erd_no_virtual_entity_title,
+                    ERDUIMessages.erd_no_virtual_entity_message,
                     SWT.ICON_ERROR
                 );
                 return;
@@ -119,4 +119,3 @@ public class AssociationDeleteCommand extends Command {
     }
 
 }
-

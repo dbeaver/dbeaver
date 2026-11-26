@@ -23,6 +23,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
 import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ItemListControl;
 
@@ -187,10 +189,12 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                 historyPosition = position;
                 itemControl.changeCurrentNode(node);
             } else {
-                DBWorkbench.getPlatformUI().showMessageBox("Can't navigator to node", "Node '" + nodePath + "' not found", true);
+                DBWorkbench.getPlatformUI().showMessageBox(UINavigatorMessages.error_navigate_node_title,
+                    NLS.bind(UINavigatorMessages.error_node_not_found_message, nodePath), true);
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't obtain navigator to node", "Error reading navigator node", e);
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.error_navigate_node_title, UINavigatorMessages.error_read_navigator_node_message, e);
             log.error(e);
         }
 

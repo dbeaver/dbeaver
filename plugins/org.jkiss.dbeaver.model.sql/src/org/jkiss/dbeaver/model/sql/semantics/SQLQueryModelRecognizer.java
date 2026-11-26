@@ -757,7 +757,20 @@ public class SQLQueryModelRecognizer {
 
     @NotNull
     public SQLQueryValueExpression collectValueExpression(@NotNull STMTreeNode node, @Nullable SQLQueryLexicalScope scope) {
-        if (!knownValueExpressionRootNames.contains(node.getNodeName())) {
+        return this.collectValueExpression(node, scope, false);
+    }
+
+    @NotNull
+    public SQLQueryValueExpression collectTargetValueExpression(@NotNull STMTreeNode node, @Nullable SQLQueryLexicalScope scope) {
+        boolean updateTarget = STMKnownRuleNames.setTarget.equals(node.getNodeName());
+        return this.collectValueExpression(node, scope, updateTarget);
+    }
+
+    @NotNull
+    private SQLQueryValueExpression collectValueExpression(
+        @NotNull STMTreeNode node, @Nullable SQLQueryLexicalScope scope, boolean updateTarget
+    ) {
+        if (!knownValueExpressionRootNames.contains(node.getNodeName()) && !updateTarget) {
             log.debug("Search condition or value expression expected while facing with " + node.getNodeName());
             return new SQLQueryValueFlattenedExpression(node, Collections.emptyList());
         }
@@ -784,7 +797,9 @@ public class SQLQueryModelRecognizer {
                             if (knownRecognizableValueExpressionNames.contains(rn.getNodeName())
                                 || rn.getNodeName().equals(STMKnownRuleNames.valueExpressionPrimary)
                             ) {
-                                childLists.peek().add(this.collectKnownValueExpression(rn, scope));
+                                childLists.peek().add(updateTarget && n == node
+                                    ? this.collectUpdateTargetExpression(node, rn, scope)
+                                    : this.collectKnownValueExpression(rn, scope));
                             } else {
                                 stack.push(n);
                                 stack.push(null);
@@ -824,6 +839,35 @@ public class SQLQueryModelRecognizer {
                 }
             }
         }
+    }
+
+    @NotNull
+    private SQLQueryValueExpression collectUpdateTargetExpression(
+        @NotNull STMTreeNode target, @NotNull STMTreeNode expression, @Nullable SQLQueryLexicalScope scope
+    ) {
+        if (expression.getNodeKindId() == SQLStandardParser.RULE_valueReference) {
+            STMTreeNode columnRef = expression.findFirstChildOfName(STMKnownRuleNames.columnReference);
+            STMTreeNode qualifiedName = columnRef == null ? null : columnRef.findFirstChildOfName(STMKnownRuleNames.qualifiedName);
+            if (expression.getChildCount() == 1 && qualifiedName != null &&
+                qualifiedName.getChildCount() == 1 && !qualifiedName.hasErrorChildren()) {
+                // Bare assignment names resolve as target columns, except for dialect-supported variable targets.
+                STMTreeNode identifier = qualifiedName.findFirstChildOfName(STMKnownRuleNames.identifier);
+                SQLQuerySymbolEntry name = identifier == null ? null : this.collectLocalVariableName(identifier);
+                return new SQLQueryValueTargetReferenceExpression(target, name);
+            }
+        } else if (expression.getNodeKindId() == SQLStandardParser.RULE_columnName) {
+            STMTreeNode identifier = expression.findFirstChildOfName(STMKnownRuleNames.identifier);
+            SQLQuerySymbolEntry name = identifier == null ? null : this.collectLocalVariableName(identifier);
+            return new SQLQueryValueTargetReferenceExpression(target, name);
+        } else if (expression.getNodeKindId() == SQLStandardParser.RULE_variableExpression) {
+            STMTreeNode term = expression.findFirstNonErrorChild();
+            if (term != null && term.getPayload() instanceof Token token && token.getType() == SQLStandardLexer.BatchVariableName) {
+                String rawName = term.getTextContent();
+                SQLQuerySymbolEntry name = this.registerSymbolEntry(term, rawName.substring(1), rawName, null);
+                return new SQLQueryValueTargetReferenceExpression(target, name);
+            }
+        }
+        return this.collectKnownValueExpression(expression, scope);
     }
 
     /** Immutable recognition result; an empty nameParts list forbids structural object lookup. */
