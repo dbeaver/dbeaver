@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,6 +28,8 @@ import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -42,7 +45,7 @@ public class DBDamNameService implements IPluginService {
     @Nullable
     private DDRemoteDamSubscription subscription;
     @Nullable
-    private Job job;
+    private AbstractJob job;
     private boolean stopped;
 
     @Override
@@ -71,16 +74,27 @@ public class DBDamNameService implements IPluginService {
         if (!ready) {
             return;
         }
-        job = Job.createSystem("Initialize DataDam desktop name", monitor -> {
-            if (monitor.isCanceled() || !DDProductConfig.isIntegrationEnabled() || !session.getChannel().getStatus().isReady()) {
-                return;
+        job = new AbstractJob("Initialize DataDam desktop name") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                if (monitor.isCanceled() || !DDProductConfig.isIntegrationEnabled()
+                    || !session.getChannel().getStatus().isReady()) {
+                    return Status.CANCEL_STATUS;
+                }
+                try {
+                    var connectedSession = session.getChannel().getStatus().session();
+                    var dam = getOrInitializeName(account, session.getClientDamId());
+                    if (dam != null) {
+                        session.cacheDam(connectedSession, dam);
+                    }
+                } catch (DBException e) {
+                    log.debug("Cannot save initial DataDam desktop name", e);
+                }
+                return Status.OK_STATUS;
             }
-            try {
-                getOrInitializeName(account, session.getClientDamId());
-            } catch (DBException e) {
-                log.debug("Cannot save initial DataDam desktop name", e);
-            }
-        });
+        };
+        job.setSystem(true);
         job.schedule();
     }
 
