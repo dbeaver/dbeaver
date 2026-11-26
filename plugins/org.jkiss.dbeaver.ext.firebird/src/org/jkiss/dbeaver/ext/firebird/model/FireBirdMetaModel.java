@@ -123,6 +123,10 @@ public class FireBirdMetaModel extends GenericMetaModel
             // Start value and increment are stored since Firebird 3, older versions always increment by 1
             startValue = JDBCUtils.safeGetLong(dbResult, "RDB$INITIAL_VALUE");
             incrementBy = (long) JDBCUtils.safeGetInt(dbResult, "RDB$GENERATOR_INCREMENT");
+            if (!container.getDataSource().isServerVersionAtLeast(4, 0)) {
+                // Firebird 3 stores START WITH as the current value, the first NEXT VALUE FOR adds the increment to it
+                startValue += incrementBy;
+            }
         }
         return new FireBirdSequence(container, name, description, startValue, incrementBy, isSystem);
     }

@@ -85,8 +85,24 @@ public class FireBirdSequenceManager extends GenericSequenceManager {
         @NotNull ObjectChangeCommand command,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        if (CommonUtils.isEmpty(command.getObject().getName())) {
+        FireBirdSequence sequence = (FireBirdSequence) command.getObject();
+        if (CommonUtils.isEmpty(sequence.getName())) {
             throw new DBException("Sequence name cannot be empty");
+        }
+        if (command.hasProperty(PROP_INCREMENT_BY)) {
+            validateIncrement(sequence, sequence.getIncrementBy());
+        }
+    }
+
+    private static void validateIncrement(@NotNull FireBirdSequence sequence, @Nullable Long incrementBy) throws DBException {
+        if (incrementBy == null) {
+            throw new DBException("Sequence increment cannot be empty");
+        }
+        if (incrementBy == 0) {
+            throw new DBException("Sequence increment cannot be 0");
+        }
+        if (incrementBy != FireBirdConstants.SEQUENCE_DEFAULT_INCREMENT && !sequence.isOptionsSupported()) {
+            throw new DBException("Sequence increment can only be changed since Firebird 3");
         }
     }
 
@@ -97,18 +113,42 @@ public class FireBirdSequenceManager extends GenericSequenceManager {
         @NotNull List<DBEPersistAction> actions,
         @NotNull ObjectCreateCommand command,
         @NotNull Map<String, Object> options
-    ) {
+    ) throws DBException {
         FireBirdSequence sequence = (FireBirdSequence) command.getObject();
+        Long incrementBy = sequence.getIncrementBy();
+        if (incrementBy == null) {
+            incrementBy = FireBirdConstants.SEQUENCE_DEFAULT_INCREMENT;
+        }
+        validateIncrement(sequence, incrementBy);
+        Long startValue = sequence.getStartValue();
+        if (startValue == null) {
+            startValue = FireBirdConstants.SEQUENCE_DEFAULT_START_VALUE;
+        }
+        if (startValue != FireBirdConstants.SEQUENCE_DEFAULT_START_VALUE && !sequence.isOptionsSupported()) {
+            throw new DBException("Sequence start value can only be set since Firebird 3");
+        }
+
         StringBuilder sql = new StringBuilder("CREATE SEQUENCE ")
             .append(sequence.getFullyQualifiedName(DBPEvaluationContext.DDL));
-        // Default values are omitted: Firebird 2.5 does not support these clauses, and Firebird 3 treats START WITH
-        // as the current value, so an explicit START WITH 1 would make the sequence start at 2 there
-        Long startValue = sequence.getStartValue();
-        if (startValue != null && startValue != FireBirdConstants.SEQUENCE_DEFAULT_START_VALUE) {
-            sql.append(" START WITH ").append(startValue);
+        // Clauses matching the server defaults are omitted, so Firebird 2.5 gets a statement it understands
+        long startWith;
+        boolean defaultStart;
+        if (sequence.isStartValueStoredAsCurrent()) {
+            // Firebird 3 returns START WITH plus the increment first, so the increment is subtracted beforehand
+            try {
+                startWith = Math.subtractExact(startValue, incrementBy);
+            } catch (ArithmeticException e) {
+                throw new DBException("Sequence start value " + startValue + " is out of range for increment " + incrementBy, e);
+            }
+            defaultStart = startWith == FireBirdConstants.SEQUENCE_LEGACY_DEFAULT_CURRENT_VALUE;
+        } else {
+            startWith = startValue;
+            defaultStart = startWith == FireBirdConstants.SEQUENCE_DEFAULT_START_VALUE;
         }
-        Long incrementBy = sequence.getIncrementBy();
-        if (incrementBy != null && incrementBy != FireBirdConstants.SEQUENCE_DEFAULT_INCREMENT) {
+        if (!defaultStart) {
+            sql.append(" START WITH ").append(startWith);
+        }
+        if (incrementBy != FireBirdConstants.SEQUENCE_DEFAULT_INCREMENT) {
             sql.append(" INCREMENT BY ").append(incrementBy);
         }
         actions.add(new SQLDatabasePersistAction("Create sequence", sql.toString()));
@@ -123,7 +163,8 @@ public class FireBirdSequenceManager extends GenericSequenceManager {
         @NotNull Map<String, Object> options
     ) {
         FireBirdSequence sequence = (FireBirdSequence) command.getObject();
-        if (command.hasProperty(PROP_INCREMENT_BY) && sequence.getIncrementBy() != null) {
+        // validateObjectProperties ensures the increment is set and the server supports changing it
+        if (command.hasProperty(PROP_INCREMENT_BY)) {
             actions.add(new SQLDatabasePersistAction(
                 "Alter sequence increment",
                 "ALTER SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) +

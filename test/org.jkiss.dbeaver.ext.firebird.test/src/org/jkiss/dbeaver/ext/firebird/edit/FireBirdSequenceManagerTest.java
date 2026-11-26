@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.firebird.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataSource;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdMetaModel;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdSequence;
@@ -49,15 +50,16 @@ public class FireBirdSequenceManagerTest extends DBeaverUnitTest {
         container = Mockito.mock(GenericStructContainer.class);
         Mockito.when(container.getDataSource()).thenReturn(dataSource);
         monitor = Mockito.mock(DBRProgressMonitor.class);
+        setServerVersion(4);
     }
 
     @Test
-    public void createsSequenceWithDefaultsWithoutOptions() {
+    public void createsSequenceWithDefaultsWithoutOptions() throws Exception {
         Assertions.assertEquals(List.of("CREATE SEQUENCE SEQ_ID"), getCreateScripts(newSequence()));
     }
 
     @Test
-    public void createsSequenceWithStartValueAndIncrement() {
+    public void createsSequenceWithStartValueAndIncrement() throws Exception {
         FireBirdSequence sequence = newSequence();
         sequence.setStartValue(100L);
         sequence.setIncrementBy(-5L);
@@ -68,13 +70,59 @@ public class FireBirdSequenceManagerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void firebird3StartsWithCurrentValue() throws Exception {
+        setServerVersion(3);
+        Assertions.assertEquals(List.of("CREATE SEQUENCE SEQ_ID"), getCreateScripts(newSequence()));
+
+        // Firebird 3 returns START WITH plus the increment first
+        FireBirdSequence sequence = newSequence();
+        sequence.setStartValue(100L);
+        sequence.setIncrementBy(5L);
+        Assertions.assertEquals(
+            List.of("CREATE SEQUENCE SEQ_ID START WITH 95 INCREMENT BY 5"),
+            getCreateScripts(sequence));
+
+        sequence.setStartValue(1L);
+        Assertions.assertEquals(
+            List.of("CREATE SEQUENCE SEQ_ID START WITH -4 INCREMENT BY 5"),
+            getCreateScripts(sequence));
+    }
+
+    @Test
+    public void firebird25RejectsOptions() throws Exception {
+        setServerVersion(2);
+        FireBirdSequence sequence = newSequence();
+        Assertions.assertFalse(sequence.isOptionsSupported());
+        Assertions.assertEquals(List.of("CREATE SEQUENCE SEQ_ID"), getCreateScripts(sequence));
+
+        sequence.setStartValue(100L);
+        Assertions.assertThrows(DBException.class, () -> getCreateScripts(sequence));
+
+        sequence.setStartValue(1L);
+        sequence.setIncrementBy(5L);
+        Assertions.assertThrows(DBException.class, () -> getCreateScripts(sequence));
+        Assertions.assertThrows(DBException.class, () -> getModifyScripts(sequence, Map.of("incrementBy", 5L)));
+    }
+
+    @Test
+    public void rejectsEmptyOrZeroIncrement() {
+        FireBirdSequence sequence = newSequence();
+        sequence.setIncrementBy(null);
+        Assertions.assertThrows(DBException.class, () -> getModifyScripts(sequence, Map.of("incrementBy", "")));
+
+        sequence.setIncrementBy(0L);
+        Assertions.assertThrows(DBException.class, () -> getModifyScripts(sequence, Map.of("incrementBy", 0L)));
+        Assertions.assertThrows(DBException.class, () -> getCreateScripts(sequence));
+    }
+
+    @Test
     public void newSequenceDoesNotReadCurrentValue() throws Exception {
         // The sequence does not exist in the database yet, so its current value must not be queried
         Assertions.assertNull(newSequence().getLastValue(monitor));
     }
 
     @Test
-    public void changesIncrement() {
+    public void changesIncrement() throws Exception {
         FireBirdSequence sequence = newSequence();
         sequence.setIncrementBy(10L);
 
@@ -86,7 +134,6 @@ public class FireBirdSequenceManagerTest extends DBeaverUnitTest {
 
     @Test
     public void readsStartValueAndIncrement() throws Exception {
-        Mockito.when(dataSource.isServerVersionAtLeast(3, 0)).thenReturn(true);
         JDBCResultSet resultSet = mockSequenceResultSet();
 
         FireBirdSequence sequence = (FireBirdSequence) new FireBirdMetaModel()
@@ -100,8 +147,22 @@ public class FireBirdSequenceManagerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void firebird3ReadsStartValueAsFirstValue() throws Exception {
+        setServerVersion(3);
+        JDBCResultSet resultSet = mockSequenceResultSet();
+
+        FireBirdSequence sequence = (FireBirdSequence) new FireBirdMetaModel()
+            .createSequenceImpl(Mockito.mock(JDBCSession.class), container, resultSet);
+
+        // RDB$INITIAL_VALUE is the current value on Firebird 3, the first NEXT VALUE FOR adds the increment
+        Assertions.assertNotNull(sequence);
+        Assertions.assertEquals(15L, sequence.getStartValue());
+        Assertions.assertEquals(5L, sequence.getIncrementBy());
+    }
+
+    @Test
     public void oldServersHaveNoStartValue() throws Exception {
-        Mockito.when(dataSource.isServerVersionAtLeast(3, 0)).thenReturn(false);
+        setServerVersion(2);
         JDBCResultSet resultSet = mockSequenceResultSet();
 
         FireBirdSequence sequence = (FireBirdSequence) new FireBirdMetaModel()
@@ -110,6 +171,11 @@ public class FireBirdSequenceManagerTest extends DBeaverUnitTest {
         Assertions.assertNotNull(sequence);
         Assertions.assertNull(sequence.getStartValue());
         Assertions.assertEquals(1L, sequence.getIncrementBy());
+    }
+
+    private void setServerVersion(int majorVersion) {
+        Mockito.when(dataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt()))
+            .thenAnswer(invocation -> majorVersion >= invocation.<Integer>getArgument(0));
     }
 
     @NotNull
@@ -134,12 +200,15 @@ public class FireBirdSequenceManagerTest extends DBeaverUnitTest {
     }
 
     @NotNull
-    private List<String> getCreateScripts(@NotNull FireBirdSequence sequence) {
+    private List<String> getCreateScripts(@NotNull FireBirdSequence sequence) throws DBException {
         return new TestSequenceManager().getCreateActions(monitor, sequence).stream().map(DBEPersistAction::getScript).toList();
     }
 
     @NotNull
-    private List<String> getModifyScripts(@NotNull FireBirdSequence sequence, @NotNull Map<String, Object> properties) {
+    private List<String> getModifyScripts(
+        @NotNull FireBirdSequence sequence,
+        @NotNull Map<String, Object> properties
+    ) throws DBException {
         return new TestSequenceManager().getModifyActions(monitor, sequence, properties).stream()
             .map(DBEPersistAction::getScript)
             .toList();
@@ -151,7 +220,10 @@ public class FireBirdSequenceManagerTest extends DBeaverUnitTest {
     private static class TestSequenceManager extends FireBirdSequenceManager {
 
         @NotNull
-        List<DBEPersistAction> getCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull FireBirdSequence sequence) {
+        List<DBEPersistAction> getCreateActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull FireBirdSequence sequence
+        ) throws DBException {
             // The constructor is protected, an anonymous subclass may call it
             ObjectCreateCommand command = new ObjectCreateCommand(sequence, "Create", Map.of()) { };
             List<DBEPersistAction> actions = new ArrayList<>();
@@ -164,9 +236,11 @@ public class FireBirdSequenceManagerTest extends DBeaverUnitTest {
             @NotNull DBRProgressMonitor monitor,
             @NotNull FireBirdSequence sequence,
             @NotNull Map<String, Object> properties
-        ) {
+        ) throws DBException {
             ObjectChangeCommand command = new ObjectChangeCommand(sequence);
             command.getProperties().putAll(properties);
+            // The command context validates a command before it builds the persist actions
+            validateObjectProperties(monitor, command, Map.of());
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectModifyActions(monitor, Mockito.mock(DBCExecutionContext.class), actions, command, Map.of());
             return actions;

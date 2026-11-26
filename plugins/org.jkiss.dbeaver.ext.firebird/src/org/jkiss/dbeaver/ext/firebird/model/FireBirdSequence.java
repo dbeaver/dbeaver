@@ -117,10 +117,10 @@ public class FireBirdSequence extends GenericSequence implements DBPSystemObject
     }
 
     /**
-     * Start value of the sequence (RDB$INITIAL_VALUE). Not available before Firebird 3.
+     * Start value of the sequence, i.e. the value returned by the first NEXT VALUE FOR. Not available before Firebird 3.
      */
     @Nullable
-    @Property(viewable = true, editable = true, order = 3)
+    @Property(viewable = true, editableExpr = "object.optionsSupported", order = 3)
     public Long getStartValue() {
         return startValue;
     }
@@ -143,7 +143,7 @@ public class FireBirdSequence extends GenericSequence implements DBPSystemObject
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 5)
+    @Property(viewable = true, editableExpr = "object.optionsSupported", updatableExpr = "object.optionsSupported", order = 5)
     public Long getIncrementBy() {
         Number incrementBy = super.getIncrementBy();
         return incrementBy == null ? null : incrementBy.longValue();
@@ -151,6 +151,21 @@ public class FireBirdSequence extends GenericSequence implements DBPSystemObject
 
     public void setIncrementBy(@Nullable Long incrementBy) {
         super.setIncrementBy(incrementBy);
+    }
+
+    /**
+     * START WITH and INCREMENT BY clauses are supported since Firebird 3.
+     */
+    public boolean isOptionsSupported() {
+        return getDataSource().isServerVersionAtLeast(3, 0);
+    }
+
+    /**
+     * Firebird 3 treats START WITH as the current value, so the first NEXT VALUE FOR returns it plus the increment.
+     * Firebird 4 returns the START WITH value itself.
+     */
+    public boolean isStartValueStoredAsCurrent() {
+        return isOptionsSupported() && !getDataSource().isServerVersionAtLeast(4, 0);
     }
 
     @Override

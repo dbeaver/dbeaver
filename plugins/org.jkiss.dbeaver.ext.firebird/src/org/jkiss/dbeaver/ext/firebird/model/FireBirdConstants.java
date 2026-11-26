@@ -28,4 +28,6 @@ public class FireBirdConstants  {
     // Values Firebird 4+ uses when CREATE SEQUENCE has no START WITH or INCREMENT BY clause
     public static final long SEQUENCE_DEFAULT_START_VALUE = 1;
     public static final long SEQUENCE_DEFAULT_INCREMENT = 1;
+    // Current value Firebird 3 uses when CREATE SEQUENCE has no START WITH clause
+    public static final long SEQUENCE_LEGACY_DEFAULT_CURRENT_VALUE = 0;
 }
