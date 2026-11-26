@@ -39,7 +39,7 @@
                         defaultUser="SYSDBA"
                         webURL="https://firebirdsql.org/en/jdbc-driver/"
                         propertiesURL="https://github.com/FirebirdSQL/jaybird/wiki/Connection-properties"
-                        description="Firebird Jaybird driver"
+                        description="%driver.jaybird.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
                     <replace provider="generic" driver="firebird_jaybird"/>
@@ -68,7 +68,7 @@
                         defaultUser="SYSDBA"
                         webURL="https://firebirdsql.org/en/jdbc-driver/"
                         propertiesURL="https://github.com/FirebirdSQL/jaybird/wiki/Connection-properties"
-                        description="Firebird embedded driver (local file, no server needed)"
+                        description="%driver.jaybird_embedded.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         embedded="true"
                         categories="sql,embedded">

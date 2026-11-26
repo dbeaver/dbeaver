@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
@@ -115,7 +116,16 @@ public class DatabaseTransferUtils {
             if (updateMappingTarget || force) {
                 monitor.subTask("Refresh database mappings");
 
-                DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
+                // A resolved target always holds a raw database name; otherwise the stored name is encoded.
+                DatabaseMappingType mappingType = containerMapping.getMappingType();
+                boolean storedNameIsRaw = (mappingType == DatabaseMappingType.existing
+                    || mappingType == DatabaseMappingType.recreate)
+                    && containerMapping.getTarget() != null;
+                DBSObject newTarget = findChildByStoredName(
+                    container,
+                    monitor,
+                    containerMapping.getTargetName(),
+                    storedNameIsRaw);
                 if (newTarget == null) {
                     throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
                 } else if (!(newTarget instanceof DBSDataManipulator)) {
@@ -145,6 +155,42 @@ public class DatabaseTransferUtils {
         if (containerMapping.getMappingType() == DatabaseMappingType.create) {
             containerMapping.setMappingType(DatabaseMappingType.existing);
         }
+    }
+
+    /**
+     * Finds a container child by a name stored in task settings or derived from a source name.
+     * Raw database names may literally start and end with the dialect quote delimiter, so they are
+     * resolved first and the unquoted form is used only as a fallback for non-manipulator matches.
+     * SQL-encoded names (auto-generated target names) are decoded before lookup and never fall back
+     * to the encoded form, which may denote an unrelated literal-quoted table.
+     *
+     * @param storedNameIsRaw true for a raw database name, false for a SQL-encoded name
+     */
+    @Nullable
+    static DBSObject findChildByStoredName(
+        @NotNull DBSObjectContainer container,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String storedName,
+        boolean storedNameIsRaw
+    ) throws DBException {
+        DBPDataSource dataSource = container.getDataSource();
+        String unquotedName = dataSource == null
+            ? storedName
+            : dataSource.getSQLDialect().getUnquotedIdentifier(storedName, true);
+        if (!storedNameIsRaw) {
+            return unquotedName.equals(storedName)
+                ? container.getChild(monitor, storedName)
+                : container.getChild(monitor, unquotedName);
+        }
+        DBSObject child = container.getChild(monitor, storedName);
+        if (child instanceof DBSDataManipulator || dataSource == null || unquotedName.equals(storedName)) {
+            return child;
+        }
+        DBSObject unquotedChild = container.getChild(monitor, unquotedName);
+        if (unquotedChild instanceof DBSDataManipulator || child == null) {
+            return unquotedChild;
+        }
+        return child;
     }
 
     /**
@@ -218,10 +264,10 @@ public class DatabaseTransferUtils {
                 }
                 return actions.toArray(DBEPersistAction[]::new);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Can't create or update target table", null, e);
+                DBWorkbench.getPlatformUI().showError(DTMessages.database_transfer_target_table_error_title, null, e);
                 if (!DBWorkbench.getPlatformUI().confirmAction(
-                    "Generate DDL automatically",
-                    "Do you want to create or update target object with auto-generated SQL script?")) {
+                    DTMessages.database_transfer_generate_ddl_title,
+                    DTMessages.database_transfer_generate_ddl_message)) {
                     throw new DBException("Target table create or update was canceled");
                 }
             }
@@ -233,12 +279,27 @@ public class DatabaseTransferUtils {
         DBPDataSource dataSource = executionContext.getDataSource();
 
         String tableName;
+        boolean tableNameIsRaw;
         if (containerMapping.getMappingType() == DatabaseMappingType.create) {
             tableName = getTransformedName(dataSource, containerMapping.getTargetName(), false);
+            tableNameIsRaw = false;
+        } else if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+            if (containerMapping.getTarget() != null) {
+                // Recreated table must keep the name it already has in the target database
+                tableName = containerMapping.getTargetName();
+                tableNameIsRaw = true;
+            } else {
+                // Recreate without a resolved target keeps the stored name provenance
+                boolean preserveCase = containerMapping.isTargetNameRaw();
+                tableName = getTransformedName(dataSource, containerMapping.getTargetName(), preserveCase);
+                // getTransformedName returns a SQL-encoded name, not a raw one
+                tableNameIsRaw = false;
+            }
         } else {
             tableName = DBObjectNameCaseTransformer.transformName(dataSource, containerMapping.getTargetName());
+            tableNameIsRaw = containerMapping.getTarget() != null;
         }
-        containerMapping.setTargetName(tableName);
+        containerMapping.setTargetName(tableName, tableNameIsRaw);
 
         if (CommonUtils.isEmpty(tableName)) {
             return new DBEPersistAction[0];
@@ -350,6 +411,35 @@ public class DatabaseTransferUtils {
         return targetName;
     }
 
+    /**
+     * Transforms a target table name according to the mapping type.
+     * Names derived from quoted source names keep their original case and are quoted if needed.
+     * Existing and recreated tables already have a real name in the target database, so such names are kept as is.
+     *
+     * @param dataSource for preferences and dialect info
+     * @param targetName name for transformation
+     * @param mappingType target mapping type
+     * @param skipCaseChanging true if we do not want to change the name case of the original name
+     * @return transformed target name
+     */
+    @NotNull
+    public static String getTransformedTargetName(
+        @NotNull DBPDataSource dataSource,
+        @NotNull String targetName,
+        @NotNull DatabaseMappingType mappingType,
+        boolean skipCaseChanging
+    ) {
+        if (mappingType == DatabaseMappingType.create) {
+            return getTransformedName(dataSource, targetName, skipCaseChanging);
+        }
+        if (skipCaseChanging) {
+            return mappingType == DatabaseMappingType.unspecified
+                ? getTransformedName(dataSource, targetName, true)
+                : targetName;
+        }
+        return DBObjectNameCaseTransformer.transformName(dataSource, targetName);
+    }
+
     private static void getTableFullName(
         @Nullable DBSObjectContainer schema,
         @NotNull DBPDataSource dataSource,
@@ -440,6 +530,7 @@ public class DatabaseTransferUtils {
             DBECommandContext commandContext = new TargetCommandContext(executionContext);
 
             String tableFinalName;
+            boolean tableNameIsRaw;
 
             DBSEntity table;
             DBECommand createCommand = null;
@@ -448,7 +539,16 @@ public class DatabaseTransferUtils {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
                 applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
                 transferComment(monitor, commandContext, table, getSourceDescription(containerMapping.getSource()));
-                tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, true);
+                boolean preserveCase = containerMapping.getMappingType() == DatabaseMappingType.recreate
+                    && containerMapping.isTargetNameRaw();
+                tableFinalName = getTableFinalName(
+                    containerMapping.getTargetName(),
+                    tableClass,
+                    table,
+                    true,
+                    preserveCase);
+                // getTableFinalName returns a SQL-encoded name, not a raw one
+                tableNameIsRaw = false;
                 createCommand = tableManager.makeCreateCommand(table, options);
             } else {
                 table = (DBSEntity) containerMapping.getTarget();
@@ -465,10 +565,17 @@ public class DatabaseTransferUtils {
                         options);
                     applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
                     transferComment(monitor, commandContext, table, getSourceDescription(containerMapping.getSource()));
-                    tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, false);
+                    tableFinalName = getTableFinalName(
+                        containerMapping.getTargetName(),
+                        tableClass,
+                        table,
+                        false,
+                        true);
+                    tableNameIsRaw = true;
                     createCommand = tableManager.makeCreateCommand(table, options);
                 } else {
                     tableFinalName = table.getName();
+                    tableNameIsRaw = true;
                 }
             }
 
@@ -523,7 +630,7 @@ public class DatabaseTransferUtils {
                 }
             }
 
-            containerMapping.setTargetName(tableFinalName);
+            containerMapping.setTargetName(tableFinalName, tableNameIsRaw);
 
             actions.addAll(
                 DBExecUtils.getActionsListFromCommandContext(
@@ -595,11 +702,12 @@ public class DatabaseTransferUtils {
     }
 
     @NotNull
-    private static String getTableFinalName(
+    static String getTableFinalName(
         @NotNull String targetName,
         @NotNull Class<? extends DBSObject> tableClass,
         @Nullable DBSEntity table,
-        boolean extraTransform
+        boolean newTable,
+        boolean preserveCase
     ) throws DBException {
         if (table == null) {
             throw new DBException("Internal error - target table not set");
@@ -608,10 +716,11 @@ public class DatabaseTransferUtils {
             return targetName;
         }
         String tableFinalName;
-        if (extraTransform) {
-            tableFinalName = getTransformedName(table.getDataSource(), targetName, false);
+        if (newTable) {
+            tableFinalName = getTransformedName(table.getDataSource(), targetName, preserveCase);
         } else {
-            tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), targetName);
+            // Recreated table must keep the name it already has in the target database
+            tableFinalName = targetName;
         }
         if (table instanceof DBPNamedObject2 namedObject2 && tableFinalName != null) {
             namedObject2.setName(tableFinalName);

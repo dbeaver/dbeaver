@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.SmartNavigatorTreeFilter;
 import org.jkiss.utils.CommonUtils;
@@ -57,7 +58,8 @@ public class DatabaseBrowserView extends NavigatorViewBase {
                 try {
                     rootNode = getNodeFromSecondaryId(secondaryId);
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Open database browser", "Can't find database navigator node", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        UINavigatorMessages.error_open_browser_title, UINavigatorMessages.error_navigator_node_not_found, e);
                 }
             }
         }

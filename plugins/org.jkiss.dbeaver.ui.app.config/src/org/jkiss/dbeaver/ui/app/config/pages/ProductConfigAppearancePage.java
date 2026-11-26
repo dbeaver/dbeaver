@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.app.config.pages;
 import org.eclipse.e4.ui.css.swt.theme.ITheme;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
@@ -34,6 +35,8 @@ import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import java.util.function.Consumer;
 
 public class ProductConfigAppearancePage extends ProductConfigWizardPage {
+    private static final String NAVIGATOR_HELP_URL =
+        "http://dbeaver.com/docs/dbeaver/Simple-and-Advanced-View?utm_source=app&utm_medium=product-config&utm_campaign=docs";
     private final IThemeEngine themeEngine;
     private final UIObservable<ITheme> currentTheme;
 
@@ -129,7 +132,7 @@ public class ProductConfigAppearancePage extends ProductConfigWizardPage {
                         navigatorSettings.set(dialog.getNavigatorSettings());
                     }
                 }))
-            .row(rb -> rb.weblink(ProductConfigMessages.appearance_navigator_hint));
+            .row(rb -> rb.weblink(NLS.bind(ProductConfigMessages.appearance_navigator_hint, NAVIGATOR_HELP_URL)));
     }
 
     @NotNull

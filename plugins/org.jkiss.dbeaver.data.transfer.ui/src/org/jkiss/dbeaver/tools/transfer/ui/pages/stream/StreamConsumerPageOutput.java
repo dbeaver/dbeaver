@@ -181,9 +181,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private final Map<String, EventProcessorComposite<?>> processors = new HashMap<>();
 
     public StreamConsumerPageOutput() {
-        super(DTMessages.data_transfer_wizard_output_name);
-        setTitle(DTMessages.data_transfer_wizard_output_title);
-        setDescription(DTMessages.data_transfer_wizard_output_description);
+        super(DTUIMessages.data_transfer_wizard_output_name);
+        setTitle(DTUIMessages.data_transfer_wizard_output_title);
+        setDescription(DTUIMessages.data_transfer_wizard_output_description);
         setPageComplete(false);
     }
 
@@ -226,7 +226,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 encodingBOMCheckbox = UIUtils.createCheckbox(
                     advancedSettingPanel,
                     DTMessages.data_transfer_wizard_output_label_insert_bom,
-                    DTMessages.data_transfer_wizard_output_label_insert_bom_tooltip,
+                    DTUIMessages.data_transfer_wizard_output_label_insert_bom_tooltip,
                     false,
                     3
                 );
@@ -245,7 +245,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 singleFileCheck = UIUtils.createCheckbox(
                     advancedSettingPanel,
                     DTMessages.data_transfer_wizard_output_label_use_single_file,
-                    DTMessages.data_transfer_wizard_output_label_use_single_file_tip,
+                    DTUIMessages.data_transfer_wizard_output_label_use_single_file_tip,
                     false,
                     5
                 );
@@ -321,7 +321,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         UIUtils.createLink(
             composite,
-            DTMessages.data_transfer_wizard_output_export_to_external_storage_link,
+            DTUIMessages.data_transfer_wizard_output_export_to_external_storage_link,
             SelectionListener.widgetSelectedAdapter(
                 e -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DT_EXTERNAL_LINK)))
         );
@@ -333,7 +333,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private void createGeneralSettingSPanel(@NotNull Composite composite, @NotNull StreamConsumerSettings settings) {
         Composite generalSettings = UIUtils.createTitledComposite(
             composite,
-            DTMessages.data_transfer_wizard_output_group_general,
+            DTUIMessages.data_transfer_wizard_output_group_general,
             2,
             GridData.FILL_HORIZONTAL
         );
@@ -352,7 +352,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         UIUtils.createPushButton(
             generalSettings,
             null,
-            DTMessages.data_transfer_wizard_output_label_global_settings,
+            DTUIMessages.data_transfer_wizard_output_label_global_settings,
             UIIcon.CONFIGURATION,
             SelectionListener.widgetSelectedAdapter(e -> UIUtils.showPreferencesFor(getShell(), null, PrefPageDataTransfer.PAGE_ID))
         ).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -384,8 +384,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         splitFilesCheckbox = UIUtils.createCheckbox(
             outFilesSettings,
-            DTMessages.data_transfer_wizard_output_checkbox_split_files,
-            DTMessages.data_transfer_wizard_output_checkbox_split_files_tip,
+            DTUIMessages.data_transfer_wizard_output_checkbox_split_files,
+            DTUIMessages.data_transfer_wizard_output_checkbox_split_files_tip,
             false,
             1
         );
@@ -408,7 +408,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     private void createFileConflictResolutionPanel(@NotNull Composite advancedSettingPanel, @NotNull StreamConsumerSettings settings) {
         final ExpandableComposite fcExpander = new ExpandableComposite(advancedSettingPanel, SWT.NONE);
-        fcExpander.setText(DTMessages.data_transfer_file_name_conflict_behavior_setting_text);
+        fcExpander.setText(DTUIMessages.data_transfer_file_name_conflict_behavior_setting_text);
         fcExpander.setLayoutData(new GridData(
             GridData.FILL,
             GridData.BEGINNING,
@@ -546,23 +546,23 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
 
         if (CommonUtils.isEmpty(settings.getOutputFolder())) {
-            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_output_directory);
+            setErrorMessage(DTUIMessages.data_transfer_wizard_output_error_empty_output_directory);
             return false;
         }
         if (CommonUtils.isEmpty(settings.getOutputFilePattern())) {
-            setErrorMessage(DTMessages.data_transfer_wizard_output_error_empty_output_filename);
+            setErrorMessage(DTUIMessages.data_transfer_wizard_output_error_empty_output_filename);
             return false;
         }
         try {
             Charset.forName(settings.getOutputEncoding());
         } catch (Exception e) {
-            setErrorMessage(DTMessages.data_transfer_wizard_output_error_invalid_charset);
+            setErrorMessage(DTUIMessages.data_transfer_wizard_output_error_invalid_charset);
             return false;
         }
 
         for (EventProcessorComposite<?> processor : processors.values()) {
             if (processor.isProcessorApplicable() && processor.isProcessorEnabled() && !processor.isProcessorComplete()) {
-                setErrorMessage(NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.getDescriptor().getLabel()));
+                setErrorMessage(NLS.bind(DTUIMessages.data_transfer_wizard_output_event_processor_error_incomplete_configuration, processor.getDescriptor().getLabel()));
                 return false;
             }
         }
@@ -571,8 +571,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     
     private boolean confirmPossibleFileOverwrite() {
         return DBWorkbench.getPlatformUI().confirmAction(
-            DTMessages.data_transfer_file_conflict_confirm_override_title, 
-            DTMessages.data_transfer_file_conflict_confirm_override_message,
+            DTUIMessages.data_transfer_file_conflict_confirm_override_title,
+            DTUIMessages.data_transfer_file_conflict_confirm_override_message,
             true
         );
     }

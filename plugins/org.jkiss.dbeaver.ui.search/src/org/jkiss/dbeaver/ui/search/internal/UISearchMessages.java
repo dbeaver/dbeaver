@@ -20,6 +20,12 @@ import org.eclipse.osgi.util.NLS;
 
 public class UISearchMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.search.internal.UISearchMessages"; //$NON-NLS-1$
+
+    public static String search_error_title;
+    public static String search_error_message;
+    public static String search_data_sources_load_title;
+    public static String search_settings_load_error;
+
     public static String dialog_search_objects_column_description;
     public static String dialog_search_objects_column_type;
     public static String dialog_search_objects_combo_contains;

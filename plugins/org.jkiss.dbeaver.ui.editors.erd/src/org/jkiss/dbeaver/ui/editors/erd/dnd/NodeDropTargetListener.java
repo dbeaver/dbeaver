@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIActivator;
+import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.model.DiagramCollectSettingsDefault;
 import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
 
@@ -90,7 +91,8 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                 try {
                     UIUtils.runInProgressService(collector);
                 } catch (InvocationTargetException e) {
-                    DBWorkbench.getPlatformUI().showError("Entity collect error", "Error during diagram entities collect", e);
+                    DBWorkbench.getPlatformUI().showError(ERDUIMessages.erd_entity_collect_error_title,
+                        ERDUIMessages.erd_entity_collect_error_message, e);
                 } catch (InterruptedException e) {
                     // ignore
                 }
@@ -101,8 +103,8 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                         statuses.add(new Status(Status.ERROR, ERDUIActivator.PLUGIN_ID, error));
                     }
                     DBWorkbench.getPlatformUI().showError(
-                        "Diagram request error",
-                        "Error(s) occurred during diagram request. If these errors are recoverable then fix errors and then repeat request",
+                        ERDUIMessages.erd_diagram_request_error_title,
+                        ERDUIMessages.erd_diagram_request_error_message,
                         new MultiStatus(ERDUIActivator.PLUGIN_ID, 0, statuses.toArray(new IStatus[0]), null, null)
                     );
                     editor.getDiagram().clearErrorMessages();
@@ -120,4 +122,3 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
     }
 
 }
-

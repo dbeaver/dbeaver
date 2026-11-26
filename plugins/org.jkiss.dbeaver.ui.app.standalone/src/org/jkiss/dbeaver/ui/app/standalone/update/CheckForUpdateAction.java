@@ -23,7 +23,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 
 
 public class CheckForUpdateAction extends Action {
@@ -35,7 +35,7 @@ public class CheckForUpdateAction extends Action {
     private static IHandlerActivation p2UpdateHandlerActivation;
 
     public CheckForUpdateAction() {
-        super(CoreMessages.actions_menu_check_update);
+        super(CoreApplicationMessages.actions_menu_check_update);
         setId("org.jkiss.dbeaver.action.checkForUpdate");
     }
 

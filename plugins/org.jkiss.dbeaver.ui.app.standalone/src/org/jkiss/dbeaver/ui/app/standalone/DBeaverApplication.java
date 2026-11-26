@@ -23,6 +23,7 @@ import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.widgets.Display;
@@ -59,6 +60,7 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
@@ -238,7 +240,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 try {
                     initializeApplication();
                 } catch (Exception e) {
-                    showMessageBox("Error initializing application", e.getMessage(), SWT.ICON_ERROR);
+            showMessageBox(CoreApplicationMessages.application_initialize_error_title, e.getMessage(), SWT.ICON_ERROR);
                     throw e;
                 }
             });
@@ -288,7 +290,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 e = re.getCause();
             }
             log.debug(e);
-            showMessageBox("Error initializing platform", CommonUtils.getAllExceptionMessages(e), SWT.ICON_ERROR);
+            showMessageBox(CoreApplicationMessages.platform_initialize_error_title, CommonUtils.getAllExceptionMessages(e), SWT.ICON_ERROR);
             return IApplication.EXIT_OK;
         }
 
@@ -562,10 +564,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                     } else {
                         // Can't lock specified path
                         int msgResult = showMessageBox(
-                            "DBeaver - Can't lock workspace",
-                            "Can't lock workspace at " + defaultHomePath + ".\n" +
-                                "It seems that you have another DBeaver instance running.\n" +
-                                "You may ignore it and work without lock but it is recommended to shutdown previous instance otherwise you may corrupt workspace data.",
+                            CoreApplicationMessages.workspace_lock_error_title,
+                            NLS.bind(CoreApplicationMessages.workspace_lock_error_message, defaultHomePath),
                             SWT.ICON_WARNING | SWT.IGNORE | SWT.RETRY | SWT.ABORT);
 
                         switch (msgResult) {

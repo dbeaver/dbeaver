@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,11 @@ public class SQLServerProcedureParameter implements DBSProcedureParameter, DBSAt
         throws DBException
     {
         this.procedure = procedure;
-        this.paramName = JDBCUtils.safeGetString(dbResult, "name");
         this.ordinalPosition = JDBCUtils.safeGetInt(dbResult, "parameter_id");
+        this.paramName = JDBCUtils.safeGetString(dbResult, "name");
+        if (ordinalPosition == 0 && (paramName == null || paramName.isEmpty())) {
+            this.paramName = DBSProcedureParameterKind.RETURN.name();
+        }
 
         int typeID = JDBCUtils.safeGetInt(dbResult, "user_type_id");
         this.dataType = procedure.getContainer().getDatabase().getDataTypeByUserTypeId(monitor, typeID);
@@ -61,7 +64,8 @@ public class SQLServerProcedureParameter implements DBSProcedureParameter, DBSAt
         boolean isOutput = JDBCUtils.safeGetInt(dbResult, "is_output") != 0;
         boolean isCursor = JDBCUtils.safeGetInt(dbResult, "is_cursor_ref") != 0;
         boolean readonly = JDBCUtils.safeGetInt(dbResult, "is_readonly") != 0;
-        this.parameterKind = isCursor ? DBSProcedureParameterKind.RESULTSET :
+        this.parameterKind = ordinalPosition == 0 ? DBSProcedureParameterKind.RETURN :
+            isCursor ? DBSProcedureParameterKind.RESULTSET :
             (isOutput ? DBSProcedureParameterKind.OUT :
                 (readonly ? DBSProcedureParameterKind.IN : DBSProcedureParameterKind.INOUT));
 
@@ -185,6 +189,12 @@ public class SQLServerProcedureParameter implements DBSProcedureParameter, DBSAt
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    @NotNull
+    @Override
+    public String toString() {
+        return getName();
     }
 
 }

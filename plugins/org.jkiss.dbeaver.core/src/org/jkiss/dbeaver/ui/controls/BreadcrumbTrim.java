@@ -58,7 +58,7 @@ public class BreadcrumbTrim {
         }
         Composite composite = UIUtils.createPlaceholder(parent, 2, 0);
         ((GridLayout) composite.getLayout()).marginLeft = 5;
-        ProjectsPanel projectsPanel = new ProjectsPanel(composite);
+        new ProjectsPanel(composite);
         var viewer = new NodeBreadcrumbViewer(composite, SWT.BOTTOM);
 
         installListeners(viewer);

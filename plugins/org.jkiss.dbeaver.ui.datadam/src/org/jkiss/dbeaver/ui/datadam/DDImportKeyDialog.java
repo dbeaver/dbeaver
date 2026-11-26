@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -26,7 +27,6 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDRecoveryPhrase;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -56,6 +56,9 @@ public class DDImportKeyDialog extends BaseDialog {
                 phraseText.selectAll();
                 phraseText.paste();
             }));
+        UIUtils.createPushButton(
+            composite, DDTrackingUIMessages.import_key_dialog_reset_button, null,
+            SelectionListener.widgetSelectedAdapter(e -> DDUIUtils.openCredentialReset()));
         return composite;
     }
 
@@ -71,7 +74,7 @@ public class DDImportKeyDialog extends BaseDialog {
         try {
             value = DDRecoveryPhrase.normalizeAndValidate(phraseText.getText());
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.import_key_dialog_title, e.getMessage());
+            MessageDialog.openError(getShell(), DDTrackingUIMessages.import_key_dialog_title, e.getMessage());
             return;
         }
         phrase = value;

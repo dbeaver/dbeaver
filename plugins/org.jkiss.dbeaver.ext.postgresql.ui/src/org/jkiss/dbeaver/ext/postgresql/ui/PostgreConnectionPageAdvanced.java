@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -65,7 +66,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
 
     public PostgreConnectionPageAdvanced(@Nullable PostgreConnectionPage mainPage) {
         this.mainPage = mainPage;
-        setTitle("Advanced");
+        setTitle(UIConnectionMessages.dialog_connection_advanced_tab);
         setDescription("PostgreSQL - " + PostgreMessages.dialog_setting_connection_settings);
     }
 

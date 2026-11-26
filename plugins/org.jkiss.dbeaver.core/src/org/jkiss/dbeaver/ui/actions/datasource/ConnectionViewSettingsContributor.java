@@ -28,13 +28,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettingsUtils;
-import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -60,7 +60,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             return;
         }
 
-        MenuManager customizeViewMenu = new MenuManager(RegistryMessages.navigator_settings_customize_view);
+        MenuManager customizeViewMenu = new MenuManager(CoreMessages.navigator_settings_customize_view);
         customizeViewMenu.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SHOW_ALL_DETAILS));
         addPresetSettings(customizeViewMenu, dsContainer);
         addSystemObjects(customizeViewMenu, dsContainer);
@@ -307,8 +307,8 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
 
 
         public ClearCurrentUserSettings(@NotNull DBPDataSourceContainer container) {
-            super(container, UINavigatorMessages.dialog_connection_set_default_connection_settings, AS_PUSH_BUTTON);
-            setToolTipText(UINavigatorMessages.dialog_connection_set_default_connection_settings_tip);
+            super(container, CoreMessages.dialog_connection_set_default_connection_settings, AS_PUSH_BUTTON);
+            setToolTipText(CoreMessages.dialog_connection_set_default_connection_settings_tip);
         }
 
         @Override

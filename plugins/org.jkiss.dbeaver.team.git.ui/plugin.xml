@@ -118,8 +118,8 @@
     <extension point="org.jkiss.dbeaver.app.config">
         <feature
             id="git"
-            label="Git version control"
-            description="Provides Git version control integration for projects."
+            label="%feature.git.label"
+            description="%feature.git.description"
             enabledByDefault="false"
             enablementTester="org.jkiss.dbeaver.team.git.ui.app.config.GitProductConfigFeatureTester"/>
     </extension>

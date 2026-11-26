@@ -41,7 +41,7 @@ public class NavigatorActiveProjectContributor extends ContributionItem
     private void createMenu(final Menu menu)
     {
         final DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        List<? extends DBPProject> allProjects = new ArrayList<>(DBWorkbench.getPlatform().getWorkspace().getProjects());
+        List<? extends DBPProject> allProjects = new ArrayList<>(DBWorkbench.getPlatform().getWorkspace().getVisibleProjects());
         allProjects.sort((o1, o2) -> o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName()));
         for (final DBPProject project : allProjects) {
             MenuItem txnItem = new MenuItem(menu, SWT.RADIO);

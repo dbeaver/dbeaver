@@ -104,7 +104,7 @@ public class AIPromptUtils {
         List<String> instructions = new ArrayList<>();
         instructions.add("By default generate SQL queries according to user requests. Also answer to general database related questions.");
         if (isInAIChat) {
-            instructions.add("If user wants to see table data then show it in markdown table format by default.");
+            instructions.add("If user explicitly wants to see table data instead of SQL then show it in markdown table format by default.");
         }
         instructions.add("Stick strictly to SQL dialect syntax.");
         instructions.add("Do not invent columns, tables, or data that aren't explicitly defined.");

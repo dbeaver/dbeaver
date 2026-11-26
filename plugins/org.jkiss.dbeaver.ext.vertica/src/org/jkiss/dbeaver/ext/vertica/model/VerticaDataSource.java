@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -113,8 +114,11 @@ public class VerticaDataSource extends GenericDataSource {
     }
 
     @NotNull
-    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
+    public DBPDataKind resolveDataKind(@Nullable String typeName, int valueType)
     {
+        if (CommonUtils.isEmpty(typeName)) {
+            return JDBCUtils.getDataKindByTypeID(valueType, typeName);
+        }
         int divPos = typeName.indexOf('(');
         if (divPos != -1) {
             typeName = typeName.substring(0, divPos);

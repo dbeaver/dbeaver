@@ -72,6 +72,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button showTableGrid;
 
     private Button showResourceFolderPlaceholdersCheck;
+    private Button localizeFolderNamesCheck;
     private Button groupByDriverCheck;
     private Text longListFetchSizeText;
     private Combo dsDoubleClickBehavior;
@@ -213,6 +214,13 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 UINavigatorMessages.pref_page_ui_general_show_table_grid,
                 false,
                 1);
+            localizeFolderNamesCheck = UIUtils.createCheckbox(
+                navigatorGroup,
+                UINavigatorMessages.pref_page_navigator_localize_folder_names,
+                UINavigatorMessages.pref_page_navigator_localize_folder_names_tip,
+                false,
+                2
+            );
         }
 
         {
@@ -310,6 +318,11 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             useDefaultValues
                 ? store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)
                 : store.getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)
+        );
+        localizeFolderNamesCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(ModelPreferences.NAVIGATOR_LOCALIZE_FOLDER_NAMES)
+                : store.getBoolean(ModelPreferences.NAVIGATOR_LOCALIZE_FOLDER_NAMES)
         );
         sortFoldersFirstCheck.setSelection(
             useDefaultValues
@@ -442,6 +455,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS, showNodeActionsCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES, colorAllNodesCheck.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS, showResourceFolderPlaceholdersCheck.getSelection());
+        store.setValue(ModelPreferences.NAVIGATOR_LOCALIZE_FOLDER_NAMES, localizeFolderNamesCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE, longListFetchSizeText.getText());
         NavigatorPreferences.DoubleClickBehavior objDCB = NavigatorPreferences.DoubleClickBehavior.EXPAND;

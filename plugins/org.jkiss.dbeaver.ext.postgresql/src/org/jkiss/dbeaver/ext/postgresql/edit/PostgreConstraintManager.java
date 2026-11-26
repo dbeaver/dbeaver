@@ -95,6 +95,10 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     protected void appendConstraintDefinition(@NotNull StringBuilder decl, @NotNull DBECommandAbstract<PostgreTableConstraintBase<?>> command) {
         if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
             decl.append(" (").append(((PostgreTableConstraint) command.getObject()).getSource()).append(")");
+        } else if (command.getObject().getConstraintType() == DBSEntityConstraintType.NOT_NULL) {
+            // PostgreSQL NOT NULL table constraints take a single column without parentheses.
+            PostgreTableConstraintColumn column = ((PostgreTableConstraint) command.getObject()).getColumns().getFirst();
+            decl.append(" ").append(DBUtils.getQuotedIdentifier(column.getAttribute()));
         } else {
             super.appendConstraintDefinition(decl, command);
         }

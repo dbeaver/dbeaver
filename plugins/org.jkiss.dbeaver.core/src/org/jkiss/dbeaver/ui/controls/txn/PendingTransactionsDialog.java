@@ -91,8 +91,6 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                 logViewer.refresh();
             }));
 
-        closeOnFocusLost(contextTree);
-
         {
             Composite controlPanel = UIUtils.createPlaceholder(composite, 3, 5);
             controlPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -107,8 +105,6 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
             rollbackButton = UIUtils.createPushButton(controlPanel, CoreMessages.pending_transactions_dialog_button_rollback, DBeaverIcons.getImage(UIIcon.TXN_ROLLBACK));
             rollbackButton.setEnabled(false);
             rollbackButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> endTransaction(false)));
-
-            closeOnFocusLost(showAllCheck, commitButton, rollbackButton);
         }
 
         super.createTransactionLogPanel(composite);
@@ -177,8 +173,8 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
         IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
         if (activePart == null) {
             DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.pending_transactions_dialog_error_no_active_part_title,
-                CoreMessages.pending_transactions_dialog_error_no_active_part_message);
+                CoreMessages.pending_transactions_no_active_part_title,
+                CoreMessages.pending_transactions_no_active_part_message);
         } else {
             final PendingTransactionsDialog dialog = new PendingTransactionsDialog(shell, activePart);
             dialog.setModeless(true);

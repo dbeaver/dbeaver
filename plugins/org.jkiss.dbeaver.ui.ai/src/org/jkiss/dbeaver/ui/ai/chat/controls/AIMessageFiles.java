@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.ai.chat.controls;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.file.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -83,7 +85,9 @@ public class AIMessageFiles extends AIMessage {
                     FileOpenHandler handlerInstance = handler.createHandler();
                     handlerInstance.openFiles(pathList, null, FileTypeAction.DATABASE);
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        AIChatMessagesUI.ai_chat_file_open_error_title,
+                        NLS.bind(AIChatMessagesUI.ai_chat_file_open_error_message, pathList), e);
                 }
             }
         }
@@ -106,7 +110,9 @@ public class AIMessageFiles extends AIMessage {
                     importHandler.importFiles(pathList, extension.getId());
                 }
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
+                DBWorkbench.getPlatformUI().showError(
+                    AIChatMessagesUI.ai_chat_file_open_error_title,
+                    NLS.bind(AIChatMessagesUI.ai_chat_file_open_error_message, pathList), e);
             }
         }
         importDataWasExecuted = true;
