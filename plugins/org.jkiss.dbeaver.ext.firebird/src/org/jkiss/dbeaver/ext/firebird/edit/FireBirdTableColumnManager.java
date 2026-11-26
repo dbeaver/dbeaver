@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.firebird.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdFieldType;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -128,9 +129,10 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         boolean typeSizeChanged = command.getProperty("maxLength") != null
             || command.getProperty("precision") != null
             || command.getProperty("scale") != null;
-        String typeClause = getAlterTypeClause(column, typeSizeChanged);
+        boolean typeNameChanged = command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null;
+        String typeClause = getAlterTypeClause(column, typeNameChanged, typeSizeChanged);
         String computedDefinition = column.getComputedDefinition(monitor);
-        if (command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null || typeSizeChanged) {
+        if (typeNameChanged || typeSizeChanged) {
             final StringBuilder ddl = new StringBuilder()
                 .append(prefix).append("TYPE ").append(typeClause);
             if (CommonUtils.isNotEmpty(computedDefinition)) {
@@ -216,7 +218,11 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
      * with the new size, because a domain name can't take size modifiers (DOM_NAME(20) is invalid).
      */
     @NotNull
-    private static String getAlterTypeClause(@NotNull FireBirdTableColumn column, boolean typeSizeChanged) {
+    private static String getAlterTypeClause(
+        @NotNull FireBirdTableColumn column,
+        boolean typeNameChanged,
+        boolean typeSizeChanged
+    ) {
         String domainName = column.getDomainName();
         if (domainName == null) {
             return column.getFullTypeName();
@@ -224,8 +230,6 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         if (!typeSizeChanged) {
             return DBUtils.getQuotedIdentifier(column.getDataSource(), domainName);
         }
-        // No CHARACTER SET is appended on purpose: without it, ALTER COLUMN ... TYPE keeps the column's current
-        // character set and collation (it does not fall back to the database default)
         String baseTypeName = column.getBaseTypeName();
         // Pass the sizes without the column itself: the dialect omits sizes equal to those of the column's
         // data type (here the domain), but they are needed once the column no longer uses the domain
@@ -254,6 +258,18 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
             }
         };
         String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), sizedType, baseTypeName, column.getDataKind());
-        return modifiers == null ? baseTypeName : baseTypeName + modifiers;
+        String typeClause = modifiers == null ? baseTypeName : baseTypeName + modifiers;
+        // Without CHARACTER SET, ALTER COLUMN ... TYPE keeps the column's current character set and collation
+        // (it does not fall back to the database default). That is right while the column keeps its domain,
+        // but if the domain was switched in the same change, the new domain's character set must be used
+        String charset = column.getCharset();
+        if (typeNameChanged && CommonUtils.isNotEmpty(charset) && isCharacterType(baseTypeName)) {
+            typeClause += " CHARACTER SET " + DBUtils.getQuotedIdentifier(column.getDataSource(), charset);
+        }
+        return typeClause;
+    }
+
+    private static boolean isCharacterType(@NotNull String typeName) {
+        return FireBirdFieldType.CHAR.getName().equals(typeName) || FireBirdFieldType.VARCHAR.getName().equals(typeName);
     }
 }
