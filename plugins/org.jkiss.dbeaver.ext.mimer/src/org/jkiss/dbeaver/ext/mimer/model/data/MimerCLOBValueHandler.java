@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.storage.TemporaryContentStorage;
@@ -37,6 +36,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -72,6 +72,15 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
 
     // See MimerBLOBValueHandler's identical field for why this is needed.
     private static final AtomicLong TEMP_FILE_SEQUENCE = new AtomicLong();
+
+    // Independent of the user's "Content hex encoding" display preference
+    // (DBValueFormatting#getDefaultBinaryFileEncoding) - that one is meant for showing BINARY
+    // data as text and can legitimately be a charset (e.g. ISO-8859-1) that can't represent
+    // every character a CLOB/NCLOB actually holds, so writing one through it can throw
+    // UnmappableCharacterException and abort the whole spill. UTF-8 always round-trips any
+    // well-formed Java String losslessly, so the on-disk encoding here never depends on that
+    // preference.
+    private static final Charset SPILL_CHARSET = StandardCharsets.UTF_8;
 
     @Override
     protected DBDContent fetchColumnValue(
@@ -148,7 +157,6 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
         DBCExecutionContext context = session.getExecutionContext();
         DBPPlatform platform = DBWorkbench.getPlatform();
         int memoryLimit = platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
-        String encoding = DBValueFormatting.getDefaultBinaryFileEncoding(context.getDataSource());
 
         MimerContentCLOB content = new MimerContentCLOB(context, typeLabel);
         boolean spooled = false;
@@ -191,7 +199,7 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
                 Path tempFile = MimerLobUtil.spoolToTempFile(
                     monitor, platform, "mimer_clob" + TEMP_FILE_SEQUENCE.incrementAndGet(),
                     tempFilePath -> {
-                        try (Writer os = Files.newBufferedWriter(tempFilePath, Charset.forName(encoding))) {
+                        try (Writer os = Files.newBufferedWriter(tempFilePath, SPILL_CHARSET)) {
                             // Checked per chunk, same as the read loop right below - without
                             // this, canceling mid-flush is ignored until the whole buffered
                             // prefix (up to MEMORY_CONTENT_MAX_SIZE, configurable to 1 GiB) has
@@ -211,8 +219,17 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
                             }
                         }
                     });
+                // If cancellation cut the flush short, totalHolder[0] can be smaller than the
+                // full in-memory preview captured above (up to PREVIEW_LENGTH chars of the
+                // complete read, before the write loop ever ran) - trim it to match what's
+                // actually on disk, or MimerContentCLOB.getDisplayString would show preview text
+                // for characters getContentReader() can no longer produce.
+                String onDiskPreview = totalHolder[0] < preview.length()
+                    ? preview.substring(0, (int) totalHolder[0])
+                    : preview;
                 content.setStorage(new MimerSpilledCharsStorage(
-                    new TemporaryContentStorage(platform, tempFile, encoding, true), preview, totalHolder[0]));
+                    new TemporaryContentStorage(platform, tempFile, SPILL_CHARSET.name(), true),
+                    onDiskPreview, totalHolder[0]));
             }
             spooled = true;
         } finally {

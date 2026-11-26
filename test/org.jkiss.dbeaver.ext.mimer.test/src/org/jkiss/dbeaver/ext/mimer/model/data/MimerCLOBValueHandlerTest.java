@@ -389,6 +389,80 @@ public class MimerCLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void spillSurvivesACharacterTheDatasourcesHexEncodingPreferenceCannotRepresent() throws Exception {
+        // Regression test: the temp-file write used to encode with
+        // DBValueFormatting#getDefaultBinaryFileEncoding - the "Content hex encoding"
+        // preference, meant for displaying BINARY data as text, not for round-tripping
+        // arbitrary CLOB/NCLOB text. A narrow charset like US-ASCII can't represent a CJK
+        // character, so writing one as US-ASCII used to throw UnmappableCharacterException and
+        // abort the whole spill - even though the exact same value stays readable just fine
+        // below the memory cutoff, where this encoding is never touched at all. The spill must
+        // use a lossless internal charset regardless of this preference.
+        Mockito.when(type.getTypeID()).thenReturn(Types.CLOB);
+        Mockito.when(preferenceStore.getString(ModelPreferences.CONTENT_HEX_ENCODING)).thenReturn("US-ASCII");
+        int memoryLimit = DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
+        String value = "日".repeat(memoryLimit + 1000);
+        Mockito.when(resultSet.getCharacterStream(1)).thenReturn(new StringReader(value));
+
+        JDBCContentCLOB result = (JDBCContentCLOB) MimerCLOBValueHandler.INSTANCE.fetchValueObject(session, resultSet, type, 0);
+        try {
+            DBDContentStorage storage = result.getContents(progressMonitor);
+            Assertions.assertInstanceOf(MimerSpilledCharsStorage.class, storage,
+                "This value is well over the memory limit, so it must have spilled to disk");
+            try (Reader reader = storage.getContentReader()) {
+                char[] buf = new char[value.length()];
+                int readTotal = 0;
+                int n;
+                while (readTotal < buf.length && (n = reader.read(buf, readTotal, buf.length - readTotal)) >= 0) {
+                    readTotal += n;
+                }
+                Assertions.assertEquals(value, new String(buf, 0, readTotal),
+                    "The spilled content must round-trip exactly, not fail outright or get mangled "
+                        + "because of the datasource's own hex-display charset");
+            }
+        } finally {
+            result.release();
+        }
+    }
+
+    @Test
+    public void cancelingBeforeAnyChunkIsFlushedLeavesNoPreviewAheadOfTheEmptyFile() throws Exception {
+        // Regression test: the preview is captured from the complete in-memory read before the
+        // write loop below ever runs, so if cancellation lands between choosing the spill branch
+        // and the first chunk actually being written, totalHolder[0] can end up smaller than
+        // (here, zero relative to) the already-captured preview text. MimerContentCLOB's
+        // getDisplayString treats "preview at least as long as the reported content length" as
+        // "the preview IS the whole value" and returns it verbatim - which would show real
+        // preview text for a value getContentReader() can no longer actually produce. The
+        // preview handed to the storage must never exceed what was actually written to disk.
+        Mockito.when(type.getTypeID()).thenReturn(Types.CLOB);
+        int memoryLimit = DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
+        String value = "x".repeat(memoryLimit + 1000);
+        Mockito.when(resultSet.getCharacterStream(1)).thenReturn(new StringReader(value));
+        // Same isCanceled() sequence as cancelingMidFlushReportsTheRealOnDiskCountNotTheFullInMemoryTotal
+        // above: false long enough to clear the in-memory read loop and the spill-vs-chunked
+        // decision (3 calls), then canceled from that point on - so the write lambda's very
+        // first isCanceled() check (the one guarding the prefix-flush loop) is already true, and
+        // nothing is ever written to the temp file.
+        Mockito.when(progressMonitor.isCanceled()).thenReturn(false, false, false, false, true);
+
+        JDBCContentCLOB result = (JDBCContentCLOB) MimerCLOBValueHandler.INSTANCE.fetchValueObject(session, resultSet, type, 0);
+        try {
+            DBDContentStorage storage = result.getContents(progressMonitor);
+            Assertions.assertInstanceOf(MimerSpilledCharsStorage.class, storage,
+                "This value is well over the memory limit, so it must have spilled to disk");
+            Assertions.assertEquals(0, storage.getContentLength(),
+                "Nothing should have reached the temp file if cancellation landed before the first chunk");
+
+            String displayed = result.getDisplayString(DBDDisplayFormat.UI);
+            Assertions.assertTrue(displayed == null || displayed.isEmpty(),
+                "Must not show preview text for a value whose reported/actual content is empty - got: " + displayed);
+        } finally {
+            result.release();
+        }
+    }
+
+    @Test
     public void displayStringShowsTruncatedPreviewPlusSizeWhenThePreviewIsShorterThanTheRealValue() {
         // The preview comes straight from a MimerChunkedCharsStorage's own first chunk now - not a
         // separately-tracked field - precisely so it can never go stale (see that class's own
