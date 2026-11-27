@@ -99,6 +99,12 @@ IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes {
     background-color: #2F2F2F;
 }
 
+/* Use the table foreground for trees instead of Eclipse's dimmer tree color. */
+.MPart Tree,
+.MPart Table {
+    color: #CCCCCC;
+}
+
 .EditorStack, .MPartStack {
     swt-tab-renderer: url('bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverCTabFolderRenderer');
     /* Use the widget background for header space and its toolbars, including min/max buttons. */

@@ -49,7 +49,7 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
 
         {
             setMaxLength(0);
-            int divPos = typeName.indexOf('(');
+            int divPos = typeName == null ? -1 : typeName.indexOf('(');
             if (divPos != -1) {
                 int divPos2 = typeName.indexOf(')', divPos);
                 if (divPos2 != -1) {

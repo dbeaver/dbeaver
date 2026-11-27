@@ -564,6 +564,7 @@ public class ResultSetMessages extends NLS {
     public static String copy_special_hint_for_hotkey;
 
     public static String filter_panel_filters_history_text;
+    public static String filter_panel_manage_filters;
     public static String filter_panel_expand_panel_text;
 
     public static String generate_ddl_by_result_set_name;
@@ -583,6 +584,30 @@ public class ResultSetMessages extends NLS {
     public static String find_and_replace_overlay_tooltip;
     public static String find_and_replace_find_all_tooltip;
 
+    public static String dialog_filter_value_edit_column_value;
+    public static String dialog_filter_value_edit_column_description;
+    public static String dialog_filter_value_edit_column_description_tip;
+    public static String dialog_filter_value_edit_select_none;
+    public static String dialog_filter_value_edit_clear_all;
+    public static String dialog_value_view_title;
+    public static String dialog_value_view_column_info_hide;
+    public static String dialog_value_view_column_info_show;
+    public static String dialog_text_view_tab_text;
+    public static String dialog_text_view_tab_hex;
+    public static String dialog_text_view_length;
+    public static String dialog_save_preview_title;
+    public static String dialog_save_preview_rows_added;
+    public static String dialog_save_preview_rows_changed;
+    public static String dialog_save_preview_rows_deleted;
+    public static String dialog_save_preview_message;
+    public static String dialog_save_preview_delete_cascade;
+    public static String dialog_save_preview_delete_cascade_tip;
+    public static String dialog_save_preview_deep_cascade;
+    public static String dialog_save_preview_deep_cascade_tip;
+    public static String dialog_save_preview_do_not_show_again;
+    public static String dialog_save_preview_do_not_show_again_tip;
+    public static String editor_datetime_set_current;
+    public static String dialog_grouping_config_title;
     public static String dialog_policy_data_copy_title;
     public static String dialog_policy_data_copy_msg;
     public static String dialog_policy_data_edit_msg;

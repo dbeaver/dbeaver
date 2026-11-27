@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.utils.CommonUtils;
 
@@ -195,7 +196,9 @@ class GenericFilterValueEdit {
 
     private void updateToggleButton(Button toggleButton) {
         boolean hasCheckedItems = hasCheckedItems();
-        toggleButton.setText(hasCheckedItems ? "&Clear All" : WorkbenchMessages.Workbench_selectAll);
+        toggleButton.setText(hasCheckedItems
+            ? ResultSetMessages.dialog_filter_value_edit_clear_all
+            : WorkbenchMessages.Workbench_selectAll);
         toggleButton.setData(!hasCheckedItems);
     }
 

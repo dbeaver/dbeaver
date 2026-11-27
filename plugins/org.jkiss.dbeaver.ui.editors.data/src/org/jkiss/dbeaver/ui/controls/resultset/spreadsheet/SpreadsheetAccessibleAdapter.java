@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridRow;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
@@ -79,6 +80,11 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
             if (cell != null && cell != lastCell) {
                 adapter.setNewCell(cell);
                 accessible.sendEvent(ACC.EVENT_NAME_CHANGED, new Object[]{null, cell.getRow().getElement()});
+            } else if (spreadsheet.getColumnCount() == 0) {
+                IGridRow row = spreadsheet.getFocusRow();
+                if (row != null) {
+                    accessible.sendEvent(ACC.EVENT_NAME_CHANGED, new Object[]{null, row.getElement()});
+                }
             }
         });
     }
@@ -128,7 +134,16 @@ public class SpreadsheetAccessibleAdapter extends AccessibleControlAdapter imple
     // This is a duplicate of the getValue() method. Because for some reason,
     // some accessibility tools (like JAWs) use only results from the getName() method.
     @Override
-    public void getName(AccessibleEvent e) {
+    public void getName(@NotNull AccessibleEvent e) {
+        if (spreadsheet.getColumnCount() == 0) {
+            IGridRow row = spreadsheet.getFocusRow();
+            if (row != null) {
+                spreadsheet.setAccessibilityEnabled(true);
+                e.result = NLS.bind(
+                    DataEditorsMessages.spreadsheet_accessibility_grid_value_row, "", labelProvider.getText(row)).strip();
+            }
+            return;
+        }
         if (cellsCount == 1) {
             if (cell == null) {
                 return;

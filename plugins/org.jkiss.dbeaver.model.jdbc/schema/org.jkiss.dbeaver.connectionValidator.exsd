@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.jkiss.dbeaver.model.jdbc" xmlns="http://www.w3.org/2001/XMLSchema">
+   <annotation>
+      <appInfo>
+         <meta.schema plugin="org.jkiss.dbeaver.model.jdbc" id="org.jkiss.dbeaver.connectionValidator" name="Connection validator"/>
+      </appInfo>
+      <documentation>
+         JDBC connection validators selected by the connection-validator driver parameter.
+         Implementations are loaded from the contributing bundle only when validation is required.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation><appInfo><meta.element/></appInfo></annotation>
+      <complexType>
+         <sequence>
+            <element ref="validator" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
+         <attribute name="name" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="validator">
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.impl.jdbc.JDBCConnectionValidator"/></appInfo>
+               <documentation>Validator implementation with a public no-argument constructor.</documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+</schema>

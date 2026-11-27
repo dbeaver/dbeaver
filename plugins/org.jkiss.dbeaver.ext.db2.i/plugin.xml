@@ -12,7 +12,7 @@
                 dataSourceType="db2"
                 parent="generic"
                 label="Db2 for IBM i data source"
-                icon="icons/db2_i_icon.svg"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon.svg"
                 dialect="db2_i">
             <treeInjection path="generic/catalog/schema/table"
                            changeFolderType="org.jkiss.dbeaver.ext.db2.i.model.DB2ITable"/>
@@ -23,14 +23,14 @@
                 <driver
                         id="db2_iseries"
                         label="Db2 for IBM i"
-                        icon="icons/db2_i_icon.svg"
-                        iconBig="icons/db2_i_icon_big.svg"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon.svg"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon_big.svg"
                         category="Db2"
                         class="com.ibm.as400.access.AS400JDBCDriver"
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
                         supportedConfigurationTypes="MANUAL,URL"
                         defaultPort="446"
-                        description="IBM Toolbox for Java JDBC driver for Db2 relational databases on IBM i."
+                        description="%driver.db2_iseries.description"
                         databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
                         categories="sql">
                     <replace provider="generic" driver="db2_iseries"/>
@@ -61,7 +61,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="db2_i" parent="generic" class="org.jkiss.dbeaver.ext.db2.i.model.DB2ISQLDialect" label="Db2 i" description="IBM Db2 for i SQL dialect." icon="icons/db2_i_icon.svg">
+        <dialect id="db2_i" parent="generic" class="org.jkiss.dbeaver.ext.db2.i.model.DB2ISQLDialect" label="Db2 i" description="IBM Db2 for i SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon.svg">
         </dialect>
     </extension>
 
