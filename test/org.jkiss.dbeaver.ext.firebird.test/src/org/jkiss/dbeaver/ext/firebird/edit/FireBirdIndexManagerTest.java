@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.firebird.model.FireBirdMetaModel;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTable;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -205,5 +207,13 @@ public class FireBirdIndexManagerTest extends DBeaverUnitTest {
             addObjectModifyActions(monitor, Mockito.mock(DBCExecutionContext.class), actions, command, Map.of());
             return actions;
         }
+    }
+
+    @Test
+    public void tableManagerUsesFireBirdIndexes() {
+        // Table DDL picks the index manager by the child types of the table manager
+        List<?> childTypes = Arrays.asList(new FireBirdTableManager().getChildTypes());
+        Assertions.assertTrue(childTypes.contains(FireBirdTableIndex.class));
+        Assertions.assertFalse(childTypes.contains(GenericTableIndex.class));
     }
 }
