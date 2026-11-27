@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;
+import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -75,7 +77,7 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
 
     @Test
     void sourceRowIncludesColumnsExcludedFromTarget() throws DBCException {
-        Object[] sourceRow = DatabaseTransferConsumer.readSourceRow(session, resultSet, sourceAttributes);
+        Object[] sourceRow = DatabaseTransferConsumer.readSourceValues(session, resultSet, sourceAttributes);
 
         Assertions.assertArrayEquals(new Object[]{1, "ignored", "NL", 8}, sourceRow);
         var order = Mockito.inOrder(valueHandler);
@@ -87,12 +89,12 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
 
     @Test
     void expressionReadsColumnByNameWhenColumnIsSkipped() throws Exception {
-        Object[] sourceRow = DatabaseTransferConsumer.readSourceRow(session, resultSet, sourceAttributes);
+        Object[] sourceRow = DatabaseTransferConsumer.readSourceValues(session, resultSet, sourceAttributes);
 
         Object value = new DataTransferTransformerExpression().transformAttribute(
             session,
             sourceAttributes,
-            sourceRow,
+            DatabaseTransferConsumer.makeSourceRow(sourceAttributes, sourceRow),
             country,
             "NL",
             Map.<String, Object>of("expression", "country")
@@ -165,11 +167,27 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
     }
 
     @Test
+    void collectionLeafValuesWithTheSameOrdinalRemainDistinct() throws DBCException {
+        DBDCollection collection = Mockito.mock(DBDCollection.class);
+        Mockito.when(collection.getComponentValueHandler()).thenReturn(valueHandler);
+        DBDAttributeBinding first = new DBDAttributeBindingElement(id, collection, 0);
+        DBDAttributeBinding second = new DBDAttributeBindingElement(id, collection, 1);
+        Mockito.when(valueHandler.fetchValueObject(session, resultSet, first, 0)).thenReturn("first element");
+        Mockito.when(valueHandler.fetchValueObject(session, resultSet, second, 0)).thenReturn("second element");
+
+        Object[] sourceValues = DatabaseTransferConsumer.readSourceValues(
+            session, resultSet, new DBDAttributeBinding[]{first, second}
+        );
+
+        Assertions.assertArrayEquals(new Object[]{"first element", "second element"}, sourceValues);
+    }
+
+    @Test
     void sourceRowDoesNotReadPseudoOrCustomAttributes() throws DBCException {
         Mockito.doReturn(true).when(id).isPseudoAttribute();
         Mockito.doReturn(true).when(dataToDrop).isCustom();
 
-        Object[] sourceRow = DatabaseTransferConsumer.readSourceRow(session, resultSet, sourceAttributes);
+        Object[] sourceRow = DatabaseTransferConsumer.readSourceValues(session, resultSet, sourceAttributes);
 
         Assertions.assertArrayEquals(new Object[]{null, null, "NL", 8}, sourceRow);
         Mockito.verify(valueHandler, Mockito.never()).fetchValueObject(session, resultSet, id, 0);
@@ -182,7 +200,7 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
         Mockito.when(valueHandler.fetchValueObject(session, resultSet, id, 0)).thenReturn(value);
         Mockito.when(valueHandler.fetchValueObject(session, resultSet, country, 2)).thenThrow(new DBCException("Read failed"));
 
-        Assertions.assertThrows(DBCException.class, () -> DatabaseTransferConsumer.readSourceRow(session, resultSet, sourceAttributes));
+        Assertions.assertThrows(DBCException.class, () -> DatabaseTransferConsumer.readSourceValues(session, resultSet, sourceAttributes));
 
         Mockito.verify(value).release();
     }
@@ -204,7 +222,8 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
         Object[] sourceRow = {value, "ignored", "NL", 8};
         DatabaseTransferConsumer.ColumnMapping[] mappings = {null, null, mapping(country, 0), mapping(fkRelation, 1)};
         Object transformed = new DataTransferTransformerExpression().transformAttribute(
-            session, sourceAttributes, sourceRow, country, "NL", Map.of("expression", "id")
+            session, sourceAttributes, DatabaseTransferConsumer.makeSourceRow(sourceAttributes, sourceRow),
+            country, "NL", Map.of("expression", "id")
         );
 
         DatabaseTransferConsumer.releaseSkippedSourceValues(sourceAttributes, mappings, sourceRow, new Object[]{transformed, 8});

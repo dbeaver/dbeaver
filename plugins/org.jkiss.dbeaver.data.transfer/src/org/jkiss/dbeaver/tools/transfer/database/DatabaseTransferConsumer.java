@@ -326,28 +326,44 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
      * Read in source order so that streaming result sets do not have to revisit earlier columns.
      */
     @NotNull
-    static Object[] readSourceRow(
+    static Object[] readSourceValues(
         @NotNull DBCSession session,
         @NotNull DBCResultSet resultSet,
         @NotNull DBDAttributeBinding[] sourceAttributes
     ) throws DBCException {
-        int rowSize = 0;
-        for (DBDAttributeBinding attr : sourceAttributes) {
-            rowSize = Math.max(rowSize, attr.getOrdinalPosition() + 1);
-        }
-        Object[] sourceRow = new Object[rowSize];
+        // Ordinals are relative to a binding's parent and may be shared by several leaf bindings.
+        Object[] sourceValues = new Object[sourceAttributes.length];
         try {
-            for (DBDAttributeBinding attribute : sourceAttributes) {
+            for (int i = 0; i < sourceAttributes.length; i++) {
+                DBDAttributeBinding attribute = sourceAttributes[i];
                 if (!attribute.isPseudoAttribute() && !attribute.isCustom()) {
-                    int index = attribute.getOrdinalPosition();
-                    sourceRow[index] = attribute.getValueHandler().fetchValueObject(session, resultSet, attribute, index);
+                    sourceValues[i] = attribute.getValueHandler().fetchValueObject(
+                        session, resultSet, attribute, attribute.getOrdinalPosition());
                 }
             }
         } catch (DBCException | RuntimeException e) {
-            for (Object value : sourceRow) {
-                DBUtils.releaseValue(value);
+            Set<Object> releasedValues = Collections.newSetFromMap(new IdentityHashMap<>());
+            for (Object value : sourceValues) {
+                if (releasedValues.add(value)) {
+                    DBUtils.releaseValue(value);
+                }
             }
             throw e;
+        }
+        return sourceValues;
+    }
+
+    @NotNull
+    static Object[] makeSourceRow(@NotNull DBDAttributeBinding[] sourceAttributes, @NotNull Object[] sourceValues) {
+        int rowSize = 0;
+        for (DBDAttributeBinding attribute : sourceAttributes) {
+            rowSize = Math.max(rowSize, attribute.getOrdinalPosition() + 1);
+        }
+        Object[] sourceRow = new Object[rowSize];
+        for (int i = 0; i < sourceAttributes.length; i++) {
+            if (!sourceAttributes[i].isPseudoAttribute() && !sourceAttributes[i].isCustom()) {
+                sourceRow[sourceAttributes[i].getOrdinalPosition()] = sourceValues[i];
+            }
         }
         return sourceRow;
     }
@@ -355,7 +371,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     static void releaseSkippedSourceValues(
         @NotNull DBDAttributeBinding[] sourceAttributes,
         @NotNull ColumnMapping[] columnMappings,
-        @NotNull Object[] sourceRow,
+        @NotNull Object[] sourceValues,
         @NotNull Object[] rowValues
     ) {
         // A transformer may pass a skipped value through to the target row. The batch then owns that value.
@@ -363,7 +379,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         Collections.addAll(retainedValues, rowValues);
         for (int i = 0; i < sourceAttributes.length; i++) {
             if (columnMappings[i] == null && !sourceAttributes[i].isPseudoAttribute() && !sourceAttributes[i].isCustom()) {
-                Object value = sourceRow[sourceAttributes[i].getOrdinalPosition()];
+                Object value = sourceValues[i];
                 if (retainedValues.add(value)) {
                     DBUtils.releaseValue(value);
                 }
@@ -393,7 +409,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         Object[] rowValues = new Object[targetAttributes.size()];
-        Object[] sourceRow = document == null && hasValueTransformers ? readSourceRow(session, resultSet, rsAttributes) : null;
+        Object[] sourceValues = document == null && hasValueTransformers ? readSourceValues(session, resultSet, rsAttributes) : null;
         try {
             for (int i = 0; i < columnMappings.length; i++) {
                 ColumnMapping column = columnMappings[i];
@@ -401,8 +417,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     continue;
                 }
                 Object attrValue;
-                if (sourceRow != null) {
-                    attrValue = sourceRow[column.sourceAttr.getOrdinalPosition()];
+                if (sourceValues != null) {
+                    attrValue = sourceValues[i];
                 } else if (column.sourceValueHandler != null) {
                     if (column.sourceAttr instanceof DBDAttributeBindingCustom) {
                         attrValue = DBUtils.getAttributeValue(column.sourceAttr, sourceBindings, rowValues);
@@ -428,13 +444,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         attrValue,
                         false, false);
                 }
-                if (sourceRow != null) {
+                if (sourceValues != null) {
                     // Preserve the target conversions seen by expressions before source and target rows were separated.
-                    sourceRow[column.sourceAttr.getOrdinalPosition()] = rowValues[column.targetIndex];
+                    sourceValues[i] = rowValues[column.targetIndex];
                 }
             }
 
             // Transform value
+            Object[] sourceRow = sourceValues == null ? null : makeSourceRow(rsAttributes, sourceValues);
             for (ColumnMapping column : columnMappings) {
                 if (column == null || column.targetIndex < 0) {
                     continue;
@@ -462,8 +479,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 }
             }
         } finally {
-            if (sourceRow != null) {
-                releaseSkippedSourceValues(rsAttributes, columnMappings, sourceRow, rowValues);
+            if (sourceValues != null) {
+                releaseSkippedSourceValues(rsAttributes, columnMappings, sourceValues, rowValues);
             }
         }
 
