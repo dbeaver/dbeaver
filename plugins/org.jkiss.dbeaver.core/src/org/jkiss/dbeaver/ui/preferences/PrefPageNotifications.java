@@ -31,8 +31,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
-import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.SmartComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.notifications.NotificationSettings;
@@ -166,7 +166,7 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
                         choices.add(SOUND_NONE_LABEL);
                         choices.add(SOUND_FILE_LABEL);
 
-                        return new CustomComboBoxCellEditor(
+                        return new SmartComboBoxCellEditor(
                             viewer,
                             viewer.getTable(),
                             choices.toArray(new String[0]),
