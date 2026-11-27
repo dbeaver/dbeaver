@@ -40,7 +40,7 @@ ColorDefinition#org-jkiss-dbeaver-ui-navigator-node-modified-background {
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-navigator-node-foreground {
-    color: #8c8c8c;
+    color: #999999;
 }
 
 ColorDefinition#org-jkiss-dbeaver-ui-navigator-node-statistics-background {
@@ -97,6 +97,12 @@ IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes {
 
 .MPart Table {
     background-color: #2F2F2F;
+}
+
+/* Keep tree and table text consistent with the main icon color. */
+.MPart Tree,
+.MPart Table {
+    color: '#org-jkiss-dbeaver-ui-icons-default';
 }
 
 .EditorStack, .MPartStack {

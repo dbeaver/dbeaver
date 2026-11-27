@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -131,7 +130,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         for (FilterInfo filterInfo : filters) {
             filterInfo.filter = dataSourceDescriptor.getObjectFilter(
-                getDataSourceObjectType(dataSourceDescriptor, filterInfo.baseType),
+                DBXTreeDescriptor.getDataSourceObjectType(dataSourceDescriptor, filterInfo.baseType),
                 null,
                 true
             );
@@ -747,35 +746,12 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         for (FilterInfo filterInfo : filters) {
             if (filterInfo.filter != null) {
                 dataSource.setObjectFilter(
-                    getDataSourceObjectType(dataSourceDescriptor, filterInfo.baseType),
+                    DBXTreeDescriptor.getDataSourceObjectType(dataSourceDescriptor, filterInfo.baseType),
                     null,
                     filterInfo.filter
                 );
             }
         }
-    }
-
-    @NotNull
-    public static Class<?> getDataSourceObjectType(
-        @NotNull DBPDataSourceContainer dataSourceDescriptor,
-        @NotNull Class<? extends DBSObject> baseType
-    ) {
-        DBPDriver driver = dataSourceDescriptor.getDriver();
-        Class<?> dataSourceClass = driver.getDataSourceProvider().getDataSourceClass();
-        DBXTreeDescriptor treeDescriptor = driver.getProviderDescriptor().getTreeDescriptor();
-        if (treeDescriptor != null) {
-            Class<?> type = DBXTreeDescriptor.findImplementorTypeInDataSourceTree(
-                treeDescriptor,
-                dataSourceClass,
-                baseType,
-                null
-            );
-            if (type != null) {
-                return type;
-            }
-        }
-
-        return baseType;
     }
 
     public void setDataSourceFolder(@Nullable DBPDataSourceFolder dataSourceFolder) {
