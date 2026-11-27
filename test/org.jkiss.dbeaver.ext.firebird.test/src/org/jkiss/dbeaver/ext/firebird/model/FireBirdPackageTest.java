@@ -56,9 +56,9 @@ public class FireBirdPackageTest extends DBeaverUnitTest {
             "SET TERM ^ ;\n\n"
                 + "CREATE OR ALTER PACKAGE PKG_MATH\n"
                 + "SQL SECURITY DEFINER\n"
-                + "AS\n" + HEADER + "^\n\n"
+                + "AS\n" + HEADER + "\n^\n\n"
                 + "RECREATE PACKAGE BODY PKG_MATH\n"
-                + "AS\n" + BODY + "^\n\n"
+                + "AS\n" + BODY + "\n^\n\n"
                 + "SET TERM ; ^\n\n"
                 + "COMMENT ON PACKAGE PKG_MATH IS 'Math helpers';",
             pkg.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS));
@@ -71,10 +71,19 @@ public class FireBirdPackageTest extends DBeaverUnitTest {
         Assertions.assertEquals(
             "SET TERM ^ ;\n\n"
                 + "CREATE OR ALTER PACKAGE PKG_MATH\n"
-                + "AS\n" + HEADER + "^\n\n"
+                + "AS\n" + HEADER + "\n^\n\n"
                 + "SET TERM ; ^",
             pkg.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS));
         Assertions.assertNull(pkg.getSqlSecurity());
+    }
+
+    @Test
+    public void terminatorIsNotPartOfTrailingComment() {
+        String header = HEADER + " -- end of header\n";
+        FireBirdPackage pkg = new FireBirdPackage(dataSource, "PKG_MATH", null, header, null, false, null, null, false);
+
+        Assertions.assertTrue(
+            pkg.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS).contains("END -- end of header\n^\n"));
     }
 
     @Test

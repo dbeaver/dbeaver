@@ -173,10 +173,11 @@ public class FireBirdPackage implements GenericScriptObject, DBPQualifiedObject,
             if (sqlSecurityDefiner != null) {
                 ddl.append("SQL SECURITY ").append(getSqlSecurityKeyword(sqlSecurityDefiner)).append('\n');
             }
-            ddl.append("AS\n").append(headerSource.trim()).append(SCRIPT_TERMINATOR).append('\n');
+            // The terminator goes on its own line: the source may end with a -- comment after its final END
+            ddl.append("AS\n").append(headerSource.trim()).append('\n').append(SCRIPT_TERMINATOR).append('\n');
             if (!CommonUtils.isEmpty(bodySource)) {
                 ddl.append("\nRECREATE PACKAGE BODY ").append(quotedName).append('\n')
-                    .append("AS\n").append(bodySource.trim()).append(SCRIPT_TERMINATOR).append('\n');
+                    .append("AS\n").append(bodySource.trim()).append('\n').append(SCRIPT_TERMINATOR).append('\n');
             }
             ddl.append("\nSET TERM ; ").append(SCRIPT_TERMINATOR).append('\n');
         }
