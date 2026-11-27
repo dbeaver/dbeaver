@@ -254,7 +254,7 @@ public final class SQLUtils {
                 int end = sql.indexOf(SQLConstants.ML_COMMENT_END, pos + 2);
                 pos = end < 0 ? sql.length() : end + 2;
             } else if (OPERATOR_CHARS.indexOf(sql.charAt(pos)) >= 0) {
-                int end = getOperatorEnd(sql, pos);
+                int end = getOperatorEnd(sql, pos, extraCommentPrefixes);
                 if (!STANDARD_OPERATORS.contains(sql.substring(pos, end))) {
                     if (result == null) {
                         result = new StringBuilder(sql);
@@ -275,12 +275,13 @@ public final class SQLUtils {
      * it ends where a comment starts, and a trailing sign belongs to the next value when the rest of the operator
      * is standard ({@code a=-1} is {@code =} and {@code -1}, but {@code @-@} is a single operator).
      */
-    private static int getOperatorEnd(@NotNull String sql, int start) {
+    private static int getOperatorEnd(@NotNull String sql, int start, @NotNull List<String> extraCommentPrefixes) {
         int end = start + 1;
         while (end < sql.length()
             && OPERATOR_CHARS.indexOf(sql.charAt(end)) >= 0
             && !sql.startsWith(SQLConstants.SL_COMMENT, end)
             && !sql.startsWith(SQLConstants.ML_COMMENT_START, end)
+            && !startsWithAny(sql, end, extraCommentPrefixes)
         ) {
             end++;
         }

@@ -181,13 +181,19 @@ public class SQLQueryNonStandardOperatorsTest extends DBeaverUnitTest {
     public void maskShouldRespectDialectQuotesAndComments() {
         for (String sql : List.of(
             "SELECT `a@b` FROM t # @(c)",
-            "SELECT 'it\\'s @(a)' FROM t"
+            "SELECT 'it\\'s @(a)' FROM t",
+            "SELECT a FROM t WHERE b =# @\n1"
         )) {
             Assertions.assertSame(sql, SQLUtils.maskNonStandardOperators(MYSQL_LIKE_DIALECT, sql));
         }
         Assertions.assertEquals(
             "SELECT `a@b` FROM t WHERE +(c) = 1 # @(d)",
             SQLUtils.maskNonStandardOperators(MYSQL_LIKE_DIALECT, "SELECT `a@b` FROM t WHERE @(c) = 1 # @(d)")
+        );
+        // A comment marker made of operator characters ends the operator before it
+        Assertions.assertEquals(
+            "SELECT a FROM t WHERE + # @\n(b) = 1",
+            SQLUtils.maskNonStandardOperators(MYSQL_LIKE_DIALECT, "SELECT a FROM t WHERE @@# @\n(b) = 1")
         );
     }
 }
