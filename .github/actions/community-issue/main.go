@@ -1,3 +1,4 @@
+// Command community-issue checks a waiting GitHub issue for replies or an expired deadline.
 package main
 
 import (
