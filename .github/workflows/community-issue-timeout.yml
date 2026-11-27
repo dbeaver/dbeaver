@@ -1,0 +1,55 @@
+name: Check unanswered community issues
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  candidates:
+    if: github.repository == 'dbeaver/dbeaver' && github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+    outputs:
+      issues: ${{ steps.list.outputs.result }}
+    steps:
+      - id: list
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          numbers=$(gh api --paginate --slurp --method GET "repos/$GITHUB_REPOSITORY/issues" \
+            -f state=open -f labels='wait for response' -F per_page=100 \
+            | jq -c '[.[][] | select(.pull_request == null) | .number]')
+          echo "result=$numbers" >> "$GITHUB_OUTPUT"
+
+  triage:
+    needs: candidates
+    if: needs.candidates.outputs.issues != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        issue: ${{ fromJSON(needs.candidates.outputs.issues) }}
+    concurrency:
+      group: community-issue-${{ matrix.issue }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions/community-issue
+      - uses: ./.github/actions/community-issue
+        with:
+          issue: ${{ matrix.issue }}
+          client-id: ${{ vars.TRIAGE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.TRIAGE_APP_PRIVATE_KEY }}
+          private-member: ${{ secrets.TRIAGE_PRIVATE_MEMBER }}
+          timeout-mode: ${{ vars.TRIAGE_CLOSE_ENABLED == 'true' && 'close' || 'report' }}

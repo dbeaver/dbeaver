@@ -1,0 +1,32 @@
+name: Triage community issue reply
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+jobs:
+  reply:
+    if: >-
+      github.repository == 'dbeaver/dbeaver' && !github.event.issue.pull_request &&
+      github.event.issue.state == 'open' && github.event.comment.user.type == 'User' &&
+      contains(github.event.issue.labels.*.name, 'wait for response')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      group: community-issue-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions/community-issue
+      - uses: ./.github/actions/community-issue
+        with:
+          issue: ${{ github.event.issue.number }}
+          client-id: ${{ vars.TRIAGE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.TRIAGE_APP_PRIVATE_KEY }}
+          private-member: ${{ secrets.TRIAGE_PRIVATE_MEMBER }}

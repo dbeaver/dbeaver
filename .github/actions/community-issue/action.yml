@@ -1,0 +1,40 @@
+name: Evaluate a community issue
+description: Reconcile replies and the deadline for the current wait period
+inputs:
+  issue:
+    description: Issue number
+    required: true
+  client-id:
+    description: Organization membership reader App client ID
+    required: true
+  private-key:
+    description: Organization membership reader App private key
+    required: true
+  private-member:
+    description: Known private organization member used to verify membership visibility
+    required: true
+  timeout-mode:
+    description: Ignore, report, or apply timeouts
+    default: ignore
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+      with:
+        go-version-file: .github/actions/community-issue/go.mod
+        cache-dependency-path: .github/actions/community-issue/go.sum
+    - id: membership
+      uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+      with:
+        client-id: ${{ inputs.client-id }}
+        private-key: ${{ inputs.private-key }}
+        permission-members: read
+    - shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        ISSUE_TOKEN: ${{ github.token }}
+        MEMBERS_TOKEN: ${{ steps.membership.outputs.token }}
+        PRIVATE_MEMBER: ${{ inputs.private-member }}
+        ISSUE: ${{ inputs.issue }}
+        TIMEOUT_MODE: ${{ inputs.timeout-mode }}
+      run: go run -mod=readonly .
