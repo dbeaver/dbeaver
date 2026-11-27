@@ -434,13 +434,13 @@ public abstract class PostgreTable extends PostgreTableReal
     public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (isPersisted() && subTables == null && getDataSource().getServerType().supportsInheritance()) {
             List<PostgreTableInheritance> tables = new ArrayList<>();
+            boolean readPartitionFlag = getDataSource().isServerVersionAtLeast(10, 0)
+                && getDataSource().getServerType().supportsPartitions();
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
-                String sql = "SELECT i.*,c.relnamespace,c.relname " +
-                    "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
+                String sql = "SELECT i.*,c.relnamespace,c.relname" +
+                    (readPartitionFlag ? ",c.relispartition" : "") +
+                    " FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
                     "WHERE i.inhparent=? AND c.oid=i.inhrelid";
-//                if (getDataSource().isServerVersionAtLeast(10, 0)) {
-//                    sql += " AND c.relispartition=false";
-//                }
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                     dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -448,25 +448,24 @@ public abstract class PostgreTable extends PostgreTableReal
                             final long subSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace"); //$NON-NLS-1$
                             final long subTableId = JDBCUtils.safeGetLong(dbResult, "inhrelid"); //$NON-NLS-1$
                             final String subTableName = JDBCUtils.safeGetString(dbResult, "relname"); //$NON-NLS-1$
+                            final boolean subTableIsPartition = readPartitionFlag
+                                && JDBCUtils.safeGetBoolean(dbResult, "relispartition"); //$NON-NLS-1$
                             PostgreSchema schema = getDatabase().getSchema(monitor, subSchemaId);
                             if (schema == null) {
                                 log.warn("Can't find sub-table's schema '" + subSchemaId + "'");
                                 continue;
                             }
                             PostgreTableBase subTable = schema.getTable(monitor, subTableId);
-                            if (subTable == null && subTableName != null) {
-                                // If not found by OID, try loading by name with cache refresh
-                                // This handles cases where the table was created externally after cache init
-                                schema.getTableCache().setFullCache(false);
-                                try {
-                                    subTable = schema.getTableCache().getObject(monitor, schema, subTableName);
-                                } finally {
-                                    schema.getTableCache().setFullCache(true);
-                                }
-                            }
-                            if (subTable != null && subTable.getObjectId() != subTableId) {
-                                log.debug("Sub-table name collision: expected OID " + subTableId + " but got " + subTable.getObjectId() + " for name '" + subTableName + "'");
+                            if (subTable != null && subTableName != null && subTable.isPartition() != subTableIsPartition) {
+                                // ATTACH/DETACH PARTITION keeps the table OID but changes relispartition.
+                                // Drop the stale cached object so it is reloaded with the proper class and flags.
+                                schema.getTableCache().removeObject(subTable, false);
                                 subTable = null;
+                            }
+                            if (subTable == null && subTableName != null) {
+                                // The sub-table (e.g. a partition) can be created after the schema table cache was
+                                // loaded, so it may not be present there. Load such table separately and add it to the cache.
+                                subTable = loadSubTableByName(monitor, schema, subTableName, subTableId);
                             }
                             if (subTable == null) {
                                 log.warn("Can't find sub-table '" + subTableId + "' (" + subTableName + ") in '" + schema.getName() + "'");
@@ -491,6 +490,30 @@ public abstract class PostgreTable extends PostgreTableReal
             this.subTables = tables;
         }
         return subTables == null || subTables.isEmpty() ? null : subTables;
+    }
+
+    @Nullable
+    private static PostgreTableBase loadSubTableByName(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreSchema schema,
+        @NotNull String subTableName,
+        long subTableId
+    ) throws DBException {
+        PostgreSchema.TableCache tableCache = schema.getTableCache();
+        boolean wasFullyCached = tableCache.isFullyCached();
+        // The by-name lookup skips a fully cached list, so disable it temporarily and restore the prior state.
+        tableCache.setFullCache(false);
+        try {
+            PostgreTableBase subTable = tableCache.getObject(monitor, schema, subTableName);
+            if (subTable != null && subTable.getObjectId() != subTableId) {
+                log.debug("Sub-table name collision: expected OID " + subTableId
+                    + " but got " + subTable.getObjectId() + " for name '" + subTableName + "'");
+                return null;
+            }
+            return subTable;
+        } finally {
+            tableCache.setFullCache(wasFullyCached);
+        }
     }
 
     @Nullable
