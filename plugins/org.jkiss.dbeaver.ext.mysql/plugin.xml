@@ -190,7 +190,6 @@
                     <property name="rewriteBatchedStatements" value="true"/>
                     <property name="enabledTLSProtocols" value="TLSv1,TLSv1.1,TLSv1.2,TLSv1.3"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
                 </driver>
 
@@ -223,7 +222,6 @@
                     <!-- https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html -->
                     <property name="enabledTLSProtocols" value="TLSv1,TLSv1.1,TLSv1.2,TLSv1.3"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
                 </driver>
                 <driver
@@ -249,7 +247,6 @@
                     <property name="allowUrlInLocalInfile" value="false"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
                 </driver>
 
