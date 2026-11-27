@@ -17,12 +17,14 @@ jobs:
       issues: ${{ steps.list.outputs.result }}
     steps:
       - id: list
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            return github.paginate(github.rest.issues.listForRepo, {
-              ...context.repo, state: 'open', labels: 'wait for response', per_page: 100,
-            }, page => page.data.filter(issue => !issue.pull_request).map(issue => issue.number));
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          numbers=$(gh api --paginate --slurp --method GET "repos/$GITHUB_REPOSITORY/issues" \
+            -f state=open -f labels='wait for response' -F per_page=100 \
+            | jq -c '[.[][] | select(.pull_request == null) | .number]')
+          echo "result=$numbers" >> "$GITHUB_OUTPUT"
 
   triage:
     needs: candidates
