@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.StringConverter;
@@ -58,6 +59,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Lazy input. Use by entity editors which are created during DBeaver startup (from memo by factory).
@@ -286,8 +288,17 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
             try {
                 if (DBWorkbench.getService(DBServiceConnections.class) == null) {
                     dataSourceContainer.connect(monitor, true, true);
-                } else if (!DBUtils.initDataSource(monitor, dataSourceContainer, null)) {
-                    return unloadInput();
+                } else {
+                    AtomicReference<IStatus> connectionStatus = new AtomicReference<>();
+                    if (!DBUtils.initDataSource(monitor, dataSourceContainer, connectionStatus::set)) {
+                        IStatus status = connectionStatus.get();
+                        if (status != null && status.getSeverity() == IStatus.CANCEL) {
+                            return unloadInput();
+                        }
+                        throw new DBException(
+                            status == null ? "Connection to '" + dataSourceContainer.getName() + "' failed" : status.getMessage(),
+                            status == null ? null : status.getException());
+                    }
                 }
             } catch (final DBException e) {
                 // Connection error
