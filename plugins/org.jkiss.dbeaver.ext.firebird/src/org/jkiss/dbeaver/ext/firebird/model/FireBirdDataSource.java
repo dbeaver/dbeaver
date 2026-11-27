@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ public class FireBirdDataSource extends GenericDataSource
     }
 
     private Map<String, IntKeyMap<MetaFieldInfo>> metaFields = new HashMap<>();
+    private final FireBirdExceptionCache exceptionCache = new FireBirdExceptionCache();
 
     public FireBirdDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -142,6 +144,13 @@ public class FireBirdDataSource extends GenericDataSource
         super.initialize(monitor);
     }
 
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        exceptionCache.clearCache();
+        return super.refreshObject(monitor);
+    }
+
 	@NotNull
     @Override
 	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
@@ -169,6 +178,16 @@ public class FireBirdDataSource extends GenericDataSource
     @Override
     public List<FireBirdProcedure> getProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdProcedure>) super.getProcedures(monitor);
+    }
+
+    @NotNull
+    public Collection<FireBirdException> getExceptions(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return exceptionCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    public FireBirdException getException(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        return exceptionCache.getObject(monitor, this, name);
     }
 
     @NotNull
