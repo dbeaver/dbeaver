@@ -46,8 +46,12 @@ import java.util.stream.Collectors;
  */
 public class FireBirdUser implements GenericScriptObject, DBPQualifiedObject, DBPUniqueObject {
 
-    /** Placeholder for the password in generated DDL: passwords are stored as hashes and can't be read */
-    static final String PASSWORD_PLACEHOLDER = "********";
+    /**
+     * Placeholder for the password in generated DDL: passwords are stored as hashes and can't be read.
+     * It is not quoted on purpose: it is a syntax error, so the script fails until a real password is set,
+     * instead of creating a user with a publicly known password.
+     */
+    static final String PASSWORD_PLACEHOLDER = "<password>";
 
     @NotNull
     private final FireBirdDataSource dataSource;
@@ -218,9 +222,10 @@ public class FireBirdUser implements GenericScriptObject, DBPQualifiedObject, DB
         String quotedName = getFullyQualifiedName(DBPEvaluationContext.DDL);
         String usingPlugin = CommonUtils.isEmpty(plugin) ? "" : " USING PLUGIN " + plugin;
         StringBuilder ddl = new StringBuilder();
-        ddl.append("-- The password can't be read from the database, set it before running the script\n");
+        ddl.append("-- The password can't be read from the database, replace ").append(PASSWORD_PLACEHOLDER)
+            .append(" before running the script\n");
         ddl.append("CREATE USER ").append(quotedName)
-            .append(" PASSWORD ").append(SQLUtils.quoteString(this, PASSWORD_PLACEHOLDER));
+            .append(" PASSWORD ").append(PASSWORD_PLACEHOLDER);
         appendOption(ddl, "FIRSTNAME", firstName);
         appendOption(ddl, "MIDDLENAME", middleName);
         appendOption(ddl, "LASTNAME", lastName);

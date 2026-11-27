@@ -57,8 +57,8 @@ public class FireBirdUserTest extends DBeaverUnitTest {
         Mockito.doReturn(tags).when(user).getTags(monitor);
 
         Assertions.assertEquals(
-            "-- The password can't be read from the database, set it before running the script\n"
-                + "CREATE USER ALICE PASSWORD '********'\n"
+            "-- The password can't be read from the database, replace <password> before running the script\n"
+                + "CREATE USER ALICE PASSWORD <password>\n"
                 + "    FIRSTNAME 'Alice'\n"
                 + "    LASTNAME 'O''Neil'\n"
                 + "    INACTIVE\n"
@@ -76,8 +76,8 @@ public class FireBirdUserTest extends DBeaverUnitTest {
         Mockito.doReturn(Map.of()).when(user).getTags(monitor);
 
         Assertions.assertEquals(
-            "-- The password can't be read from the database, set it before running the script\n"
-                + "CREATE USER BOB PASSWORD '********';",
+            "-- The password can't be read from the database, replace <password> before running the script\n"
+                + "CREATE USER BOB PASSWORD <password>;",
             user.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS));
     }
 
