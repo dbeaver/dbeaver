@@ -263,7 +263,7 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
             try {
                 final List<PostgreRole> roles = new ArrayList<>();
                 roles.add(null); // PUBLIC
-                roles.addAll(object.table.getDatabase().getUsers(new VoidProgressMonitor()));
+                roles.addAll(object.table.getDataSource().getRoles(new VoidProgressMonitor()));
                 return roles.toArray();
             } catch (DBException e) {
                 log.error("Error reading roles", e);

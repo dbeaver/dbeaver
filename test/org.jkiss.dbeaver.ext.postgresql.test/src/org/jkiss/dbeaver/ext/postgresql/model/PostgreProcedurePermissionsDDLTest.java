@@ -54,7 +54,7 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
         };
         PostgreDatabase testDatabase = testDataSource.createDatabaseImpl(
             monitor, "testdb", new PostgreRole(null, "tester", "test", true), null, null, null);
-        testUser = new PostgreRole(testDatabase, "tester", "test", true);
+        testUser = new PostgreRole(testDataSource, "tester", "test", true);
         testSchema = new PostgreSchema(testDatabase, "public", testUser);
     }
 

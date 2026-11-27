@@ -43,9 +43,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -80,6 +82,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     private DatabaseCache databaseCache;
     private SettingCache settingCache;
+    private final RoleCache roleCache = new RoleCache();
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
     protected String serverVersion;
@@ -497,6 +500,40 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache.getCachedObject(name);
     }
 
+    public JDBCObjectCache<PostgreDataSource, PostgreRole> getRoleCache() {
+        return roleCache;
+    }
+
+    @Association
+    public Collection<? extends PostgreRole> getRoles(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!getServerType().supportsRoles()) {
+            return Collections.emptyList();
+        }
+        return roleCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    public PostgreRole getRoleById(@NotNull DBRProgressMonitor monitor, long roleId) throws DBException {
+        if (!getServerType().supportsRoles()) {
+            return null;
+        }
+        return PostgreUtils.getObjectById(monitor, roleCache, this, roleId);
+    }
+
+    @Nullable
+    public PostgreRole getRoleByReference(@NotNull DBRProgressMonitor monitor, @NotNull PostgreRoleReference reference) throws DBException {
+        if (!getServerType().supportsRoles()) {
+            return null;
+        }
+        PostgreRole role = roleCache.getObject(monitor, this, reference.getRoleName());
+        if (role == null && PostgreConstants.PUBLIC_ROLE_NAME.equalsIgnoreCase(reference.getRoleName())) {
+            // information_schema reports the PUBLIC pseudo-role as 'PUBLIC' while ACL parsing
+            // produces lowercase 'public'. Resolve both variants to the same role.
+            role = roleCache.getObject(monitor, this, PostgreConstants.PUBLIC_ROLE_NAME);
+        }
+        return role;
+    }
+
     SettingCache getSettingCache() {
         return settingCache;
     }
@@ -553,6 +590,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         try {
             this.isConnectionRefreshing = true;
             this.databaseCache.clearCache();
+            this.roleCache.clearCache();
             this.hasStatistics = false;
             this.initializeRemoteInstance(monitor);
 
@@ -933,6 +971,52 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     private static class DatabaseCache extends SimpleObjectCache<PostgreDataSource, PostgreDatabase> {
+    }
+
+    static class RoleCache extends JDBCObjectCache<PostgreDataSource, PostgreRole> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner)
+            throws SQLException {
+            boolean supportsCommentsOnRole = owner.getServerType().supportsCommentsOnRole();
+            String sql = "SELECT a.oid,a.*" + (supportsCommentsOnRole ? ",pd.description" : "") +
+                " FROM pg_catalog.pg_roles a " +
+                (supportsCommentsOnRole ? "\nleft join pg_catalog.pg_shdescription pd on a.oid = pd.objoid" : "") +
+                "\nORDER BY a.rolname";
+            return session.prepareStatement(sql);
+        }
+
+        @Override
+        protected PostgreRole fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException {
+            return new PostgreRole(owner, dbResult);
+        }
+
+        @Override
+        protected void addCustomObjects(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull PostgreDataSource owner,
+            @NotNull List<PostgreRole> objectList
+        ) {
+            // Add the PUBLIC pseudo-role. It is not stored in pg_roles but exists in every
+            // database since cluster initialization and is represented by zero ACL grantee id.
+            // Without it PUBLIC grants are invisible in the permissions editors.
+            // See https://github.com/dbeaver/dbeaver/issues/11061
+            PostgreRole publicRole = new PostgreRole(owner, PostgreConstants.PUBLIC_ROLE_NAME, null, false);
+            publicRole.setPersisted(true);
+            objectList.add(publicRole);
+        }
+
+        @Override
+        protected boolean handleCacheReadError(@NotNull Exception error) {
+            // #271, #501: in some databases (AWS?) pg_authid is not accessible
+            if (PostgreConstants.EC_PERMISSION_DENIED.equals(SQLState.getStateFromException(error))) {
+                log.warn(error);
+                setCache(Collections.emptyList());
+                return true;
+            }
+            return false;
+        }
     }
 
     static class SettingCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreSetting> {

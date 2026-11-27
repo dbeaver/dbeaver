@@ -70,7 +70,7 @@ public class PostgreRole implements
 
     private static final Log log = Log.getLog(PostgreRole.class);
 
-    protected final PostgreDatabase database;
+    protected final PostgreDataSource dataSource;
     protected long oid;
     protected String name;
     protected boolean superUser;
@@ -117,18 +117,18 @@ public class PostgreRole implements
 
     }
 
-    public PostgreRole(PostgreDatabase database, String name, String password, boolean isUser) {
-        this.database = database;
+    public PostgreRole(PostgreDataSource dataSource, String name, String password, boolean isUser) {
+        this.dataSource = dataSource;
         this.name = name;
         this.password = password;
         this.canLogin = isUser;
         this.persisted = false;
     }
 
-    public PostgreRole(PostgreDatabase database, ResultSet dbResult)
+    public PostgreRole(PostgreDataSource dataSource, ResultSet dbResult)
         throws SQLException
     {
-        this.database = database;
+        this.dataSource = dataSource;
         this.loadInfo(dbResult);
     }
 
@@ -170,13 +170,13 @@ public class PostgreRole implements
     @Nullable
     @Override
     public DBSObject getParentObject() {
-        return database;
+        return dataSource;
     }
 
     @NotNull
     @Override
     public PostgreDataSource getDataSource() {
-        return database.getDataSource();
+        return dataSource;
     }
 
     public boolean isUser() {
@@ -218,7 +218,7 @@ public class PostgreRole implements
     @NotNull
     @Override
     public PostgreDatabase getDatabase() {
-        return database;
+        return dataSource.getDefaultInstance();
     }
 
     @Property(viewable = true, order = 3)
@@ -730,7 +730,7 @@ public class PostgreRole implements
         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
             Map<String, List<PostgrePrivilegeGrant>> privs = new LinkedHashMap<>();
             while (dbResult.next()) {
-                PostgrePrivilegeGrant privilege = new PostgrePrivilegeGrant(role.database, kind, dbResult);
+                PostgrePrivilegeGrant privilege = new PostgrePrivilegeGrant(role.getDatabase(), kind, dbResult);
                 String privilegeObjectName = privilege.getObjectName();
                 String objectSchema = privilege.getObjectSchema();
                 if ((kind == PostgrePrivilegeGrant.Kind.FUNCTION || kind == PostgrePrivilegeGrant.Kind.PROCEDURE)
@@ -809,7 +809,7 @@ public class PostgreRole implements
     }
 
     public PostgreRoleReference getRoleReference() {
-        return new PostgreRoleReference(this.database, this.getName(), this.getSpecificRoleType());
+        return new PostgreRoleReference(this.getDatabase(), this.getName(), this.getSpecificRoleType());
     }
 
     public boolean isReferencedWith(PostgreRoleReference reference) {
