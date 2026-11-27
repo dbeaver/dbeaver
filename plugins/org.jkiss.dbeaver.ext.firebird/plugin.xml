@@ -60,7 +60,6 @@
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
                     <parameter name="supports-truncate" value="false"/>
-                    <parameter name="split-procedures-and-functions" value="true"/>
                 </driver>
 
                 <driver
@@ -90,7 +89,6 @@
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
                     <parameter name="supports-truncate" value="false"/>
-                    <parameter name="split-procedures-and-functions" value="true"/>
                 </driver>
             </drivers>
 
