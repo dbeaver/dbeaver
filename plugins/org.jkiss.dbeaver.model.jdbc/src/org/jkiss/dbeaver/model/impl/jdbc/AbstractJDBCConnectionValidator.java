@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -85,8 +86,12 @@ public abstract class AbstractJDBCConnectionValidator implements JDBCConnectionV
         for (String name : restrictedProperties) {
             var pattern = Pattern.compile("\\b" + Pattern.quote(name) + "\\b", Pattern.CASE_INSENSITIVE);
             if (pattern.matcher(text).find()) {
-                throw new DBCException(
-                    "JDBC driver parameter '" + name + "' is not allowed while driver parameter sanitization is enabled");
+                boolean configurablePolicy = DBWorkbench.isPlatformStarted()
+                    && !DBWorkbench.getPlatform().getApplication().isMultiuser();
+                String reason = configurablePolicy
+                    ? "is not allowed while driver parameter sanitization is enabled"
+                    : "is blocked by the connection security policy";
+                throw new DBCException("JDBC driver parameter '" + name + "' " + reason);
             }
         }
     }
