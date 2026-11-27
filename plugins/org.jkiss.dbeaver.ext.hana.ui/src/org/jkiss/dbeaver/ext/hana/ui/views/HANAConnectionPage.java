@@ -160,9 +160,10 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
     
     @Override
     public void loadSettings() {
-        super.loadSettings();
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
+        // The superclass refreshes the connection name, which saves a preview of this page's settings.
         edition = HANAEdition.fromName(connectionInfo.getProviderProperty(PROV_PROP_EDITION));
+        super.loadSettings();
         portValue = CommonUtils.toString(connectionInfo.getHostPort()/*, site.getDriver().getDefaultPort()*/);
         instanceValue = CommonUtils.notEmpty(connectionInfo.getProviderProperty(PROV_PROP_INSTANCE_NUMBER));
         databaseValue = CommonUtils.notEmpty(getProperty(connectionInfo, PROP_DATABASE_NAME));
