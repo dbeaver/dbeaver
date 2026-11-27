@@ -1,0 +1,8 @@
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<!-- Keep the artwork black: SnowflakeAtlas derives alpha from its brightness. -->
+<g fill="none" stroke="rgb(0,0,0)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<path d="M20 12L23 16H28L26 20L28 24H23L20 28L17 24H12L14 20L12 16H17Z"/>
+<defs><path id="arm" d="M20 3V8M14 5L16 10M26 5L24 10"/></defs>
+<use href="#arm"/><use href="#arm" transform="rotate(60 20 20)"/><use href="#arm" transform="rotate(120 20 20)"/><use href="#arm" transform="rotate(180 20 20)"/><use href="#arm" transform="rotate(240 20 20)"/><use href="#arm" transform="rotate(300 20 20)"/>
+</g>
+</svg>
