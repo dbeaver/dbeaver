@@ -4010,13 +4010,13 @@ public class SQLEditor extends SQLEditorBase implements
             setFormatWholeScript(false);
         }
 
-        String formatted = viewer.getDocument().get();
-        int end = mapOffset(text, formatted, selection.x + selection.y);
+        FormatOffsetMapper mapper = new FormatOffsetMapper(text, viewer.getDocument().get());
+        int end = mapper.map(selection.x + selection.y);
         if (selection.y == 0) {
             viewer.setSelectedRange(end, 0);
             return;
         }
-        int start = Math.min(mapOffset(text, formatted, selection.x), end);
+        int start = Math.min(mapper.map(selection.x), end);
         if (caretAtStart) {
             viewer.setSelectedRange(end, start - end);
         } else {
@@ -4025,53 +4025,137 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     /**
-     * Maps an offset in the original text to the same place in the formatted text.
-     * The formatter changes mostly whitespace, so the place is identified by the number of
-     * non-whitespace characters before it and by its position in the whitespace run that
-     * follows them. An offset right before a token stays before that token, other offsets keep
-     * their distance from the start of the run, limited by the length of the formatted run.
-     * If the formatter left the text unchanged, the offset is kept as is.
+     * Maps offsets in the original text to the same places in the formatted text.
+     * The formatter mostly changes whitespace and letter case, but it may also add or remove
+     * tokens (e.g. statement delimiters), so the non-whitespace characters of both texts are
+     * matched with a diff. An offset is placed relative to the matched characters around it:
+     * right before a token it stays before that token, inside whitespace it keeps its distance
+     * from the start of the whitespace run, limited by the length of the formatted run.
+     * If the formatter left the text unchanged, offsets are kept as they are.
      */
-    private static int mapOffset(@NotNull String original, @NotNull String formatted, int offset) {
-        offset = Math.min(offset, original.length());
-        int count = 0;
-        int runStart = 0;
-        for (int i = 0; i < offset; i++) {
-            if (!Character.isWhitespace(original.charAt(i))) {
-                count++;
-                runStart = i + 1;
+    static final class FormatOffsetMapper {
+        // Diffs with more inserted and removed characters fall back to matching by position
+        private static final int MAX_DIFF = 500;
+
+        private final String formatted;
+        private final int[] originalPos;
+        private final int[] formattedPos;
+        private final int[] matches;
+
+        FormatOffsetMapper(@NotNull String original, @NotNull String formatted) {
+            this.formatted = formatted;
+            this.originalPos = nonWhitespacePositions(original);
+            this.formattedPos = nonWhitespacePositions(formatted);
+            this.matches = matchCharacters(original, formatted, originalPos, formattedPos);
+        }
+
+        int map(int offset) {
+            int count = Arrays.binarySearch(originalPos, offset);
+            boolean beforeToken = count >= 0;
+            if (!beforeToken) {
+                count = -count - 1;
+            }
+            int prev = 0;
+            for (int i = count - 1; i >= 0; i--) {
+                if (matches[i] >= 0) {
+                    prev = formattedPos[matches[i]] + 1;
+                    break;
+                }
+            }
+            int next = formatted.length();
+            for (int i = count; i < matches.length; i++) {
+                if (matches[i] >= 0) {
+                    next = formattedPos[matches[i]];
+                    break;
+                }
+            }
+            if (beforeToken) {
+                return next;
+            }
+            // Characters added by the formatter before the next token stay before the offset
+            int runStart = next;
+            while (runStart > prev && Character.isWhitespace(formatted.charAt(runStart - 1))) {
+                runStart--;
+            }
+            int gap = offset - (count == 0 ? 0 : originalPos[count - 1] + 1);
+            return runStart + Math.min(gap, next - runStart);
+        }
+
+        @NotNull
+        private static int[] nonWhitespacePositions(@NotNull String text) {
+            int[] positions = new int[text.length()];
+            int count = 0;
+            for (int i = 0; i < text.length(); i++) {
+                if (!Character.isWhitespace(text.charAt(i))) {
+                    positions[count++] = i;
+                }
+            }
+            return Arrays.copyOf(positions, count);
+        }
+
+        /**
+         * Returns the index of the matching formatted character for each original character,
+         * or -1 if it has no match. Uses the Myers diff algorithm, letter case is ignored.
+         */
+        @NotNull
+        private static int[] matchCharacters(
+            @NotNull String original,
+            @NotNull String formatted,
+            @NotNull int[] originalPos,
+            @NotNull int[] formattedPos
+        ) {
+            int n = originalPos.length;
+            int m = formattedPos.length;
+            int[] matches = new int[n];
+            Arrays.fill(matches, -1);
+            int limit = Math.min(n + m, MAX_DIFF);
+            int shift = limit + 1;
+            int[] v = new int[2 * limit + 3];
+            List<int[]> trace = new ArrayList<>();
+            for (int d = 0; d <= limit; d++) {
+                trace.add(v.clone());
+                for (int k = -d; k <= d; k += 2) {
+                    int x = k == -d || (k != d && v[k - 1 + shift] < v[k + 1 + shift])
+                        ? v[k + 1 + shift]
+                        : v[k - 1 + shift] + 1;
+                    int y = x - k;
+                    while (x < n && y < m && sameChar(original.charAt(originalPos[x]), formatted.charAt(formattedPos[y]))) {
+                        x++;
+                        y++;
+                    }
+                    v[k + shift] = x;
+                    if (x >= n && y >= m) {
+                        backtrack(trace, shift, n, m, matches);
+                        return matches;
+                    }
+                }
+            }
+            for (int i = 0; i < Math.min(n, m); i++) {
+                matches[i] = i;
+            }
+            return matches;
+        }
+
+        private static void backtrack(@NotNull List<int[]> trace, int shift, int x, int y, @NotNull int[] matches) {
+            for (int d = trace.size() - 1; d >= 0; d--) {
+                int[] v = trace.get(d);
+                int k = x - y;
+                int prevK = k == -d || (k != d && v[k - 1 + shift] < v[k + 1 + shift]) ? k + 1 : k - 1;
+                int prevX = v[prevK + shift];
+                int prevY = prevX - prevK;
+                while (x > prevX && y > prevY) {
+                    x--;
+                    y--;
+                    matches[x] = y;
+                }
+                x = prevX;
+                y = prevY;
             }
         }
-        int gap = offset - runStart;
-        boolean beforeToken = gap == whitespaceRunLength(original, runStart) && offset < original.length();
 
-        int base = offsetAfterNonWhitespace(formatted, count);
-        int run = whitespaceRunLength(formatted, base);
-        return base + (beforeToken ? run : Math.min(gap, run));
-    }
-
-    /**
-     * Returns the offset right after the given number of non-whitespace characters.
-     */
-    private static int offsetAfterNonWhitespace(@NotNull String text, int count) {
-        if (count == 0) {
-            return 0;
+        private static boolean sameChar(char a, char b) {
+            return a == b || Character.toLowerCase(a) == Character.toLowerCase(b);
         }
-        int seen = 0;
-        for (int i = 0; i < text.length(); i++) {
-            if (!Character.isWhitespace(text.charAt(i)) && ++seen == count) {
-                return i + 1;
-            }
-        }
-        return text.length();
-    }
-
-    private static int whitespaceRunLength(@NotNull String text, int offset) {
-        int i = offset;
-        while (i < text.length() && Character.isWhitespace(text.charAt(i))) {
-            i++;
-        }
-        return i - offset;
     }
 
     @Override
