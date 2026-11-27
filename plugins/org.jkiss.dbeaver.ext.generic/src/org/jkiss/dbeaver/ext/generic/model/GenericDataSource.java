@@ -508,7 +508,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                 monitor.subTask("Extract catalogs");
                 monitor.worked(1);
                 final GenericMetaObject catalogObject = getMetaObject(GenericConstants.OBJECT_CATALOG);
-                final DBSObjectFilter catalogFilters = getContainer().getObjectFilter(GenericCatalog.class, null, false);
+                final DBSObjectFilter catalogFilters = getContainer().getEffectiveObjectFilter(GenericCatalog.class, null, false);
                 final List<String> catalogNames = getCatalogsNames(monitor, metaData, catalogObject, catalogFilters);
                 if (!catalogNames.isEmpty() || catalogsFiltered) {
                     this.catalogs = new ArrayList<>();

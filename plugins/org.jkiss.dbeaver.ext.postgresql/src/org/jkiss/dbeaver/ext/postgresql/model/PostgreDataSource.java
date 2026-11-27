@@ -229,7 +229,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         @NotNull DBPConnectionConfiguration configuration) throws SQLException
     {
         // Make initial connection to read database list
-        DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
+        DBSObjectFilter catalogFilters = getContainer().getEffectiveObjectFilter(PostgreDatabase.class, null, false);
         StringBuilder catalogQuery = new StringBuilder("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE 1 = 1");
         boolean addExclusionName = false;
         String connectionDBName = PostgreUtils.getDatabaseNameFromConfiguration(getContainer().getConnectionConfiguration());

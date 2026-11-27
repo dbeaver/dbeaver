@@ -398,7 +398,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         @Nullable GenericCatalog catalog
     ) throws DBException {
         boolean showAllSchemas = SQLServerUtils.isShowAllSchemas(dataSource);
-        final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
+        final DBSObjectFilter schemaFilters = dataSource.getContainer().getEffectiveObjectFilter(GenericSchema.class, catalog, false);
 
         String sysSchema = SQLServerUtils.getSystemSchemaFQN(
             dataSource,
