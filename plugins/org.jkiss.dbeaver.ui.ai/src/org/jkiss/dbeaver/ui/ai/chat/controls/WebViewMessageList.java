@@ -68,10 +68,13 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     public static final String ATTACHMENT_OPEN_FILE_IN_EXPLORER = "openFileInExplorer";
 
     protected final Browser browser;
+    private final AIImageThumbnailBrowser thumbnailBrowser;
     private final WebCSSInitializer cssInitializer;
     private final IPropertyChangeListener themeChangeListener;
     private final AISettingsManager settingsManager;
     private final AIFunctionAllowMenu functionAllowMenu;
+    private final WebViewDndController dndController;
+    private final Map<String, Function<Object[], Object>> pendingFunctions = new LinkedHashMap<>();
     private final Map<Integer, PendingConfirmation> pendingConfirmations = new HashMap<>();
     private final AIMessageChunkBuffer messageChunkBuffer;
     private final WebViewMessageRenderer renderer;
@@ -81,6 +84,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     public WebViewMessageList(@NotNull AIChatControl chat, @NotNull Composite parent) throws IOException {
         super(parent, SWT.NONE);
         browser = new Browser(this, SWT.NONE);
+        thumbnailBrowser = new AIImageThumbnailBrowser(browser);
         cssInitializer = createCssInitializer();
         var refreshTheme = RuntimeUtils.debounce(
             () -> UIUtils.asyncExec(this::refreshTheme),
@@ -125,6 +129,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                         Map<String, Object> resultArgs = new HashMap<>();
                         resultArgs.put("messageId", message.id());
                         resultArgs.put("functionName", fc.getFunctionName());
+                        resultArgs.put("functionCallId", fc.getId().toString());
                         resultArgs.put("result", CommonUtils.notEmpty(result));
                         resultArgs.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
                         AIFunctionResult functionResult = message.message().getFunctionResult();
@@ -223,13 +228,17 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                 for (AIFunctionAllowMenu.PendingApproval approval : approvals) {
                     renderer.execute("approveFunctionConfirmation", approval.messageId(), approval.functionIndex());
                 }
-            }
+            },
+            true
         );
 
         browser.setVisible(false);
-        browser.setUrl(cssInitializer.getWebHtmlPath());
+        dndController = new WebViewDndController(this, browser, chat, this::getDataSource);
 
         browser.addProgressListener(ProgressListener.completedAdapter(e -> {
+            functionAllowMenu.registerBrowserFunction();
+            dndController.registerBrowserFunction();
+            registerPendingFunctions();
             browser.setVisible(true);
             isInitWaiting = false;
             renderer.initChat();
@@ -265,8 +274,9 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             messageChunkBuffer.clear();
             settingsManager.removeChangedListener(this);
         });
-        new WebViewDndController(this, browser, chat, this::getDataSource);
         createFunctions(chat);
+        // Navigating first lets WebView2 create the page before registering native browser functions.
+        browser.setUrl(cssInitializer.getWebHtmlPath());
     }
 
     @Override
@@ -294,6 +304,11 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         }
     }
 
+    @NotNull
+    AIImageThumbnailBrowser getThumbnailBrowser() {
+        return thumbnailBrowser;
+    }
+
     private void createFunctions(@NotNull AIChatControl chat) {
         createFunction("setClipboardContents", arguments -> {
             if (arguments.length < 1) {
@@ -308,6 +323,18 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                 throw new IllegalArgumentException("executeInEditor requires at least one argument");
             }
             AIChatUtils.executeInEditor(chat.getController(), arguments[0].toString());
+            return null;
+        });
+
+        createFunction("openImage", arguments -> {
+            if (arguments.length == 2 && arguments[1] instanceof Number number) {
+                AIChatMessage message = getMessageById(arguments[0]);
+                int index = number.intValue();
+                List<AIImageAttachment> images = message.message().getImages();
+                if (index >= 0 && index < images.size()) {
+                    UIUtils.asyncExec(() -> AIImageAttachmentViewer.open(getShell(), images.get(index)));
+                }
+            }
             return null;
         });
 
@@ -411,11 +438,15 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                     if (Files.exists(file)) {
                         ShellUtils.showInSystemExplorer(file.toFile());
                     } else {
-                        DBWorkbench.getPlatformUI().showError("File not found", NLS.bind("The file does not exist: {0}", file));
+                        DBWorkbench.getPlatformUI().showError(
+                            AIChatMessagesUI.ai_chat_file_not_found_title,
+                            NLS.bind(AIChatMessagesUI.ai_chat_file_not_found_message, file));
                     }
                 } catch (Exception e) {
                     log.error("Error opening file in explorer: " + file, e);
-                    DBWorkbench.getPlatformUI().showError("Error", NLS.bind("Failed to open file in explorer: {0}", e.getMessage()));
+                    DBWorkbench.getPlatformUI().showError(
+                        AIChatMessagesUI.ai_chat_message_role_error_label,
+                        NLS.bind(AIChatMessagesUI.ai_chat_file_explorer_error, e.getMessage()));
                 }
             });
 
@@ -508,7 +539,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         createFunction("traverseOut", arguments -> {
             boolean forward = arguments.length < 1 || CommonUtils.toBoolean(arguments[0]);
             UIUtils.asyncExec(() -> {
-                if (browser.isDisposed()) {
+                if (browser.isDisposed() || browser.getShell() != browser.getDisplay().getActiveShell()) {
                     return;
                 }
                 if (forward) {
@@ -550,6 +581,19 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     }
 
     protected void createFunction(@NotNull String name, @NotNull Function<Object[], Object> handler) {
+        if (isInitWaiting) {
+            pendingFunctions.put(name, handler);
+        } else {
+            registerFunction(name, handler);
+        }
+    }
+
+    private void registerPendingFunctions() {
+        pendingFunctions.forEach(this::registerFunction);
+        pendingFunctions.clear();
+    }
+
+    private void registerFunction(@NotNull String name, @NotNull Function<Object[], Object> handler) {
         new BrowserFunction(browser, name) {
             @Nullable
             @Override
@@ -643,6 +687,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             args.put("messageId", message.id());
             args.put("text", text);
             args.put("functionName", functionName);
+            args.put("functionCallId", fc.getId().toString());
             args.put("confirmed", true);
             args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
             args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
@@ -679,6 +724,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             args.put("agentName", agentName);
             args.put("toolName", toolName);
             args.put("functionName", fc.getFunctionName());
+            args.put("functionCallId", fc.getId().toString());
             args.put("allowText", AIChatMessagesUI.ai_chat_confirm_approve);
             args.put("declineText", AIChatMessagesUI.ai_chat_confirm_deny);
             args.put("approvedText", NLS.bind(AIChatMessagesUI.ai_chat_confirm_approved, toolName));
@@ -755,7 +801,11 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             }
         }
 
-        submission.whenComplete((ignored, error) -> chat.getChatSession().setBusy(false));
+        submission.whenComplete((ignored, error) -> UIUtils.asyncExec(() -> {
+            if (!chat.isDisposed() && chat.getActiveConversation() == conversation) {
+                chat.getChatSession().setBusy(false);
+            }
+        }));
     }
 
     @NotNull

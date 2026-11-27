@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -54,7 +55,9 @@ public class TaskHandlerCopy extends AbstractHandler {
                     }
                     DBTTaskManager taskManager = oldTask.getProject().getTaskManager();
                     if (taskManager.getTaskByName(newTaskName) != null) {
-                        UIUtils.showMessageBox(HandlerUtil.getActiveShell(event), "Duplicate task name", "Task '" + newTaskName + "' already exists", SWT.ICON_ERROR);
+                        UIUtils.showMessageBox(
+                            HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_duplicate_name_title,
+                            NLS.bind(TaskUIViewMessages.task_duplicate_name_message, newTaskName), SWT.ICON_ERROR);
                         continue;
                     }
                     try {
@@ -79,7 +82,9 @@ public class TaskHandlerCopy extends AbstractHandler {
                             });
                         }
                     } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Task copy error", "Error copying task '" + oldTask.getName() + "'", e);
+                        DBWorkbench.getPlatformUI().showError(
+                            TaskUIViewMessages.task_copy_error_title,
+                            NLS.bind(TaskUIViewMessages.task_copy_error_message, oldTask.getName()), e);
                     }
                     break;
                 }

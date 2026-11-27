@@ -128,7 +128,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
                 WHERE
                     NAME LIKE 'sqlite\\_%' ESCAPE '\\'
                 ) AS TABLES
-                LEFT OUTER JOIN pragma_table_list AS INFOS
+                LEFT OUTER JOIN main.pragma_table_list AS INFOS
                     ON INFOS.NAME = TABLES.NAME
             """;
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.model.impl.admin.locks;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 
 import java.util.*;
@@ -27,14 +29,18 @@ public abstract class LockGraphManager {
     public static final String typeWait = "wait";
     public static final String typeHold = "hold";
 
-    private Map<Object, LockGraphNode> nodes = new HashMap<>();
-    private Map<Object, LockGraph> graphIndex = new HashMap<>();
+    private volatile GraphState graphState = new GraphState(Map.of(), Map.of());
 
-    public LockGraph getGraph(DBAServerLock curLock) {
+    private record GraphState(Map<Object, LockGraphNode> nodes, Map<Object, LockGraph> graphIndex) {
+    }
 
-        LockGraphNode selection = nodes.get(curLock.getId());
+    @Nullable
+    public LockGraph getGraph(@NotNull DBAServerLock curLock) {
 
-        LockGraph graph = graphIndex.get(curLock.getId());
+        GraphState state = graphState;
+        LockGraphNode selection = state.nodes().get(curLock.getId());
+
+        LockGraph graph = state.graphIndex().get(curLock.getId());
 
         if (graph != null && selection != null) {
             graph.setSelection(selection);
@@ -44,11 +50,14 @@ public abstract class LockGraphManager {
     }
 
     @SuppressWarnings("unchecked")
-    private LockGraph createGraph(DBAServerLock root) {
+    @NotNull
+    private LockGraph createGraph(
+        @NotNull DBAServerLock root,
+        @NotNull Map<Object, LockGraphNode> nodes,
+        @NotNull Map<Object, LockGraph> graphIndex
+    ) {
         LockGraph graph = new LockGraph(root);
 
-        int maxWidth = 1;
-        int level = 1;
         LockGraphNode nodeRoot = nodes.get(root.getId());
 
         nodeRoot.setLevel(0);
@@ -65,6 +74,8 @@ public abstract class LockGraphManager {
 
         Map<Object, DBAServerLock> childs = new HashMap<>();
 
+        int maxWidth = 1;
+        int level = 1;
         while (current.size() > 0) {
             if (maxWidth < current.size()) {
                 maxWidth = current.size();
@@ -87,7 +98,9 @@ public abstract class LockGraphManager {
 
                 for (DBAServerLock c : l.waitThis()) {
 
-                    if (touched.contains(c)) continue;
+                    if (touched.contains(c)) {
+                        continue;
+                    }
 
                     touched.add(c);
 
@@ -124,13 +137,12 @@ public abstract class LockGraphManager {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void buildGraphs(Map<Object, ? extends DBAServerLock> locks) {
+    public void buildGraphs(@NotNull Map<Object, ? extends DBAServerLock> locks) {
 
         Set<DBAServerLock> roots = new HashSet<>();
 
-        this.nodes.clear();
-
-        this.graphIndex.clear();
+        Map<Object, LockGraphNode> nodes = new HashMap<>();
+        Map<Object, LockGraph> graphIndex = new HashMap<>();
 
         for (DBAServerLock l : locks.values()) {
 
@@ -148,9 +160,10 @@ public abstract class LockGraphManager {
         }
 
         for (DBAServerLock root : roots) {
-            createGraph(root);
+            createGraph(root, nodes, graphIndex);
         }
 
+        graphState = new GraphState(nodes, graphIndex);
     }
 
 }

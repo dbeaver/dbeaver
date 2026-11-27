@@ -79,18 +79,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private static final Log log = Log.getLog(MySQLDataSource.class);
     private static final Pattern VERSION_PATTERN = Pattern.compile("([0-9]+\\.[0-9]+\\.[0-9]+).+");
 
-    private static final Map<String, String> PROHIBITED_DRIVER_PROPERTIES = new HashMap<>();
-
-    static {
-        PROHIBITED_DRIVER_PROPERTIES.putAll(Map.of(
-            "autoDeserialize", "false",
-            "allowLocalInfile", "false",
-            "allowLoadLocalInfile", "false",
-            "allowUrlInLocalInfile", "false"
-        ));
-        PROHIBITED_DRIVER_PROPERTIES.put("allowLoadLocalInfileInPath", null);
-    }
-
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
     private List<MySQLEngine> engines;
     private final CatalogCache catalogCache = new CatalogCache() {
@@ -145,11 +133,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return lowerCaseTableNames;
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -196,8 +185,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return props;
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new MySQLDataSourceInfo(metaData);
     }
 
@@ -253,19 +243,24 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new MySQLExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         if (initFrom != null && !context.getDataSource().getContainer().isConnectionReadOnly()) {
-            MySQLCatalog object = ((MySQLExecutionContext)initFrom).getDefaultCatalog();
+            MySQLCatalog object = ((MySQLExecutionContext) initFrom).getDefaultCatalog();
             if (object != null) {
-                ((MySQLExecutionContext)context).setCurrentDatabase(monitor, object);
+                ((MySQLExecutionContext) context).setCurrentDatabase(monitor, object);
             }
         } else {
-            ((MySQLExecutionContext)context).refreshDefaults(monitor, true);
+            ((MySQLExecutionContext) context).refreshDefaults(monitor, true);
         }
     }
 
@@ -750,6 +745,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return super.createQueryTransformer(type);
     }
 
+    @Nullable
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
@@ -1153,29 +1149,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return readeAllCaches;
     }
 
-    @Override
-    protected void fillConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Properties connectProps) {
-        super.fillConnectionProperties(connectionInfo, connectProps);
-
-        if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-            return;
-        }
-
-        for (String prohibitedDriverProperty : PROHIBITED_DRIVER_PROPERTIES.keySet()) {
-            if (connectProps.containsKey(prohibitedDriverProperty)) {
-                log.warn("The driver settings contain a prohibited property, this property will be forcibly removed: "
-                    + prohibitedDriverProperty);
-            }
-            String propertyValue = PROHIBITED_DRIVER_PROPERTIES.get(prohibitedDriverProperty);
-            if (propertyValue == null) {
-                connectProps.remove(prohibitedDriverProperty);
-            } else {
-                log.trace("Set " + prohibitedDriverProperty + ":" + propertyValue);
-                connectProps.put(prohibitedDriverProperty, propertyValue);
-            }
-        }
-    }
-
     private boolean isPasswordExpired(@NotNull Throwable error) {
         int errorCode = isMariaDB()
             ? MySQLConstants.MARIA_ER_MUST_CHANGE_PASSWORD_LOGIN
@@ -1212,8 +1185,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         try (Connection connection = super.openConnection(monitor, null, "Change expired password")) {
             try (Statement stmt = connection.createStatement()) {
                 if (isMariaDB()) {
-                    stmt.execute("SET PASSWORD FOR %s = PASSWORD(%s)".formatted(
-                        SQLUtils.quoteString(this, userName),
+                    // Do not pass the account name here: the connection is already authenticated as this account,
+                    // while "SET PASSWORD FOR '<user>'" does not match host-limited accounts (e.g. user@host)
+                    stmt.execute("SET PASSWORD = PASSWORD(%s)".formatted(
                         SQLUtils.quoteString(this, newPassword)
                     ));
                 } else {

@@ -31,6 +31,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,11 +77,17 @@ public class OpenAIClientResponses extends OpenAiClientBase {
     }
 
     @NotNull
-    public static OpenAIClientResponses createClient(@NotNull String baseUrl, @NotNull String token) {
-        return new OpenAIClientResponses(
-            baseUrl,
-            List.of(new OpenAIRequestFilter(token))
-        );
+    public static OpenAIClientResponses createClient(@NotNull String baseUrl, @Nullable String token) {
+        return createClient(baseUrl, token, Map.of());
+    }
+
+    @NotNull
+    public static OpenAIClientResponses createClient(
+        @NotNull String baseUrl,
+        @Nullable String token,
+        @NotNull Map<String, String> customHeaders
+    ) {
+        return new OpenAIClientResponses(baseUrl, List.of(new OpenAIRequestFilter(token, customHeaders)));
     }
 
     @NotNull
@@ -116,12 +123,12 @@ public class OpenAIClientResponses extends OpenAiClientBase {
 
         HttpRequest modifiedRequest = applyFilters(request);
 
-        Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener);
+        OpenAiAPIStreamConsumer stringConsumer = new OpenAiAPIStreamConsumer(listener, completionRequest.reasoningSource);
         client.sendAsync(
             modifiedRequest,
             stringConsumer,
-            listener::error,
-            listener::completeBlock,
+            stringConsumer::error,
+            stringConsumer::complete,
             (failureReason) -> {
                 if (OpenAIConstants.LEGACY_FALLBACK.equals(failureReason)) {
                     if (backupClient == null) {

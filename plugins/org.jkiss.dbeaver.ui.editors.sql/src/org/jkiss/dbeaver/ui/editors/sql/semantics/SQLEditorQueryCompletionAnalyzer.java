@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.completion.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -75,5 +76,14 @@ public class SQLEditorQueryCompletionAnalyzer extends SQLQueryCompletionAnalyzer
             filterString,
             proposalScore
         );
+    }
+
+    @NotNull
+    @Override
+    protected DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
+        return switch (item.getKind()) {
+            case SCRIPT_VARIABLE, LOCAL_VARIABLE -> UIIcon.SQL_VARIABLE2;
+            default -> super.prepareProposalImage(item);
+        };
     }
 }

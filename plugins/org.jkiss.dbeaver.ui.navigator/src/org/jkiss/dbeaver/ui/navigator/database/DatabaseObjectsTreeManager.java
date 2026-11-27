@@ -19,11 +19,15 @@ package org.jkiss.dbeaver.ui.navigator.database;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.widgets.TreeItem;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNodeSelection;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -32,6 +36,7 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.Predicate;
 
 public class DatabaseObjectsTreeManager implements ICheckStateListener {
 
@@ -43,6 +48,7 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
     private final IdentityHashMap<Object, Boolean> checkedElements = new IdentityHashMap<>();
     private final ViewerFilter[] filters;
     private boolean autoCheckNested = true;
+    private DBNDatabaseNodeSelection lazySelection;
 
     private static class CollectInfo {
         DBNNode rootElement;
@@ -67,6 +73,50 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
         this.autoCheckNested = autoCheckNested;
     }
 
+    public void enableLazyCheck(@NotNull Predicate<DBNDatabaseNode> filter) {
+        lazySelection = new DBNDatabaseNodeSelection(filter);
+        for (Object element : viewer.getCheckedElements()) {
+            if (element instanceof DBNDatabaseNode node && !viewer.getGrayed(node)) {
+                lazySelection.setChecked(node, true);
+            }
+        }
+        viewer.setCheckStateProvider(new ICheckStateProvider() {
+            @Override
+            public boolean isChecked(@NotNull Object element) {
+                return element instanceof DBNDatabaseNode node && lazySelection.isChecked(node);
+            }
+
+            @Override
+            public boolean isGrayed(@NotNull Object element) {
+                return element instanceof DBNDatabaseNode node && lazySelection.isGrayed(node);
+            }
+        });
+        updateLazyCheckStates(viewer.getTree().getItems());
+    }
+
+    public void setChecked(@NotNull DBNNode node, boolean checked) {
+        if (lazySelection != null && node instanceof DBNDatabaseNode databaseNode) {
+            lazySelection.setChecked(databaseNode, checked);
+            return;
+        }
+        viewer.setChecked(node, checked);
+    }
+
+    @NotNull
+    public Object[] getCheckedElements() {
+        return lazySelection == null ? viewer.getCheckedElements() : lazySelection.getSelectedNodes().toArray();
+    }
+
+    private void updateLazyCheckStates(@NotNull TreeItem[] items) {
+        for (TreeItem item : items) {
+            if (item.getData() instanceof DBNDatabaseNode node) {
+                item.setChecked(lazySelection.isChecked(node));
+                item.setGrayed(lazySelection.isGrayed(node));
+            }
+            updateLazyCheckStates(item.getItems());
+        }
+    }
+
     @Override
     public void checkStateChanged(final CheckStateChangedEvent event) {
         updateElementsCheck(
@@ -77,6 +127,17 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
     }
 
     public void updateElementsCheck(Object[] elements, boolean checked, boolean change, boolean forceNestedCheck) {
+        if (lazySelection != null) {
+            if (change) {
+                for (Object element : elements) {
+                    if (element instanceof DBNDatabaseNode node) {
+                        lazySelection.setChecked(node, checked);
+                    }
+                }
+            }
+            updateLazyCheckStates(viewer.getTree().getItems());
+            return;
+        }
         checkedElements.clear();
         if (!autoCheckNested && !forceNestedCheck) {
             for (Object element : viewer.getCheckedElements()) {
@@ -237,6 +298,10 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
     }
 
     public void updateCheckStates() {
+        if (lazySelection != null) {
+            updateLazyCheckStates(viewer.getTree().getItems());
+            return;
+        }
         if (!autoCheckNested) {
             return;
         }

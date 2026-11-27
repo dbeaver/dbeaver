@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITypedRegion;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -30,6 +33,13 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLPartitionScanner;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -56,6 +66,10 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
     private boolean verbose;
     private final String query;
     private final DBCQueryPlannerConfiguration configuration;
+    @Nullable
+    private SQLDialect dialect;
+    @Nullable
+    private DBPPreferenceStore preferenceStore;
     private String planText;
     private List<DBCPlanNode> rootNodes;
 
@@ -96,8 +110,17 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
     @NotNull
     @Override
     public String getPlanQueryString() {
+        return getPlanQueryString(
+            dialect != null ? dialect : new PostgreDialect(),
+            preferenceStore != null ? preferenceStore : DBWorkbench.getPlatform().getPreferenceStore());
+    }
+
+    @NotNull
+    String getPlanQueryString(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore) {
+        String executableQuery = trimTerminalDelimiter(query, dialect, preferenceStore);
+        String explainPrefix;
         if (oldQuery) {
-            return "EXPLAIN " + (verbose ? "VERBOSE " : "") + query;
+            explainPrefix = "EXPLAIN " + (verbose ? "VERBOSE " : "");
         } else {
             Map<String, Object> parameters = this.configuration.getParameters();
             StringBuilder explainStat = new StringBuilder(64);
@@ -123,9 +146,146 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                     explainStat.append(",").append(key);
                 }
             }
-            explainStat.append(") ").append(query);
-            return explainStat.toString();
+            explainPrefix = explainStat.append(") ").toString();
         }
+        int prefixPosition = findExplainInsertPosition(executableQuery, dialect, preferenceStore);
+        return executableQuery.substring(0, prefixPosition)
+            + explainPrefix
+            + executableQuery.substring(prefixPosition);
+    }
+
+    private static int findExplainInsertPosition(
+        @NotNull String query,
+        @NotNull SQLDialect dialect,
+        @NotNull DBPPreferenceStore preferenceStore
+    ) {
+        SQLParserContext parserContext = SQLScriptParser.prepareSqlParserContext(
+            null, dialect, preferenceStore, query);
+        ITypedRegion[] partitions = SQLPartitionScanner.getDocumentRegions(parserContext.getDocument());
+        if (partitions == null) {
+            return 0;
+        }
+        int insertPosition = 0;
+        for (ITypedRegion partition : partitions) {
+            String contentType = partition.getType();
+            int partitionEnd = partition.getOffset() + partition.getLength();
+            if (SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(contentType)
+                || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(contentType)) {
+                insertPosition = partitionEnd;
+                continue;
+            }
+            if (!IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
+                insertPosition = partition.getOffset();
+                break;
+            }
+            insertPosition = partition.getOffset();
+            while (insertPosition < partitionEnd && Character.isWhitespace(query.charAt(insertPosition))) {
+                insertPosition++;
+            }
+            if (insertPosition < partitionEnd) {
+                break;
+            }
+        }
+        return insertPosition;
+    }
+
+    @NotNull
+    private static String trimTerminalDelimiter(
+        @NotNull String query,
+        @NotNull SQLDialect dialect,
+        @NotNull DBPPreferenceStore preferenceStore
+    ) {
+        SQLParserContext parserContext = SQLScriptParser.prepareSqlParserContext(
+            null, dialect, preferenceStore, query);
+        ITypedRegion[] partitions = SQLPartitionScanner.getDocumentRegions(parserContext.getDocument());
+        if (partitions == null) {
+            return query;
+        }
+
+        String[] statementDelimiters = parserContext.getSyntaxManager().getStatementDelimiters();
+        StringBuilder trimmedQuery = new StringBuilder(query);
+        boolean commentAfterDelimiter = false;
+        boolean trimmed = false;
+        for (int i = partitions.length - 1; i >= 0; i--) {
+            ITypedRegion partition = partitions[i];
+            String contentType = partition.getType();
+            if (SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(contentType)
+                || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(contentType)) {
+                commentAfterDelimiter = true;
+                continue;
+            }
+            if (!IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
+                break;
+            }
+
+            int codeEnd = partition.getOffset() + partition.getLength();
+            while (codeEnd > partition.getOffset() && Character.isWhitespace(query.charAt(codeEnd - 1))) {
+                codeEnd--;
+            }
+            if (codeEnd == partition.getOffset()) {
+                continue;
+            }
+            if (!commentAfterDelimiter) {
+                break;
+            }
+
+            int firstDelimiterStart = -1;
+            int delimiterEnd = codeEnd;
+            while (true) {
+                int delimiterStart = findTerminalDelimiter(
+                    query, delimiterEnd, partition.getOffset(), statementDelimiters, dialect);
+                if (delimiterStart < 0) {
+                    break;
+                }
+                firstDelimiterStart = delimiterStart;
+                delimiterEnd = delimiterStart;
+                while (delimiterEnd > partition.getOffset() && Character.isWhitespace(query.charAt(delimiterEnd - 1))) {
+                    delimiterEnd--;
+                }
+            }
+            if (firstDelimiterStart < 0) {
+                break;
+            }
+            trimmedQuery.delete(firstDelimiterStart, codeEnd);
+            trimmed = true;
+
+            int prefixStart = firstDelimiterStart;
+            while (prefixStart > partition.getOffset() && Character.isWhitespace(query.charAt(prefixStart - 1))) {
+                prefixStart--;
+            }
+            if (prefixStart > partition.getOffset()) {
+                break;
+            }
+        }
+        return trimmed ? trimmedQuery.toString() : query;
+    }
+
+    private static int findTerminalDelimiter(
+        @NotNull String query,
+        int end,
+        int minStart,
+        @NotNull String[] delimiters,
+        @NotNull SQLDialect dialect
+    ) {
+        int firstStart = -1;
+        for (String delimiter : delimiters) {
+            int delimiterStart = end - delimiter.length();
+            if (delimiter.isEmpty()
+                || delimiterStart < minStart
+                || !query.regionMatches(true, delimiterStart, delimiter, 0, delimiter.length())) {
+                continue;
+            }
+            if (Character.isAlphabetic(delimiter.charAt(0)) && delimiterStart > 0) {
+                char prevChar = query.charAt(delimiterStart - 1);
+                if (dialect.isWordPart(prevChar) || prevChar == '$') {
+                    continue;
+                }
+            }
+            if (firstStart < 0 || delimiterStart < firstStart) {
+                firstStart = delimiterStart;
+            }
+        }
+        return firstStart;
     }
 
     @NotNull
@@ -150,6 +310,9 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
     public void explain(DBCSession session)
         throws DBCException
     {
+        DBPDataSource dataSource = session.getDataSource();
+        this.dialect = dataSource.getSQLDialect();
+        this.preferenceStore = dataSource.getContainer().getPreferenceStore();
         JDBCSession connection = (JDBCSession) session;
         boolean oldAutoCommit = false;
         try {

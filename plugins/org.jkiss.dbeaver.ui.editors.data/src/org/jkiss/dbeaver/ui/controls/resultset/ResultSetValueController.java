@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IDataController;
 import org.jkiss.dbeaver.ui.data.IRowController;
@@ -242,10 +244,12 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         boolean updated;
         try {
             updated = controller.updateCellValue(
-                cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(), value, updatePresentation);
+                cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(),
+                cellLocation.getValuePath(), value, updatePresentation);
         } catch (Exception e) {
             UIUtils.asyncExec(() ->
-                DBWorkbench.getPlatformUI().showError("Value update", "Error updating value: " + e.getMessage(), e));
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.dialog_value_view_dialog_error_updating_title,
+                    NLS.bind(ResultSetMessages.error_update_value_message, e.getMessage()), e));
             return;
         }
         if (updated && updatePresentation) {
@@ -334,7 +338,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
                     }*/
                 }
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Data type resolve", "Error resolving component data type", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_resolve_type_title, ResultSetMessages.error_resolve_type_message, e);
             }
         }
 

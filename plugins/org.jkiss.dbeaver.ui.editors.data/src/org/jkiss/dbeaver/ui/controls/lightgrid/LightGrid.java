@@ -198,7 +198,7 @@ public abstract class LightGrid extends Canvas {
     private boolean cellRowSelectedOnLastMouseDown;
     private boolean cellColumnSelectedOnLastMouseDown;
 
-    private boolean headerColumnDragStarted, rowHeaderDragStarted;
+    private boolean headerColumnDragStarted, rowHeaderDragStarted, cellSelectionDragStarted;
 
     private GridColumn shiftSelectionAnchorColumn;
 
@@ -523,13 +523,23 @@ public abstract class LightGrid extends Canvas {
         }
 
         int childrenCount = rowState.getMaxLength();
-        Object[] children = getContentProvider().getChildren(parentRow);
-        if (children != null && children.length != childrenCount) {
+        IGridContentProvider provider = getContentProvider();
+        Object[] children = provider.getChildren(parentRow);
+        if (provider.isArrayRow(parentRow)) {
+            // Children come from one record, but only expanded columns determine the visual row count.
+            childrenCount = 0;
+            for (Map.Entry<IGridColumn, CellExpandState> entry : rowState.columns.entrySet()) {
+                if (entry.getValue().expanded) {
+                    childrenCount = Math.max(childrenCount, provider.getCollectionSize(entry.getKey(), parentRow));
+                }
+            }
+        } else if (children != null && children.length != childrenCount) {
             log.warn("Child elements doesn't match calculated count: " + children.length + "<>" + childrenCount + ". Skip the tail.");
             childrenCount = children.length;
         }
 
-        for (int i = 0; i < childrenCount; i++) {
+        int suppliedCount = children == null ? childrenCount : Math.min(childrenCount, children.length);
+        for (int i = 0; i < suppliedCount; i++) {
             // In multi-column grid children elements are null (e.g. array elements)
             // In this case use parent row element
             Object element = children == null ? parentRow.getElement() : children[i];
@@ -538,6 +548,10 @@ public abstract class LightGrid extends Canvas {
             result.add(nestedRow);
 
             position = collectNestedRows(result, nestedRow, position, level + 1);
+        }
+        for (int i = suppliedCount; i < childrenCount; i++) {
+            // No child value exists in the current record; each column resolves this position from its own record.
+            result.add(new GridRowNested(parentRow, position++, i, level, null));
         }
         return position;
     }
@@ -2446,9 +2460,12 @@ public abstract class LightGrid extends Canvas {
             gc.drawLine(rowHeaderWidth + pinnedColumnsWidth, 0, rowHeaderWidth + pinnedColumnsWidth, y);
         }
 
-        if (!columns.isEmpty() && gridRows.length > 0) {
+        if (gridRows.length > 0) {
             int lastRow = row >= gridRows.length ? gridRows.length - 1 : row;
-            getContentProvider().validateDataPresence(columns.getLast(), gridRows[lastRow]);
+            getContentProvider().validateDataPresence(columns.isEmpty() ? null : columns.getLast(), gridRows[lastRow]);
+        } else if (!columns.isEmpty()) {
+            // Record mode can have records as columns without any attribute rows.
+            getContentProvider().validateDataPresence(columns.getLast(), null);
         }
     }
 
@@ -2676,7 +2693,7 @@ public abstract class LightGrid extends Canvas {
         int stateMask,
         boolean dragging,
         boolean reverseDuplicateSelections,
-        EventSource eventSource
+        @NotNull EventSource eventSource
     ) {
         if (RuntimeUtils.isMacOS() && (stateMask & SWT.CTRL) == SWT.CTRL) {
             /*
@@ -2716,6 +2733,9 @@ public abstract class LightGrid extends Canvas {
             }
 
         } else if (shift) {
+            if (newCells.isEmpty()) {
+                return null;
+            }
 
             GridPos newCell = newCells.getFirst(); //shift selection should only occur with one cell, ignoring others
             oldSelection = new ArrayList<>(selectedCells);
@@ -3081,18 +3101,35 @@ public abstract class LightGrid extends Canvas {
                     if (dragDetect(e)) {
                         // Drag and drop started
                         headerColumnDragStarted = true;
+                        rowHeaderDragStarted = false;
+                        cellSelectionDragStarted = false;
                         return;
                     }
                 }
             } else if (hoveringOnRowHeader && hoveringRow != null) {
                 if (e.button == 1 && selectedRows.containsKey(hoveringRow) && dragDetect(e)) {
                     rowHeaderDragStarted = true;
+                    headerColumnDragStarted = false;
+                    cellSelectionDragStarted = false;
+                    return;
+                }
+            } else if (row >= 0 && e.button == 1) {
+                GridColumn cellColumn = getColumn(point);
+                if (cellColumn != null
+                    && !getContentProvider().isVoidCell(cellColumn, gridRows[row])
+                    && selectedCells.contains(new GridPos(cellColumn.getIndex(), row))
+                    && dragDetect(e)
+                ) {
+                    cellSelectionDragStarted = true;
+                    headerColumnDragStarted = false;
+                    rowHeaderDragStarted = false;
                     return;
                 }
             }
         }
         headerColumnDragStarted = false;
         rowHeaderDragStarted = false;
+        cellSelectionDragStarted = false;
 
         GridColumn col = null;
         if (row >= 0) {
@@ -3735,7 +3772,10 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    private void onKeyDown(Event e) {
+    private void onKeyDown(@NotNull Event e) {
+        if (getItemCount() == 0) {
+            return;
+        }
         if (focusColumn == null) {
             if (columns.isEmpty())
                 return;
@@ -4731,7 +4771,8 @@ public abstract class LightGrid extends Canvas {
                 if (lastDragEndTime > 0 && System.currentTimeMillis() - lastDragEndTime < 100) {
                     event.doit = false;
                 } else {
-                    Rectangle columnBounds;
+                    Rectangle columnBounds = null;
+                    // Cell drags populate TextTransfer only (payload built in dragSetData).
                     if (headerColumnDragStarted && hoveringColumn != null) {
                         draggingColumn = hoveringColumn;
                         columnBounds = hoveringColumn.getBounds();
@@ -4739,6 +4780,16 @@ public abstract class LightGrid extends Canvas {
                         draggingRow = hoveringRow;
                         int rowFromTop = hoveringRow - getTopIndex();
                         columnBounds = new Rectangle(0, rowFromTop * getItemHeight(), getRowHeaderWidth(), getItemHeight());
+                    } else if (cellSelectionDragStarted) {
+                        List<GridCell> selected = getCellSelection();
+                        if (selected.isEmpty() || !getContentProvider().canStartCellSelectionDrag(selected)) {
+                            event.doit = false;
+                            cellSelectionDragStarted = false;
+                            return;
+                        }
+                        // No drag image: a single-cell snapshot is misleading for multi-cell selections
+                        event.image = null;
+                        return;
                     } else {
                         event.doit = false;
                         return;
@@ -4748,11 +4799,15 @@ public abstract class LightGrid extends Canvas {
                         dragImage = null;
                     }
                     GC gc = new GC(LightGrid.this);
-                    dragImage = new Image(Display.getCurrent(), columnBounds.width, columnBounds.height);
-                    gc.copyArea(
+                    int imageWidth = Math.max(columnBounds.width, 1);
+                    int imageHeight = Math.max(columnBounds.height, 1);
+                    dragImage = new Image(Display.getCurrent(), imageWidth, imageHeight);
+                    if (columnBounds.width > 0 && columnBounds.height > 0) {
+                        gc.copyArea(
                             dragImage,
                             columnBounds.x,
                             columnBounds.y);
+                    }
                     event.image = dragImage;
                     gc.dispose();
                 }
@@ -4800,11 +4855,11 @@ public abstract class LightGrid extends Canvas {
                         if (columns.isEmpty()) {
                             columns = LightGrid.this.columns;
                         }
-                        Set<Integer> rows = selectedRows.keySet();
+                        Set<Integer> rows = new TreeSet<>(selectedRows.keySet());
                         if (rows.isEmpty()) {
-                            rows = Collections.singleton(draggingRow);
+                            rows.add(draggingRow);
                         }
-
+                       
                         StringBuilder text = new StringBuilder();
                         for (Integer row : rows) {
                             if (!text.isEmpty()) text.append("\n");
@@ -4819,12 +4874,27 @@ public abstract class LightGrid extends Canvas {
                         }
                         event.data = text.toString();
                     }
+                } else if (cellSelectionDragStarted) {
+                    if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                        String text = getContentProvider().getCellSelectionDragText(getCellSelection());
+                        if (CommonUtils.isEmpty(text)) {
+                            event.doit = false;
+                        } else {
+                            event.data = text;
+                        }
+                    } else {
+                        event.doit = false;
+                    }
                 }
             }
+            
             @Override
             public void dragFinished(DragSourceEvent event) {
                 draggingColumn = null;
                 draggingRow = null;
+                headerColumnDragStarted = false;
+                rowHeaderDragStarted = false;
+                cellSelectionDragStarted = false;
                 if (dragImage != null) {
                     UIUtils.dispose(dragImage);
                     dragImage = null;

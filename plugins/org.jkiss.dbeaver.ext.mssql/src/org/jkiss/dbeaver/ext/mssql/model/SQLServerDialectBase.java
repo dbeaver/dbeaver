@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
+import org.jkiss.dbeaver.model.sql.SQLScriptVariableScope;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLVariableRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
@@ -76,7 +78,7 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
         SQLServerConstants.TYPE_IMAGE,
     };
 
-    private static final String[] SQLSERVER_FUNCTIONS_DATETIME = new String[]{
+    private static final String[] SQLSERVER_FUNCTIONS_DATETIME = new String[] {
         "CURRENT_TIMEZONE",
         "DATEPART",
         "DATEADD",
@@ -118,6 +120,18 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
     @Override
     public String[] getScriptDelimiters() {
         return new String[]{";", "GO"};
+    }
+
+    @NotNull
+    @Override
+    public String[] getBatchDelimiters() {
+        return new String[] {"GO"};
+    }
+
+    @NotNull
+    @Override
+    public SQLScriptVariableScope getScriptVariableScope() {
+        return SQLScriptVariableScope.BATCH;
     }
 
     @Override
@@ -271,8 +285,8 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
 
     @Override
     public void generateStoredProcedureCall(
-        StringBuilder sql, 
-        DBSProcedure proc, 
+        StringBuilder sql,
+        DBSProcedure proc,
         Collection<? extends DBSProcedureParameter> parameters,
         boolean castParams
     ) {
@@ -349,7 +363,7 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
     public String[] getSingleLineComments() {
         if (!isSqlServer) {
             // Sybase supports double dash and double slash as single line comment indicators (and "%" - but not recommend to use it in documentation)
-            return new String[]{SQLConstants.SL_COMMENT, "//"};
+            return new String[] {SQLConstants.SL_COMMENT, "//"};
         } else {
             return super.getSingleLineComments();
         }
@@ -358,6 +372,9 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
     @NotNull
     @Override
     public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull RulePosition position) {
+        if (position == RulePosition.INITIAL) {
+            return new TPRule[] {new TransactSQLBatchDelimiterRule()};
+        }
         if (position == RulePosition.FINAL) {
             return new TPRule[] { new SQLVariableRule(this) };
         }
@@ -490,10 +507,21 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
         return "CREATE SCHEMA " + schemaName;
     }
 
+    @NotNull
     @Override
-    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
+    }
+
+    protected static class DialectFeatures extends SQLDialectFeatures {
+        private static final DialectFeatures INSTANCE = new DialectFeatures();
+
+        @NotNull
+        @Override
+        public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+            return EnumSet.of(
+                ProjectionAliasVisibilityScope.ORDER_BY
+            );
+        }
     }
 }

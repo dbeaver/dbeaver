@@ -27,7 +27,9 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach.PostgreServerCockroachDB;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
+import org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLClientKeyManager;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
 import org.jkiss.dbeaver.model.*;
@@ -59,7 +61,6 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -88,6 +89,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private boolean supportsReltypeColumn = true;
     private PostgrePrivilegeType[] supportedPrivilegeTypes;
     private volatile boolean isConnectionRefreshing = false;
+    private PostgreSSLClientKeyManager sslClientKeyManager;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -123,11 +125,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         settingCache = new SettingCache();
     }
 
+    @Nullable
     @Override
-    public Object getDataSourceFeature(String featureId) {
+    public Object getDataSourceFeature(@NotNull String featureId) {
         return switch (featureId) {
             case DBPDataSource.FEATURE_MAX_STRING_LENGTH -> 10485760;
             case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS -> true;
+            // pgjdbc may query column metadata while the result cursor is active;
+            // CockroachDB rejects that second portal, so describe columns before opening the cursor.
+            case DBPDataSource.FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA ->
+                getServerType() instanceof PostgreServerCockroachDB;
+            // A fetch-size-limited pgjdbc cursor can leave a portal active between pages;
+            // CockroachDB rejects another portal while the previous one remains active.
+            // Successful SQL pagination fetches each bounded page without a fetching cursor,
+            // preventing portal conflicts between batched data-transfer queries.
+            case DBPDataSource.FEATURE_JDBC_ATTEMPT_LIMIT_TRANSFORMER_FOR_PAGINATED_TABLE_READ ->
+                getServerType() instanceof PostgreServerCockroachDB;
             default -> super.getDataSourceFeature(featureId);
         };
     }
@@ -269,43 +282,90 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return new PostgreDatabase(monitor, this, name, owner, templateName, tablespace, encoding);
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
-        final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(PostgreConstants.HANDLER_SSL);
+        final DBWHandlerConfiguration sslConfig = connectionInfo.getHandler(PostgreConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
             try {
                 boolean useProxy = sslConfig.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY);
                 if (useProxy) {
-                    initProxySSL(props, sslConfig);
+                    this.initProxySSL(props, sslConfig);
                 } else {
-                    initServerSSL(props, sslConfig);
+                    this.initServerSSL(props, sslConfig);
                 }
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
         } else {
-            getServerType().initDefaultSSLConfig(connectionInfo, props);
-        }
-        PostgreServerType serverType = getType();
-        if (serverType.turnOffPreparedStatements()
-            && !CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
-            // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
-            props.put("prepareThreshold", "0");
+            this.getServerType().initDefaultSSLConfig(connectionInfo, props);
         }
 
-        if (getContainer().isConnectionReadOnly()) {
+        PostgreServerType serverType = this.getType();
+        if (serverType.turnOffPreparedStatements()) {
+            boolean usePreparedStatements = CommonUtils.toBoolean(
+                this.getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS)
+            );
+            if (!usePreparedStatements) {
+                // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
+                props.put("prepareThreshold", "0");
+            }
+        }
+
+        if (this.getContainer().isConnectionReadOnly()) {
             props.put("readOnly", "true");
             props.put("readOnlyMode", "always");
         }
 
         return props;
+    }
+
+    @Override
+    protected void fixupConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull String connectionUrl,
+        @NotNull Properties connectionProperties
+    ) throws DBException {
+        super.fixupConnectionProperties(monitor, connectionInfo, connectionUrl, connectionProperties);
+        DBWHandlerConfiguration sslConfig = connectionInfo.getHandler(PostgreConstants.HANDLER_SSL);
+        if (sslConfig != null && sslConfig.isEnabled() && !sslConfig.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY)) {
+            try {
+                this.getSSLClientKeyManager().prepareConnectionProperties(monitor, connectionProperties, connectionUrl);
+            } catch (Exception e) {
+                throw new DBCException("Error configuring SSL certificates", e);
+            }
+        }
+    }
+
+    @NotNull
+    synchronized PostgreSSLClientKeyManager getSSLClientKeyManager() {
+        // JDBCDataSource may open a connection before PostgreDataSource fields are initialized.
+        if (this.sslClientKeyManager == null) {
+            this.sslClientKeyManager = new PostgreSSLClientKeyManager(this::trackTempFile);
+        }
+        return this.sslClientKeyManager;
+    }
+
+    @Override
+    public void shutdown(@NotNull DBRProgressMonitor monitor) {
+        try {
+            super.shutdown(monitor);
+        } finally {
+            synchronized (this) {
+                if (this.sslClientKeyManager != null) {
+                    this.sslClientKeyManager.clear();
+                    this.sslClientKeyManager = null;
+                }
+            }
+        }
     }
 
     private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws DBException {
@@ -368,7 +428,20 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (!CommonUtils.isEmpty(factoryProp)) {
             props.put("sslfactory", factoryProp);
         }
+        initSSLNegotiation(props, sslConfig);
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
+    }
+
+    /**
+     * Direct SSL negotiation (PostgreSQL 17+) starts the TLS handshake immediately, with ALPN "postgresql"
+     * and SNI set to the host name. This lets standard TLS proxies (e.g. Caddy) route by SNI.
+     * Empty value keeps the driver default ("postgres").
+     */
+    static void initSSLNegotiation(@NotNull Map<String, String> props, @NotNull DBWHandlerConfiguration sslConfig) {
+        final String negotiationProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_NEGOTIATION);
+        if (!CommonUtils.isEmpty(negotiationProp)) {
+            props.put(PostgreConstants.DRIVER_PROP_SSL_NEGOTIATION, negotiationProp);
+        }
     }
 
     private boolean isMultiUserOrDistributed() {
@@ -380,13 +453,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         //initServerSSL(props, sslConfig);
     }
 
+    @NotNull
     @Override
-    protected PostgreExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected PostgreExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new PostgreExecutionContext((PostgreDatabase) instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          @Nullable JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         PostgreExecutionContext postgreContext = (PostgreExecutionContext) context;
         PostgreSchema activeSchema = null;
         if (initFrom != null) {
@@ -591,21 +668,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 pgConnection = super.openConnection(monitor, context, conConfig, purpose);
             }
         } catch (DBCException e) {
-            final DBWHandlerConfiguration handler = conConfig.getHandler(PostgreConstants.HANDLER_SSL);
-            if (handler != null && isSSLKeyReadError(e)) {
-                try {
-                    final Path dst = DBWorkbench.getPlatform().getTempFolder(monitor, "ssl").resolve(container.getId() + ".pk8");
-                    if (SSLHandlerTrustStoreImpl.loadDerFromPem(handler, dst)) {
-                        // Unfortunately, we can't delete the temp file here.
-                        // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
-                        // It will still be deleted during shutdown.
-
-                        return this.openConnection(monitor, context, conConfig, purpose);
-                    }
-                } catch (IOException ex) {
-                    log.error("Error converting SSL key", ex);
-                    throw e;
-                }
+            DBPConnectionConfiguration retryConfig = this.getSSLClientKeyManager().prepareRetryConfiguration(monitor, conConfig, e);
+            if (retryConfig != null) {
+                return this.openConnection(monitor, context, retryConfig, purpose);
             }
 
             throw e;
@@ -626,14 +691,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
 
         return pgConnection;
-    }
-
-    private static boolean isSSLKeyReadError(@NotNull Throwable error) {
-        StackTraceElement[] rootStack = CommonUtils.getRootCause(error).getStackTrace();
-        if (rootStack.length > 0 && "sun.security.util.DerValue".equals(rootStack[0].getClassName())) {
-            return true;
-        }
-        return CommonUtils.getAllExceptionMessages(error).contains("Could not read SSL key");
     }
 
     @Override
@@ -701,8 +758,19 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @NotNull
     @Override
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
+        return PostgreConstants.TYPE_RECORD.equals(typeName) ? DBPDataKind.STRUCT : super.resolveDataKind(typeName, valueType);
+    }
+
+    @NotNull
+    @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return getDefaultInstance().getDefaultDataTypeName(dataKind);
+    }
+
+    @Override
+    public boolean hasDefaultInstance() {
+        return databaseCache != null && !databaseCache.getCachedObjects().isEmpty();
     }
 
     @NotNull
@@ -950,9 +1018,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return super.discoverErrorType(error);
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-    {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new PostgreDataSourceInfo(this, metaData);
     }
 

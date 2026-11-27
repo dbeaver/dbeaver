@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.impl.jdbc.internal.JDBCModelMessages;
 
 import java.sql.Connection;
 
@@ -26,11 +26,11 @@ import java.sql.Connection;
  */
 public enum JDBCTransactionIsolation implements DBPTransactionIsolation 
 {
-    NONE(Connection.TRANSACTION_NONE, ModelMessages.model_jdbc_None),
-    READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED, ModelMessages.model_jdbc_read_uncommitted),
-    READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED, ModelMessages.model_jdbc_read_committed),
-    REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ, ModelMessages.model_jdbc_repeatable_read),
-    SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE, ModelMessages.model_jdbc_Serializable),
+    NONE(Connection.TRANSACTION_NONE, JDBCModelMessages.model_jdbc_None),
+    READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED, JDBCModelMessages.model_jdbc_read_uncommitted),
+    READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED, JDBCModelMessages.model_jdbc_read_committed),
+    REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ, JDBCModelMessages.model_jdbc_repeatable_read),
+    SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE, JDBCModelMessages.model_jdbc_Serializable),
     ;
 
     private final int code;

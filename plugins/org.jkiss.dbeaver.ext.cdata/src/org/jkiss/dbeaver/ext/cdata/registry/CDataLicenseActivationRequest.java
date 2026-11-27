@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.cdata.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public record CDataLicenseActivationRequest(
     @NotNull String name,
@@ -28,6 +29,10 @@ public record CDataLicenseActivationRequest(
     public CDataLicenseActivationRequest {
         if (name.isBlank() || email.isBlank()) {
             throw new IllegalArgumentException("Name and email are required");
+        }
+        email = email.strip();
+        if (!GeneralUtils.isValidEmail(email)) {
+            throw new IllegalArgumentException("Email is invalid");
         }
         if (type == CDataLicenseType.PURCHASED && (productKey == null || productKey.isBlank())) {
             throw new IllegalArgumentException("Product key is required for purchased activation");

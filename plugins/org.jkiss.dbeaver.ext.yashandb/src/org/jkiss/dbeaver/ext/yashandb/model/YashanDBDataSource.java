@@ -24,9 +24,11 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleExecutionContext;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative;
 import org.jkiss.dbeaver.ext.yashandb.model.session.YashanDBServerSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -73,6 +75,12 @@ public class YashanDBDataSource extends OracleDataSource {
     @Override
     public boolean isAtLeastV9() {
         return false;
+    }
+
+    @Override
+    protected boolean isUserPasswordAuthentication(@NotNull DBPConnectionConfiguration connectionInfo) {
+        return super.isUserPasswordAuthentication(connectionInfo)
+            || OracleAuthModelDatabaseNative.ID.equals(connectionInfo.getAuthModelId());
     }
 
     @Override
@@ -138,6 +146,8 @@ public class YashanDBDataSource extends OracleDataSource {
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new YashanDBServerSessionManager(this));
+        } else if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new YashanDBChangeUserPasswordManager(this));
         } else if (adapter == DBCQueryPlanner.class) {
             // YashanDB not support
             return null;

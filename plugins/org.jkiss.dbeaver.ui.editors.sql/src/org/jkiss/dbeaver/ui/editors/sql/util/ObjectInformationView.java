@@ -174,6 +174,10 @@ public class ObjectInformationView {
     }
 
     private void createTreeControl(@NotNull DBSTable input) {
+        DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(input);
+        if (node == null) {
+            return;
+        }
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.horizontalSpan = 0;
         gridData.verticalSpan = 0;
@@ -181,7 +185,6 @@ public class ObjectInformationView {
             .getActivePage()
             .getActivePart()
             .getSite());
-        DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(input);
         itemListControl = new ItemListControl(tableComposite, SWT.NONE, subSite, node, null) {
             @NotNull
             @Override
@@ -235,7 +238,13 @@ public class ObjectInformationView {
                         }
                         tableComposite.layout(true, true);
                         UIUtils.asyncExec(() -> {
+                            if (tableComposite.isDisposed()) {
+                                return;
+                            }
                             Shell shell = tableComposite.getShell();
+                            if (shell.isDisposed()) {
+                                return;
+                            }
                             Point sz = shell.getMinimumSize();
                             int extraHeight = 0;
                             if (itemListControl != null && !itemListControl.isDisposed()
@@ -247,7 +256,7 @@ public class ObjectInformationView {
                                 Math.min(
                                     sz.y + UIUtils.getFontHeight(BaseThemeSettings.instance.baseFontBold) * columnNodeList.size()
                                         + extraHeight, 600));
-                            tableComposite.getShell().layout(true, true);
+                            shell.layout(true, true);
                         });
                     }
                 });

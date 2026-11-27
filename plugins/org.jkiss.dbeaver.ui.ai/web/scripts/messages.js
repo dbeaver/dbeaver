@@ -10,6 +10,33 @@ function createContent(args) {
     }
 
     holder.appendChild(body);
+    if (Array.isArray(args.images) && args.images.length > 0) {
+        const images = document.createElement('div');
+        images.className = 'message-images';
+        args.images.forEach((image, index) => {
+            const link = document.createElement('a');
+            link.className = 'message-image';
+            link.href = '#';
+            link.title = image.name;
+            link.setAttribute('role', 'button');
+            link.tabIndex = -1;
+            if (image.src) {
+                link.appendChild(createImagePreview(image.src));
+            } else {
+                link.classList.add('message-image-failed');
+            }
+            const name = document.createElement('span');
+            name.className = 'message-image-name';
+            name.textContent = image.name;
+            link.appendChild(name);
+            link.addEventListener('click', event => {
+                event.preventDefault();
+                openImage(args.id, index);
+            });
+            images.appendChild(link);
+        });
+        holder.appendChild(images);
+    }
 
     if (args.role == 'assistant' && typeof args.meta === 'object') {
         const meta = document.createElement('p');
@@ -23,6 +50,77 @@ function createContent(args) {
     }
 
     return holder;
+}
+
+let staticPreviewQueue = Promise.resolve();
+
+function createImagePreview(source) {
+    const preview = document.createElement('img');
+    preview.alt = '';
+    preview.loading = 'lazy';
+    preview.decoding = 'async';
+    preview.draggable = false;
+    // formats with animation need the original image
+    const isStatic = /\.(png|jpeg)$/.test(source);
+    if (isStatic) {
+        // a painted image stays decoded at full size
+        preview.style.visibility = 'hidden';
+    }
+    preview.addEventListener('load', () => {
+        preview.parentElement?.classList.add('message-image-loaded');
+        if (isStatic) {
+            staticPreviewQueue = staticPreviewQueue.then(() => replaceWithCanvas(preview))
+                .catch(() => preview.style.visibility = 'visible');
+        }
+    }, { once: true });
+    preview.addEventListener('error', () => {
+        preview.parentElement?.classList.add('message-image-failed');
+        preview.remove();
+    }, { once: true });
+    preview.src = source;
+    return preview;
+}
+
+function replaceWithCanvas(preview) {
+    preview.replaceWith(drawScaledImage(preview, 128 * devicePixelRatio));
+    preview.src = '';
+    // the next image is decoded after this one is released
+    return new Promise(resolve => setTimeout(resolve));
+}
+
+function drawScaledImage(image, size) {
+    const scale = Math.min(1, size / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas;
+}
+
+function loadImageThumbnail(args) {
+    const image = new Image();
+    let completed = false;
+    const complete = source => {
+        if (completed) {
+            return;
+        }
+        completed = true;
+        clearTimeout(timeout);
+        image.onload = null;
+        image.onerror = null;
+        image.src = '';
+        imageThumbnailLoaded(args.id, source);
+    };
+    const timeout = setTimeout(() => complete(''), args.timeout);
+    image.onerror = () => complete('');
+    image.onload = () => {
+        try {
+            complete(drawScaledImage(image, args.size).toDataURL('image/png'));
+        } catch (error) {
+            complete('');
+        }
+    };
+    image.src = args.src;
 }
 
 function addMessage(args) {

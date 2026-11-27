@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.view.catalogpanel.DashboardCatalogPanel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -194,7 +195,9 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         if (dataSourceContainer == null) {
             return null;
         }
-        return DBUtils.getDefaultContext(dataSourceContainer.getDataSource().getDefaultInstance(), true);
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        return dataSource == null || !dataSource.hasDefaultInstance()
+            ? null : DBUtils.getDefaultContext(dataSource.getDefaultInstance(), true);
     }
 
     @NotNull
@@ -246,7 +249,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         try {
             configuration.saveConfiguration();
         } catch (IOException e) {
-            DBWorkbench.getPlatformUI().showError("Save error", null, e);
+            DBWorkbench.getPlatformUI().showError(UIDashboardMessages.dashboard_save_error, null, e);
         }
     }
 

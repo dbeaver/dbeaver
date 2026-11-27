@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
@@ -36,8 +37,8 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -53,8 +54,8 @@ public class DataImportHandler extends DataTransferHandler {
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_IMPORT)) {
             UIUtils.showMessageBox(
                 HandlerUtil.getActiveShell(event),
-                UIMessages.dialog_policy_data_import_title,
-                UIMessages.dialog_policy_data_import_msg,
+                DTUIMessages.dialog_policy_data_import_title,
+                DTUIMessages.dialog_policy_data_import_msg,
                 SWT.ICON_WARNING
             );
             return null;
@@ -90,7 +91,9 @@ public class DataImportHandler extends DataTransferHandler {
                 if (isObjectContainerSupportsImport(objectContainer)) {
                     return new DatabaseTransferConsumer(objectContainer);
                 } else {
-                    DBWorkbench.getPlatformUI().showError("Wrong container", objectContainer.getName() + " doesn't support direct data import");
+                    DBWorkbench.getPlatformUI().showError(
+                        DTUIMessages.data_import_container_error_title,
+                        NLS.bind(DTUIMessages.data_import_container_error_message, objectContainer.getName()));
                 }
             }
             return null;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryTriggerStatementModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsCteSubqueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsLocalTableModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
@@ -36,7 +38,7 @@ public class SourceResolutionResult {
     public final DBSEntity tableOrNull;
     @Nullable
     public final SQLQuerySymbol aliasOrNull;
-    public final boolean isCteSubquery;
+    public final boolean isNamedRowsSource;
 
     public SourceResolutionResult(
         @NotNull SQLQueryRowsSourceModel source,
@@ -48,7 +50,8 @@ public class SourceResolutionResult {
         this.referenceName = referenceName;
         this.tableOrNull = tableOrNull;
         this.aliasOrNull = aliasOrNull;
-        this.isCteSubquery = source instanceof SQLQueryRowsCteSubqueryModel;
+        this.isNamedRowsSource = source instanceof SQLQueryRowsCteSubqueryModel || source instanceof SQLQueryRowsLocalTableModel ||
+            source instanceof SQLQueryTriggerStatementModel.AffectedSubsetModel;
     }
 
 }

@@ -26,8 +26,6 @@ import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -53,7 +51,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -82,13 +79,6 @@ class ProfileModelComposite extends Composite {
 
         profileSelector = new SelectorControl(AIChatMessagesUI.ai_chat_profile_label, this::showProfiles);
         modelSelector = new SelectorControl(AIChatMessagesUI.ai_chat_model_label, () -> showModels(false));
-
-        if (RuntimeUtils.isWindows()) {
-            Font selectorFont = UIUtils.modifyFontSize(getFont(), -1);
-            profileSelector.setSelectorFont(selectorFont);
-            modelSelector.setSelectorFont(selectorFont);
-            addDisposeListener(event -> selectorFont.dispose());
-        }
 
         setLayout(new SelectorLayout());
         setTabList(new Control[]{profileSelector, modelSelector});
@@ -180,7 +170,10 @@ class ProfileModelComposite extends Composite {
         String profileTip = AIChatMessagesUI.ai_chat_profile_label + ": " + profileText;
         modelText = AIChatMessagesUI.ai_chat_model_not_configured;
         boolean modelSelectionSupported = false;
-        if (profile != null) {
+        if (profile != null && !profile.isAvailable()) {
+            profileTip += "\n" + AIUIMessages.ai_engines_page_provider_unavailable;
+            modelText = AIChatMessagesUI.ai_chat_model_unavailable;
+        } else if (profile != null) {
             try {
                 profileTip += "\n" + profile.getEngineDescriptor().getLabel();
                 AIEngineProperties configuration = profile.getConfiguration();
@@ -237,17 +230,24 @@ class ProfileModelComposite extends Composite {
         Arrays.sort(profiles, Comparator.comparing(AIConfigurationProfile::getProfileName, String.CASE_INSENSITIVE_ORDER));
         for (AIConfigurationProfile profile : profiles) {
             MenuItem item = new MenuItem(profileMenu, SWT.RADIO);
-            item.setText(profile.getProfileName().replace("&", "&&"));
+            String label = profile.getProfileName();
+            if (!profile.isAvailable()) {
+                label += " - " + AIUIMessages.ai_engines_page_provider_unavailable;
+            }
+            item.setText(label.replace("&", "&&"));
+            item.setEnabled(profile.isAvailable());
             item.setSelection(profile == getProfile());
             try {
-                item.setImage(DBeaverIcons.getImage(profile.getEngineDescriptor().getIcon()));
+                if (profile.isAvailable()) {
+                    item.setImage(DBeaverIcons.getImage(profile.getEngineDescriptor().getIcon()));
+                }
             } catch (DBException e) {
                 log.debug(e);
             }
             item.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
                 if (item.getSelection() && !chat.isBusy()) {
                     cancelModelLoading();
-                    chat.setConversationProfile(chat.getActiveConversation(), profile);
+                    chat.selectConversationProfile(profile);
                 }
             }));
         }
@@ -449,10 +449,6 @@ class ProfileModelComposite extends Composite {
             });
         }
 
-        void setSelectorFont(@NotNull Font font) {
-            textLabel.setFont(font);
-        }
-
         void setSelectorEnabled(boolean enabled) {
             setEnabled(enabled);
             textLabel.setEnabled(enabled);
@@ -470,20 +466,15 @@ class ProfileModelComposite extends Composite {
         }
 
         void fitText(@NotNull String text) {
-            GC gc = new GC(textLabel);
-            try {
-                int available = textLabel.getSize().x;
-                if (gc.textExtent(text).x <= available) {
-                    return;
-                }
-                int end = text.length();
-                while (end > 0 && gc.textExtent(text.substring(0, end) + "...").x > available) {
-                    end = text.offsetByCodePoints(end, -1);
-                }
-                setSelectorText(text.substring(0, end) + "...");
-            } finally {
-                gc.dispose();
+            int available = textLabel.getSize().x;
+            if (text.isEmpty() || textLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x <= available) {
+                return;
             }
+            int end = text.length();
+            do {
+                end = text.offsetByCodePoints(end, -1);
+                setSelectorText(text.substring(0, end) + "...");
+            } while (end > 0 && textLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x > available);
         }
     }
 

@@ -42,6 +42,7 @@
          <attribute name="description" type="string">
             <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
          </attribute>
+         <attribute name="documentationPath" type="string"/>
          <attribute name="hint" type="string">
             <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
          </attribute>

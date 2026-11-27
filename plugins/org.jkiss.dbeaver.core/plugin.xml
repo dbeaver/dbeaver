@@ -5,6 +5,7 @@
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="Workbench handlers" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.clearHistoryHandler" name="Clear history handlers" schema="schema/org.jkiss.dbeaver.clearHistoryHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.toolBarConfiguration" name="Toolbar configurations" schema="schema/org.jkiss.dbeaver.toolBarConfiguration.exsd" />
+    <extension-point id="org.jkiss.dbeaver.commandFeature" name="Command features" schema="schema/org.jkiss.dbeaver.commandFeature.exsd"/>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
@@ -634,6 +635,9 @@
             <command commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            <command commandId="org.jkiss.dbeaver.core.sql.script.execute">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <command commandId="org.jkiss.dbeaver.core.show.in.explorer">
                 <visibleWhen checkEnabled="true"/>
             </command>
@@ -886,6 +890,7 @@
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
                     <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
                     <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
@@ -900,7 +905,10 @@
               class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
               name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name">
             <enabledWhen>
-                <reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/>
+                <or>
+                    <reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
+                </or>
             </enabledWhen>
         </page>
     </extension>
@@ -1039,6 +1047,7 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.toolbar" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.toolbar.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.accessibility" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.accessibility.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.general.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.user.interface" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.user.interface.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.dataformat.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.qm.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.main.meta" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.main.meta.label"/>
@@ -1094,6 +1103,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.service">
+        <service name="org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit"
+                 class="org.jkiss.dbeaver.ui.services.UIServiceConnectionInitImpl"/>
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceAuth" class="org.jkiss.dbeaver.ui.services.UIServiceAuthImpl"/>
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceSQL" class="org.jkiss.dbeaver.ui.editors.sql.UIServiceSQLImpl"/>
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceConnections" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceConnectionsImpl"/>
@@ -1167,14 +1178,14 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.notifications">
-        <notification id="commit" name="Transaction commit"/>
-        <notification id="disconnect.idle" name="Disconnect from a database after long idle period"/>
-        <notification id="rollback" name="Transaction rollback"/>
-        <notification id="rollback.idle" name="Transaction rollback after long idle period"/>
-        <notification id="reconnect.success" name="Datasource invalidation success"/>
-        <notification id="reconnect.failure" name="Datasource invalidation failure"/>
-        <notification id="agent.notify" name="Long-time operations" description="This is a notification for long-time operations.&#10;It will be shown for all operations that have exceeded the specified timeout." soundEnabled="true"/>
-        <notification id="perspective.reset" name="Perspective Reset"/>
+        <notification id="commit" name="%notification.commit.name"/>
+        <notification id="disconnect.idle" name="%notification.disconnect_idle.name"/>
+        <notification id="rollback" name="%notification.rollback.name"/>
+        <notification id="rollback.idle" name="%notification.rollback_idle.name"/>
+        <notification id="reconnect.success" name="%notification.reconnect_success.name"/>
+        <notification id="reconnect.failure" name="%notification.reconnect_failure.name"/>
+        <notification id="agent.notify" name="%notification.agent_notify.name" description="%notification.agent_notify.description" soundEnabled="true"/>
+        <notification id="perspective.reset" name="%notification.perspective_reset.name"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.clearHistoryHandler">
@@ -1187,6 +1198,7 @@
 
     <extension id="org.jkiss.dbeaver.core.fragment" point="org.eclipse.e4.workbench.model">
         <fragment apply="always" uri="fragment.e4xmi"/>
+        <processor class="org.jkiss.dbeaver.ui.controls.StatusBarModelProcessor" beforefragment="false"/>
     </extension>
     <extension point="org.jkiss.dbeaver.workbenchHandler">
         <workbenchWindowInitializer class="org.jkiss.dbeaver.DBeaverCoreWorkbenchInitializer" order="2"/>

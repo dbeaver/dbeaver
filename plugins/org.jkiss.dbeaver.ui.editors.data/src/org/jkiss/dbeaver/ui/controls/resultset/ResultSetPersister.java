@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -100,6 +101,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
             @NotNull DBRProgressMonitor monitor,
             @NotNull Map<String, Object> options
         ) {
+            hasZeroRowChanges = false;
             model.setUpdateInProgress(this);
             UIUtils.asyncExec(viewer::fireResultSetChange);
             try {
@@ -126,6 +128,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
     private final ResultSetViewer viewer;
     @NotNull
     private final DBDAttributeBinding[] columns;
+    private boolean hasZeroRowChanges;
 
     ResultSetPersister(@NotNull ResultSetViewer viewer) {
         super(viewer.getModel(), viewer.getExecutionContext());
@@ -329,7 +332,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
             if (change.getValue() instanceof DBDAttributeBinding ab) {
                 attrRefs.add(ab);
             }
-            if (!hasComplexUpdates && isComplexNestedAttribute(change.getKey())) {
+            if (!hasComplexUpdates && isComplexNestedAttribute(row, change.getKey())) {
                 hasComplexUpdates = true;
             }
         }
@@ -338,6 +341,13 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
             for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
                 if (change.getValue() instanceof DBDAttributeBinding ab && attrRefs.contains(ab)) {
                     changes.put(ab, row.getChange(ab));
+                }
+            }
+            // Keep independent top-level changes alongside whole-value updates.
+            for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
+                DBDAttributeBinding attribute = change.getKey();
+                if (attribute.getParentObject() == null && !attrRefs.contains(attribute)) {
+                    changes.put(attribute, change.getValue());
                 }
             }
         } else {
@@ -356,14 +366,18 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
         return changes;
     }
 
-    // Returns true only if our attribute has parent of type array
-    private static boolean isComplexNestedAttribute(@NotNull DBDAttributeBinding attr) {
+    // Array elements and composites that cannot update members are persisted as complete values.
+    private boolean isComplexNestedAttribute(@NotNull ResultSetRow row, @NotNull DBDAttributeBinding attr) {
         for (DBDAttributeBinding parent = attr.getParentObject(); parent != null; parent = parent.getParentObject()) {
             if (parent.getDataKind() == DBPDataKind.ARRAY) {
                 return true;
             }
         }
-        return false;
+        if (attr.getParentObject() == null) {
+            return false;
+        }
+        Object rootValue = model.getCellValue(attr.getTopParent(), row);
+        return rootValue instanceof DBDComposite composite && composite.requiresWholeValueUpdate();
     }
 
     public void rejectChanges() {
@@ -379,7 +393,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                     if (!Objects.equals(changedValue.getValue(), curValue)) {
                         DBUtils.releaseValue(curValue);
                         try {
-                            model.updateCellValue(changedValue.getKey(), row, null, changedValue.getValue(), false);
+                            model.updateCellValue(changedValue.getKey(), row, null, null, changedValue.getValue(), false);
                         } catch (DBException e) {
                             log.error(e);
                         }
@@ -474,6 +488,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
 
     @Override
     protected void notifyContainer(@NotNull DBCStatistics statistics) {
+        hasZeroRowChanges |= statistics.getRowsUpdated() == 0;
         if (viewer.getContainer() instanceof IResultSetContainerExt rsc) {
             rsc.handleExecuteResult(statistics);
         }
@@ -569,7 +584,9 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                 //releaseStatements();
                 viewer.redrawData(false, rowsChanged);
                 viewer.updateEditControls();
-                if (error == null) {
+                if (error == null && hasZeroRowChanges) {
+                    viewer.setStatus(ResultSetMessages.controls_resultset_viewer_status_save_zero_rows, DBPMessageType.WARNING);
+                } else if (error == null) {
                     viewer.setStatus(
                         NLS.bind(
                             ResultSetMessages.controls_resultset_viewer_status_inserted_,
@@ -579,8 +596,16 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                         ));
                 } else {
                     DBWorkbench.getPlatformUI().showError(
-                        "Data error", "Error synchronizing data with database", error);
+                        ResultSetMessages.error_data_title, ResultSetMessages.error_synchronize_data_message, error);
                     viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
+                }
+                if (hasZeroRowChanges && error == null && !viewer.getControl().isDisposed()) {
+                    // Execution succeeded and may have caused side effects even when no rows were affected.
+                    ConfirmationDialog.confirmAction(
+                        viewer.getControl().getShell(),
+                        ResultSetPreferences.CONFIRM_RS_SAVE_ZERO_ROWS,
+                        ConfirmationDialog.WARNING
+                    );
                 }
             }
             viewer.fireResultSetChange();
@@ -588,7 +613,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
     }
 
     private void showError(@NotNull Throwable error) {
-        DBWorkbench.getPlatformUI().showError("Data error", "Error generating script", error);
+        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_data_title, ResultSetMessages.error_generate_script_message, error);
     }
 
     @Nullable

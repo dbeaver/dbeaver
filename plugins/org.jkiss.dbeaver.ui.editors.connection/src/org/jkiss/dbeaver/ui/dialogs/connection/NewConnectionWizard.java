@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
@@ -55,6 +56,7 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageConnector pageConnector;
     private final Map<DBPDriver, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
+    private final Set<DBPDriver> generalSettingsEdited = new HashSet<>();
     private DataSourceDescriptor dataSourceNew;
 
     /** A default constructor used by Eclipse's "New" command */
@@ -115,7 +117,7 @@ public class NewConnectionWizard extends ConnectionWizard
         }
         DBPDataSourceType type = getPageDataSource().getSelectedDataSourceType();
         DBPDriver selectedDriver = pageConnector.getDataSourceType() == type ? pageConnector.getSelectedDriver() : null;
-        if (selectedDriver != null) {
+        if (selectedDriver != null && pageDataSource.isDriverVisible(selectedDriver)) {
             return selectedDriver;
         }
         List<? extends DBPDriver> drivers = getAvailableDrivers(type);
@@ -144,12 +146,55 @@ public class NewConnectionWizard extends ConnectionWizard
         return this.settingsPages.get(selectedDriver);
     }
 
+    void openGeneralSettingsDialog() {
+        DataSourceDescriptor dataSource = getActiveDataSource();
+        ConnectionPageSettings settings = getPageSettings();
+        if (settings != null) {
+            settings.saveSettings(dataSource);
+        }
+        DataSourceDescriptor dialogDataSource = dataSource.getRegistry().createDataSource(dataSource);
+        ConnectionPageGeneral generalPage = new ConnectionPageGeneral(this, dialogDataSource);
+        try {
+            generalPage.setDataSourceFolder(pageGeneral.getDataSourceFolder());
+            if (new EditWizardPageDialog(this, generalPage, dialogDataSource).open() == IDialogConstants.OK_ID) {
+                copyGeneralSettings(dialogDataSource, dataSource);
+                generalSettingsEdited.add(dataSource.getDriver());
+                pageGeneral.setDataSourceFolder(dataSource.getFolder());
+                String editedName = generalPage.getEditedConnectionName();
+                if (editedName != null) {
+                    setConnectionNameOverride(editedName);
+                }
+                if (settings != null) {
+                    settings.refreshConnectionName();
+                }
+            }
+        } finally {
+            generalPage.dispose();
+            dialogDataSource.dispose();
+        }
+    }
+
+    private static void copyGeneralSettings(@NotNull DataSourceDescriptor source, @NotNull DataSourceDescriptor target) {
+        if (source != target) {
+            target.copyFrom(source);
+            target.setConnectionInfo(new DBPConnectionConfiguration(source.getConnectionConfiguration()));
+            target.setFolder(source.getFolder());
+            target.setModifyPermissions(source.getModifyPermission());
+            // Test copies already inherit preferences and may have additional runtime overrides.
+            if (!target.isTemporary()) {
+                target.getPreferenceStore().setProperties(source.getPreferenceStore().getProperties());
+            }
+        }
+    }
+
     /**
      * Adding the page to the wizard.
      */
     @Override
     public void addPages()
     {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        registry.refreshProvidedDrivers();
         /*if (initialDriver == null) */{
             // We need drivers page always as it contains some settings
             pageDataSource = new ConnectionPageDataSource(this);
@@ -162,7 +207,7 @@ public class NewConnectionWizard extends ConnectionWizard
         addPage(pageConnector);
 
         Map<DataSourceConfiguratorDescriptor, ConnectionPageSettings> configuratorPages = new HashMap<>();
-        for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
+        for (DBPDataSourceProviderDescriptor provider : registry.getEnabledDataSourceProviders()) {
             availableProvides.add(provider);
             for (DBPDriver driver : provider.getEnabledDrivers()) {
                 DataSourceConfiguratorDescriptor configurator = DataSourceConfiguratorRegistry.getInstance()
@@ -274,12 +319,12 @@ public class NewConnectionWizard extends ConnectionWizard
     }
 
     @NotNull
-    private static List<? extends DBPDriver> getAvailableDrivers(@Nullable DBPDataSourceType type) {
+    private List<? extends DBPDriver> getAvailableDrivers(@Nullable DBPDataSourceType type) {
         if (type == null) {
             return List.of();
         }
         return type.getEnabledDrivers().stream()
-            .filter(driver -> !DBWorkbench.isDistributed() || driver.getDefaultDriverLoader().isDriverInstalled())
+            .filter(pageDataSource::isDriverVisible)
             .toList();
     }
 
@@ -308,7 +353,8 @@ public class NewConnectionWizard extends ConnectionWizard
             try {
                 dataSourceRegistry.addDataSource(dataSourceNew);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Create failed", "Error adding new connections", e);
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_create_error_title,
+                    UIConnectionMessages.dialog_connection_create_error, e);
                 return PersistResult.ERROR;
             }
 
@@ -320,7 +366,8 @@ public class NewConnectionWizard extends ConnectionWizard
             try {
                 dataSourceRegistry.checkForErrors();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Persist failed", "Error persisting connection", e);
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_persist_error_title,
+                    UIConnectionMessages.dialog_connection_persist_error, e);
                 return PersistResult.ERROR;
             }
         }
@@ -335,7 +382,13 @@ public class NewConnectionWizard extends ConnectionWizard
      */
     @Override
     public boolean performFinish() {
-        return persistDataSource() != PersistResult.ERROR;
+        if (persistDataSource() == PersistResult.ERROR) {
+            return false;
+        }
+        if (dataSourceNew != null) {
+            firePropertyChangeEvent(PROP_CONNECTION_SAVED, null, dataSourceNew);
+        }
+        return true;
     }
 
     @Override
@@ -350,11 +403,19 @@ public class NewConnectionWizard extends ConnectionWizard
         if (driver.getDriverStub() != null) {
             return;
         }
+        // Accepted details must also reach a descriptor already persisted by a connection test.
+        // Copy before saving the controls so current connection and authentication edits take precedence.
+        if (generalSettingsEdited.contains(driver)) {
+            copyGeneralSettings(getActiveDataSource(), dataSource);
+        }
         ConnectionPageSettings pageSettings = getPageSettings(driver);
         if (pageSettings != null) {
             pageSettings.saveSettings(dataSource);
         }
-        pageGeneral.saveSettings(dataSource);
+        if (!generalSettingsEdited.contains(driver)) {
+            pageGeneral.saveSettings(dataSource);
+        }
+        applyConnectionName(dataSource);
         //pageNetwork.saveSettings(dataSource);
     }
 

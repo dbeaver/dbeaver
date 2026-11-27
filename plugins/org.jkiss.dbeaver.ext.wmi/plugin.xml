@@ -57,7 +57,7 @@
                 <driver
                     id="wmi"
                     label="WMI"
-                    description="WMI Native driver"
+                    description="%driver.wmi.description"
                     class="org.jkiss.wmi.service.WMIServiceNative"
                     customDriverLoader="true"
                     categories="embedded">

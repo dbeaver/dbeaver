@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,49 @@ final class CDataLicenseValidator {
 
     @NotNull
     static CDataDriverLicense validate(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull CDataResolvedDriver resolvedDriver
+    ) throws DBException {
+        try {
+            CDataProcessExecutor.ProcessResult result = CDataProcessExecutor.execute(
+                monitor,
+                List.of(
+                    GeneralUtils.findJavaExecutable(),
+                    "-jar",
+                    resolvedDriver.jarPath().toString(),
+                    "--check-license"
+                ),
+                resolvedDriver.jarPath().getParent(),
+                "CData license validation",
+                List.of()
+            );
+            CDataDriverLicense parsed = CDataLicenseParser.parseLicenseCheck(result.output(), LocalDate.now());
+            if (parsed.getStatus().isUnknown()) {
+                log.debug("CData license check returned no status; falling back to driver information");
+                return validateLegacy(monitor, resolvedDriver);
+            }
+            if (result.exitCode() != 0) {
+                log.warn("CData license validation failed with exit code " + result.exitCode());
+                if (parsed.getStatus().isValid()) {
+                    return unavailable();
+                }
+            }
+            if (parsed.getStatus() == CDataLicenseStatus.INVALID_KEY && !Files.isRegularFile(resolvedDriver.licensePath())) {
+                return new CDataDriverLicense(CDataLicenseStatus.NOT_INSTALLED, "", null);
+            }
+            if (!parsed.getStatus().isValid()) {
+                log.warn("CData reports the license of " + resolvedDriver.jarPath().getFileName() +
+                    " as " + parsed.getStatus());
+            }
+            return parsed;
+        } catch (IOException | RuntimeException e) {
+            log.warn("Unable to check the CData license", e);
+            return unavailable();
+        }
+    }
+
+    @NotNull
+    private static CDataDriverLicense validateLegacy(
         @NotNull DBRProgressMonitor monitor,
         @NotNull CDataResolvedDriver resolvedDriver
     ) throws DBException {
@@ -113,7 +157,7 @@ final class CDataLicenseValidator {
 
     // the external probe's calling class is not registered with CData, so purchased licenses may appear as "No License"
     @NotNull
-    static CDataDriverLicense keepInstalledLicense(
+    private static CDataDriverLicense keepInstalledLicense(
         @NotNull CDataDriverLicense parsed,
         @NotNull CDataResolvedDriver resolvedDriver
     ) {

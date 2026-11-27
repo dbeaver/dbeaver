@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ public class ModelSQLMessages extends NLS {
     public static String model_sql_semantic_symbolClass_SCHEMA;
     public static String model_sql_semantic_symbolClass_TABLE;
     public static String model_sql_semantic_symbolClass_OBJECT;
+    public static String model_sql_semantic_symbolClass_TYPE;
     public static String model_sql_semantic_symbolClass_FUNCTION;
     public static String model_sql_semantic_symbolClass_TABLE_ALIAS;
     public static String model_sql_semantic_symbolClass_COLUMN;

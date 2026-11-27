@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,37 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
+import org.jkiss.dbeaver.model.sql.SQLScriptVariableScope;
 
 
 /**
  * H2 dialect
  */
 public class H2SQLDialect extends GenericSQLDialect {
+
+    @NotNull
+    @Override
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
+    }
+
+    private static final class DialectFeatures extends SQLDialectFeatures {
+        private static final DialectFeatures INSTANCE = new DialectFeatures();
+
+        /** @see <a href="https://h2database.com/html/grammar.html#array_value_constructor_by_query">H2 array value constructor by query</a> */
+        @NotNull
+        @Override
+        public ArraySubquerySemantics getArraySubquerySemantics() {
+            return ArraySubquerySemantics.SQL_STANDARD_SINGLE_COLUMN;
+        }
+    }
+
+    @NotNull
+    @Override
+    public SQLScriptVariableScope getScriptVariableScope() {
+        return SQLScriptVariableScope.SESSION;
+    }
 
     public H2SQLDialect() {
         super("H2", "h2");

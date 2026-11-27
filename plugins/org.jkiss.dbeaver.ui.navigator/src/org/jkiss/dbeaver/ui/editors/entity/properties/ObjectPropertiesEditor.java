@@ -41,6 +41,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
@@ -83,7 +87,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         ISearchContextProvider,
         INavigatorModelView,
         IEntityEditorContext,
-        IDatabasePostSaveProcessor
+        IDatabasePostSaveProcessor,
+        DBPEventListener
 {
     private static final Log log = Log.getLog(ObjectPropertiesEditor.class);
 
@@ -100,6 +105,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Nullable
     private TabbedFolderPageForm propertiesPanel;
     private Composite mainComposite;
+    @Nullable
+    private DBPDataSourceRegistry dataSourceRegistry;
 
     public ObjectPropertiesEditor()
     {
@@ -138,6 +145,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         pageControl.createProgressPanel();
 
         curFolderId = getEditorInput().getDefaultFolderId();
+
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer != null) {
+            dataSourceRegistry = dataSourceContainer.getRegistry();
+            dataSourceRegistry.addDataSourceListener(this);
+        }
     }
 
     private void createPropertyBrowser(Composite container)
@@ -339,6 +352,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Override
     public void dispose()
     {
+        if (dataSourceRegistry != null) {
+            dataSourceRegistry.removeDataSourceListener(this);
+            dataSourceRegistry = null;
+        }
+
         // Remove contributors
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
         for (IEditorActionBarContributor contributor : pageContributors.values()) {
@@ -502,7 +520,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
-
         Runnable afterRefresh = () -> {
             if (folderComposite != null && folderComposite.getFolders() != null) {
                 for (TabbedFolderInfo folder : folderComposite.getFolders()) {
@@ -526,6 +543,31 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
 
         return RefreshResult.REFRESHED;
+    }
+
+    @Override
+    public void handleDataSourceEvent(@NotNull DBPEvent event) {
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer != null &&
+            event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
+            event.getObject() == dataSourceContainer
+        ) {
+            UIUtils.asyncExec(this::refreshConnectionTypeColors);
+        }
+    }
+
+    @Nullable
+    private DBPDataSourceContainer getDataSourceContainer() {
+        DBNDatabaseNode navigatorNode = getEditorInput().getNavigatorNode();
+        return navigatorNode == null ? null : navigatorNode.getDataSourceContainer();
+    }
+
+    private void refreshConnectionTypeColors() {
+        if (pageControl == null || pageControl.isDisposed()) {
+            return;
+        }
+        CSSUtils.applyStyles(pageControl);
+        CSSUtils.refreshWidgetDefaultBackgrounds(pageControl);
     }
 
     @Override
@@ -577,13 +619,15 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             return;
         }
         final DBSObject object = node.getObject();
+        List<EntityEditorDescriptor> editors = EntityEditorsRegistry.getInstance().getEntityEditors(object, this, null);
+        Set<String> mappedFolderTypes = new HashSet<>();
 
         if (!node.getMeta().isStandaloneNode()) {
             // Collect tabs from navigator tree model
             DBRRunnableWithProgress tabsCollector = monitor ->
-                collectNavigatorTabs(monitor, part, node, tabList);
+                collectNavigatorTabs(monitor, part, node, tabList, editors, mappedFolderTypes);
             try {
-                if (node.needsInitialization()) {
+                if (node.needsInitialization() && !hasOnlyMandatoryItemTabs(node)) {
                     UIUtils.runInProgressService(tabsCollector);
                 } else {
                     tabsCollector.run(new VoidProgressMonitor());
@@ -611,32 +655,74 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
 
         // Query for entity editors
-        List<EntityEditorDescriptor> editors = EntityEditorsRegistry.getInstance().getEntityEditors(object, this, null);
+        addEditorFolderTabs(part, tabList, editors, mappedFolderTypes);
+    }
+
+    private static void addEditorFolderTabs(
+        @NotNull IDatabaseEditor part,
+        @NotNull List<TabbedFolderInfo> tabList,
+        @NotNull List<EntityEditorDescriptor> editors,
+        @NotNull Set<String> mappedFolderTypes
+    ) {
         if (!CommonUtils.isEmpty(editors)) {
             for (EntityEditorDescriptor descriptor : editors) {
-                if (descriptor.getType() == EntityEditorDescriptor.Type.folder) {
+                if (descriptor.getType() == EntityEditorDescriptor.Type.folder
+                    && (descriptor.getFolderType() == null || mappedFolderTypes.add(descriptor.getFolderType()))) {
                     tabList.add(new TabbedFolderInfo(
                         descriptor.getId(),
                         descriptor.getName(),
                         descriptor.getIcon(),
                         descriptor.getDescription(),
                         descriptor.isEmbeddable(),
-                        new TabbedFolderPageEditor(this, descriptor)));
+                        new TabbedFolderPageEditor(part, descriptor)));
                 }
             }
         }
     }
 
-    private static void collectNavigatorTabs(DBRProgressMonitor monitor, IDatabaseEditor part, DBNNode node, List<TabbedFolderInfo> tabList)
-    {
+    private static boolean hasOnlyMandatoryItemTabs(@NotNull DBNDatabaseNode node) {
+        List<DBXTreeNode> children = node.getMeta().getChildren(node);
+        return !CommonUtils.isEmpty(children)
+            && children.stream().allMatch(child -> child instanceof DBXTreeItem item && !item.isOptional());
+    }
+
+    @NotNull
+    private static ITabbedFolder createNavigatorFolderPage(
+        @NotNull IDatabaseEditor part,
+        @NotNull DBNNode node,
+        @NotNull DBXTreeFolder folder,
+        @NotNull List<EntityEditorDescriptor> editors,
+        @NotNull Set<String> mappedFolderTypes
+    ) {
+        for (EntityEditorDescriptor descriptor : editors) {
+            if (descriptor.getType() == EntityEditorDescriptor.Type.folder
+                && descriptor.getFolderType() != null && descriptor.getFolderType().equals(folder.getType())) {
+                mappedFolderTypes.add(descriptor.getFolderType());
+                return new TabbedFolderPageEditor(part, descriptor);
+            }
+        }
+        return new TabbedFolderPageNode(part, node, node instanceof DBNDatabaseFolder ? null : folder);
+    }
+
+    private static void collectNavigatorTabs(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IDatabaseEditor part,
+        @NotNull DBNNode node,
+        @NotNull List<TabbedFolderInfo> tabList,
+        @NotNull List<EntityEditorDescriptor> editors,
+        @NotNull Set<String> mappedFolderTypes
+    ) {
         monitor.beginTask("Collect tabs", 1);
         // Add all nested folders as tabs
         if (node instanceof DBNDataSource ds && !ds.getDataSourceContainer().isConnected()) {
             // Do not add children tabs
         } else if (node != null) {
             try {
-                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, node, false);
-                if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
+                // mandatory item tabs are described by metadata; leave their data loading to the page's background job
+                DBNNode[] children = node instanceof DBNDatabaseNode databaseNode && hasOnlyMandatoryItemTabs(databaseNode)
+                    ? null : DBNUtils.getNodeChildrenFiltered(monitor, node, false);
+                if (node instanceof DBNDatabaseNode databaseNode
+                    && databaseNode.getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
                     if (children != null) {
                         // Folders are hidden in navigator. But we must show them here for all present child items
                         Map<DBXTreeFolder, List<DBNNode>> childMap = new LinkedHashMap<>();
@@ -659,7 +745,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                     folder.getDefaultIcon(),
                                     folder.getDescription(),
                                     false,
-                                    new TabbedFolderPageNode(part, node, folder)));
+                                    createNavigatorFolderPage(part, node, folder, editors, mappedFolderTypes)));
                         }
                     }
                 }
@@ -675,7 +761,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                     folder.getNodeIconDefault(),
                                     child.getNodeDescription(),
                                     false,//folder.getMeta().isInline(),
-                                    new TabbedFolderPageNode(part, folder, null)
+                                    createNavigatorFolderPage(part, folder, folder.getMeta(), editors, mappedFolderTypes)
                                 ));
                         }
                     }
@@ -697,7 +783,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                         new TabbedFolderInfo(
                                             nodeName,
                                             nodeName,
-                                            node.getNodeIconDefault(),
+                                            CommonUtils.notNull(child.getIcon(databaseNode), node.getNodeIconDefault()),
                                             node.getNodeDescription(),
                                             false,
                                             new TabbedFolderPageNode(part, node, child)));

@@ -28,6 +28,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.printing.PrintDialog;
@@ -51,7 +52,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 import java.util.*;
@@ -65,15 +66,20 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     public static final int FIRST_ROW_LINE = 2;
     public static final Color COLOR_GREEN_CONTRAST = new Color(null, 23, 135, 58);
 
+    private static final String DISABLE_CSS = "org.eclipse.e4.ui.css.disabled";
+
     private StyledText text;
     private DBDAttributeBinding curAttribute;
     private StyledTextFindReplaceTarget findReplaceTarget;
     public boolean activated;
     private Color curLineColor;
+    private Color curLineForeground;
+    private Color hoverColor;
 
     private int[] colWidths;
     private int startOffset;
     private StyleRange curLineRange;
+    private StyleRange hoverRange;
     private int totalRows = 0;
     private String curSelection;
 
@@ -89,21 +95,25 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         text.setBlockSelection(true);
         text.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_IBEAM));
         text.setMargins(4, 4, 4, 4);
-        text.setForeground(UIStyles.getDefaultTextForeground());
-        text.setBackground(UIStyles.getDefaultTextBackground());
         text.setTabs(controller.getPreferenceStore().getInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE));
         text.setTabStops(null);
         text.setFont(UIUtils.getMonospaceFont());
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
         text.addCaretListener(event -> onCursorChange(event.caretOffset));
+        text.addMouseMoveListener(event -> updateHover(event.x, event.y));
+        text.addListener(SWT.MouseExit, event -> setHoverRange(null));
+        text.addListener(SWT.MouseWheel, event -> setHoverRange(null));
+        text.getHorizontalBar().addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> setHoverRange(null)));
         text.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 curSelection = text.getSelectionText();
                 fireSelectionChanged(new PlainTextSelectionImpl());
             }));
-        CSSUtils.setExcludeFromStyling(text);
+        // Like AbstractTextEditor, manage text colors through editor preferences rather than CSS.
+        text.setData(DISABLE_CSS, Boolean.TRUE);
 
         final ScrollBar verticalBar = text.getVerticalBar();
         verticalBar.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                setHoverRange(null);
                 if (verticalBar.getSelection() + verticalBar.getPageIncrement() >= verticalBar.getMaximum()) {
                     if (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
                         !controller.isRecordMode() &&
@@ -146,13 +156,70 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     @Override
     protected void applyThemeSettings(@NotNull ITheme currentTheme) {
         text.setFont(BaseThemeSettings.instance.monospaceFont);
-        if (UIStyles.isDarkHighContrastTheme()) {
-            text.setBackground(UIStyles.getDefaultWidgetBackground());
-            text.setForeground(UIStyles.COLOR_WHITE);
-            curLineColor = COLOR_GREEN_CONTRAST;
-        } else {
-            curLineColor = ResultSetThemeSettings.instance.backgroundOdd;
+        text.setBackground(UIStyles.getDefaultTextBackground());
+        text.setForeground(UIStyles.getDefaultTextForeground());
+        curLineColor = UIStyles.getInvertedColor(text.getBackground());
+        curLineForeground = UIStyles.getInvertedColor(text.getForeground());
+        hoverColor = UIUtils.getSharedColor(UIUtils.blend(curLineColor.getRGB(), text.getBackground().getRGB(), 15));
+        if (curLineRange != null) {
+            curLineRange.foreground = curLineForeground;
+            curLineRange.background = curLineColor;
         }
+        if (hoverRange != null) {
+            hoverRange.foreground = text.getForeground();
+            hoverRange.background = hoverColor;
+        }
+        updateHighlightStyles();
+    }
+
+    private void updateHover(int x, int y) {
+        int offset = text.getOffsetAtPoint(new Point(x, y));
+        if (offset < 0 || colWidths == null) {
+            setHoverRange(null);
+            return;
+        }
+        int line = text.getLineAtOffset(offset);
+        int firstRow = FIRST_ROW_LINE + (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP) ? 1 : 0);
+        int rowCount = controller.isRecordMode() ? controller.getModel().getVisibleAttributeCount() : totalRows;
+        if (line < firstRow || line >= firstRow + rowCount) {
+            setHoverRange(null);
+            return;
+        }
+        int lineOffset = text.getOffsetAtLine(line);
+        int columnStart = startOffset;
+        if (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING)) {
+            columnStart++;
+        }
+        for (int width : colWidths) {
+            if (offset >= lineOffset + columnStart && offset < lineOffset + columnStart + width) {
+                setHoverRange(new StyleRange(lineOffset + columnStart, width, text.getForeground(), hoverColor));
+                return;
+            }
+            columnStart += width + 1;
+        }
+        setHoverRange(null);
+    }
+
+    private void setHoverRange(@Nullable StyleRange range) {
+        if (Objects.equals(hoverRange, range)) {
+            return;
+        }
+        hoverRange = range;
+        updateHighlightStyles();
+    }
+
+    private void updateHighlightStyles() {
+        List<StyleRange> ranges = new ArrayList<>(2);
+        if (hoverRange != null && (curLineRange == null
+            || hoverRange.start + hoverRange.length <= curLineRange.start
+            || curLineRange.start + curLineRange.length <= hoverRange.start)) {
+            ranges.add(hoverRange);
+        }
+        if (curLineRange != null) {
+            ranges.add(curLineRange);
+        }
+        ranges.sort(Comparator.comparingInt(range -> range.start));
+        text.setStyleRanges(ranges.toArray(new StyleRange[0]));
     }
 
     private void onCursorChange(int offset) {
@@ -204,21 +271,21 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
             if (rowNum < 0 && model.getRowCount() > 0) {
                 rowNum = 0;
             }
-            if (rowNum >= 0 && rowNum < model.getRowCount() && colNum >= 0 && colNum < model.getVisibleAttributeCount()) {
+            if (rowNum >= 0 && rowNum < model.getRowCount()) {
                 controller.setCurrentRow(model.getRow(rowNum));
-                curAttribute = model.getVisibleAttribute(colNum);
+                curAttribute = colNum >= 0 && colNum < model.getVisibleAttributeCount() ? model.getVisibleAttribute(colNum) : null;
             }
             controller.updateEditControls();
 
             {
                 // Highlight row
-                if (curLineRange == null || curLineRange.start != lineOffset + horOffsetBegin) {
+                if (colWidths.length > 0 && (curLineRange == null || curLineRange.start != lineOffset + horOffsetBegin)) {
                     curLineRange = new StyleRange(
                         lineOffset + horOffsetBegin,
                         horOffsetEnd - horOffsetBegin - 1,
-                        null,
+                        curLineForeground,
                         curLineColor);
-                    text.setStyleRanges(new StyleRange[]{curLineRange});
+                    updateHighlightStyles();
                     text.redraw();
                 }
             }
@@ -260,6 +327,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         final int horizontalIndex = text.getHorizontalIndex();
         final int caretOffset = text.getCaretOffset();
 
+        curLineRange = null;
+        hoverRange = null;
         text.setText(grid.toString());
 
         if (append) {
@@ -278,6 +347,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         colWidths = formatter.getColWidths();
         startOffset = formatter.getStartOffset();
 
+        curLineRange = null;
+        hoverRange = null;
         text.setText(grid.toString());
     }
 
@@ -342,6 +413,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     public void clearMetaData() {
         colWidths = null;
         curLineRange = null;
+        hoverRange = null;
         totalRows = 0;
     }
 
@@ -367,18 +439,22 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         if (controller.isRecordMode()) {
             super.scrollToRow(position);
         } else {
+            int rowCount = controller.getModel().getRowCount();
+            if (rowCount == 0) {
+                return;
+            }
+            int firstRowLine = FIRST_ROW_LINE
+                + (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP) ? 1 : 0);
+            int lastRowLine = firstRowLine + rowCount - 1;
             int caretOffset = text.getCaretOffset();
             if (caretOffset < 0) caretOffset = 0;
             int lineNum = text.getLineAtOffset(caretOffset);
-            if (lineNum < FIRST_ROW_LINE) {
-                lineNum = FIRST_ROW_LINE;
-            }
             int lineOffset = text.getOffsetAtLine(lineNum);
             int xOffset = caretOffset - lineOffset;
-            int totalLines = text.getLineCount();
+            lineNum = Math.max(firstRowLine, Math.min(lastRowLine, lineNum));
             switch (position) {
                 case FIRST:
-                    lineNum = FIRST_ROW_LINE;
+                    lineNum = firstRowLine;
                     break;
                 case PREVIOUS:
                     lineNum--;
@@ -387,17 +463,21 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
                     lineNum++;
                     break;
                 case LAST:
-                    lineNum = totalLines - 1;
+                    lineNum = lastRowLine;
                     break;
                 case CURRENT:
-                    lineNum = controller.getCurrentRow().getVisualNumber() + FIRST_ROW_LINE;
+                    ResultSetRow currentRow = controller.getCurrentRow();
+                    if (currentRow == null) {
+                        return;
+                    }
+                    lineNum = currentRow.getVisualNumber() + firstRowLine;
                     break;
             }
-            if (lineNum < FIRST_ROW_LINE || lineNum >= totalLines) {
+            if (lineNum < firstRowLine || lineNum > lastRowLine) {
                 return;
             }
             int newOffset = text.getOffsetAtLine(lineNum);
-            newOffset += xOffset;
+            newOffset += Math.min(xOffset, text.getLine(lineNum).length());
             text.setCaretOffset(newOffset);
             //text.setSelection(newOffset, 0);
             text.showSelection();
@@ -428,7 +508,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         options.printTextForeground = true;
 
         if (Printer.getPrinterList().length == 0) {
-            UIUtils.showMessageBox(shell, "No printers", "Printers not found", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(shell, ResultSetMessages.error_no_printers_title, ResultSetMessages.error_no_printers_message, SWT.ICON_ERROR);
             return;
         }
 

@@ -91,10 +91,12 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     @NotNull
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
-        List<DBPDataSourceProviderDescriptor> enabledProviders = DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders();
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        registry.refreshProvidedDrivers();
+        List<DBPDataSourceProviderDescriptor> enabledProviders = registry.getEnabledDataSourceProviders();
         {
             DBPDataSourceProviderDescriptor manProvider = null;
-            for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
+            for (DBPDataSourceProviderDescriptor provider : enabledProviders) {
                 if (provider.isDriversManageable()) {
                     if (manProvider != null) {
                         manProvider = null;
@@ -365,13 +367,14 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         if (UIUtils.confirmAction(
             getShell(),
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_title,
-            UIConnectionMessages.dialog_driver_manager_message_delete_driver_text + selectedDriver.getName() + "'?")) {
+            NLS.bind(UIConnectionMessages.dialog_driver_manager_delete_confirm_message, selectedDriver.getName()))) {
             selectedDriver.getProviderDescriptor().removeDriver(selectedDriver.getId());
 
             try {
                 selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.pref_page_network_profiles_save_error_title,
+                    UIConnectionMessages.dialog_drivers_save_error, e);
                 return;
             }
 
@@ -420,7 +423,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                     dd.getProviderDescriptor().getRegistry().saveDrivers();
                 }
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.pref_page_network_profiles_save_error_title,
+                    UIConnectionMessages.dialog_drivers_save_error, e);
                 return false;
             }
             return true;

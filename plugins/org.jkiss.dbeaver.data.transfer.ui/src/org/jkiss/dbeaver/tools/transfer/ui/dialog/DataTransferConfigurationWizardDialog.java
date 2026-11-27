@@ -19,14 +19,18 @@ package org.jkiss.dbeaver.tools.transfer.ui.dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 
 import java.util.Map;
 
 public class DataTransferConfigurationWizardDialog extends TaskConfigurationWizardDialog {
+
+    private static final int EXPORT_TARGET_DIALOG_HEIGHT = 600;
 
     public DataTransferConfigurationWizardDialog(
         @NotNull IWorkbenchWindow window,
@@ -34,6 +38,15 @@ public class DataTransferConfigurationWizardDialog extends TaskConfigurationWiza
         @NotNull IStructuredSelection selection
     ) {
         super(window, wizard, selection, Map.of());
+    }
+
+    @Override
+    protected Point getInitialSize() {
+        Point size = super.getInitialSize();
+        if (getWizard() instanceof DataTransferWizard wizard && wizard.getSettings().isConsumerOptional()) {
+            size.y = Math.max(size.y, EXPORT_TARGET_DIALOG_HEIGHT);
+        }
+        return size;
     }
 
     @Override

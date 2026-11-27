@@ -54,7 +54,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportPropertyTester;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -151,7 +151,9 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         CommonUtils.singletonOrEmpty(selNode),
                         new Class[]{DBSInstance.class, DBSObjectContainer.class, tableClass},
                         new Class[]{tableClass},
-                        null);
+                        null,
+                        isExport ? null : node -> !(node instanceof DBNDatabaseNode databaseNode)
+                            || DataImportPropertyTester.supportsImport(databaseNode.getDataSource()));
                     if (tables != null) {
                         for (DBNNode node : tables) {
                             if (node instanceof DBNDatabaseNode dbNode) {
@@ -286,7 +288,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         }
                     }));
             }
-            Button editButton = UIUtils.createDialogButton(buttonsPanel, DTMessages.data_transfer_wizard_settings_button_edit, SelectionListener.widgetSelectedAdapter(e -> {
+            Button editButton = UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_wizard_settings_button_edit, SelectionListener.widgetSelectedAdapter(e -> {
                     TableItem item = objectsTable.getItem(objectsTable.getSelectionIndex());
                     DataTransferPipe pipe = (DataTransferPipe) item.getData();
                     IDataTransferProducer<?> producer = pipe.getProducer();

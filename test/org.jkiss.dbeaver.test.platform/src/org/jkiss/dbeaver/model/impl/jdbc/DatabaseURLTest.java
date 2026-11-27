@@ -19,13 +19,218 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DatabaseURL;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DatabaseURLTest extends DBeaverUnitTest {
+    @Test
+    public void replacesEndpointWithoutChangingEncodedDatabaseOrQuery() throws DBException {
+        DBPDriver driver = driver("jdbc:postgresql://{host}[:{port}]/[{database}]");
+        String tail = "/my%20db%2Fdata?sslmode=require&host=db.example&port=5432&empty=&name=a%2Bb&name=a+b#section";
+        Assertions.assertEquals(
+            "jdbc:postgresql://localhost:49505" + tail,
+            DatabaseURL.replaceHostAndPort(driver, "jdbc:postgresql://db.example:5432" + tail, "localhost", 49505)
+        );
+    }
+
+    @Test
+    public void preservesVendorSpecificEndpointSyntaxAndOptions() throws DBException {
+        String[][] cases = {
+            {"jdbc:sqlserver://{host}[:{port}][;databaseName={database}]",
+                "jdbc:sqlserver://db.example:1433;databaseName=master;encrypt=true;password={a;b}",
+                "jdbc:sqlserver://localhost:49505;databaseName=master;encrypt=true;password={a;b}"},
+            {"jdbc:oracle:thin:@{host}[:{port}]/{database}",
+                "jdbc:oracle:thin:@db.example:1521/service?option=a%20b", "jdbc:oracle:thin:@localhost:49505/service?option=a%20b"},
+            {"jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}",
+                "jdbc:teradata://db.example/DATABASE=demo,DBS_PORT=1025", "jdbc:teradata://localhost/DATABASE=demo,DBS_PORT=49505"},
+            {"jdbc:postgresql://{host}[:{port}]/[{database}]",
+                "jdbc:postgresql://[2001:db8::1]:5432/данные?option=%2520", "jdbc:postgresql://localhost:49505/данные?option=%2520"},
+            {"", "jdbc:custom://user:password@db.example:1234/demo?option=value",
+                "jdbc:custom://user:password@localhost:49505/demo?option=value"}
+        };
+        for (String[] test : cases) {
+            Assertions.assertEquals(test[2], DatabaseURL.replaceHostAndPort(driver(test[0]), test[1], "localhost", 49505));
+        }
+    }
+
+    @Test
+    public void preservesQueryContinuationsAlreadyStartedByTemplate() throws DBException {
+        DBPDriver snowflake = driver("jdbc:snowflake://{host}[:{port}]/?[db={database}]");
+        for (String query : List.of("db=demo&warehouse=wh&option=a%2Bb", "warehouse=wh", "db=&warehouse=wh", "")) {
+            Assertions.assertEquals(
+                "jdbc:snowflake://localhost:49505/?" + query,
+                DatabaseURL.replaceHostAndPort(snowflake, "jdbc:snowflake://db.example:443/?" + query, "localhost", 49505)
+            );
+        }
+        Assertions.assertEquals(
+            "jdbc:iotdb://localhost:49505/?sql_dialect=table&time_zone=UTC%2B3",
+            DatabaseURL.replaceHostAndPort(
+                driver("jdbc:iotdb://{host}:{port}/?sql_dialect={sqlDialect}"),
+                "jdbc:iotdb://db.example:6667/?sql_dialect=table&time_zone=UTC%2B3", "localhost", 49505
+            )
+        );
+    }
+
+    @Test
+    public void preservesEncodedCredentialsWithoutSampleUrl() throws DBException {
+        DBPDriver driver = driver("");
+        for (String credentials : List.of("user:p%40ss", "us%65r:p%3A%2F%3F%23%5B%5D%40%25", "db.example:p%40ss")) {
+            Assertions.assertEquals(
+                "jdbc:custom://" + credentials + "@localhost:49505/demo?host=db.example&port=1234",
+                DatabaseURL.replaceHostAndPort(
+                    driver, "jdbc:custom://" + credentials + "@db.example:1234/demo?host=db.example&port=1234", "localhost", 49505
+                )
+            );
+        }
+        for (String credentials : List.of("user:p%4Gss", "us%er:password", "user:p%")) {
+            Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(
+                driver, "jdbc:custom://" + credentials + "@db.example:1234/demo", "localhost", 49505
+            ));
+        }
+    }
+
+    @Test
+    public void rejectsAmbiguousOrUnrecognizedEndpointsInsteadOfReturningOriginalUrl() {
+        DBPDriver driver = driver("jdbc:postgresql://{host}[:{port}]/[{database}]");
+        for (String url : List.of(
+            "jdbc:postgresql://first:5432,second:5432/demo",
+            "jdbc:postgresql://first,second/demo",
+            "jdbc:postgresql://db.example/demo",
+            "jdbc:postgresql://db.example:invalid/demo",
+            "jdbc:postgresql://db.example:5432extra/demo",
+            "jdbc:postgresql://db.example:5432extra/demo?option=value",
+            "jdbc:postgresql://db.example:5432/demo trailing",
+            "jdbc:postgresql://db.example:5432/demo/other",
+            "jdbc:postgresql://db.example:5432/demo/other?option=value",
+            "jdbc:postgresql://first:5432,second:5432/demo?option=value",
+            "jdbc:mysql://db.example:3306/demo",
+            "jdbc:postgresql:///demo",
+            ""
+        )) {
+            Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(driver, url, "localhost", 49505), url);
+        }
+        Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(
+            driver("jdbc:test://{host}:{port}[,{host}:{port}...]/[{database}]"),
+            "jdbc:test://first:1234,second:1234/demo", "localhost", 49505
+        ));
+        Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(
+            driver("jdbc:test://{host}:1234/{database}"), "jdbc:test://db.example:1234/demo", "localhost", 49505
+        ));
+        Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(
+            driver("jdbc:test://{host}:{port}/[{database}][?mode={mode}]"),
+            "jdbc:test://db.example:1234/demo/other?mode=safe", "localhost", 49505
+        ));
+    }
+
+    @NotNull
+    private static DBPDriver driver(@NotNull String sampleUrl) {
+        DBPDriver driver = Mockito.mock(DBPDriver.class);
+        Mockito.when(driver.getSampleURL()).thenReturn(sampleUrl);
+        return driver;
+    }
+
+    @Test
+    public void recognizesQueryDelimitersAndEmptyValuesInBothGenericPatterns() {
+        String url = "jdbc:mysql://localhost/demo?empty=&custom.option[0]=a%20b&expression=a=b=c&path=/tmp/данные; x&other=last";
+        Map<String, String> expected = Map.of(
+            "empty", "", "custom.option[0]", "a%20b", "expression", "a=b=c", "path", "/tmp/данные; x", "other", "last");
+        var grouped = DatabaseURL.Generic.getUrlPatternWithParamGroups().tryRecognizeHierarchical(url, true);
+        Assertions.assertNotNull(grouped);
+        Assertions.assertEquals(expected, DatabaseURL.Generic.extractExtraParams(grouped));
+
+        var flat = DatabaseURL.Generic.getUrlPatternWithParams().tryRecognizeHierarchical(url, true);
+        Assertions.assertNotNull(flat);
+        var names = flat.getParameters().get(DatabaseURL.Generic.PARAM_PROP);
+        var values = flat.getParameters().get(DatabaseURL.Generic.PARAM_VALUE);
+        Map<String, String> properties = new HashMap<>();
+        for (int index = 0; index < names.size(); index++) {
+            properties.put(names.get(index), values.get(index));
+        }
+        Assertions.assertEquals(expected, properties);
+    }
+
+    @Test
+    public void rejectsMalformedGenericQueryParameters() {
+        for (var pattern : List.of(DatabaseURL.Generic.getUrlPatternWithParams(), DatabaseURL.Generic.getUrlPatternWithParamGroups())) {
+            for (String query : List.of("=value", "valid=value&broken", "valid=value&=missing")) {
+                Assertions.assertNull(pattern.tryRecognizeHierarchical("jdbc:mysql://localhost/demo?" + query, true));
+            }
+            Assertions.assertNotNull(pattern.tryRecognizeHierarchical("jdbc:mysql://localhost/demo", true));
+        }
+    }
+
+    @Test
+    public void recognizesEncodedDatabaseNamesAndQueryProperties() {
+        for (String database : List.of("my%20db", "my%2fdb%3Fname%26value", "%D0%B1%D0%B0%D0%B7%D0%B0")) {
+            String url = "jdbc:mysql://host/" + database + "?option=value&empty=";
+            for (boolean matchEntireString : List.of(false, true)) {
+                var grouped = DatabaseURL.Generic.getUrlPatternWithParamGroups().tryRecognizeHierarchical(url, matchEntireString);
+                Assertions.assertNotNull(grouped);
+                Assertions.assertEquals(database, grouped.getFirstParamValue("database"));
+                Assertions.assertEquals(Map.of("option", "value", "empty", ""), DatabaseURL.Generic.extractExtraParams(grouped));
+
+                var flat = DatabaseURL.Generic.getUrlPatternWithParams().tryRecognizeHierarchical(url, matchEntireString);
+                Assertions.assertNotNull(flat);
+                Assertions.assertEquals(database, flat.getFirstParamValue("database"));
+                var names = flat.getParameters().get(DatabaseURL.Generic.PARAM_PROP);
+                var values = flat.getParameters().get(DatabaseURL.Generic.PARAM_VALUE);
+                Map<String, String> properties = new HashMap<>();
+                for (int index = 0; index < names.size(); index++) {
+                    properties.put(names.get(index), values.get(index));
+                }
+                Assertions.assertEquals(Map.of("option", "value", "empty", ""), properties);
+            }
+            var configuration = DatabaseURL.extractConfigurationFromUrl(DatabaseURL.Generic.getUrlPattern(), url);
+            Assertions.assertNotNull(configuration);
+            Assertions.assertEquals(database, configuration.getDatabaseName());
+        }
+    }
+
+    @Test
+    public void extractsConfigurationWithGenericPattern() {
+        var configuration = DatabaseURL.extractConfigurationFromUrl(
+            DatabaseURL.Generic.getUrlPattern(), "jdbc:mysql://username:password@localhost:3306/demo?empty=");
+        Assertions.assertNotNull(configuration);
+        Assertions.assertEquals("localhost", configuration.getHostName());
+        Assertions.assertEquals("3306", configuration.getHostPort());
+        Assertions.assertEquals("demo", configuration.getDatabaseName());
+        Assertions.assertEquals("username", configuration.getUserName());
+        Assertions.assertEquals("password", configuration.getUserPassword());
+    }
+
+    @Test
+    public void preservesDefaultHierarchicalUrlRecognition() throws DBException {
+        var pattern = DatabaseURL.Generic.getUrlPatternWithParamGroups();
+        var entries = pattern.tryRecognizeHierarchical("jdbc:mysql://localhost/demo?option=a%20b&other=c d", true);
+        Assertions.assertNotNull(entries);
+        Assertions.assertEquals(Map.of("option", "a%20b", "other", "c d"), DatabaseURL.Generic.extractExtraParams(entries));
+    }
+
+    @Test
+    public void recognizesRepeatedPropertiesUsingCustomPatterns() throws DBException {
+        var pattern = DatabaseURL.getUrlPattern("jdbc:test:[{param:{prop}={value};}...]", param -> switch (param.name()) {
+            case "prop" -> "[^=;]+";
+            case "value" -> "[^;]*";
+            default -> throw new IllegalArgumentException(param.name());
+        });
+        var entries = pattern.tryRecognizeHierarchical("jdbc:test:Host=::1;Empty=;Path=/tmp/данные;", true);
+        Assertions.assertNotNull(entries);
+        var groups = entries.getGroups().get("param").reversed();
+        Assertions.assertEquals("::1", groups.get(0).getFirstParamValue("value"));
+        Assertions.assertEquals("", groups.get(1).getFirstParamValue("value"));
+        Assertions.assertEquals("/tmp/данные", groups.get(2).getFirstParamValue("value"));
+        Assertions.assertNull(pattern.tryRecognizeHierarchical("jdbc:test:Host=::1;invalid", true));
+        Assertions.assertNotNull(pattern.tryRecognizeHierarchical("jdbc:test:Host=::1;invalid"));
+        Assertions.assertNotNull(pattern.tryRecognizeHierarchical("jdbc:test:", true));
+    }
+
     @Test
     public void testMatchPattern() throws DBException {
         assertRecognition(

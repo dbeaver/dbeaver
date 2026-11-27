@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,16 @@ public class DBTaskUtils {
     public static final String TASK_CONTEXT = "taskContext";
 
     public static final String CONNECTION_DESCRIPTION_TEMPLATE = "[%s] (%s - %s:%s%s)";
+
+    @NotNull
+    public static String generateTaskName(@NotNull DBTTaskManager taskManager, @NotNull DBTTaskType taskType) {
+        String baseName = taskType.getName();
+        String name = baseName;
+        for (int index = 1; taskManager.getTaskByName(name) != null; index++) {
+            name = baseName + " (" + index + ")";
+        }
+        return name;
+    }
 
 
     @NotNull
@@ -227,7 +237,7 @@ public class DBTaskUtils {
         String messageOrNull = task.getType().confirmationMessageIfNeeded();
         if (messageOrNull != null) {
             Optional<String> inputFileKey = task.getProperties().keySet().stream().filter(k -> k.contains("inputFile")).findFirst();
-            String inputFile = inputFileKey.isPresent() ? task.getProperties().get(inputFileKey.get()).toString() : "file";
+            String inputFile = inputFileKey.isPresent() ? task.getProperties().get(inputFileKey.get()).toString() : ModelMessages.fs_file;
             String dbObjectNames = "";
             String connectionInfo = "";
             Object dbObjectIdsObj = task.getProperties().get("databaseObjects");

@@ -21,6 +21,14 @@ import org.eclipse.osgi.util.NLS;
 public class RegistryMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.registry.internal.RegistryMessages"; //$NON-NLS-1$
 
+    public static String data_source_update_error_title;
+    public static String data_source_update_error_message;
+    public static String data_source_save_error_title;
+    public static String data_source_save_error_message;
+    public static String data_source_save_error;
+    public static String auth_profile_secrets_remove_error_title;
+    public static String auth_profile_secrets_remove_error_message;
+
     public static String dialog_connection_auth_title;
     public static String dialog_connection_auth_title_for_handler;
 
@@ -40,8 +48,6 @@ public class RegistryMessages extends NLS {
     public static String navigator_settings_preset_advanced_view_description;
     public static String navigator_settings_preset_custom_view_name;
     public static String navigator_settings_preset_custom_view_description;
-    public static String navigator_settings_customize_view;
-    public static String project_description_comment;
 
     public static String project_open_cannot_read_credentials_title;
     public static String project_open_cannot_read_credentials_message;

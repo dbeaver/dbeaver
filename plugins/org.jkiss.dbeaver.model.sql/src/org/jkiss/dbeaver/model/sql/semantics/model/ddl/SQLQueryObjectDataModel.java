@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
@@ -108,16 +109,21 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
 
         List<? extends DBSObject> candidates = context.getConnectionInfo().findRealObjects(statistics.getMonitor(), objectType, this.name.stringParts);
         if (candidates.isEmpty()) {
+            boolean noFuncNoErr = objectType.isCompatibleWith(RelationalObjectType.TYPE_PROCEDURE) && !statistics.validateFunctions();
             SQLQuerySemanticUtils.performPartialResolution(
                 context,
                 statistics,
                 this.name,
                 this.objectNameOrigin,
                 SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT,
-                SQLQuerySymbolClass.ERROR
+                noFuncNoErr ? SQLQuerySymbolClass.FUNCTION : SQLQuerySymbolClass.ERROR
             );
-            statistics.appendError(this.getSyntaxNode(), "Object " + this.name.getNameString() + " not found in the database");
-            return context.resetAsUnresolved();
+            if (!noFuncNoErr) {
+                statistics.appendError(this.getSyntaxNode(), "Object " + this.name.getNameString() + " not found in the database");
+                return context.resetAsUnresolved();
+            } else {
+                return context.reset();
+            }
         } else if (candidates.size() > 1) {
             statistics.appendError(this.name.syntaxNode, "Object name " + this.name.getNameString() + " is ambiguous");
             this.name.parts.forEach(p -> p.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR));

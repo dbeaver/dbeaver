@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@
 package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorFeatures;
 
 /**
  * SQL terminal features
  */
 public interface SQLTerminalFeatures {
 
-    DBRFeature SQL_TERMINAL_OPEN = DBRFeature.createFeature(SQLEditorFeatures.CATEGORY_SQL_EDITOR, "Open SQL terminal");
+    DBRFeature SQL_TERMINAL_OPEN = new DBRFeature("SQL_TERMINAL_OPEN");
 
 }

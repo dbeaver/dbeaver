@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -101,8 +102,8 @@ public class DialogUtils {
         Path saveDir = saveFile.getParent();
         if (!Files.exists(saveDir)) {
             DBWorkbench.getPlatformUI().showError(
-                "Bad file name",
-                "Directory '" + saveDir.toAbsolutePath() + "' does not exists"
+                UIMessages.file_name_error_title,
+                NLS.bind(UIMessages.directory_not_exists_message, saveDir.toAbsolutePath())
             );
             return null;
         }
@@ -279,10 +280,20 @@ public class DialogUtils {
         return directory;
     }
 
-    public static TreeViewer createFilteredTree(Composite parent, int treeStyle, PatternFilter filter, String initialText) {
+    @NotNull
+    public static TreeViewer createFilteredTree(
+        @NotNull Composite parent,
+        int treeStyle,
+        @NotNull PatternFilter filter,
+        @Nullable String initialText
+    ) {
         FilteredTree filteredTree = new FilteredTree(parent, treeStyle, filter, true, true);
         if (initialText != null) {
             filteredTree.setInitialText(initialText);
+        }
+        Text filterControl = filteredTree.getFilterControl();
+        if (filterControl != null) {
+            UIUtils.installAndUpdateMainFont(filterControl);
         }
         return filteredTree.getViewer();
     }

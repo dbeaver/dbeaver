@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,29 +23,15 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
  */
 public interface DataEditorFeatures {
 
-    DBRFeature CATEGORY_DATA_EDITOR = DBRFeature.createCategory("Data editor", "Data editor features");
-
-    DBRFeature DATA_EDIT_OPEN = DBRFeature.createFeature(CATEGORY_DATA_EDITOR, "Open data editor");
-
-    DBRFeature CATEGORY_RESULT_SET_VIEWER = DBRFeature.createCategory(CATEGORY_DATA_EDITOR, "Result set viewer", "Result set viewer features");
-    DBRFeature RESULT_SET_PANEL_OPEN = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Open result set panel");
-    DBRFeature RESULT_SET_REFRESH = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Refresh result set");
-    DBRFeature RESULT_SET_SCROLL = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Scroll result set");
-
-    DBRFeature RESULT_SET_PANEL_GROUPING = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use group by panel");
-    DBRFeature RESULT_SET_PANEL_CALC = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use calc panel");
-    DBRFeature RESULT_SET_PANEL_REFS = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use references panel");
-    DBRFeature RESULT_SET_PANEL_METADATA = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use metadata panel");
-
-    DBRFeature CATEGORY_RESULT_SET_PRESENTATION = DBRFeature.createCategory(
-        CATEGORY_RESULT_SET_VIEWER,
-        "Data presentation",
-        "Presentation is used in the result set viewer"
-    );
-    DBRFeature RESULT_SET_PRESENTATION_SELECTED = DBRFeature.createFeature(
-        CATEGORY_RESULT_SET_PRESENTATION,
-        "Selected presentation"
-    );
-    DBRFeature RESULT_SET_PRESENTATION_RECORD = DBRFeature.createFeature(CATEGORY_RESULT_SET_PRESENTATION, "Use Record mode view");
+    DBRFeature DATA_EDIT_OPEN = new DBRFeature("DATA_EDIT_OPEN");
+    DBRFeature RESULT_SET_PANEL_OPEN = new DBRFeature("RESULT_SET_PANEL_OPEN");
+    DBRFeature RESULT_SET_REFRESH = new DBRFeature("RESULT_SET_REFRESH");
+    DBRFeature RESULT_SET_SCROLL = new DBRFeature("RESULT_SET_SCROLL");
+    DBRFeature RESULT_SET_PANEL_GROUPING = new DBRFeature("RESULT_SET_PANEL_GROUPING");
+    DBRFeature RESULT_SET_PANEL_CALC = new DBRFeature("RESULT_SET_PANEL_CALC");
+    DBRFeature RESULT_SET_PANEL_REFS = new DBRFeature("RESULT_SET_PANEL_REFS");
+    DBRFeature RESULT_SET_PANEL_METADATA = new DBRFeature("RESULT_SET_PANEL_METADATA");
+    DBRFeature RESULT_SET_PRESENTATION_SELECTED = new DBRFeature("RESULT_SET_PRESENTATION_SELECTED");
+    DBRFeature RESULT_SET_PRESENTATION_RECORD = new DBRFeature("RESULT_SET_PRESENTATION_RECORD");
 
 }

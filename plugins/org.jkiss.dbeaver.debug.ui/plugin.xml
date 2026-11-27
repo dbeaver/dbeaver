@@ -90,7 +90,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <category description="Database Debug commands" id="org.jkiss.dbeaver.debug.ui.commands.category" name="Database Debug"/>
+        <category description="%category.org.jkiss.dbeaver.debug.ui.commands.category.description" id="org.jkiss.dbeaver.debug.ui.commands.category" name="%category.org.jkiss.dbeaver.debug.ui.commands.category.name"/>
 
         <command id="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" name="%commands.command.menuDelegateToolbar.name" description="%commands.command.menuDelegateToolbar.description"/>
     </extension>
@@ -116,7 +116,12 @@
                 <and>
                     <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
                     <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+                            <test property="org.jkiss.dbeaver.ui.editors.entity.objectType"
+                                  value="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
+                            <adapt type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
+                        </and>
                     </with>
                 </and>
             </enabledWhen>
@@ -202,8 +207,8 @@
     <extension point="org.jkiss.dbeaver.app.config">
         <feature
             id="debug"
-            label="Procedure debugger"
-            description="Enables debugging of stored procedures and functions in PostgreSQL and its derivatives (Greenplum, TimescaleDB, etc.)"
+            label="%feature.debug.label"
+            description="%feature.debug.description"
             enabledByDefault="false"/>
     </extension>
 

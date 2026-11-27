@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.sql.SQLState;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
@@ -46,11 +47,11 @@ import java.util.Date;
  */
 public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
-    public static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''");
-    public static final SimpleDateFormat DEFAULT_DATETIME_TZ_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_TZ_FORMAT + "''");
-    public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''");
-    public static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''");
-    public static final SimpleDateFormat DEFAULT_TIME_TZ_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_TZ_FORMAT + "''");
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_DATETIME_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''"));
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_DATETIME_TZ_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_TZ_FORMAT + "''"));
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_DATE_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''"));
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_TIME_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''"));
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_TIME_TZ_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_TZ_FORMAT + "''"));
 
     public JDBCDateTimeValueHandler(DBDFormatSettings formatSettings) {
         super(formatSettings);
@@ -200,24 +201,25 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                         log.error("Error formatting date", e);
                     }
                 }
-            } else if (value instanceof String strValue) {
-                if (!strValue.startsWith("'") && !strValue.endsWith("'")) {
-                    strValue = "'" + strValue + "'";
-                }
-                return super.getValueDisplayString(column, strValue, format);
             }
         }
-        return super.getValueDisplayString(column, value, format);
+        String strValue = super.getValueDisplayString(column, value, format);
+        // Native formatters return SQL expressions; fallback formatters return display text.
+        if (format == DBDDisplayFormat.NATIVE && !DBUtils.isNullValue(value)
+            && (strValue.length() < 2 || !strValue.startsWith("'") || !strValue.endsWith("'"))) {
+            strValue = SQLUtils.quoteString(column, strValue);
+        }
+        return strValue;
     }
 
     @Nullable
     protected Format getNativeValueFormat(DBSTypedObject type) {
         return switch (type.getTypeID()) {
-            case Types.TIMESTAMP -> DEFAULT_DATETIME_FORMAT;
-            case Types.TIMESTAMP_WITH_TIMEZONE -> DEFAULT_DATETIME_FORMAT;
-            case Types.TIME -> DEFAULT_TIME_FORMAT;
-            case Types.TIME_WITH_TIMEZONE -> DEFAULT_TIME_TZ_FORMAT;
-            case Types.DATE -> DEFAULT_DATE_FORMAT;
+            case Types.TIMESTAMP -> DEFAULT_DATETIME_FORMAT.get();
+            case Types.TIMESTAMP_WITH_TIMEZONE -> DEFAULT_DATETIME_TZ_FORMAT.get();
+            case Types.TIME -> DEFAULT_TIME_FORMAT.get();
+            case Types.TIME_WITH_TIMEZONE -> DEFAULT_TIME_TZ_FORMAT.get();
+            case Types.DATE -> DEFAULT_DATE_FORMAT.get();
             default -> null;
         };
     }

@@ -16,42 +16,91 @@
  */
 package org.jkiss.dbeaver.ui.ai.controls;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.ai.AIChatContextProvider;
+import org.jkiss.dbeaver.model.ai.AITextUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectSelectionTree;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ScopeSelectorDialog extends BaseDialog {
 
-    private static final String DIALOG_ID = "DBeaver.AIScopeSelectorDialog";//$NON-NLS-1$
+    private static final String DIALOG_ID = "DBeaver.AIScopeSelectorDialog.v2";//$NON-NLS-1$
 
     private final DBRRunnableContext runnableContext;
     private final DBPDataSourceContainer dataSourceContainer;
-    private final DBCExecutionContext executionContext;
-    private DatabaseObjectsSelectorPanel selectorPanel;
+    private final AIChatContextProvider contextProvider;
+    private final Set<String> savedObjectIds;
+    private List<? extends DBNNode> initialNodes = List.of();
+    private DatabaseObjectSelectionTree selectorTree;
+    private Label scopeInfoLabel;
+    private Composite treeArea;
+    private Label loadingLabel;
+    private ProgressBar loadingBar;
+    private final AtomicReference<String> progressText =
+        new AtomicReference<>(UINavigatorMessages.ui_navigator_loading_text_loading);
+    private final AtomicBoolean progressUpdateScheduled = new AtomicBoolean();
+    private boolean initialLoading = true;
+    private boolean treeLoading;
+    @Nullable
+    private AbstractJob loadJob;
     private List<? extends DBNNode> selectedNodes;
+
+    public ScopeSelectorDialog(
+        @NotNull Shell parentShell,
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull AIChatContextProvider contextProvider,
+        @NotNull Set<String> savedObjectIds
+    ) {
+        super(parentShell, AIUIMessages.scope_selector_title, null);
+        this.runnableContext = runnableContext;
+        this.dataSourceContainer = container;
+        this.contextProvider = contextProvider;
+        this.savedObjectIds = Set.copyOf(savedObjectIds);
+    }
 
     public ScopeSelectorDialog(
         @NotNull Shell parentShell,
@@ -60,10 +109,8 @@ public class ScopeSelectorDialog extends BaseDialog {
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<? extends DBNNode> selectedNodes
     ) {
-        super(parentShell, "Customize database objects accessible to AI", null);
-        this.runnableContext = runnableContext;
-        this.dataSourceContainer = container;
-        this.executionContext = executionContext;
+        this(parentShell, runnableContext, container, ignored -> executionContext, Set.of());
+        this.initialNodes = selectedNodes;
         this.selectedNodes = selectedNodes;
     }
 
@@ -84,101 +131,265 @@ public class ScopeSelectorDialog extends BaseDialog {
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
+        UIUtils.createInfoLabel(dialogArea, AIUIMessages.scope_selector_hint);
 
-        DBPProject project = dataSourceContainer.getProject();
-        DBNModel navigatorModel = project.getNavigatorModel();
+        treeArea = UIUtils.createComposite(dialogArea, 1);
+        GridData treeData = new GridData(GridData.FILL_BOTH);
+        treeData.widthHint = convertWidthInCharsToPixels(60);
+        treeData.heightHint = 300;
+        treeArea.setLayoutData(treeData);
+        loadingLabel = UIUtils.createLabel(treeArea, UINavigatorMessages.ui_navigator_loading_text_loading);
+        loadingLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        loadingBar = new ProgressBar(treeArea, SWT.INDETERMINATE);
+        loadingBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        // Default root node is datasource
-        // But if the datasource consists of databases which are isolated instance (e.g. PostgreSQL) then
-        // too node is the default database (cross database queries are not supported in this cases)
-        DBNDatabaseNode rootNode = navigatorModel.getNodeByObject(dataSourceContainer);
-        DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
-        if (contextDefaults != null && false) {
-            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
-            if (defaultCatalog instanceof DBSInstance) {
-                DBNDatabaseNode catalogNode = navigatorModel.getNodeByObject(new VoidProgressMonitor(), defaultCatalog, false);
-                if (catalogNode != null) {
-                    rootNode = catalogNode;
+        scopeInfoLabel = new Label(dialogArea, SWT.WRAP);
+        scopeInfoLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        CSSUtils.applyStyles(scopeInfoLabel);
+        return dialogArea;
+    }
+
+    private void updateScopeInfo() {
+        int catalogs = 0;
+        int schemas = 0;
+        int tables = 0;
+        if (selectorTree != null) {
+            for (DBSObject object : selectorTree.getCheckedObjects()) {
+                if (object instanceof DBSCatalog) {
+                    catalogs++;
+                } else if (object instanceof DBSSchema) {
+                    schemas++;
+                } else if (object instanceof DBSEntity) {
+                    tables++;
                 }
             }
         }
-
-        DBNDatabaseNode finalRootNode = rootNode;
-        selectorPanel = new DatabaseObjectsSelectorPanel(
-            dialogArea,
-            this.runnableContext,
-            SWT.SINGLE | SWT.BORDER | SWT.CHECK,
-            true
-        ) {
-            @Override
-            protected DBPProject getSelectedProject() {
-                return project;
-            }
-
-            @Override
-            protected DBNNode getRootNode() {
-                return finalRootNode;
-            }
-
-            @Override
-            protected boolean isDatabaseFolderVisible(DBNDatabaseFolder folder) {
-                Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
-                if (childrenClass == null) {
-                    return false;
-                }
-                return DBSEntity.class.isAssignableFrom(childrenClass) ||
-                    DBSEntityContainer.class.isAssignableFrom(childrenClass) ||
-                    DBSStructContainer.class.isAssignableFrom(childrenClass);
-            }
-
-            @Override
-            protected boolean isDatabaseObjectVisible(DBSObject obj) {
-                return obj instanceof DBSStructContainer || obj instanceof DBSEntityContainer || obj instanceof DBSEntity;
-            }
-
-        };
-        selectorPanel.getCheckboxTreeManager().setAutoCheckNested(false);
-        selectorPanel.getNavigatorTree().getViewer().expandToLevel(2);
-        selectorPanel.checkNodes(selectedNodes, true);
-        selectorPanel.setSelection(selectedNodes);
-        selectorPanel.getNavigatorTree().getCheckboxViewer().addCheckStateListener(event -> updateOkButton());
-        selectorPanel.getNavigatorTree().getViewer().addDoubleClickListener(event -> updateOkButton());
-
-        UIUtils.createInfoLabel(dialogArea, "Customize database metadata accessible to AI.");
-
-        return dialogArea;
+        List<String> summary = new ArrayList<>();
+        if (catalogs > 0) {
+            summary.add(NLS.bind(AIUIMessages.scope_selector_selection_catalogs, catalogs));
+        }
+        if (schemas > 0) {
+            summary.add(NLS.bind(AIUIMessages.scope_selector_selection_schemas, schemas));
+        }
+        if (tables > 0) {
+            summary.add(NLS.bind(AIUIMessages.scope_selector_selection_tables, tables));
+        }
+        boolean emptyScope = summary.isEmpty();
+        scopeInfoLabel.setText(emptyScope ? AIUIMessages.scope_selector_empty_scope : String.join(", ", summary));
+        scopeInfoLabel.setForeground(emptyScope ? BaseThemeSettings.instance.colorErrorForeground : null);
+        scopeInfoLabel.requestLayout();
     }
 
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
         super.createButtonsForButtonBar(parent);
         updateOkButton();
+        getShell().addDisposeListener(event -> {
+            if (loadJob != null) {
+                loadJob.cancel();
+            }
+        });
+        UIUtils.asyncExec(() -> {
+            if (isDialogOpen()) {
+                loadInitialObjects();
+            }
+        });
+    }
+
+    private boolean isDialogOpen() {
+        Shell shell = getShell();
+        return shell != null && !shell.isDisposed();
+    }
+
+    private void loadInitialObjects() {
+        loadJob = new AbstractJob(AIUIMessages.scope_selector_loading) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    DBRProgressMonitor progress = trackProgress(monitor);
+                    if (!dataSourceContainer.isConnected() || dataSourceContainer.getDataSource() == null) {
+                        AtomicReference<IStatus> connectionStatus = new AtomicReference<>();
+                        if (!DBUtils.initDataSource(progress, dataSourceContainer, connectionStatus::set)) {
+                            IStatus status = connectionStatus.get();
+                            if (status != null && status.getSeverity() == IStatus.CANCEL) {
+                                UIUtils.asyncExec(() -> {
+                                    if (isDialogOpen()) {
+                                        cancelPressed();
+                                    }
+                                });
+                                return Status.CANCEL_STATUS;
+                            }
+                            if (status != null && status.getException() != null) {
+                                throw new DBException(AIChatMessagesUI.ai_chat_connect_error_message, status.getException());
+                            }
+                            throw new DBException(AIChatMessagesUI.ai_chat_connect_error_message);
+                        }
+                    }
+                    DBCExecutionContext context = contextProvider.getExecutionContext(dataSourceContainer);
+                    if (context == null) {
+                        throw new DBException(AIChatMessagesUI.ai_chat_connect_error_message);
+                    }
+                    DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, context.getDataSource());
+                    if (root == null) {
+                        throw new DBException(AIUIMessages.scope_selector_load_error);
+                    }
+                    List<DBSObject> selected = initialNodes.isEmpty()
+                        ? AITextUtils.loadCustomEntities(progress, context.getDataSource(), savedObjectIds)
+                        : initialNodes.stream().filter(DBNDatabaseNode.class::isInstance)
+                            .map(DBNDatabaseNode.class::cast).map(DBNDatabaseNode::getObject)
+                            .filter(Objects::nonNull).toList();
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    UIUtils.asyncExec(() -> {
+                        if (isDialogOpen() && !monitor.isCanceled()) {
+                            showObjects(root, selected);
+                        }
+                    });
+                    return Status.OK_STATUS;
+                } catch (Exception e) {
+                    UIUtils.asyncExec(() -> {
+                        if (isDialogOpen() && !monitor.isCanceled()) {
+                            DBWorkbench.getPlatformUI().showError(AIUIMessages.scope_selector_load_error, null, e);
+                            cancelPressed();
+                        }
+                    });
+                    return Status.CANCEL_STATUS;
+                }
+            }
+        };
+        loadJob.setSystem(true);
+        loadJob.schedule();
+    }
+
+    private void showObjects(@NotNull DBSObjectContainer root, @NotNull List<DBSObject> selected) {
+        selectorTree = new DatabaseObjectSelectionTree(treeArea, runnableContext, root,
+            new DatabaseObjectSelectionTree.ProgressListener() {
+                @Override
+                public void loadingStarted() {
+                    treeLoading = true;
+                    scheduleProgressUpdate(UINavigatorMessages.ui_navigator_loading_text_loading);
+                    updateLoadingState();
+                }
+
+                @NotNull
+                @Override
+                public DBRProgressMonitor wrapMonitor(@NotNull DBRProgressMonitor monitor) {
+                    return trackProgress(monitor);
+                }
+
+                @Override
+                public void loadingFinished() {
+                    treeLoading = false;
+                    updateLoadingState();
+                }
+            });
+        selectorTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+        selectorTree.moveAbove(loadingLabel);
+        selectorTree.setCheckedObjects(selected);
+        Button showSystemObjects = UIUtils.createCheckbox(
+            treeArea, UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
+            selectorTree.isShowSystemObjects());
+        showSystemObjects.addSelectionListener(SelectionListener.widgetSelectedAdapter(
+            event -> selectorTree.setShowSystemObjects(showSystemObjects.getSelection())));
+        selectorTree.addCheckListener(() -> {
+            updateOkButton();
+            updateScopeInfo();
+        });
+        updateOkButton();
+        updateScopeInfo();
+        initialLoading = false;
+        updateLoadingState();
+        getShell().layout(true, true);
+    }
+
+    @NotNull
+    private DBRProgressMonitor trackProgress(@NotNull DBRProgressMonitor monitor) {
+        return new ProxyProgressMonitor(monitor) {
+            private String task = UINavigatorMessages.ui_navigator_loading_text_loading;
+
+            @Override
+            public void beginTask(@NotNull String name, int totalWork) {
+                task = name;
+                scheduleProgressUpdate(task);
+                super.beginTask(name, totalWork);
+            }
+
+            @Override
+            public void subTask(@NotNull String name) {
+                scheduleProgressUpdate(task + ": " + name);
+                super.subTask(name);
+            }
+        };
+    }
+
+    private void scheduleProgressUpdate(@NotNull String text) {
+        progressText.set(text);
+        if (progressUpdateScheduled.compareAndSet(false, true)) {
+            UIUtils.asyncExec(() -> {
+                progressUpdateScheduled.set(false);
+                if (!loadingLabel.isDisposed()) {
+                    loadingLabel.setText(progressText.get());
+                    treeArea.layout(true, true);
+                }
+            });
+        }
+    }
+
+    private void updateLoadingState() {
+        boolean loading = initialLoading || treeLoading;
+        UIUtils.setControlVisible(loadingLabel, loading);
+        UIUtils.setControlVisible(loadingBar, loading);
+        treeArea.layout(true, true);
     }
 
     private void updateOkButton() {
         Button okButton = getButton(IDialogConstants.OK_ID);
         if (okButton != null) {
-            okButton.setEnabled(selectorPanel.getCheckedNodes().stream().anyMatch(ScopeSelectorDialog::isSupportedNode));
+            okButton.setEnabled(selectorTree != null && selectorTree.hasCheckedObjects());
         }
-    }
-
-    private static boolean isSupportedNode(@NotNull DBNNode node) {
-        if (node instanceof DBNDatabaseNode databaseNode) {
-            DBSObject object = databaseNode.getObject();
-            return object instanceof DBSEntity || object instanceof DBSEntityContainer || object instanceof DBSStructContainer;
-        }
-        return false;
     }
 
     @Override
     protected void okPressed() {
-        selectedNodes = selectorPanel.getCheckedNodes();
-        selectedNodes.removeIf(n -> !isSupportedNode(n));
-        selectedNodes.removeIf(n -> selectedNodes.contains(n.getParentNode()));
-        if (selectedNodes.isEmpty()) {
+        Set<DBNNode> resolvedNodes = new LinkedHashSet<>();
+        List<DBSObject> checkedObjects = selectorTree.getCheckedObjects();
+        DBNModel navigatorModel = dataSourceContainer.getProject().getNavigatorModel();
+        try {
+            runnableContext.run(true, true, monitor -> {
+                monitor.beginTask(AIUIMessages.scope_selector_loading, checkedObjects.size());
+                try {
+                    navigatorModel.ensureProjectLoaded(dataSourceContainer.getProject());
+                    for (DBSObject object : checkedObjects) {
+                        if (monitor.isCanceled()) {
+                            throw new InterruptedException();
+                        }
+                        DBNDatabaseNode node = navigatorModel.getNodeByObject(monitor, object, true);
+                        if (node == null) {
+                            throw new InvocationTargetException(new DBException("Cannot resolve selected object " + object.getName()));
+                        }
+                        resolvedNodes.add(node);
+                        monitor.worked(1);
+                    }
+                    if (monitor.isCanceled()) {
+                        throw new InterruptedException();
+                    }
+                } finally {
+                    monitor.done();
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(AIUIMessages.scope_selector_load_error, null, e.getTargetException());
+            return;
+        } catch (InterruptedException e) {
             return;
         }
-
+        if (resolvedNodes.isEmpty()) {
+            MessageDialog.openInformation(getShell(), AIUIMessages.scope_selector_customize, AIUIMessages.scope_selector_empty);
+            return;
+        }
+        selectedNodes = new ArrayList<>(resolvedNodes);
         super.okPressed();
     }
 

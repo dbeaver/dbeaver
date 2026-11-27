@@ -22,6 +22,7 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
@@ -177,12 +178,14 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
             addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.CUT);
             addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.COPY);
             addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.PASTE);
+            addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.SELECT_ALL);
             IAction action= getAction(ITextEditorActionConstants.QUICK_ASSIST);
             if (action != null && action.isEnabled()) {
                 addAction(menu, ITextEditorActionConstants.GROUP_EDIT, ITextEditorActionConstants.QUICK_ASSIST);
             }
         } else {
             addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.COPY);
+            addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.SELECT_ALL);
         }
 
         IAction preferencesAction = getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES);
@@ -236,8 +239,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
             } catch (IOException e) {
                 DBWorkbench.getPlatformUI().showError(
                     EditorsMessages.file_dialog_cannot_load_file,
-                    EditorsMessages.file_dialog_cannot_load_file +
-                        " '" + file.toAbsolutePath() + "' - " + e.getMessage());
+                    NLS.bind(EditorsMessages.file_dialog_cannot_load_file_message, file.toAbsolutePath(), e.getMessage()));
             }
         }
         if (!CommonUtils.isEmpty(newContent)) {

@@ -31,6 +31,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -163,8 +165,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         IWizardPage firstPage = getStartingPage();
         setTitle(firstPage.getTitle());
         setTitleImage(firstPage.getImage());
-        // The label is initially sized for JFace's default banner, so recalculate it after replacing the image.
-        getTitleImageLabel().getParent().layout(true, true);
         setMessage(firstPage.getDescription());
 
         // Afterwards show the starting page
@@ -178,8 +178,19 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
-        Composite mainComposite = new Composite(parent, SWT.NONE);
+    public void setTitleImage(@Nullable Image image) {
+        super.setTitleImage(image);
+        Label label = getTitleImageLabel();
+        if (label != null && !label.isDisposed()) {
+            label.requestLayout();
+            label.getParent().layout(true, true);
+        }
+    }
+
+    @Override
+    @NotNull
+    protected Control createDialogArea(@NotNull Composite parent) {
+        final Composite mainComposite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -333,7 +344,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 awp.updatePageCompletion();
             }
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
+            DBWorkbench.getPlatformUI().showError(
+                UIMessages.wizard_page_switch_error_title, UIMessages.wizard_page_switch_error_message, e);
         } finally {
             pageArea.setRedraw(true);
         }

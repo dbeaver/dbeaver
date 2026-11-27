@@ -469,6 +469,11 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         }
     }
 
+    @Nullable
+    public SQLReconcilingStrategy getReconcilingStrategy() {
+        return this.reconcilingStrategy;
+    }
+
     public IReconciler getReconciler(ISourceViewer sourceViewer) {
         if (reconcilingStrategy == null) {
             return null;

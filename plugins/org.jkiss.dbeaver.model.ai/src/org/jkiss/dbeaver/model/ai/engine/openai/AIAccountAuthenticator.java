@@ -26,8 +26,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface AIAccountAuthenticator {
     static boolean isSupported() {
-        return !DBWorkbench.isDistributed()
-            && !DBWorkbench.getPlatform().getApplication().isMultiuser()
+        return !DBWorkbench.getPlatform().getApplication().isMultiuser()
             && !DBWorkbench.getPlatform().getApplication().isHeadlessMode();
     }
 
@@ -52,6 +51,17 @@ public interface AIAccountAuthenticator {
     DeviceAuthorization startDeviceAuthorization() throws DBException;
 
     @NotNull
+    default DeviceAuthorizationPollResult pollDeviceAuthorization(
+        @NotNull DeviceAuthorization authorization,
+        @NotNull CompletableFuture<Void> cancellation
+    ) throws DBException {
+        // Compatibility fallback for authenticators that own the complete polling loop.
+        return DeviceAuthorizationPollResult.complete(
+            completeDeviceAuthorization(authorization, cancellation)
+        );
+    }
+
+    @NotNull
     Tokens completeDeviceAuthorization(
         @NotNull DeviceAuthorization authorization,
         @NotNull CompletableFuture<Void> cancellation
@@ -70,6 +80,38 @@ public interface AIAccountAuthenticator {
         int intervalSeconds,
         long expiresInSeconds
     ) {
+    }
+
+    record DeviceAuthorizationPollResult(
+        @NotNull DeviceAuthorizationPollStatus status,
+        @Nullable Tokens tokens
+    ) {
+        public DeviceAuthorizationPollResult {
+            if ((status == DeviceAuthorizationPollStatus.COMPLETE) != (tokens != null)) {
+                throw new IllegalArgumentException("Completed device authorization must contain tokens");
+            }
+        }
+
+        @NotNull
+        public static DeviceAuthorizationPollResult pending() {
+            return new DeviceAuthorizationPollResult(DeviceAuthorizationPollStatus.PENDING, null);
+        }
+
+        @NotNull
+        public static DeviceAuthorizationPollResult slowDown() {
+            return new DeviceAuthorizationPollResult(DeviceAuthorizationPollStatus.SLOW_DOWN, null);
+        }
+
+        @NotNull
+        public static DeviceAuthorizationPollResult complete(@NotNull Tokens tokens) {
+            return new DeviceAuthorizationPollResult(DeviceAuthorizationPollStatus.COMPLETE, tokens);
+        }
+    }
+
+    enum DeviceAuthorizationPollStatus {
+        PENDING,
+        SLOW_DOWN,
+        COMPLETE
     }
 
     record Tokens(

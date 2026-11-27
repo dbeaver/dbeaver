@@ -33,10 +33,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
@@ -147,7 +144,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             image = DBeaverIcons.getImage(((DBNNode) obj).getNodeIconDefault());
         }
 
-        if (labelDecorator != null && obj instanceof DBNResource) {
+        if (labelDecorator != null && (obj instanceof DBNResource || obj instanceof DBNProject)) {
             image = labelDecorator.decorateImage(image, obj);
         }
         return image;

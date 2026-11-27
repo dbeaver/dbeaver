@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
+import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
 import org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.utils.DurationFormat;
@@ -53,6 +54,7 @@ final class WebViewMessageRenderer {
     private final Browser browser;
     private final Supplier<DBPDataSource> dataSourceSupplier;
     private final WebCSSInitializer cssInitializer;
+    private final Map<Integer, LocalResourceHttpServer.Handle> imageResources = new HashMap<>();
     private SQLSyntaxManager syntaxManager;
     private SQLRuleScanner ruleScanner;
 
@@ -64,6 +66,7 @@ final class WebViewMessageRenderer {
         this.browser = browser;
         this.dataSourceSupplier = dataSourceSupplier;
         this.cssInitializer = cssInitializer;
+        browser.addDisposeListener(event -> clearImageResources());
     }
 
     @Nullable
@@ -142,6 +145,7 @@ final class WebViewMessageRenderer {
             default -> addUsualMessage(args, message);
         }
 
+        args.put("images", registerMessageImages(message));
         args.put("id", message.id());
         args.put("role", message.message().getRole().name().toLowerCase(Locale.ROOT));
         args.put("icon", iconPath);
@@ -151,11 +155,41 @@ final class WebViewMessageRenderer {
         return true;
     }
 
+    @NotNull
+    private List<Map<String, String>> registerMessageImages(@NotNull AIChatMessage message) {
+        LocalResourceHttpServer.Handle resources = imageResources.get(message.id());
+        List<Map<String, String>> previews = new ArrayList<>();
+        for (AIImageAttachment image : message.message().getImages()) {
+            Map<String, String> preview = new HashMap<>();
+            preview.put("name", image.name());
+            try {
+                if (resources == null) {
+                    resources = LocalResourceHttpServer.acquire();
+                    imageResources.put(message.id(), resources);
+                }
+                preview.put("src", AIImageAttachmentViewer.registerImage(resources, Integer.toString(previews.size()), image,
+                    exception -> log.debug("Cannot display message image", exception)));
+            } catch (IOException exception) {
+                log.debug("Cannot register message image", exception);
+            }
+            previews.add(preview);
+        }
+        return previews;
+    }
+
+    private void clearImageResources() {
+        imageResources.values().forEach(LocalResourceHttpServer.Handle::close);
+        imageResources.clear();
+    }
+
     @Nullable
     private static Map<String, String> buildMessageMeta(@NotNull AIChatMessage message) {
         var meta = message.message().getMeta();
-        if (meta == null) {
-            return null;
+        if (CommonUtils.isEmpty(meta)) {
+            return message.message().getRole() == AIMessageType.ASSISTANT ? Map.of(
+                "time", AIChatUtils.formatMessageTime(message.message()),
+                "usage", AIChatMessagesUI.ai_chat_message_meta_tokens_unavailable
+            ) : null;
         }
 
         AIExtendedUsage extendedUsage = AIExtendedUsage.from(meta);
@@ -163,12 +197,15 @@ final class WebViewMessageRenderer {
         return Map.of(
             "time", AIChatUtils.formatMessageTime(message.message()),
             "duration", DurationFormatter.format(extendedUsage.totalTime(), DurationFormat.SHORT),
-            "usage", formatUsage(AIExtendedUsage.from(meta))
+            "usage", formatUsage(extendedUsage)
         );
     }
 
     @NotNull
     static String formatUsage(@NotNull AIExtendedUsage usage) {
+        if (!usage.hasUsage()) {
+            return AIChatMessagesUI.ai_chat_message_meta_tokens_unavailable;
+        }
         return NLS.bind(
             AIChatMessagesUI.ai_chat_message_meta_tokens,
             usage.totalInputTokens(),
@@ -228,6 +265,7 @@ final class WebViewMessageRenderer {
             Map<String, Object> resultArgs = new HashMap<>();
             resultArgs.put("messageId", message.id());
             resultArgs.put("functionName", functionCall.getFunctionName());
+            resultArgs.put("functionCallId", functionCall.getId().toString());
             resultArgs.put("result", result);
             resultArgs.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
             AIFunctionResult functionResult = message.message().getFunctionResult();
@@ -260,6 +298,7 @@ final class WebViewMessageRenderer {
                 : NLS.bind(AIChatMessagesUI.ai_chat_confirm_auto_approved, toolName)
         );
         args.put("functionName", functionCall.getFunctionName());
+        args.put("functionCallId", functionCall.getId().toString());
         args.put("confirmed", confirmed);
         args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
         args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
@@ -325,8 +364,31 @@ final class WebViewMessageRenderer {
             ),
             "notice",
             AIChatMessagesUI.ai_chat_ai_notice,
+            "strings",
+            Map.ofEntries(
+                Map.entry("allowOptions", AIChatMessagesUI.ai_chat_confirm_allow_options),
+                Map.entry("allowTitlePrefix", AIChatMessagesUI.ai_chat_confirm_title_prefix),
+                Map.entry("allowTitleMiddle", AIChatMessagesUI.ai_chat_confirm_title_middle),
+                Map.entry("parameters", AIChatMessagesUI.ai_chat_confirm_params),
+                Map.entry("result", AIChatMessagesUI.ai_chat_confirm_result),
+                Map.entry("invalidAttachmentData", AIChatMessagesUI.ai_chat_attachment_invalid_data),
+                Map.entry("unknownFile", AIChatMessagesUI.ai_chat_attachment_unknown_file),
+                Map.entry("showInExplorer", AIChatMessagesUI.ai_chat_attachment_show_in_explorer),
+                Map.entry("attachmentError", AIChatMessagesUI.ai_chat_attachment_create_error),
+                Map.entry("chooseType", AIChatMessagesUI.ai_chat_attachment_choose_type),
+                Map.entry("chooseTypeTip", AIChatMessagesUI.ai_chat_attachment_choose_type_tip),
+                Map.entry("noHandlers", AIChatMessagesUI.ai_chat_attachment_no_handlers),
+                Map.entry("noActions", AIChatMessagesUI.ai_chat_attachment_no_actions),
+                Map.entry("noTypeActions", AIChatMessagesUI.ai_chat_attachment_no_type_actions),
+                Map.entry("openAsTable", AIChatMessagesUI.ai_chat_attachment_open_as_table),
+                Map.entry("importFile", AIChatMessagesUI.ai_chat_attachment_import_file),
+                Map.entry("importFiles", AIChatMessagesUI.ai_chat_attachment_import_files),
+                Map.entry("openCompleted", AIChatMessagesUI.ai_chat_attachment_open_completed),
+                Map.entry("importCompleted", AIChatMessagesUI.ai_chat_attachment_import_completed)
+            ),
             "a11y",
             Map.of(
+                "notifyOutsideWebView", "edge".equals(browser.getBrowserType()),
                 "transcriptLabel", AIChatMessagesUI.ai_chat_a11y_transcript_label,
                 "waitingForResponse", AIChatMessagesUI.ai_chat_a11y_waiting_for_response,
                 "roles", Map.of(
@@ -368,10 +430,15 @@ final class WebViewMessageRenderer {
     }
 
     void removeMessage(@NotNull AIChatMessage message) {
+        LocalResourceHttpServer.Handle resources = imageResources.remove(message.id());
+        if (resources != null) {
+            resources.close();
+        }
         execute("removeMessage", Map.of("id", message.id()));
     }
 
     void clearChat() {
+        clearImageResources();
         execute("clearChat", Map.of());
     }
 

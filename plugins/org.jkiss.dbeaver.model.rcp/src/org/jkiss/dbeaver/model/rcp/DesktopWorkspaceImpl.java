@@ -113,10 +113,11 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         super.dispose();
     }
 
-    private DBPResourceHandler getResourceHandler(DBPResourceTypeDescriptor resourceType) {
+    @Nullable
+    private DBPResourceHandler getResourceHandler(@NotNull DBPResourceTypeDescriptor resourceType) {
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             if (rhd.getTypeId().equals(resourceType.getId())) {
-                return rhd.getHandler();
+                return rhd.getFolderHandler();
             }
         }
         return null;
@@ -444,6 +445,11 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         } catch (CoreException e) {
             throw new DBException("Error linking project from '" + projectPath + "'", e);
         }
+    }
+
+    @Override
+    public void deleteProject(@NotNull DBPProject project) throws DBException {
+        deleteProject(project, true);
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,11 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -57,6 +60,34 @@ public class ResultSetUtils
             viewerSettings = UIUtils.getDialogSettings(ResultSetViewer.class.getSimpleName());
         }
         return UIUtils.getSettingsSection(viewerSettings, section);
+    }
+
+    /**
+     * Cancels a modeless filter dialog when its source result set is refreshed or disposed.
+     */
+    public static void closeOnResultSetRefresh(@NotNull IResultSetController controller, @NotNull Shell shell) {
+        Control sourceControl = controller.getControl();
+        IResultSetListener listener = new ResultSetListenerAdapter() {
+            @Override
+            public void onResultSetRefresh() {
+                if (!shell.isDisposed()) {
+                    shell.close();
+                }
+            }
+        };
+        DisposeListener sourceDisposed = event -> {
+            if (!shell.isDisposed()) {
+                shell.close();
+            }
+        };
+        controller.addListener(listener);
+        sourceControl.addDisposeListener(sourceDisposed);
+        shell.addDisposeListener(event -> {
+            controller.removeListener(listener);
+            if (!sourceControl.isDisposed()) {
+                sourceControl.removeDisposeListener(sourceDisposed);
+            }
+        });
     }
 
     @Nullable

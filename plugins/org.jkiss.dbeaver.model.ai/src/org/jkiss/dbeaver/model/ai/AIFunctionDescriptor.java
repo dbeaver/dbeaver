@@ -31,6 +31,11 @@ public interface AIFunctionDescriptor {
     @NotNull
     String getId();
 
+    @Nullable
+    default String getLegacyId() {
+        return null;
+    }
+
     @NotNull
     default String getFullId() {
         return getFullFunctionId(getToolbox().getToolboxId(), getId());
@@ -64,6 +69,27 @@ public interface AIFunctionDescriptor {
      * System functions are not shown in the UI and can be executed without confirmation.
      */
     boolean isSystem();
+
+    /**
+     * MCP hint: the function does not modify its environment. Defaults to false.
+     */
+    default boolean isReadOnlyHint() {
+        return false;
+    }
+
+    /**
+     * MCP hint: the function may perform destructive updates. Defaults to true.
+     */
+    default boolean isDestructiveHint() {
+        return true;
+    }
+
+    /**
+     * MCP hint: repeated calls with the same arguments have no additional side effects. Defaults to false.
+     */
+    default boolean isIdempotentHint() {
+        return false;
+    }
 
     boolean isEnabledByDefault();
 

@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleReference;
-import org.osgi.framework.FrameworkUtil;
+import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.UUID;
 
@@ -45,8 +45,14 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
 
     private static DBPApplication INSTANCE;
 
+    private static final class ConsoleUIHolder {
+        private static final DBPPlatformUI INSTANCE = new ConsoleUserInterface();
+    }
+
     private String applicationRunId;
     private final long applicationStartTime = System.currentTimeMillis();
+    private DBPPlatform platform;
+    private DBPPlatformUI platformUI;
 
     protected AbstractApplication() {
         if (INSTANCE != null) {
@@ -160,31 +166,53 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
     }
 
     protected void initializeApplicationServices() {
-        if (getClass().getClassLoader() instanceof BundleReference br) {
-            // Initialize platform
-            BundleContext bundleContext = br.getBundle().getBundleContext();
-            if (bundleContext == null) {
-                // Use model bundle context
-                bundleContext = FrameworkUtil.getBundle(DBPApplication.class).getBundleContext();
-            }
-            registerService(bundleContext, DBPPlatform.class, getPlatformClass());
-            registerService(bundleContext, DBPPlatformUI.class, getPlatformUIClass());
-        } else {
-            log.error("Cannot initialize application services in non-OSGI context");
+        platform = createService(getPlatformClass());
+        Class<? extends DBPPlatformUI> platformUIClass = getPlatformUIClass();
+        platformUI = platformUIClass == null ? null : createService(platformUIClass);
+    }
+
+    @NotNull
+    public DBPPlatform getPlatformInstance() {
+        if (platform == null) {
+            throw new IllegalStateException("Application platform is not instantiated");
+        }
+        return platform;
+    }
+
+    @NotNull
+    public DBPPlatformUI getPlatformUIInstance() {
+        return platformUI == null ? ConsoleUIHolder.INSTANCE : platformUI;
+    }
+
+    public void initializePlatform() {
+        initializeService(getPlatformInstance());
+        if (platformUI != null) {
+            initializeService(platformUI);
         }
     }
 
-    protected <T> void registerService(BundleContext bundleContext, Class<T> serviceInt, Class<? extends T> serviceImplClass) {
-        if (serviceImplClass == null) {
-            return;
-        }
+    @Nullable
+    private <T> T createService(@NotNull Class<? extends T> serviceImplClass) {
         try {
             Constructor<? extends T> constructor = serviceImplClass.getDeclaredConstructor();
             constructor.setAccessible(true);
-            T serviceImpl = constructor.newInstance();
-            bundleContext.registerService(serviceInt, serviceImpl, null);
+            return constructor.newInstance();
         } catch (Throwable e) {
-            log.error("Error instantiating service '" + serviceInt.getName() + "'", e);
+            log.error("Error instantiating service '" + serviceImplClass.getName() + "'", e);
+            return null;
+        }
+    }
+
+    private static void initializeService(@NotNull Object service) {
+        try {
+            Method method = service.getClass().getDeclaredMethod("initialize");
+            method.setAccessible(true);
+            method.invoke(service);
+        } catch (Exception e) {
+            if (e instanceof InvocationTargetException ite && ite.getTargetException() instanceof RuntimeException re) {
+                throw re;
+            }
+            throw new IllegalStateException(e);
         }
     }
 

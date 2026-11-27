@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,9 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
  */
 public interface TaskFeatures {
 
-    DBRFeature CATEGORY_TASKS = DBRFeature.createCategory("Tasks", "Task features");
-
-    DBRFeature TASKS_VIEW_OPEN = DBRFeature.createFeature(CATEGORY_TASKS, "Open task manager");
-    DBRFeature TASKS_CREATE = DBRFeature.createFeature(CATEGORY_TASKS, "Create task");
-    DBRFeature TASKS_DELETE = DBRFeature.createFeature(CATEGORY_TASKS, "Delete task");
-    DBRFeature TASKS_EXECUTE = DBRFeature.createFeature(CATEGORY_TASKS, "Start task");
+    DBRFeature TASKS_VIEW_OPEN = new DBRFeature("TASKS_VIEW_OPEN");
+    DBRFeature TASKS_CREATE = new DBRFeature("TASKS_CREATE");
+    DBRFeature TASKS_DELETE = new DBRFeature("TASKS_DELETE");
+    DBRFeature TASKS_EXECUTE = new DBRFeature("TASKS_EXECUTE");
 
 }

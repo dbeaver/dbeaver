@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -71,7 +73,7 @@ public class DBIcon implements DBPImage {
     public static final DBIcon TREE_UNIQUE_KEY = new DBIcon("unique-key", "tree/unique_constraint.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_FOREIGN_KEY = new DBIcon("foreign-key", "tree/foreign_key.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_FOREIGN_KEY_COLUMN = new DBIcon("foreign-key-column", "tree/foreign_key_column.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_DERIVED_COLUMN = new DBIcon("derived-column", "tree/derived_column.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_DERIVED_COLUMN = new DBIcon("derived-column", "tree/derived_column.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_REFERENCE = new DBIcon("reference", "tree/reference.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TRIGGER = new DBIcon("trigger", "tree/trigger.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_USER = new DBIcon("user", "tree/user.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -140,18 +142,18 @@ public class DBIcon implements DBPImage {
     public static final DBIcon TYPE_UUID = new DBIcon("uuid", "types/uuid.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TYPE_UNKNOWN = new DBIcon("unknown", "types/unknown.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final DBIcon OVER_ADD = new DBIcon("over_add", "over/add_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_SUCCESS = new DBIcon("over_success", "over/success_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_FAILED = new DBIcon("over_failed", "over/failed_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_ERROR = new DBIcon("over_error", "over/error_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_UNKNOWN = new DBIcon("over_condition", "over/conditional_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_LAMP = new DBIcon("over_lamp", "over/lamp_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_RED_LAMP = new DBIcon("over_redlamp", "over/redlamp_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_KEY = new DBIcon("over_key", "over/key_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_LOCK = new DBIcon("over_lock", "over/lock_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_EXTERNAL = new DBIcon("over_external", "over/external_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_REFERENCE = new DBIcon("over_reference", "over/reference_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon OVER_FOLDER = new DBIcon("over_folder", "over/folder_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_ADD = new DBIcon("over_add", "over/add_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_SUCCESS = new DBIcon("over_success", "over/success_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_FAILED = new DBIcon("over_failed", "over/failed_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_ERROR = new DBIcon("over_error", "over/error_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_UNKNOWN = new DBIcon("over_condition", "over/conditional_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_LAMP = new DBIcon("over_lamp", "over/lamp_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_RED_LAMP = new DBIcon("over_redlamp", "over/redlamp_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_KEY = new DBIcon("over_key", "over/key_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_LOCK = new DBIcon("over_lock", "over/lock_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_EXTERNAL = new DBIcon("over_external", "over/external_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_REFERENCE = new DBIcon("over_reference", "over/reference_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_FOLDER = new DBIcon("over_folder", "over/folder_ovr.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon DATABASE_DEFAULT = new DBIcon("database_icon_default", "connection/database_icon.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DATABASE_BIG_DEFAULT = new DBIcon("database_icon_big_default", "connection/database_icon_big.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -190,16 +192,18 @@ public class DBIcon implements DBPImage {
         loadIcons(DBIcon.class);
     }
 
+    @Nullable
     private final String token;
+    @NotNull
     private String path;
 
-    static public void loadIcons(Class<?> aClass) {
-        Bundle iconBundle = FrameworkUtil.getBundle(aClass);
+    public static void loadIcons(@NotNull Class<?> iconClass) {
+        Bundle iconBundle = FrameworkUtil.getBundle(iconClass);
         if (iconBundle == null) {
-            log.error("Can't find bundle for class '" + aClass.getName() + "'");
+            log.error("Can't find bundle for class '" + iconClass.getName() + "'");
             return;
         }
-        for (Field field : aClass.getDeclaredFields()) {
+        for (Field field : iconClass.getDeclaredFields()) {
             if ((field.getModifiers() & Modifier.STATIC) == 0 || field.getType() != DBIcon.class) {
                 continue;
             }
@@ -209,7 +213,7 @@ public class DBIcon implements DBPImage {
             try {
                 DBIcon icon = (DBIcon) field.get(null);
                 if (!icon.path.startsWith("platform:")) {
-                    icon.path = "platform:/plugin/" + iconBundle.getSymbolicName() + "/icons/" + icon.path;
+                    icon.path = RuntimeUtils.makePlatformResourceUrl(iconBundle.getSymbolicName(), "icons/" + icon.path);
                 }
                 if (VALIDATE_ICON_FILE) {
                     URL fileURL = FileLocator.toFileURL(new URL(icon.path));
@@ -231,30 +235,29 @@ public class DBIcon implements DBPImage {
         }
     }
 
-    public DBIcon(String path)
-    {
+    public DBIcon(@NotNull String path) {
         this.token = null;
         this.path = path;
     }
 
-    public DBIcon(String token, String path)
-    {
+    public DBIcon(@NotNull String token, @NotNull String path) {
         this.token = token;
         this.path = path;
     }
 
-    public static DBPImage getImageById(String token)
-    {
+    @Nullable
+    public static DBPImage getImageById(@Nullable String token) {
         return iconMap.get(token);
     }
 
 
     /**
      * Token is icon id. It can be used to refer on icons in plugin extensions
-     * @return unique token
+     *
+     * @return unique token, or null for icons without one
      */
-    public String getToken()
-    {
+    @Nullable
+    public String getToken() {
         return token;
     }
 
@@ -265,7 +268,7 @@ public class DBIcon implements DBPImage {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (obj instanceof DBIcon) {
             return CommonUtils.equalObjects(token, ((DBIcon) obj).token) &&
                 CommonUtils.equalObjects(path, ((DBIcon) obj).path);
@@ -274,6 +277,7 @@ public class DBIcon implements DBPImage {
         }
     }
 
+    @NotNull
     @Override
     public String toString() {
         return token + ":" + path;

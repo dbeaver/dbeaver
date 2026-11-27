@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,9 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.SQLEditorHandlerCheckProcedureConsole;
@@ -35,6 +38,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLObjectDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenObjectConsole;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
@@ -48,6 +52,9 @@ import java.util.Map;
  * PostgreSourceViewEditor
  */
 public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject> {
+
+    @Nullable
+    private PostgreProcedureSource procedureSource;
 
     public PostgreSourceViewEditor() {
 
@@ -69,9 +76,53 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     }
 
     @Override
-    protected void setSourceText(DBRProgressMonitor monitor, String sourceText)
+    @Nullable
+    protected String getSourceText(@NotNull DBRProgressMonitor monitor) throws DBException {
+        String sourceText = super.getSourceText(monitor);
+        procedureSource = getSourceObject() instanceof PostgreProcedure && sourceText != null
+            ? PostgreProcedureSource.parse(sourceText) : null;
+        if (isInDebugMode()) {
+            if (procedureSource != null) {
+                return procedureSource.getBody();
+            }
+            getDatabaseEditorInput().setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, false);
+        }
+        return sourceText;
+    }
+
+    @Override
+    protected void setSourceText(@NotNull DBRProgressMonitor monitor, @NotNull String sourceText)
     {
+        if (isInDebugMode() && procedureSource != null) {
+            sourceText = procedureSource.withBody(sourceText);
+        }
         getInputPropertySource().setPropertyValue(monitor, "objectDefinitionText", sourceText);
+    }
+
+    private void toggleHeader(@NotNull Action action) {
+        if (getDocument() == null) {
+            action.setChecked(!isInDebugMode());
+            return;
+        }
+        String text = getDocument().get();
+        PostgreProcedureSource source = PostgreProcedureSource.parse(
+            isInDebugMode() && procedureSource != null ? procedureSource.withBody(text) : text);
+        if (source == null) {
+            // Keep the complete definition visible when it has no dollar-quoted body (e.g. an aggregate).
+            action.setChecked(true);
+            return;
+        }
+        boolean dirty = isDirty();
+        procedureSource = source;
+        getDatabaseEditorInput().setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, !action.isChecked());
+        SQLObjectDocumentProvider provider = (SQLObjectDocumentProvider) getDocumentProvider();
+        provider.setSourceText(action.isChecked() ? source.getDefinition() : source.getBody());
+        // Reuse the current text instead of refreshing from the model and losing unsaved changes.
+        super.setInput(getEditorInput());
+        reloadSyntaxRules();
+        if (dirty) {
+            provider.setCanSaveDocument(getEditorInput());
+        }
     }
 
     @Override
@@ -91,8 +142,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     }
                     @Override
                     public void run() {
-                        getDatabaseEditorInput().setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, !isChecked());
-                        refreshPart(PostgreSourceViewEditor.this, true);
+                        toggleHeader(this);
                     }
                 }, true));
             contributionManager.add(ActionUtils.makeActionContribution(
@@ -127,7 +177,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     @Override
     protected Map<String, Object> getSourceOptions() {
         Map<String, Object> options = super.getSourceOptions();
-        options.put(DBPScriptObject.OPTION_DEBUGGER_SOURCE, isInDebugMode());
+        options.put(DBPScriptObject.OPTION_DEBUGGER_SOURCE, false);
         return options;
     }
 
@@ -136,4 +186,3 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
             getDatabaseEditorInput().getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE), false);
     }
 }
-

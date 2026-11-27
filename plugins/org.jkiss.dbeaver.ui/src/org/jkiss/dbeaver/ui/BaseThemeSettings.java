@@ -23,6 +23,34 @@ import org.eclipse.swt.graphics.Font;
  * Theme settings
  */
 public class BaseThemeSettings extends ThemeListener {
+    public static final String ICON_DEFAULT = "org.jkiss.dbeaver.ui.icons.default";
+    public static final String ICON_SECONDARY = "org.jkiss.dbeaver.ui.icons.secondary";
+    public static final String ICON_ACCENT = "org.jkiss.dbeaver.ui.icons.accent";
+    public static final String ICON_TIP = "org.jkiss.dbeaver.ui.icons.tip";
+    public static final String ICON_ATTENTION = "org.jkiss.dbeaver.ui.icons.attention";
+    public static final String ICON_POSITIVE = "org.jkiss.dbeaver.ui.icons.positive";
+    public static final String ICON_IMPORTANT = "org.jkiss.dbeaver.ui.icons.important";
+    public static final String ICON_DANGER = "org.jkiss.dbeaver.ui.icons.danger";
+    public static final String ICON_BACKGROUND = "org.jkiss.dbeaver.ui.icons.background";
+
+    @ThemeColor(ICON_DEFAULT)
+    public volatile Color iconDefault;
+    @ThemeColor(ICON_SECONDARY)
+    public volatile Color iconSecondary;
+    @ThemeColor(ICON_ACCENT)
+    public volatile Color iconAccent;
+    @ThemeColor(ICON_TIP)
+    public volatile Color iconTip;
+    @ThemeColor(ICON_ATTENTION)
+    public volatile Color iconAttention;
+    @ThemeColor(ICON_POSITIVE)
+    public volatile Color iconPositive;
+    @ThemeColor(ICON_IMPORTANT)
+    public volatile Color iconImportant;
+    @ThemeColor(ICON_DANGER)
+    public volatile Color iconDanger;
+    @ThemeColor(ICON_BACKGROUND)
+    public volatile Color iconBackground;
 
     @ThemeFont(value = UIFonts.DBeaver.MAIN_FONT)
     public volatile Font baseFont;
@@ -59,6 +87,13 @@ public class BaseThemeSettings extends ThemeListener {
 
     @ThemeColor(BaseEditorColors.COLOR_ACCENT)
     public volatile Color colorAccent;
+
+    @ThemeColor(BaseEditorColors.COLOR_BACKGROUND_BLUE)
+    public volatile Color colorBackgroundBlue;
+    @ThemeColor(BaseEditorColors.COLOR_BACKGROUND_YELLOW)
+    public volatile Color colorBackgroundYellow;
+    @ThemeColor(BaseEditorColors.COLOR_BACKGROUND_GREEN)
+    public volatile Color colorBackgroundGreen;
 
     public static final BaseThemeSettings instance = new BaseThemeSettings();
 }

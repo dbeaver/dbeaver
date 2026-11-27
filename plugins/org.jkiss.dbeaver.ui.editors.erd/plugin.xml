@@ -10,6 +10,7 @@
         <editor
             id="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorEmbedded"
             class="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorEmbedded"
+            lazy="true"
             main="false"
             label="%editor.erd.name"
             description="%editor.erd.description"
@@ -21,7 +22,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler type="er-diagram" class="org.jkiss.dbeaver.ui.editors.erd.navigator.ERDResourceHandler"/>
+        <handler type="er-diagram" class="org.jkiss.dbeaver.ui.editors.erd.navigator.ERDResourceHandler"
+                 lazyFolder="true" folderTypeName="erd_folder"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
@@ -62,11 +64,14 @@
                 </with>
             </activeWhen>
             <enabledWhen>
-                <with variable="activeFocusControl">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
-                        <test property="org.jkiss.dbeaver.ui.editors.erd.editor.editable"/>
-                    </adapt>
-                </with>
+                <and>
+                    <with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.erd.ERDEditor"/></with>
+                    <with variable="activeFocusControl">
+                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                            <test property="org.jkiss.dbeaver.ui.editors.erd.editor.editable"/>
+                        </adapt>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
 
@@ -78,6 +83,7 @@
             </activeWhen>
             <enabledWhen>
                 <and>
+                    <with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.erd.ERDEditor"/></with>
                     <with variable="activeFocusControl">
                         <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
                             <test property="org.jkiss.dbeaver.ui.editors.erd.editor.canDelete"/>
@@ -103,11 +109,14 @@
                 </with>
             </activeWhen>
             <enabledWhen>
-                <with variable="activeFocusControl">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
-                        <test property="org.jkiss.dbeaver.ui.editors.erd.editor.canUndo"/>
-                    </adapt>
-                </with>
+                <and>
+                    <with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.erd.ERDEditor"/></with>
+                    <with variable="activeFocusControl">
+                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                            <test property="org.jkiss.dbeaver.ui.editors.erd.editor.canUndo"/>
+                        </adapt>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ui.editors.erd.action.ERDHandlerRedo">
@@ -117,11 +126,14 @@
                 </with>
             </activeWhen>
             <enabledWhen>
-                <with variable="activeFocusControl">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
-                        <test property="org.jkiss.dbeaver.ui.editors.erd.editor.canRedo"/>
-                    </adapt>
-                </with>
+                <and>
+                    <with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.erd.ERDEditor"/></with>
+                    <with variable="activeFocusControl">
+                        <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                            <test property="org.jkiss.dbeaver.ui.editors.erd.editor.canRedo"/>
+                        </adapt>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.ui.editors.erd.action.ERDHandlerPrint">
@@ -501,7 +513,7 @@
                         <iterate operator="and">
                             <adapt type="org.eclipse.core.resources.IFolder">
                                 <and>
-                                    <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
+                                    <test property="org.jkiss.dbeaver.core.resource.type" value="erd_folder"/>
                                     <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                                 </and>
                             </adapt>

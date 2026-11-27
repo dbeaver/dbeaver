@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,23 @@
 package org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 public class ChatMessage {
 
     @NotNull
     private String role;
-    private String content;
+    private Object content;
     // name is optional, The name of the author of this message.
     // May contain a-z, A-Z, 0-9, and underscores, with a maximum length of 64 characters.
     private String name;
 
-    public ChatMessage(@NotNull String role, String content) {
+    public ChatMessage(@NotNull String role, @Nullable String content) {
         this.role = role;
         this.content = content;
     }
 
-    public ChatMessage(@NotNull String role, String content, String name) {
+    public ChatMessage(@NotNull String role, @NotNull Object content, @Nullable String name) {
         this.role = role;
         this.content = content;
         this.name = name;
@@ -47,19 +48,21 @@ public class ChatMessage {
         this.role = role;
     }
 
+    @NotNull
     public String getContent() {
-        return content;
+        return content instanceof String text ? text : "";
     }
 
-    public void setContent(String content) {
+    public void setContent(@Nullable String content) {
         this.content = content;
     }
 
+    @Nullable
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@Nullable String name) {
         this.name = name;
     }
 

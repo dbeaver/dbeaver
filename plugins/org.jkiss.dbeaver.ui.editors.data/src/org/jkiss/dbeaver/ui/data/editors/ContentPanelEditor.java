@@ -76,6 +76,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     private final boolean readOnly;
     private Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers;
     private volatile StreamValueManagerDescriptor curStreamManager;
+    private StreamValueManagerDescriptor appliedStreamManager;
     private IStreamValueEditor<Control> streamEditor;
     private Control editorControl;
 
@@ -99,19 +100,18 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
      * Checks whether the existing stream editor control is compatible with the controller's current value.
      */
     public boolean canReuseControl() {
-        if (readOnly != valueController.isReadOnly() || !isStringValue() || curStreamManager == null) {
+        if (readOnly != valueController.isReadOnly() || !isStringValue() || appliedStreamManager == null) {
             return false;
         }
-        StreamValueManagerDescriptor previousStreamManager = curStreamManager;
         curStreamManager = null;
         try {
             loadStringStreamManagers();
         } catch (DBException e) {
-            curStreamManager = previousStreamManager;
+            curStreamManager = appliedStreamManager;
             log.debug("Can't detect stream manager", e);
             return false;
         }
-        return curStreamManager == previousStreamManager;
+        return curStreamManager == appliedStreamManager;
     }
 
     @Override
@@ -119,6 +119,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         if (streamEditor != null) {
             streamEditor.disposeEditor();
             streamEditor = null;
+            appliedStreamManager = null;
         }
         super.dispose();
     }
@@ -160,6 +161,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                     if (streamEditor != null) {
                         streamEditor.disposeEditor();
                         streamEditor = null;
+                        appliedStreamManager = null;
                     }
                     if (editorControl != null) {
                         editorControl.dispose();
@@ -264,8 +266,9 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         if (curStreamManager != null) {
             try {
                 streamEditor = curStreamManager.getInstance().createPanelEditor(valueController);
+                appliedStreamManager = curStreamManager;
             } catch (Throwable e) {
-                DBWorkbench.getPlatformUI().showError("No stream editor", "Can't create stream editor", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_stream_editor_title, ResultSetMessages.error_stream_editor_message, e);
             }
         }
         if (streamEditor == null) {
@@ -605,7 +608,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                         }
                     } catch (Exception e) {
                         valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
-                        DBWorkbench.getPlatformUI().showError("Value panel", "Error loading contents", e);
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_value_panel_title, ResultSetMessages.error_load_content_message, e);
                     }
                 });
             } finally {

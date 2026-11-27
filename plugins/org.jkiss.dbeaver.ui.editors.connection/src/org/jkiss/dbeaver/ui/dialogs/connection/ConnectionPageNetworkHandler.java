@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.jkiss.code.NotNull;
@@ -39,6 +37,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 import org.jkiss.utils.CommonUtils;
 
@@ -72,7 +71,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         try {
             String implName = handlerDescriptor.getHandlerType().getImplName();
             UIPropertyConfiguratorDescriptor configDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(implName);
@@ -85,8 +84,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
             return;
         }
 
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(1, false));
+        Composite composite = UIUtils.createComposite(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         profileProvidedHint = UIUtils.createInfoLink(
@@ -126,7 +124,11 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
         if (handlerConfiguration == null) {
             return;
         }
-        configuration.setConfigProfile(getActiveProfile());
+        DBWNetworkProfile activeProfile = getActiveProfile();
+        configuration.setConfigProfile(activeProfile);
+        if (activeProfile != null && DBWorkbench.isDistributed()) {
+            return;
+        }
         if (handlerConfiguration.isEnabled()) {
             configurator.saveSettings(handlerConfiguration);
             configuration.updateHandler(handlerConfiguration);
@@ -165,7 +167,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
             }
 
             profileProvidedHint.setText(NLS.bind(
-                "Using configuration from profile ''<a href=\"#\">{0}</a>''",
+                UIConnectionMessages.dialog_connection_network_profile_provided,
                 profile.getProfileName()
             ));
             UIUtils.setControlVisible(profileProvidedHint.getParent(), true);

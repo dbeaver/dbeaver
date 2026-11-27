@@ -22,6 +22,10 @@ import org.eclipse.osgi.util.NLS;
 public class ERDUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages"; //$NON-NLS-1$
 
+    public static String logical_key_delete_confirm_title;
+    public static String logical_key_delete_confirm_message;
+    public static String file_overwrite_confirm_title;
+    public static String file_overwrite_confirm_message;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ERDUIMessages.class);
@@ -152,6 +156,28 @@ public class ERDUIMessages extends NLS {
     public static String erd_job_layout_diagram;
     public static String erd_job_visuallize_content;
     
+
+    public static String erd_object_open_title;
+    public static String erd_property_view_open_error;
+    public static String erd_outline_view_open_error;
+    public static String erd_entity_collect_error_title;
+    public static String erd_entity_collect_error_message;
+    public static String erd_diagram_request_error_title;
+    public static String erd_diagram_request_error_message;
+    public static String erd_diagram_create_error_title;
+    public static String erd_diagram_create_error_message;
+    public static String erd_no_virtual_entity_title;
+    public static String erd_no_virtual_entity_message;
+    public static String erd_save_graphml_title;
+    public static String erd_save_image_title;
+    public static String erd_save_diagram_title;
+    public static String erd_export_title;
+    public static String erd_export_no_extension;
+    public static String erd_export_unknown_extension;
+    public static String erd_export_error_title;
+    public static String erd_diagram_load_error_title;
+    public static String erd_diagram_load_error_message;
+    public static String erd_vqb_diagram_load_error_title;
 
     private ERDUIMessages() {
     }

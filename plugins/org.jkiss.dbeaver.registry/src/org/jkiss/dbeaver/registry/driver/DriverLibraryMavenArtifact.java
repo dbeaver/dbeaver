@@ -278,13 +278,13 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
     }
 
     private Path detectLocalFile() {
-        if (localVersion != null) {
+        if (localVersion != null && !localVersion.isInvalidVersion()) {
             return localVersion.getCacheFile();
         }
         return null;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException {
         List<DriverLibraryMavenDependency> dependencies = new ArrayList<>();
@@ -302,6 +302,10 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
                     }
 
                     MavenArtifactVersion depArtifact = MavenRegistry.getInstance().findArtifact(monitor, localVersion, dependency);
+                    if (MavenArtifact.FILE_POM.equals(dependency.getType())) {
+                        // POM-only dependencies have no driver library to download.
+                        continue;
+                    }
                     if (depArtifact != null) {
                         dependencies.add(
                             new DriverLibraryMavenDependency(

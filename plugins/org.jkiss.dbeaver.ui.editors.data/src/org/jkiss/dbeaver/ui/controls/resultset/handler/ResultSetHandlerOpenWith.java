@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -62,6 +63,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -151,7 +153,8 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet, options);
         if (dataContainer.getDataSource() == null) {
-            DBWorkbench.getPlatformUI().showError("Open " + processor.getAppName(), ModelMessages.error_not_connected_to_database);
+            DBWorkbench.getPlatformUI().showError(
+                NLS.bind(ResultSetMessages.error_open_app_title, processor.getAppName()), ModelMessages.error_not_connected_to_database);
             return;
         }
 
@@ -238,12 +241,12 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     UIUtils.asyncExec(() -> {
                         if (!ShellUtils.launchProgram(tempFile.toAbsolutePath().toString())) {
                             DBWorkbench.getPlatformUI().showError(
-                                "Open " + processor.getAppName(),
-                                "Can't open " + processor.getAppFileExtension() + " file '" + tempFile.toAbsolutePath() + "'");
+                                NLS.bind(ResultSetMessages.error_open_app_title, processor.getAppName()),
+                                NLS.bind(ResultSetMessages.error_open_app_file, processor.getAppFileExtension(), tempFile.toAbsolutePath()));
                         }
                     });
                 } catch (Exception e) {
-                    DBWorkbench.getPlatformUI().showError("Error opening in " + processor.getAppName(), null, e);
+                    DBWorkbench.getPlatformUI().showError(NLS.bind(ResultSetMessages.error_open_in_title, processor.getAppName()), null, e);
                 }
                 return Status.OK_STATUS;
             }

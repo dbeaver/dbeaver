@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLBatchDelimiterElement;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.completion.CompletionProposalBase;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLScriptItemAtOffset;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
+import org.jkiss.dbeaver.model.sql.semantics.tracking.SQLScriptVariablesTracker;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.lang.reflect.InvocationTargetException;
@@ -66,20 +68,38 @@ public class LspSQLCompletionContextParser {
             parserContext.getDataSource(),
             parserContext.getDialect(),
             parserContext.getPreferenceStore(),
-            document.get()
+            document.get(),
+            true
+        );
+        var dialect = request.getContext().getDataSource().getSQLDialect();
+        var variableScope = parserContext.getPreferenceStore().getBoolean(SQLModelPreferences.TRACK_SCRIPT_VARIABLES)
+            ? dialect.getScriptVariableScope()
+            : null;
+        SQLScriptVariablesTracker variablesTracker = SQLScriptVariablesTracker.create(variableScope);
+        variablesTracker.trackElements(scriptItems);
+        SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(
+            monitor,
+            request.getContext().getExecutionContext(),
+            true,
+            DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLModelPreferences.VALIDATE_FUNCTIONS),
+            request.getContext().getSyntaxManager(),
+            dialect
         );
         for (var item : scriptItems) {
+            if (item instanceof SQLBatchDelimiterElement) {
+                continue;
+            }
+            recognitionContext.reset();
+            var visibleVariables = variablesTracker.getVisibleVariablesAt(recognitionContext, item.getOffset());
+            recognitionContext.reset();
             var model = SQLQueryModelRecognizer.recognizeQuery(
-                new SQLQueryRecognitionContext(
-                    monitor,
-                    request.getContext().getExecutionContext(),
-                    true,
-                    DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLModelPreferences.VALIDATE_FUNCTIONS),
-                    request.getContext().getSyntaxManager(),
-                    request.getContext().getDataSource().getSQLDialect()
-                ),
-                item.getOriginalText()
+                recognitionContext,
+                item.getOriginalText(),
+                visibleVariables
             );
+            if (model != null) {
+                variablesTracker.acceptAnalysisResult(item, model);
+            }
             syntaxContext.registerScriptItemContext(
                 item.getOriginalText(),
                 model,
@@ -96,7 +116,7 @@ public class LspSQLCompletionContextParser {
                 scriptItem,
                 position,
                 request.getContext().getExecutionContext(),
-                request.getContext().getDataSource().getSQLDialect()
+                dialect
             );
         } else {
             return SQLQueryCompletionContext.prepareOffquery(0, position);

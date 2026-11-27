@@ -17,17 +17,21 @@
 package org.jkiss.dbeaver.tasks.ui.wizard;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.qm.QMTaskExecution;
+import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskEvent;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
+import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
@@ -35,6 +39,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -52,6 +57,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     private boolean started;
     private long timeSincePreviousTask;
     private Throwable error;
+    private QMTaskExecution executionHistory;
 
     public TaskProcessorUI(@NotNull DBRRunnableContext staticContext, @NotNull DBTTask task) {
         this.staticContext = staticContext;
@@ -80,6 +86,23 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
         runTask();
     }
 
+    protected void executeTaskWithHistory(@NotNull DBRRunnable operation) throws DBException {
+        executeTaskWithHistory(null, operation);
+    }
+
+    protected void executeTaskWithHistory(@Nullable DBTTaskRun run, @NotNull DBRRunnable operation) throws DBException {
+        executionHistory = new QMTaskExecution(getTask(), run);
+        try {
+            operation.run();
+        } catch (Throwable e) {
+            executionHistory.recordError(e);
+            throw e;
+        } finally {
+            executionHistory.close();
+            executionHistory = null;
+        }
+    }
+
     @Override
     public void taskStarted(@Nullable DBTTask task) {
         this.started = true;
@@ -96,6 +119,9 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     ) {
         this.started = false;
         this.error = error;
+        if (executionHistory != null) {
+            executionHistory.recordError(error);
+        }
 
         long elapsedTime = System.currentTimeMillis() - startTime;
 
@@ -118,12 +144,14 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                 for (DBSObject databaseObject : ((AbstractNativeToolSettings<?>) settings).getDatabaseObjects()) {
                     objects.add(databaseObject.getName());
                 }
-                completeMessage.append("\nObject(s) processed: ").append(String.join(",", objects));
+                completeMessage.append("\n").append(NLS.bind(
+                    TaskUIMessages.task_processor_ui_objects_processed, String.join(",", objects)));
             }
+            String notificationMessage = error == null ? completeMessage.toString() : GeneralUtils.getExceptionMessage(error);
             UIServiceSystemAgent serviceSystemAgent = DBWorkbench.getService(UIServiceSystemAgent.class);
             if (serviceSystemAgent != null && elapsedTime > serviceSystemAgent.getLongOperationTimeout() * 1000) {
                 serviceSystemAgent.notifyAgent(
-                    completeMessage.toString(), !hasErrors ? IStatus.INFO : IStatus.ERROR);
+                    notificationMessage, hasErrors ? IStatus.ERROR : IStatus.INFO);
             }
 
             if (isShowFinalMessage() && !hasErrors) {
@@ -138,9 +166,10 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                 DBeaverNotifications.showNotification(
                     "task.execute.failure",
                     theTask == null ? this.task.getName() : theTask.getName(),
-                    error.getMessage(),
+                    notificationMessage,
                     DBPMessageType.ERROR,
-                    () -> DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error)
+                    () -> DBWorkbench.getPlatformUI().showError(
+                        TaskUIMessages.task_processor_ui_error_title, TaskUIMessages.task_processor_ui_error_message, error)
                 );
             }
         });
@@ -161,7 +190,11 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
         boolean cancelable,
         @NotNull DBRRunnableWithProgress runnable
     ) throws InvocationTargetException, InterruptedException {
-        staticContext.run(fork, cancelable, runnable);
+        if (executionHistory == null) {
+            staticContext.run(fork, cancelable, runnable);
+        } else {
+            executionHistory.run(staticContext, fork, cancelable, runnable);
+        }
     }
 
 }
