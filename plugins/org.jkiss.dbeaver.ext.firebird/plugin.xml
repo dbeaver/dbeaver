@@ -41,7 +41,7 @@
                     <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdCollation" label="%tree.collations.node.name" icon="#folder" description="%tree.collations.node.tip">
                         <items label="%tree.collation.node.name" path="collation" property="collations" icon="#info"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable" label="%tree.systemTables.node.name" icon="#folder_table" description="%tree.systemTables.node.tip">
+                    <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable" label="%tree.systemTables.node.name" icon="#folder_table" description="%tree.systemTables.node.tip" visibleIf="object.dataSource.showSystemTables()">
                         <items label="%tree.systemTable.node.name" path="systemTable" property="systemTables" icon="#table">
                             <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
                                 <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"/>

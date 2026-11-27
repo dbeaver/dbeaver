@@ -184,6 +184,14 @@ public class FireBirdDataSource extends GenericDataSource
     }
 
     /**
+     * The navigator hides system objects unless they are shown in the connection settings,
+     * so the "System Tables" folder is only shown together with them.
+     */
+    public boolean showSystemTables() {
+        return getContainer().getNavigatorSettings().isShowSystemObjects();
+    }
+
+    /**
      * System tables (RDB$, MON$, SEC$), shown in the navigator "System Info" folder.
      * They are only loaded if system objects are shown in the navigator.
      */
