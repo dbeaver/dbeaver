@@ -236,7 +236,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
      * @param monitor progress monitor
      */
     @Override
-    public void doSave(IProgressMonitor monitor)
+    public void doSave(@NotNull IProgressMonitor monitor)
     {
         if (!isDirty()) {
             return;
@@ -317,6 +317,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
             saveInProgress = false;
         }
 
+        // Capture the persisted identity before the caller can unload this editor during disconnect.
+        if (getEditorInput() instanceof DatabaseNodeEditorInput input && !isDirty()) {
+            input.refreshNodeIdentity();
+        }
+
         // Run post-save commands (e.g. compile)
         Map<String, Object> context = new LinkedHashMap<>();
         for (IEditorPart editor : editorMap.values()) {
@@ -368,7 +373,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private boolean saveCommandContext(final DBRProgressMonitor monitor, Map<String, Object> options) {
+    private boolean saveCommandContext(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) {
         monitor.beginTask("Save entity", 1);
         Throwable error = null;
         final DBECommandContext commandContext = getCommandContext();
@@ -412,19 +417,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // So we'll get actual data from database
             final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
             if (treeNode != null) {
-                boolean doRefresh = isNewObject;
-                new AbstractJob("Database node refresh") { //$NON-NLS-1$
-                    @NotNull
-                    @Override
-                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                        try {
-                            treeNode.refreshNode(monitor, doRefresh ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
-                        } catch (DBException e) {
-                            return GeneralUtils.makeExceptionStatus(e);
-                        }
-                        return Status.OK_STATUS;
-                    }
-                }.schedule();
+                // Finish metadata refresh before saving returns: the caller may immediately disconnect.
+                try {
+                    treeNode.refreshNode(monitor, isNewObject ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
+                } catch (Exception e) {
+                    // The changes are already persisted; a refresh failure must not turn this into a failed save.
+                    log.error("Error refreshing database node after save", e);
+                }
             }
         }
         monitor.done();

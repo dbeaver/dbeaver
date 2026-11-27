@@ -179,7 +179,12 @@ public class SSHTunnelImpl implements DBWTunnel {
     @NotNull
     @Override
     public DBPDataSourceContainer[] getDependentDataSources() {
-        return controller.getDependentDataSources(session);
+        var currentController = controller;
+        var currentSession = session;
+        if (currentController == null || currentSession == null) {
+            return new DBPDataSourceContainer[0];
+        }
+        return currentController.getDependentDataSources(currentSession);
     }
 
     @NotNull
