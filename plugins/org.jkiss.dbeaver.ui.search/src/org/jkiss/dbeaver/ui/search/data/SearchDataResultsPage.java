@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.search.data;
 
 import org.eclipse.search.ui.ISearchResult;
+import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -72,7 +73,7 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
                     return;
                 }
                 SearchDataObject object = (SearchDataObject) objectValue;
-                AbstractDataEditor.openNewDataEditor((DBNDatabaseNode) node, object.getFilter());
+                AbstractDataEditor.openNewDataEditor((DBNDatabaseNode) node, object.getFilter(), NewSearchUI.reuseEditor());
             });
         }
 
