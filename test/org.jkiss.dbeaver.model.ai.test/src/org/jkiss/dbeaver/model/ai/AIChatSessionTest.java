@@ -187,6 +187,47 @@ public class AIChatSessionTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void usesInMemoryStorageAndSessionIdWhenQueryManagerIsUnavailable() throws DBException {
+        AIChatStorage storage = Mockito.mock(AIChatStorage.class);
+        AIChatSession.SessionIdProvider sessionIdProvider = Mockito.mock(AIChatSession.SessionIdProvider.class);
+        VoidProgressMonitor monitor = new VoidProgressMonitor();
+        Mockito.when(sessionIdProvider.getSessionId(monitor)).thenThrow(new QMUnavailableException());
+        AIChatSession session = new AIChatSession(
+            Mockito.mock(DBPWorkspace.class), Mockito.mock(AIChatContextProvider.class), storage,
+            sessionIdProvider, Mockito.mock(UserTokenQuotaService.class), () -> true
+        );
+
+        session.init(monitor);
+        AIChatConversation conversation = conversation();
+        session.addConversation(conversation);
+        session.saveConversationSettings(monitor, conversation);
+        session.saveConversationSettings(monitor, conversation);
+
+        Assertions.assertTrue(session.isUsingInMemoryFallback());
+        Assertions.assertFalse(session.getStorage().canPersist());
+        Assertions.assertEquals(List.of(conversation), session.getAllConversations(null));
+        Mockito.verify(sessionIdProvider).getSessionId(monitor);
+        Mockito.verifyNoInteractions(storage);
+    }
+
+    @Test
+    public void keepsStorageWhenInitializationIsCanceled() {
+        AIChatStorage storage = Mockito.mock(AIChatStorage.class);
+        VoidProgressMonitor monitor = Mockito.mock(VoidProgressMonitor.class);
+        Mockito.when(monitor.isCanceled()).thenReturn(true);
+        AIChatSession session = new AIChatSession(
+            Mockito.mock(DBPWorkspace.class), Mockito.mock(AIChatContextProvider.class), storage,
+            ignored -> {
+                throw new QMUnavailableException();
+            },
+            Mockito.mock(UserTokenQuotaService.class), () -> true
+        );
+
+        Assertions.assertThrows(QMUnavailableException.class, () -> session.init(monitor));
+        Assertions.assertSame(storage, session.getStorage());
+    }
+
+    @Test
     public void concurrentRequestsWaitForInitialHistory() throws Exception {
         DBWorkbench.getPlatform();
         AIChatStorage storage = Mockito.mock(AIChatStorage.class);
