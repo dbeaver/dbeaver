@@ -75,6 +75,11 @@ public class DatabaseTransferUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void nullIsNotTargetTable() {
+        Assertions.assertFalse(DatabaseTransferUtils.isValidTargetTable(null));
+    }
+
+    @Test
     public void nonRelationalManipulatorIsValidTarget() {
         DBSDataManipulator target = Mockito.mock(DBSDataManipulator.class);
         Assertions.assertTrue(DatabaseTransferUtils.isValidTargetTable(target));

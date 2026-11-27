@@ -1258,17 +1258,19 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 boolean skipCaseChanging = mapping instanceof DatabaseMappingContainer container
                     && container.isSourceNameQuoted();
                 DatabaseMappingContainer containerMapping = mapping instanceof DatabaseMappingContainer cm ? cm : null;
-                boolean nameMatchesTarget = containerMapping != null && name.equals(containerMapping.getTargetName());
+                String currentTargetName = containerMapping != null ? containerMapping.getTargetName() : null;
+                boolean nameMatchesTarget = currentTargetName != null && name.equals(currentTargetName);
                 // Raw names may literally include the quote delimiters and must be resolved unchanged.
                 boolean preserveRawName = nameMatchesTarget && containerMapping.isTargetNameRaw();
-                boolean storedNameIsRaw = preserveRawName
-                    || (nameMatchesTarget
-                        && (containerMapping.getMappingType() == DatabaseMappingType.existing
-                            || containerMapping.getMappingType() == DatabaseMappingType.recreate)
-                        && containerMapping.getTarget() != null);
                 if (!preserveRawName) {
                     name = transformTargetName(name, mapping.getMappingType(), skipCaseChanging);
                 }
+                boolean storedNameIsRaw = preserveRawName
+                    || (currentTargetName != null
+                        && name.equals(currentTargetName)
+                        && (containerMapping.getMappingType() == DatabaseMappingType.existing
+                            || containerMapping.getMappingType() == DatabaseMappingType.recreate)
+                        && containerMapping.getTarget() != null);
                 if (containerMapping != null) {
                     if (settings.getContainer() != null) {
                         if (setMappingTargetContainer(
@@ -1287,7 +1289,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         containerMapping.refreshAttributesMappingTypes(monitor, false, false);
                     } else {
                         containerMapping.setTarget(null);
-                        containerMapping.setTargetName(name);
+                        containerMapping.setTargetName(name, storedNameIsRaw);
                         containerMapping.refreshMappingType(monitor, DatabaseMappingType.create, forceRefresh, updateAttributesNames);
                     }
                 } else if (mapping instanceof DatabaseMappingAttribute attrMapping) {

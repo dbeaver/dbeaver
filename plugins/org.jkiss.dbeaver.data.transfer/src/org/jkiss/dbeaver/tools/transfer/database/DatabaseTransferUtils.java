@@ -77,8 +77,9 @@ public class DatabaseTransferUtils {
     }
 
     private static boolean isValidTargetEntity(@NotNull DBSEntity entity) {
-        return entity.getEntityType() != DBSEntityType.VIEW
-            && entity.getEntityType() != DBSEntityType.SEQUENCE
+        DBSEntityType entityType = entity.getEntityType();
+        return entityType != DBSEntityType.VIEW
+            && entityType != DBSEntityType.SEQUENCE
             && !DBUtils.isView(entity);
     }
 
