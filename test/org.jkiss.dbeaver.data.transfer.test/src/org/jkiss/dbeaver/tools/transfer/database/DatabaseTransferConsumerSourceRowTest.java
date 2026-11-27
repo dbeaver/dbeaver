@@ -20,13 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;
-import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -42,7 +39,6 @@ import org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSourceContainer;
 import org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerExpression;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -61,40 +57,31 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
     private final DBDAttributeBinding fkRelation = mockAttribute("fk_relation", 3);
     private final DBDAttributeBinding[] sourceAttributes = {id, dataToDrop, country, fkRelation};
 
-    private final DBCSession session = Mockito.mock(DBCSession.class);
-    private final DBCResultSet resultSet = Mockito.mock(DBCResultSet.class);
-    private final DBDValueHandler valueHandler = Mockito.mock(DBDValueHandler.class);
-
-    @BeforeEach
-    void configureSourceValues() throws DBCException {
-        Object[] values = {1, "ignored", "NL", 8};
-        for (DBDAttributeBinding attribute : sourceAttributes) {
-            int index = attribute.getOrdinalPosition();
-            Mockito.doReturn(valueHandler).when(attribute).getValueHandler();
-            Mockito.when(valueHandler.fetchValueObject(session, resultSet, attribute, index)).thenReturn(values[index]);
-        }
-    }
-
     @Test
-    void sourceRowIncludesColumnsExcludedFromTarget() throws DBCException {
-        Object[] sourceRow = DatabaseTransferConsumer.readSourceValues(session, resultSet, sourceAttributes);
+    void sourceRowKeepsSourcePositionsWhenColumnIsSkipped() {
+        Object[] sourceRow = DatabaseTransferConsumer.makeSourceRow(
+            sourceAttributes,
+            mappingsWithSkippedColumn(),
+            new Object[]{1, "NL", 8},
+            new Object[]{null, "ignored", null, null}
+        );
 
         Assertions.assertArrayEquals(new Object[]{1, "ignored", "NL", 8}, sourceRow);
-        var order = Mockito.inOrder(valueHandler);
-        for (DBDAttributeBinding attribute : sourceAttributes) {
-            order.verify(valueHandler).fetchValueObject(session, resultSet, attribute, attribute.getOrdinalPosition());
-        }
-        order.verifyNoMoreInteractions();
     }
 
     @Test
     void expressionReadsColumnByNameWhenColumnIsSkipped() throws Exception {
-        Object[] sourceRow = DatabaseTransferConsumer.readSourceValues(session, resultSet, sourceAttributes);
+        Object[] sourceRow = DatabaseTransferConsumer.makeSourceRow(
+            sourceAttributes,
+            mappingsWithSkippedColumn(),
+            new Object[]{1, "NL", 8},
+            new Object[]{null, "ignored", null, null}
+        );
 
         Object value = new DataTransferTransformerExpression().transformAttribute(
-            session,
+            Mockito.mock(DBCSession.class),
             sourceAttributes,
-            DatabaseTransferConsumer.makeSourceRow(sourceAttributes, sourceRow),
+            sourceRow,
             country,
             "NL",
             Map.<String, Object>of("expression", "country")
@@ -104,12 +91,13 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"true,true", "false,true", "true,false", "false,false"})
-    void skippedColumnsAreAvailableToExpressionsButExcludedFromOutput(boolean preview, boolean transform) throws Exception {
+    @CsvSource({"true,true,false", "false,true,false", "true,false,false", "false,false,false", "true,true,true", "false,true,true"})
+    void skippedColumnsAreAvailableToExpressionsButExcludedFromOutput(boolean preview, boolean transform, boolean sharedOrdinal) throws Exception {
         StreamEntityMapping source = new StreamEntityMapping(Path.of("source.csv"));
         String[] names = {"id", "dataToDrop", "country", "fk_relation"};
         for (int i = 0; i < names.length; i++) {
-            source.getStreamColumns().add(new StreamDataImporterColumnInfo(source, i, names[i], "VARCHAR", 100, DBPDataKind.STRING));
+            source.getStreamColumns().add(new StreamDataImporterColumnInfo(
+                source, sharedOrdinal && i == 3 ? 2 : i, names[i], "VARCHAR", 100, DBPDataKind.STRING));
         }
         StreamDataSourceContainer targetContainer = Mockito.spy((StreamDataSourceContainer) new StreamDataSource("target").getContainer());
         Mockito.doReturn(true).when(targetContainer).hasModifyPermission(DBPDataSourcePermission.PERMISSION_IMPORT_DATA);
@@ -125,11 +113,13 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
         settings.getDataMappings().put(source, mapping);
         for (DatabaseMappingAttribute attribute : mapping.getAttributeMappings()) {
             int index = attribute.getSource().getOrdinalPosition();
+            String columnName = attribute.getSource().getName();
             attribute.setMappingType(index < 2 ? DatabaseMappingType.skip : DatabaseMappingType.existing);
-            attribute.setTarget(source.getStreamColumns().get(index));
-            if (transform && index >= 2) {
+            attribute.setTarget((StreamDataImporterColumnInfo) attribute.getSource());
+            if (transform && index >= 2 && (!sharedOrdinal || columnName.equals("country"))) {
                 attribute.setTransformer(DataTransferRegistry.getInstance().getAttributeTransformer("expression"));
-                attribute.setTransformerProperties(Map.of("expression", index == 2 ? "'TSO_' + id" : "country + '_tail'"));
+                String expression = columnName.equals("country") ? "'TSO_' + id" : "country + '_tail'";
+                attribute.setTransformerProperties(Map.of("expression", expression));
             }
         }
         DatabaseTransferConsumer consumer = new DatabaseTransferConsumer(target);
@@ -140,11 +130,16 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
             StreamTransferResultSet rows = Mockito.spy(new StreamTransferResultSet(sourceSession, Mockito.mock(DBCStatement.class), source));
             rows.setStreamRow(new Object[]{1, "ignored", "NL", 8});
             consumer.fetchStart(sourceSession, rows, 0, 2);
+            if (sharedOrdinal) {
+                var column = consumer.getColumnMappings()[3];
+                column.sourceValueHandler = Mockito.mock(DBDValueHandler.class);
+                Mockito.when(column.sourceValueHandler.fetchValueObject(sourceSession, rows, column.sourceAttr, 2))
+                    .thenAnswer(invocation -> rows.getAttributeValue(3));
+            }
             Mockito.clearInvocations(rows);
             consumer.fetchRow(sourceSession, rows);
             rows.setStreamRow(new Object[]{2, "ignored again", "IE", 9});
             consumer.fetchRow(sourceSession, rows);
-            consumer.fetchEnd(sourceSession, rows);
 
             Assertions.assertEquals(List.of("country", "fk_relation"), consumer.getTargetAttributes().stream()
                 .map(DBSAttributeBase::getName).toList());
@@ -156,80 +151,49 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
                 Mockito.verify(batch, Mockito.times(2)).add(captor.capture());
                 output = captor.getAllValues();
             }
-            Assertions.assertArrayEquals(transform ? new Object[]{"TSO_1", "TSO_1_tail"} : new Object[]{"NL", 8}, output.get(0));
-            Assertions.assertArrayEquals(transform ? new Object[]{"TSO_2", "TSO_2_tail"} : new Object[]{"IE", 9}, output.get(1));
+            Assertions.assertArrayEquals(transform ? new Object[]{"TSO_1", sharedOrdinal ? 8 : "TSO_1_tail"} : new Object[]{"NL", 8}, output.get(0));
+            Assertions.assertArrayEquals(transform ? new Object[]{"TSO_2", sharedOrdinal ? 9 : "TSO_2_tail"} : new Object[]{"IE", 9}, output.get(1));
             for (int i = 0; i < names.length; i++) {
                 Mockito.verify(rows, Mockito.times(i < 2 && !transform ? 0 : 2)).getAttributeValue(i);
             }
+            var order = Mockito.inOrder(rows);
+            for (int row = 0; row < 2; row++) {
+                for (int i = transform ? 0 : 2; i < names.length; i++) {
+                    order.verify(rows).getAttributeValue(i);
+                }
+            }
+            if (transform) {
+                DBDValue skippedValue = Mockito.mock(DBDValue.class);
+                rows.setStreamRow(new Object[]{skippedValue, "ignored", "unused", 0});
+                Mockito.doThrow(new DBCException("Read failed")).when(rows).getAttributeValue(1);
+                Assertions.assertThrows(DBCException.class, () -> consumer.fetchRow(sourceSession, rows));
+                Mockito.verify(skippedValue).release();
+            }
+            consumer.fetchEnd(sourceSession, rows);
         } finally {
             consumer.close();
         }
     }
 
     @Test
-    void collectionLeafValuesWithTheSameOrdinalRemainDistinct() throws DBCException {
-        DBDCollection collection = Mockito.mock(DBDCollection.class);
-        Mockito.when(collection.getComponentValueHandler()).thenReturn(valueHandler);
-        DBDAttributeBinding first = new DBDAttributeBindingElement(id, collection, 0);
-        DBDAttributeBinding second = new DBDAttributeBindingElement(id, collection, 1);
-        Mockito.when(valueHandler.fetchValueObject(session, resultSet, first, 0)).thenReturn("first element");
-        Mockito.when(valueHandler.fetchValueObject(session, resultSet, second, 0)).thenReturn("second element");
+    void skippedValuesAreReleasedUnlessTransferredToTarget() {
+        DBDValue unused = Mockito.mock(DBDValue.class);
+        DBDValue transferred = Mockito.mock(DBDValue.class);
 
-        Object[] sourceValues = DatabaseTransferConsumer.readSourceValues(
-            session, resultSet, new DBDAttributeBinding[]{first, second}
-        );
+        DatabaseTransferConsumer.releaseSkippedSourceValues(new Object[]{unused, unused, transferred}, new Object[]{transferred});
 
-        Assertions.assertArrayEquals(new Object[]{"first element", "second element"}, sourceValues);
+        Mockito.verify(unused).release();
+        Mockito.verify(transferred, Mockito.never()).release();
     }
 
-    @Test
-    void sourceRowDoesNotReadPseudoOrCustomAttributes() throws DBCException {
-        Mockito.doReturn(true).when(id).isPseudoAttribute();
-        Mockito.doReturn(true).when(dataToDrop).isCustom();
-
-        Object[] sourceRow = DatabaseTransferConsumer.readSourceValues(session, resultSet, sourceAttributes);
-
-        Assertions.assertArrayEquals(new Object[]{null, null, "NL", 8}, sourceRow);
-        Mockito.verify(valueHandler, Mockito.never()).fetchValueObject(session, resultSet, id, 0);
-        Mockito.verify(valueHandler, Mockito.never()).fetchValueObject(session, resultSet, dataToDrop, 1);
-    }
-
-    @Test
-    void failedReadReleasesPreviouslyFetchedValues() throws DBCException {
-        DBDValue value = Mockito.mock(DBDValue.class);
-        Mockito.when(valueHandler.fetchValueObject(session, resultSet, id, 0)).thenReturn(value);
-        Mockito.when(valueHandler.fetchValueObject(session, resultSet, country, 2)).thenThrow(new DBCException("Read failed"));
-
-        Assertions.assertThrows(DBCException.class, () -> DatabaseTransferConsumer.readSourceValues(session, resultSet, sourceAttributes));
-
-        Mockito.verify(value).release();
-    }
-
-    @Test
-    void unusedSkippedValuesAreReleased() {
-        DBDValue value = Mockito.mock(DBDValue.class);
-        Object[] sourceRow = {value, value, "NL", 8};
-        DatabaseTransferConsumer.ColumnMapping[] mappings = {null, null, mapping(country, 0), mapping(fkRelation, 1)};
-
-        DatabaseTransferConsumer.releaseSkippedSourceValues(sourceAttributes, mappings, sourceRow, new Object[]{"NL", 8});
-
-        Mockito.verify(value).release();
-    }
-
-    @Test
-    void skippedValueReturnedByExpressionIsRetainedForBatch() throws Exception {
-        DBDValue value = Mockito.mock(DBDValue.class);
-        Object[] sourceRow = {value, "ignored", "NL", 8};
-        DatabaseTransferConsumer.ColumnMapping[] mappings = {null, null, mapping(country, 0), mapping(fkRelation, 1)};
-        Object transformed = new DataTransferTransformerExpression().transformAttribute(
-            session, sourceAttributes, DatabaseTransferConsumer.makeSourceRow(sourceAttributes, sourceRow),
-            country, "NL", Map.of("expression", "id")
-        );
-
-        DatabaseTransferConsumer.releaseSkippedSourceValues(sourceAttributes, mappings, sourceRow, new Object[]{transformed, 8});
-
-        Assertions.assertSame(value, transformed);
-        Mockito.verify(value, Mockito.never()).release();
+    @NotNull
+    private DatabaseTransferConsumer.ColumnMapping[] mappingsWithSkippedColumn() {
+        return new DatabaseTransferConsumer.ColumnMapping[]{
+            mapping(id, 0),
+            null,
+            mapping(country, 1),
+            mapping(fkRelation, 2)
+        };
     }
 
     @NotNull
