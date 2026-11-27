@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.firebird.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataType;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdFieldType;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
@@ -64,7 +65,7 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         if (domainName == null) {
             DataTypeModifier.appendModifier(monitor, column, sql, command);
         } else if (isDetachedFromDomain(fbColumn, command)) {
-            sql.append(' ').append(getUnderlyingTypeClause(fbColumn, true));
+            sql.append(' ').append(getUnderlyingTypeClause(fbColumn, (DBECommandComposite<?, ?>) command, true));
         } else {
             sql.append(' ').append(DBUtils.getQuotedIdentifier(column.getDataSource(), domainName));
         }
@@ -146,16 +147,21 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL)
             + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
         boolean typeSizeChanged = isTypeSizeChanged(command);
-        String typeClause = getAlterTypeClause(column, typeSizeChanged);
+        boolean typeNameChanged = command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null;
+        String typeClause = getAlterTypeClause(column, command);
         String computedDefinition = column.getComputedDefinition(monitor);
-        if (command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null || typeSizeChanged) {
-            final StringBuilder ddl = new StringBuilder()
-                .append(prefix).append("TYPE ").append(typeClause);
-            if (CommonUtils.isNotEmpty(computedDefinition)) {
-                // Can't change type for computed columns without this clause.
-                ddl.append(" GENERATED ALWAYS AS ").append(computedDefinition);
-            }
-            actionList.add(new SQLDatabasePersistAction("Set column type", ddl.toString()));
+        if (typeNameChanged && isDetachedFromDomain(column, command) && isCharacterType(column.getBaseTypeName())) {
+            // Switched to a character domain and resized in one change. The resize detaches the column from the
+            // domain, and ALTER COLUMN ... TYPE doesn't accept COLLATE. So the column is switched to the domain first,
+            // which takes over the domain's character set and collation; the resize below then keeps both.
+            // Not done for numeric domains: there is nothing to take over, and Firebird wouldn't allow
+            // a larger scale after the switch.
+            actionList.add(new SQLDatabasePersistAction("Set column domain", getAlterTypeStatement(
+                prefix, DBUtils.getQuotedIdentifier(column.getDataSource(), column.getDomainName()), computedDefinition)));
+        }
+        if (typeNameChanged || typeSizeChanged) {
+            actionList.add(new SQLDatabasePersistAction(
+                "Set column type", getAlterTypeStatement(prefix, typeClause, computedDefinition)));
         }
         if (command.getProperty(DBConstants.PROP_ID_DEFAULT_VALUE) != null) {
             if (CommonUtils.isEmpty(column.getDefaultValue())) {
@@ -228,33 +234,49 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         processObjectReorder(commandContext, object, siblingObjects, newPosition);
     }
 
+    @NotNull
+    private static String getAlterTypeStatement(
+        @NotNull String prefix,
+        @NotNull String typeClause,
+        @Nullable String computedDefinition
+    ) {
+        String ddl = prefix + "TYPE " + typeClause;
+        if (CommonUtils.isNotEmpty(computedDefinition)) {
+            // Can't change type for computed columns without this clause.
+            ddl += " GENERATED ALWAYS AS " + computedDefinition;
+        }
+        return ddl;
+    }
+
     /**
      * Returns the type for ALTER COLUMN TYPE. A column declared with a domain keeps referencing the domain.
      * An explicit size change detaches the column from its domain: then the domain's underlying type is used
      * with the new size, because a domain name can't take size modifiers (DOM_NAME(20) is invalid).
      */
     @NotNull
-    private static String getAlterTypeClause(@NotNull FireBirdTableColumn column, boolean typeSizeChanged) {
+    private static String getAlterTypeClause(@NotNull FireBirdTableColumn column, @NotNull DBECommandComposite<?, ?> command) {
         String domainName = column.getDomainName();
         if (domainName == null) {
             return column.getFullTypeName();
         }
-        if (!typeSizeChanged) {
+        if (!isDetachedFromDomain(column, command)) {
             return DBUtils.getQuotedIdentifier(column.getDataSource(), domainName);
         }
         // No CHARACTER SET is appended on purpose: without it, ALTER COLUMN ... TYPE keeps the column's current
         // character set and collation (it does not fall back to the database default)
-        return getUnderlyingTypeClause(column, false);
+        return getUnderlyingTypeClause(column, command, false);
     }
 
     /**
-     * True if a column with a domain is declared with the domain's underlying type,
-     * because its size was edited when it was created.
+     * True if a column with a domain is declared with the domain's underlying type, because its size was edited.
+     * Only types with a size are detached: for other domains (e.g. BLOB SUB_TYPE TEXT) a size has no meaning,
+     * and their underlying type name alone would lose attributes like the subtype, so they keep the domain.
      */
     private static boolean isDetachedFromDomain(@NotNull FireBirdTableColumn column, @NotNull DBECommandAbstract<?> command) {
         return column.getDomainName() != null
             && command instanceof DBECommandComposite<?, ?> composite
-            && isTypeSizeChanged(composite);
+            && isTypeSizeChanged(composite)
+            && isSizedType(column.getBaseTypeName());
     }
 
     private static boolean isTypeSizeChanged(@NotNull DBECommandComposite<?, ?> command) {
@@ -264,11 +286,18 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     }
 
     /**
-     * Returns the domain's underlying type with the column's size, optionally with the domain's character set.
+     * Returns the domain's underlying type, optionally with the domain's character set.
+     * Sizes edited in the command are taken from the column, all other sizes from the domain:
+     * the column still has the sizes of its previous type after the domain was selected.
      */
     @NotNull
-    private static String getUnderlyingTypeClause(@NotNull FireBirdTableColumn column, boolean withCharset) {
+    private static String getUnderlyingTypeClause(
+        @NotNull FireBirdTableColumn column,
+        @NotNull DBECommandComposite<?, ?> command,
+        boolean withCharset
+    ) {
         String baseTypeName = column.getBaseTypeName();
+        FireBirdDataType domain = column.getFireBirdDataType();
         // Pass the sizes without the column itself: the dialect omits sizes equal to those of the column's
         // data type (here the domain), but they are needed once the column no longer uses the domain
         DBSTypedObject sizedType = new SimpleTypedObject(baseTypeName) {
@@ -281,18 +310,22 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
             @Nullable
             @Override
             public Integer getScale() {
-                return column.getScale();
+                return domain == null || command.getProperty("scale") != null ? column.getScale() : domain.getScale();
             }
 
             @Nullable
             @Override
             public Integer getPrecision() {
-                return column.getPrecision();
+                return domain == null || command.getProperty("precision") != null
+                    ? column.getPrecision()
+                    : domain.getPrecision();
             }
 
             @Override
             public long getMaxLength() {
-                return column.getMaxLength();
+                return domain == null || command.getProperty(DBConstants.PROP_ID_MAX_LENGTH) != null
+                    ? column.getMaxLength()
+                    : domain.getCharLength();
             }
         };
         String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), sizedType, baseTypeName, column.getDataKind());
@@ -306,5 +339,11 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
 
     private static boolean isCharacterType(@NotNull String typeName) {
         return FireBirdFieldType.CHAR.getName().equals(typeName) || FireBirdFieldType.VARCHAR.getName().equals(typeName);
+    }
+
+    private static boolean isSizedType(@NotNull String typeName) {
+        return isCharacterType(typeName)
+            || FireBirdFieldType.NUMERIC.getName().equals(typeName)
+            || FireBirdFieldType.DECIMAL.getName().equals(typeName);
     }
 }

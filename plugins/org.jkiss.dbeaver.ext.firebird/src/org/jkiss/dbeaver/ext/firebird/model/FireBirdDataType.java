@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -102,12 +103,13 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
     /**
      * Collation of a character domain, read from RDB$COLLATIONS.
      */
+    @Nullable
     @Property(order = 61)
     public String getCollationName() {
         return collationName;
     }
 
-    public void setCollationName(String collationName) {
+    public void setCollationName(@Nullable String collationName) {
         this.collationName = collationName;
     }
 

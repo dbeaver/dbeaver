@@ -97,6 +97,14 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     }
 
     /**
+     * Data type of the column. For a column declared with a domain, this is the domain.
+     */
+    @Nullable
+    public FireBirdDataType getFireBirdDataType() {
+        return dataType;
+    }
+
+    /**
      * Collation of the column's data type, or null if unknown. Used when a domain's underlying type is declared.
      */
     @Nullable
@@ -184,6 +192,11 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     @Override
     public void setTypeName(@NotNull String typeName) throws DBException {
         super.setTypeName(typeName);
+        // Keep the data type in sync even if the generic lookup didn't find it: sizes, charset and collation
+        // of a selected domain are read from it
+        if (getDataSource().getLocalDataType(typeName) instanceof FireBirdDataType fbDataType) {
+            this.dataType = fbDataType;
+        }
         this.domainName = getUserDomainName(typeName);
     }
 
