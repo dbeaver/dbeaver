@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.datadam.project;
+package org.jkiss.dbeaver.ui.datadam.project.preference;
 
 import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
@@ -63,12 +63,15 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DBDamService;
-import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
 import org.jkiss.dbeaver.ui.datadam.DDUIConstants;
 import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectEditDialog;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectJobBatchResult;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectView;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -95,10 +98,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private Composite content;
-    private Composite accountRow;
-    private Text accountText;
-    private Button importKeysButton;
-    private Button forgetKeysButton;
+    private DDEncryptionKeysSection keysSection;
     private Button streamSyncCheck;
     private Control streamSyncInfo;
     @Nullable
@@ -109,8 +109,6 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private boolean streamSyncUpdating;
     private boolean streamSyncEnabled;
     private Label projectsDescription;
-    private Control projectsHelp;
-    private AbstractJob accountViewJob;
     @Nullable
     private UUID displayedAccountId;
     private TableViewer viewer;
@@ -166,44 +164,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
         projectsDescription = DDUIUtils.create(content, DDTrackingUIMessages.projects_page_description,
             DDTrackingUIMessages.projects_page_about_link, DDUIConstants.DATADAM_DOCS_URL + "Projects");
-        Composite keysGroup = UIUtils.createTitledComposite(
-            content, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
-            2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
-        );
-        GridData keysGroupLayout = (GridData) keysGroup.getParent().getLayoutData();
-        keysGroupLayout.verticalIndent = 5;
-        accountRow = UIUtils.createComposite(keysGroup, 2);
-        GridData accountRowData = new GridData(GridData.FILL_HORIZONTAL);
-        accountRowData.horizontalSpan = 2;
-        accountRow.setLayoutData(accountRowData);
-        GridData accountTextData = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        accountTextData.widthHint = UIUtils.getFontHeight(accountRow.getDisplay().getSystemFont()) * 22;
-        accountText = UIUtils.createLabelText(
-            accountRow, DDTrackingUIMessages.sync_preference_page_account_label, "", SWT.READ_ONLY, accountTextData);
-        Composite keyButtons = UIUtils.createComposite(keysGroup, 3);
-        GridData keyButtonsData = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        keyButtonsData.horizontalSpan = 2;
-        keyButtons.setLayoutData(keyButtonsData);
-        importKeysButton = UIUtils.createPushButton(
-            keyButtons, DDTrackingUIMessages.sync_preference_page_import_keys_button, null,
-            SelectionListener.widgetSelectedAdapter(e -> importKeys())
-        );
-        GridData importKeysLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
-        importKeysLayout.horizontalIndent = 3;
-        importKeysButton.setLayoutData(importKeysLayout);
-        forgetKeysButton = UIUtils.createPushButton(
-            keyButtons, DDTrackingUIMessages.sync_preference_page_forget_keys_button, null,
-            SelectionListener.widgetSelectedAdapter(e -> forgetKeys())
-        );
-        GridData forgetKeysLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
-        forgetKeysLayout.horizontalIndent = 3;
-        forgetKeysButton.setLayoutData(forgetKeysLayout);
-        UIUtils.createPushButton(
-            keyButtons, DDTrackingUIMessages.import_key_dialog_reset_button, null,
-            SelectionListener.widgetSelectedAdapter(e -> DDUIUtils.openCredentialReset()));
-        projectsHelp = UIUtils.createWarningLabel(
-            keysGroup, DDTrackingUIMessages.projects_page_sign_in_help, GridData.HORIZONTAL_ALIGN_BEGINNING, 2);
-        ((GridData) projectsHelp.getLayoutData()).verticalIndent = 5;
+        keysSection = new DDEncryptionKeysSection(content, accessService, this::refreshKeys, this::showError);
 
         streamSyncCheck = UIUtils.createCheckbox(content, DDTrackingUIMessages.projects_stream_sync_checkbox,
             DDTrackingUIMessages.projects_stream_sync_description, false, 1);
@@ -305,8 +266,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         if (streamSyncPermissionJob != null) {
             streamSyncPermissionJob.cancel();
         }
-        if (accountViewJob != null) {
-            accountViewJob.cancel();
+        if (keysSection != null) {
+            keysSection.dispose();
         }
         super.dispose();
     }
@@ -479,20 +440,11 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private void refreshKeys() {
         UUID accountId = accessService.getAccountId();
         boolean present = accountId != null;
-        accountRow.setVisible(present);
-        ((GridData) accountRow.getLayoutData()).exclude = !present;
         boolean signedIn = accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN;
-        importKeysButton.setEnabled(!present && signedIn);
-        importKeysButton.setVisible(!present);
-        ((GridData) importKeysButton.getLayoutData()).exclude = present;
-        forgetKeysButton.setEnabled(present);
-        forgetKeysButton.setVisible(present);
-        ((GridData) forgetKeysButton.getLayoutData()).exclude = !present;
+        keysSection.refresh(accountId, signedIn);
         boolean ready = uiManager.isProjectSyncReady();
         projectsDescription.setText(ready
             ? DDTrackingUIMessages.projects_page_sync_help : DDTrackingUIMessages.projects_page_description);
-        projectsHelp.setVisible(!signedIn);
-        ((GridData) projectsHelp.getLayoutData()).exclude = signedIn;
         showRemote.setEnabled(present);
         viewer.getTable().setEnabled(present);
         content.layout(true, true);
@@ -508,13 +460,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             }
             canManageStreamSync = false;
             streamSyncUpdating = false;
-            accountText.setText(present ? accountId.toString() : DDTrackingUIMessages.sync_preference_page_unknown);
-            if (accountViewJob != null) {
-                accountViewJob.cancel();
-            }
             if (present) {
                 loadProjects();
-                loadAccountName();
             } else {
                 viewer.setInput(List.of());
                 updateTableHeight();
@@ -556,70 +503,6 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
                     showStreamSyncStatus(settingsStore.getSettings());
                 }
             });
-    }
-
-    private void loadAccountName() {
-        accountViewJob = new AbstractJob("Read DataDam account information") {
-            @NotNull
-            @Override
-            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                if (monitor.isCanceled()) {
-                    return Status.CANCEL_STATUS;
-                }
-                var user = accessService.getLoggedUserView();
-                UIUtils.asyncExec(() -> {
-                    if (!accountText.isDisposed() && accountViewJob == this && !monitor.isCanceled()) {
-                        accountText.setText(user.accountName() != null ? user.accountName()
-                            : user.accountId() == null ? DDTrackingUIMessages.sync_preference_page_unknown
-                                : user.accountId().toString());
-                    }
-                });
-                return Status.OK_STATUS;
-            }
-        };
-        accountViewJob.setSystem(true);
-        accountViewJob.schedule();
-    }
-
-    private void importKeys() {
-        DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
-        if (dialog.open() == Window.OK) {
-            runKeyOperation(
-                DDTrackingUIMessages.sync_preference_page_import_keys_failed,
-                () -> accessService.importKeys(dialog.getPhrase())
-            );
-        }
-    }
-
-    private void forgetKeys() {
-        if (UIUtils.confirmAction(
-            getShell(), DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_title,
-            DDTrackingUIMessages.sync_preference_page_project_deletion_confirm_message
-        )) {
-            DDProjectKeyUIManager.getInstance().forgetKeysWithProgress();
-            refreshKeys();
-        }
-    }
-
-    private void runKeyOperation(@NotNull String errorMessage, @NotNull KeyOperation operation) {
-        try {
-            UIUtils.runInProgressDialog(monitor -> {
-                try {
-                    operation.run();
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            showError(errorMessage, e.getTargetException());
-        } finally {
-            refreshKeys();
-        }
-    }
-
-    @FunctionalInterface
-    private interface KeyOperation {
-        void run() throws DBException;
     }
 
     private void loadProjects() {

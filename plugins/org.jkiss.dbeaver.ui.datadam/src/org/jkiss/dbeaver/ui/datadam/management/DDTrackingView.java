@@ -347,6 +347,7 @@ public class DDTrackingView extends ViewPart {
             case ERROR -> DDTrackingUIMessages.error;
             case MCP_REQUEST -> DDTrackingUIMessages.mcp_request;
             case MCP_RESPONSE -> DDTrackingUIMessages.mcp_response;
+            case NAME_CHANGED -> DDTrackingUIMessages.name_changed;
         };
     }
 

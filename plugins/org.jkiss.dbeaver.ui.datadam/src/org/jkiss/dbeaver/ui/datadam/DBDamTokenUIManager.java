@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.keys.DDProjectKeyUIManager;
 
 /**
  * Interactive access check performed before a user-requested network operation.

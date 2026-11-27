@@ -208,8 +208,10 @@ public final class DBDamSessionService implements AutoCloseable {
             rpc.getRpc();
             channel.getMonitor().clearError(RPC_INITIALIZATION_ERROR);
         } catch (DBException e) {
-            log.warn("Cannot open desktop DataDam RPC endpoint", e);
-            channel.getMonitor().failed(RPC_INITIALIZATION_ERROR);
+            if (!RPC_INITIALIZATION_ERROR.equals(channel.getMonitor().snapshot().error())) {
+                log.warn("Cannot open desktop DataDam RPC endpoint", e);
+                channel.getMonitor().failed(RPC_INITIALIZATION_ERROR);
+            }
             if (!closed.get() && channel.getStatus().isReady() && access.getStatus() == DBDamAccessService.Status.SIGNED_IN) {
                 rpcInitializationRetry.schedule(RPC_RETRY_DELAY);
             }
@@ -230,13 +232,13 @@ public final class DBDamSessionService implements AutoCloseable {
     }
 
     /** Associates Account data with the session that requested it, so a reconnect cannot reuse stale data. */
-    public void cacheDam(@Nullable DDRemoteDamSessionInfo session, @Nullable DDConnectedRemoteDam dam) {
+    public synchronized void cacheDam(@Nullable DDRemoteDamSessionInfo session, @Nullable DDConnectedRemoteDam dam) {
         if (session != null && dam != null) {
-            cachedDam.updateAndGet(cached -> {
-                var status = channel.getStatus();
-                return !closed.get() && status.isReady() && session == status.session()
-                    ? new CachedDam(session, dam) : cached;
-            });
+            var status = channel.getStatus();
+            if (!closed.get() && status.isReady() && session == status.session()) {
+                cachedDam.set(new CachedDam(session, dam));
+                channel.getMonitor().damNameChanged(dam.damName());
+            }
         }
     }
 

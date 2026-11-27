@@ -34,8 +34,10 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.sql.SQLQueryType;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskInfoCollector;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -239,6 +241,57 @@ public class DTUtils {
             }
         }
         return null;
+    }
+
+    @Nullable
+    public static String getResultTableName(
+        @NotNull DBCSession session,
+        @NotNull DBDAttributeBinding[] columns,
+        @Nullable SQLQueryContainer firstResultQuery,
+        boolean useShortName
+    ) {
+        DBCEntityMetaData resultTable = null;
+        for (DBDAttributeBinding column : columns) {
+            DBCAttributeMetaData attribute = column.getMetaAttribute();
+            DBCEntityMetaData table = attribute == null ? null : attribute.getEntityMetaData();
+            if (table == null || CommonUtils.isEmpty(table.getEntityName())) {
+                continue;
+            }
+            if (resultTable != null && !resultTable.equals(table)) {
+                return null;
+            }
+            resultTable = table;
+        }
+        if (resultTable == null) {
+            // an earlier update count can precede the first result set
+            if (firstResultQuery != null
+                && firstResultQuery.getQuery() instanceof SQLQuery query
+                && query.getType() == SQLQueryType.SELECT
+            ) {
+                return getTableNameFromQuery(session.getDataSource(), firstResultQuery, useShortName);
+            }
+            return null;
+        }
+        DBPDataSource dataSource = session.getDataSource();
+        if (useShortName) {
+            return DBUtils.getQuotedIdentifier(dataSource, resultTable.getEntityName());
+        }
+        try {
+            DBSEntity entity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), resultTable);
+            if (entity != null) {
+                return DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML);
+            }
+        } catch (DBException e) {
+            log.debug("Could not resolve the result table for SQL export", e);
+        }
+        String catalog = CommonUtils.nullIfEmpty(resultTable.getCatalogName());
+        String schema = CommonUtils.nullIfEmpty(resultTable.getSchemaName());
+        DBCExecutionContextDefaults<?, ?> defaults = session.getExecutionContext().getContextDefaults();
+        DBSCatalog defaultCatalog = defaults == null ? null : defaults.getDefaultCatalog();
+        if (schema != null && defaultCatalog != null && defaultCatalog.getName().equals(catalog)) {
+            catalog = null;
+        }
+        return DBUtils.getFullyQualifiedName(dataSource, catalog, schema, resultTable.getEntityName());
     }
 
     /**

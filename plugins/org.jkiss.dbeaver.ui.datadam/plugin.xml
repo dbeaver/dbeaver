@@ -266,7 +266,7 @@
         <page
               id="org.jkiss.dbeaver.preferences.synchronization.projects"
               category="org.jkiss.dbeaver.preferences.synchronization"
-              class="org.jkiss.dbeaver.ui.datadam.project.DDProjectsPreferencePage"
+              class="org.jkiss.dbeaver.ui.datadam.project.preference.DDProjectsPreferencePage"
               name="%preference.datadam.projects.name">
             <keywordReference id="org.jkiss.dbeaver.ui.datadam.keyword.pref.synchronization"/>
         </page>

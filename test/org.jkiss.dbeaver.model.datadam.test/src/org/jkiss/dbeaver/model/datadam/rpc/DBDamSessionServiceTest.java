@@ -92,6 +92,7 @@ class DBDamSessionServiceTest {
         service.cacheDam(status.get().session(), renamed);
         service.cacheDam(first, dam);
         Assertions.assertSame(renamed, service.getCachedDam(), "A late response must not overwrite the current session");
+        Assertions.assertEquals("Renamed desktop", channel.getMonitor().getEvents().getLast().details());
     }
 
     @Test
@@ -101,8 +102,13 @@ class DBDamSessionServiceTest {
         service.cacheDam(session, namedDam("Desktop"));
         var renamed = namedDam("Renamed desktop");
         service.cacheDam(session, renamed);
+        service.cacheDam(session, renamed);
         service.cacheDam(session, null);
         Assertions.assertSame(renamed, service.getCachedDam());
+        Assertions.assertEquals(List.of("Desktop", "Renamed desktop"),
+            channel.getMonitor().getEvents().stream()
+                .filter(event -> event.type() == DDConnectionMonitor.EventType.NAME_CHANGED)
+                .map(DDConnectionMonitor.Event::details).toList());
         service.close();
         Assertions.assertNull(service.getCachedDam());
     }
@@ -210,12 +216,15 @@ class DBDamSessionServiceTest {
             observer.set(invocation.getArgument(0));
             return (DDRemoteDamSubscription) () -> {};
         });
-        Mockito.doThrow(new DBException("Registration failed")).doNothing()
+        Mockito.doThrow(new DBException("Registration failed")).doThrow(new DBException("Still unavailable")).doNothing()
             .when(registrations).registerEndpoint(Mockito.any(), Mockito.any());
         service.start();
 
         observer.get().accept(status.get());
         Assertions.assertNotNull(channel.getMonitor().snapshot().error());
+        observer.get().accept(status.get());
+        Assertions.assertEquals(1, channel.getMonitor().getEvents().stream()
+            .filter(event -> event.type() == DDConnectionMonitor.EventType.ERROR).count());
         observer.get().accept(status.get());
         Assertions.assertNull(channel.getMonitor().snapshot().error());
         Assertions.assertTrue(channel.getMonitor().getEvents().stream()

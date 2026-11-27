@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,26 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<Oracl
 
     public static final String ID = "oracle_native";
 
+    @NotNull
+    public static String getConnectionRole(@NotNull DBPConnectionConfiguration configuration) {
+        String role = configuration.getProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS);
+        if (CommonUtils.isEmpty(role)) {
+            role = configuration.getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS);
+        }
+        if (CommonUtils.isEmpty(role)) {
+            role = configuration.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
+        }
+        return CommonUtils.isEmpty(role) ? OracleConnectionRole.NORMAL.getTitle() : role;
+    }
+
+    public static void setConnectionRole(@NotNull DBPConnectionConfiguration configuration, @NotNull String role) {
+        // Keep the role with the connection settings shared by Desktop and Web, rather than with user credentials.
+        configuration.setProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS, role);
+        configuration.setAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS, null);
+        configuration.removeProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
+    }
+
+    @NotNull
     @Override
     public Object initAuthentication(
         @NotNull DBRProgressMonitor monitor,
@@ -47,15 +67,8 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<Oracl
     ) throws DBException {
         String userName = configuration.getUserName();
         if (!CommonUtils.isEmpty(userName) && !userName.contains(" AS ")) {
-            String role = configuration.getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS);
-            if (CommonUtils.isEmpty(role)) {
-                // Role can be also passed as provided property
-                String logonAs = configuration.getProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS);
-                if (!OracleConnectionRole.NORMAL.getTitle().equalsIgnoreCase(logonAs)) {
-                    role = configuration.getProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS);
-                }
-            }
-            if (!CommonUtils.isEmpty(role)) {
+            String role = getConnectionRole(configuration);
+            if (!OracleConnectionRole.NORMAL.getTitle().equalsIgnoreCase(role)) {
                 userName += " AS " + role;
             }
         }

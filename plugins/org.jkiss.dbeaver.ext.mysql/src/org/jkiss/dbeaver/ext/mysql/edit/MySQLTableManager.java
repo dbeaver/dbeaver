@@ -157,7 +157,8 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
                 (!table.isPersisted() || tableProps.getProperty("collation") != null) && //$NON-NLS-1$
                 additionalInfo.getCollation() != null
             ) {
-                ddl.append(delimiter).append("COLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
+                // DEFAULT prevents PolarDB-X from parsing COLLATE as part of the preceding ENGINE expression.
+                ddl.append(delimiter).append("DEFAULT COLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
             }
             if ((!table.isPersisted() && table.getDescription() != null) || tableProps.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
                 ddl.append(delimiter).append("COMMENT=").append(SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription()))); //$NON-NLS-1$

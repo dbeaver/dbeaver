@@ -31,8 +31,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectKeyUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.keys.DDProjectKeyUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 
 import java.lang.reflect.InvocationTargetException;
@@ -83,7 +84,18 @@ public final class DDManagementActions {
         }
         if (signedIn) {
             if (DDProductConfig.isIntegrationEnabled()) {
-                DDProjectKeyUIManager.getInstance().signOutWithProgress();
+                try {
+                    DDUIUtils.runWithProgressBlocking(DDTrackingUIMessages.sync_preference_page_desktop_sign_out, monitor -> {
+                        try {
+                            DDProjectKeyUIManager.getInstance().signOut();
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    DDUIUtils.showError(DDTrackingUIMessages.sync_preference_page_title,
+                        DDTrackingUIMessages.sync_preference_page_logout_failed, e.getTargetException());
+                }
             }
             return;
         }

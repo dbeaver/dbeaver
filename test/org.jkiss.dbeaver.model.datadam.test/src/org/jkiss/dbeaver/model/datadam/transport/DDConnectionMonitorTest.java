@@ -29,6 +29,37 @@ import java.util.concurrent.atomic.AtomicLong;
 
 class DDConnectionMonitorTest {
     @Test
+    void silentStateUpdatesKeepSnapshotAndOriginalFailureWithoutAddingEvents() {
+        var monitor = new DDConnectionMonitor();
+        monitor.failed("Offline");
+        var events = monitor.getEvents();
+        monitor.stateChanged(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.CONNECTING, null), false);
+        Assertions.assertEquals(DDRemoteDamChannelState.CONNECTING, monitor.snapshot().state());
+        Assertions.assertEquals("Offline", monitor.snapshot().error());
+        Assertions.assertEquals(events, monitor.getEvents());
+        monitor.stateChanged(new DDRemoteDamChannelStatus(
+            DDRemoteDamChannelState.CONNECTED, new DDRemoteDamSessionInfo("deployment", "instance", "session")));
+        Assertions.assertNull(monitor.snapshot().error());
+        Assertions.assertEquals(DDConnectionMonitor.EventType.CONNECTED, monitor.getEvents().getLast().type());
+    }
+
+    @Test
+    void recordsNameChangesWithoutRepeatingCachedOrReconnectedNames() {
+        var monitor = new DDConnectionMonitor();
+        monitor.damNameChanged(null);
+        monitor.damNameChanged("Desktop");
+        monitor.damNameChanged("Desktop");
+        monitor.damNameChanged("Renamed desktop");
+        monitor.clearEvents();
+        monitor.damNameChanged("Renamed desktop");
+        Assertions.assertTrue(monitor.getEvents().isEmpty());
+        monitor.damNameChanged("New name");
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertEquals(DDConnectionMonitor.EventType.NAME_CHANGED, monitor.getEvents().getFirst().type());
+        Assertions.assertEquals("New name", monitor.getEvents().getFirst().details());
+    }
+
+    @Test
     void responseEditorProjectionContainsOnlyTheValueAttribute() {
         String body = "{\"value\":{\"rows\":[1,2],\"code\":5},\"error\":false,\"message\":\"envelope metadata\"}";
         var response = new DDConnectionMonitor.McpResponse("OK", null, body);

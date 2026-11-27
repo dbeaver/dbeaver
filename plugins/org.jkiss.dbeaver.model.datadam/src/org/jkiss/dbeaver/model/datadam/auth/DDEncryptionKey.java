@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.datadam.auth;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.keys.DDBip39Wordlist;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -25,13 +26,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class DDRecoveryPhrase {
+public final class DDEncryptionKey {
 
     private static final int WORD_COUNT = 12;
     private static final int ENTROPY_BYTES = 16;
     private static final Map<String, Integer> WORD_INDICES = buildWordIndices();
 
-    private DDRecoveryPhrase() {
+    private DDEncryptionKey() {
     }
 
     @NotNull
