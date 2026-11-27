@@ -22,6 +22,9 @@
             <treeInjection path="generic/catalog/schema/table"
                 changeFolderType="org.jkiss.dbeaver.ext.doris.model.DorisTable"/>
 
+            <treeInjection path="generic/catalog/schema/table/attribute"
+                changeFolderType="org.jkiss.dbeaver.ext.doris.model.DorisTableColumn"/>
+
             <drivers managable="true">
                 <driver
                         id="doris"
@@ -77,5 +80,7 @@
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.doris.edit.DorisTableManager"
             objectType="org.jkiss.dbeaver.ext.doris.model.DorisTable"/>
+        <manager class="org.jkiss.dbeaver.ext.doris.edit.DorisTableColumnManager"
+            objectType="org.jkiss.dbeaver.ext.doris.model.DorisTableColumn"/>
     </extension>
 </plugin>
