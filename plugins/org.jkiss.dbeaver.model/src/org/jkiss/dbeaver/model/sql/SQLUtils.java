@@ -289,6 +289,17 @@ public final class SQLUtils {
         return false;
     }
 
+    private static boolean startsWithAny(@NotNull String sql, int pos, @Nullable String[] prefixes) {
+        if (prefixes != null) {
+            for (String prefix : prefixes) {
+                if (!CommonUtils.isEmpty(prefix) && sql.startsWith(prefix, pos)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static boolean startsWith(@NotNull CharSequence sql, @NotNull String prefix, int offset) {
         if (offset < 0 || offset > sql.length() - prefix.length()) {
             return false;
@@ -580,7 +591,8 @@ public final class SQLUtils {
      * Returns the keyword of the statement defined by the query.
      * Unlike {@link #getFirstKeyword(SQLDialect, String)} it skips the leading {@code WITH} clause
      * with common table expressions, because such a clause may precede both read-only and modifying
-     * statements.
+     * statements. Data-modifying CTEs are taken into account as well, so
+     * {@code WITH deleted AS (DELETE FROM t RETURNING *) SELECT * FROM deleted} is reported as modifying.
      *
      * @return statement keyword or an empty string if it cannot be detected
      */
@@ -590,28 +602,46 @@ public final class SQLUtils {
         if (!SQLConstants.KEYWORD_WITH.equalsIgnoreCase(keyword)) {
             return keyword;
         }
-        String cleanQuery = stripComments(dialect, query);
-        int statementPos = findStatementPosAfterCTE(dialect, cleanQuery);
-        if (statementPos < 0) {
+        CteClause cteClause = scanCteClause(dialect, query);
+        if (cteClause.statementPos < 0) {
             return keyword;
         }
-        return getFirstKeyword(dialect, cleanQuery.substring(statementPos));
+        for (int[] queryRange : cteClause.queryRanges) {
+            String cteKeyword = getStatementKeyword(dialect, query.substring(queryRange[0], queryRange[1]));
+            if (SQLConstants.KEYWORD_WITH.equalsIgnoreCase(cteKeyword) || isDataModifyingKeyword(cteKeyword)) {
+                return cteKeyword;
+            }
+        }
+        return getFirstKeyword(dialect, query.substring(cteClause.statementPos));
+    }
+
+    private static boolean isDataModifyingKeyword(@NotNull String keyword) {
+        for (String queryKeyword : SQLConstants.QUERY_KEYWORDS) {
+            if (!SQLConstants.KEYWORD_SELECT.equals(queryKeyword) && queryKeyword.equalsIgnoreCase(keyword)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * Finds the position of the statement which follows the {@code WITH} clause with common table
-     * expressions. Every CTE query is enclosed in a bracket preceded by {@code AS}, so the statement
-     * starts right after the closing bracket of the last CTE.
-     *
-     * @return position of the statement start or -1 if the clause cannot be recognized
+     * Scans the leading {@code WITH} clause and collects the ranges of the CTE queries
+     * together with the position of the statement which follows the clause.
+     * Comments and quoted literals are skipped, so their content cannot affect the result.
      */
-    private static int findStatementPosAfterCTE(@NotNull SQLDialect dialect, @NotNull String query) {
+    @NotNull
+    private static CteClause scanCteClause(@NotNull SQLDialect dialect, @NotNull String query) {
+        CteClause result = new CteClause();
         char escapeChar = dialect.getStringEscapeCharacter();
         String[][] stringQuotes = dialect.getStringQuoteStrings();
         String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
+        String[] lineComments = dialect.getSingleLineComments();
+        Pair<String, String> multiLineComments = dialect.getMultiLineComments();
+        String mlCommentStart = multiLineComments == null ? null : multiLineComments.getFirst();
+        String mlCommentEnd = multiLineComments == null ? null : multiLineComments.getSecond();
+
         int brackets = 0;
         int cteQueryPos = -1;
-        int statementPos = -1;
         int pos = 0;
         while (pos < query.length()) {
             String[] quote = quoteStartingAt(query, pos, stringQuotes);
@@ -627,13 +657,24 @@ public final class SQLUtils {
                     continue;
                 }
             }
+            if (mlCommentStart != null && startsWith(query, mlCommentStart, pos)) {
+                int commentEnd = mlCommentEnd == null ? -1 : query.indexOf(mlCommentEnd, pos + mlCommentStart.length());
+                pos = commentEnd < 0 ? query.length() : commentEnd + mlCommentEnd.length();
+                continue;
+            }
+            if (startsWithAny(query, pos, lineComments)) {
+                pos = getLineEnd(query, pos);
+                continue;
+            }
             char ch = query.charAt(pos);
             if (ch == '(') {
                 brackets++;
             } else if (ch == ')' && brackets > 0) {
                 brackets--;
                 if (brackets == 0 && cteQueryPos >= 0) {
-                    statementPos = pos + 1;
+                    // Store the CTE query without the enclosing brackets
+                    result.queryRanges.add(new int[]{cteQueryPos + 1, pos});
+                    result.statementPos = pos + 1;
                     cteQueryPos = -1;
                 }
             } else if (
@@ -641,26 +682,46 @@ public final class SQLUtils {
                 cteQueryPos < 0 &&
                 isKeywordAt(query, pos, SQLConstants.KEYWORD_AS))
             {
-                int bracketPos = skipWhitespaces(query, pos + SQLConstants.KEYWORD_AS.length());
-                if (bracketPos < query.length() && query.charAt(bracketPos) == '(') {
+                int bracketPos = findCteQueryPos(query, pos + SQLConstants.KEYWORD_AS.length());
+                if (bracketPos >= 0) {
                     cteQueryPos = bracketPos;
+                    pos = bracketPos;
+                    continue;
                 }
             }
             pos++;
         }
-        return statementPos;
+        return result;
+    }
+
+    /**
+     * Finds the opening bracket of a CTE query which follows the {@code AS} keyword.
+     * PostgreSQL allows optional {@code [NOT] MATERIALIZED} modifiers before the bracket.
+     */
+    private static int findCteQueryPos(@NotNull String query, int pos) {
+        pos = skipWhitespaces(query, pos);
+        if (isKeywordAt(query, pos, SQLConstants.KEYWORD_NOT)) {
+            pos = skipWhitespaces(query, pos + SQLConstants.KEYWORD_NOT.length());
+        }
+        if (isKeywordAt(query, pos, SQLConstants.KEYWORD_MATERIALIZED)) {
+            pos = skipWhitespaces(query, pos + SQLConstants.KEYWORD_MATERIALIZED.length());
+        }
+        return pos < query.length() && query.charAt(pos) == '(' ? pos : -1;
     }
 
     private static boolean isKeywordAt(@NotNull String query, int pos, @NotNull String keyword) {
+        if (pos > 0 && isIdentifierChar(query.charAt(pos - 1))) {
+            return false;
+        }
         if (!query.regionMatches(true, pos, keyword, 0, keyword.length())) {
             return false;
         }
         int endPos = pos + keyword.length();
-        if (endPos >= query.length()) {
-            return true;
-        }
-        char ch = query.charAt(endPos);
-        return !Character.isLetterOrDigit(ch) && ch != '_' && ch != '$';
+        return endPos >= query.length() || !isIdentifierChar(query.charAt(endPos));
+    }
+
+    private static boolean isIdentifierChar(char ch) {
+        return Character.isLetterOrDigit(ch) || ch == '_' || ch == '$';
     }
 
     private static int skipWhitespaces(@NotNull String query, int pos) {
@@ -668,6 +729,11 @@ public final class SQLUtils {
             pos++;
         }
         return pos;
+    }
+
+    private static final class CteClause {
+        private final List<int[]> queryRanges = new ArrayList<>();
+        private int statementPos = -1;
     }
 
     /**

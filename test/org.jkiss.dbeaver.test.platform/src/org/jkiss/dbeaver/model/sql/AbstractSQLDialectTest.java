@@ -120,7 +120,7 @@ public class AbstractSQLDialectTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void isTransactionModifyingInsertWithSeveralCtesTest() {
+    public void isTransactionModifyingUpdateWithSeveralCtesTest() {
         Assertions.assertTrue(dialect.isTransactionModifyingQuery(
             "WITH cte1 AS (SELECT 1), cte2 AS (SELECT 2) UPDATE Test SET id = cte2.id"));
     }
@@ -130,5 +130,35 @@ public class AbstractSQLDialectTest extends DBeaverUnitTest {
         // If the WITH clause cannot be recognized the query is treated as transaction modifying
         Assertions.assertTrue(dialect.isTransactionModifyingQuery("WITH"));
         Assertions.assertTrue(dialect.isTransactionModifyingQuery("WITH cte"));
+    }
+
+    @Test
+    public void isTransactionModifyingDataModifyingCteTest() {
+        Assertions.assertTrue(dialect.isTransactionModifyingQuery(
+            "WITH deleted AS (DELETE FROM products RETURNING *) SELECT * FROM deleted"));
+        Assertions.assertTrue(dialect.isTransactionModifyingQuery(
+            "WITH inserted AS (INSERT INTO products VALUES (1) RETURNING *) SELECT * FROM inserted"));
+        Assertions.assertTrue(dialect.isTransactionModifyingQuery(
+            "WITH updated AS (UPDATE products SET price = 0 RETURNING *) SELECT * FROM updated"));
+        Assertions.assertTrue(dialect.isTransactionModifyingQuery(
+            "WITH cte AS (SELECT 1), deleted AS (DELETE FROM products RETURNING *) SELECT * FROM cte, deleted"));
+    }
+
+    @Test
+    public void isTransactionModifyingSelectWithCteWithQuotedCommentMarkersTest() {
+        Assertions.assertFalse(dialect.isTransactionModifyingQuery(
+            "WITH cte AS (SELECT '/*') SELECT * FROM cte"));
+        Assertions.assertFalse(dialect.isTransactionModifyingQuery(
+            "WITH cte AS (SELECT '*/ --') SELECT * FROM cte"));
+        Assertions.assertTrue(dialect.isTransactionModifyingQuery(
+            "WITH cte AS (SELECT '/*') DELETE FROM Test"));
+    }
+
+    @Test
+    public void isTransactionModifyingSelectWithMaterializedCteTest() {
+        Assertions.assertFalse(dialect.isTransactionModifyingQuery(
+            "WITH cte AS MATERIALIZED (SELECT 1) SELECT * FROM cte"));
+        Assertions.assertFalse(dialect.isTransactionModifyingQuery(
+            "WITH cte AS NOT MATERIALIZED (SELECT 1) SELECT * FROM cte"));
     }
 }
