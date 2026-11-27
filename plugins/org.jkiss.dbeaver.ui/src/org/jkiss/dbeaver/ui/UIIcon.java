@@ -151,8 +151,8 @@ public class UIIcon {
     public static final DBIcon SAVE = new DBIcon("save", "file/save.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SAVE_AS = new DBIcon("save_as", "file/save_as.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SAVE_ALL = new DBIcon("saveall", "file/saveall.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon LOAD = new DBIcon("load", "file/load.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon RESET = new DBIcon("reset", "file/reset.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOAD = new DBIcon("load", "file/load.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RESET = new DBIcon("reset", "file/reset.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon COMPARE = new DBIcon("compare", "file/compare.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon MOVE = new DBIcon("sql_move", "sql/sql_move.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon COPY = new DBIcon("sql_copy", "sql/sql_copy.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -285,7 +285,7 @@ public class UIIcon {
     public static final DBIcon BUTTON_CLOUD = new DBIcon("buttons/cloud.svg"); //$NON-NLS-1$
 
     public static final DBIcon FILE = new DBIcon("file/file.svg"); //$NON-NLS-1$
-    public static final DBIcon OPEN = new DBIcon("file/open.png"); //$NON-NLS-1$
+    public static final DBIcon OPEN = new DBIcon("file/open.svg"); //$NON-NLS-1$
     public static final DBIcon OPEN_EXTERNAL = new DBIcon("file/open_external.svg"); //$NON-NLS-1$
     public static final DBIcon SAVE_EXTERNAL = new DBIcon("file/save_external.svg"); //$NON-NLS-1$
 

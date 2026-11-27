@@ -526,7 +526,7 @@
 <!--
             <toolbar id="dbeaver-edit" label="%toolbar.dbeaver-edit.label">
                 <command commandId="org.eclipse.ui.file.save"/>
-                <command commandId="org.eclipse.ui.file.revert" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/reset.png"/>
+                <command commandId="org.eclipse.ui.file.revert" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/reset.svg"/>
                 <command commandId="org.eclipse.ui.edit.undo"/>
                 <command commandId="org.eclipse.ui.edit.redo"/>
                 <command commandId="org.eclipse.ui.file.refresh"/>
