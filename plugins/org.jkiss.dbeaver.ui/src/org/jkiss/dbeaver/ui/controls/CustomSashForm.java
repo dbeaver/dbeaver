@@ -84,7 +84,7 @@ public class CustomSashForm extends SashForm {
         }
     }
 
-    public static final Color DEFAULT_BORDER_COLOR = new Color(153, 180, 209, 255);
+    public static final Color DEFAULT_BORDER_COLOR = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
 
     public interface ICustomSashFormListener {
@@ -797,14 +797,12 @@ public class CustomSashForm extends SashForm {
 
             gc.drawLine(0,  sashDim / 2, leftArrowPos, sashDim / 2);
             gc.drawLine(rightArrowPos,  sashDim / 2, s.x - 1, sashDim / 2);
-            gc.drawRoundRectangle(leftArrowPos, 0, rightArrowPos - leftArrowPos, sashDim - 1, 3, 3);
         } else {
             int topArrowPos = sashLocs[0][3] - ARROW_MARGIN;
             int bottomArrowPos = sashLocs[lastLocIndex][3] + sashLocs[lastLocIndex][4] + ARROW_MARGIN * 3;
 
             gc.drawLine(sashDim / 2, 0, sashDim / 2, topArrowPos);
             gc.drawLine(sashDim / 2, bottomArrowPos, sashDim / 2, s.y - 1);
-            gc.drawRoundRectangle(0, topArrowPos, sashDim - 1, bottomArrowPos - topArrowPos, 3, 3);
         }
     }
 
