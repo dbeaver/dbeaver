@@ -43,10 +43,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -67,6 +64,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private static DataSourceProviderDescriptor nullProvider;
 
     private final DataSourceProviderRegistry registry;
+    @Nullable
+    private final InheritedConfiguration<DataSourceProviderDescriptor> declaration;
     private DataSourceProviderDescriptor parentProvider;
     private final String id;
     private ObjectType implType;
@@ -103,17 +102,25 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private boolean inheritAuthModels = true;
     private boolean inheritProviderProperties;
 
-    public DataSourceProviderDescriptor(@NotNull DataSourceProviderRegistry registry, @NotNull IConfigurationElement config) {
-        super(config);
+    public DataSourceProviderDescriptor(@NotNull DataSourceProviderRegistry registry, @NotNull IConfigurationElement element) {
+        super(element);
         this.registry = registry;
         this.temporary = false;
 
-        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        // Provider declarations are constructed in parent-first order.
+        String parentId = element.getAttribute(RegistryConstants.ATTR_PARENT);
+        var parent = !CommonUtils.isEmpty(parentId) && CommonUtils.toBoolean(element.getAttribute("inheritDrivers"))
+            ? registry.getDataSourceProvider(parentId)
+            : null;
+        this.declaration = new InheritedConfiguration<>(element, this, parent == null ? null : parent.declaration);
+        InheritedConfiguration<DataSourceProviderDescriptor> config = this.declaration;
+        this.id = element.getAttribute(RegistryConstants.ATTR_ID);
+        this.implType = new ObjectType(element.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.dataSourceTypeId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE);
-        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.icon = config.getAttributeSource(RegistryConstants.ATTR_ICON)
+            .iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
             this.icon = DBIcon.DATABASE_DEFAULT;
         }
@@ -130,7 +137,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
 
         // Keep tree configuration until a navigator actually requests this provider's tree.
-        IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
+        IConfigurationElement[] trees = element.getChildren(RegistryConstants.TAG_TREE);
         this.treeConfig = ArrayUtils.isEmpty(trees) ? null : trees[0];
         this.supportsDriverMigration = CommonUtils.toBoolean(config.getAttribute("supports-migration"));
         this.migrationCompletedProperty = config.getAttribute("migration-completed-property");
@@ -160,6 +167,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
     void loadExtraConfig(@NotNull IConfigurationElement config) {
         addTreeInjections(config);
+        InheritedConfiguration<DataSourceProviderDescriptor> attributes = Objects.requireNonNull(declaration);
 
         // Load driver properties
         {
@@ -210,7 +218,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
                 // Load provider properties
                 {
-                    inheritProviderProperties = CommonUtils.getBoolean(config.getAttribute("inheritProviderProperties"), false);
+                    inheritProviderProperties = CommonUtils.getBoolean(attributes.getAttribute("inheritProviderProperties"), false);
                     for (IConfigurationElement propsElement : driversElement.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES)) {
                         String driversSpec = propsElement.getAttribute("drivers");
                         List<ProviderPropertyDescriptor> providerProperties = new ArrayList<>();
@@ -228,7 +236,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
         // Load native clients
         {
-            inheritClients = CommonUtils.getBoolean(config.getAttribute("inheritClients"),
+            inheritClients = CommonUtils.getBoolean(attributes.getAttribute("inheritClients"),
                 false); // Will be "true" if we can use native clients list from the parent
 
             for (IConfigurationElement nativeClientsElement : config.getChildren("nativeClients")) {
@@ -243,6 +251,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     DataSourceProviderDescriptor(@NotNull DataSourceProviderRegistry registry, String id) {
         super("org.jkiss.dbeaver.registry");
         this.registry = registry;
+        this.declaration = null;
         this.id = id;
         this.name = id;
         this.description = "Missing datasource provider " + id;
@@ -818,7 +827,15 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
     @NotNull
     private DriverDescriptor loadDriver(IConfigurationElement config) {
-        return new DriverDescriptor(this, config);
+        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        if (CommonUtils.isEmpty(parentId)) {
+            return new DriverDescriptor(this, config);
+        }
+        DBPDriver parentDriver = parentProvider == null ? null : parentProvider.getOriginalDriver(parentId);
+        if (!(parentDriver instanceof DriverDescriptor descriptor)) {
+            throw new IllegalArgumentException("Parent driver '" + parentId + "' not found for provider '" + id + "'");
+        }
+        return new DriverDescriptor(this, config, descriptor);
     }
 
     @Override
