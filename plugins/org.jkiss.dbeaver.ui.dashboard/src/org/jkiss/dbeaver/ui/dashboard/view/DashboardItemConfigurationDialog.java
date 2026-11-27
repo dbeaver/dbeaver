@@ -20,8 +20,10 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -56,10 +58,14 @@ public class DashboardItemConfigurationDialog extends BaseDialog {
         return null;//UIUtils.getDialogSettings(DIALOG_ID);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent)
+    protected Composite createDialogArea(@NotNull Composite parent)
     {
-        Composite composite = super.createDialogArea(parent);
+        Composite dialogArea = super.createDialogArea(parent);
+        ScrolledComposite scrolledComposite = UIUtils.createScrolledComposite(dialogArea, SWT.V_SCROLL);
+        scrolledComposite.setShowFocusedControl(true);
+        Composite composite = UIUtils.createComposite(scrolledComposite, 1);
 
         boolean readOnly = !itemDescriptor.isCustom();
         int baseStyle = !readOnly ? SWT.NONE : SWT.READ_ONLY;
@@ -119,7 +125,9 @@ public class DashboardItemConfigurationDialog extends BaseDialog {
             itemConfigurationEditor.loadSettings(itemDescriptor);
         }
 
-        return parent;
+        UIUtils.configureScrolledComposite(scrolledComposite, composite);
+
+        return dialogArea;
     }
 
     @Override
