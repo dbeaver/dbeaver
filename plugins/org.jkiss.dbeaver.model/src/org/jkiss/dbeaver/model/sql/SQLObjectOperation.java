@@ -26,10 +26,33 @@ import java.util.List;
 public record SQLObjectOperation(
     @NotNull Operation operation,
     @NotNull ObjectKind objectKind,
-    @NotNull List<String> qualifiedNameParts
+    @NotNull List<String> qualifiedNameParts,
+    boolean temporary,
+    boolean ifNotExists,
+    @NotNull List<String> newName,
+    @NotNull List<String> tableNameParts
 ) {
+    public SQLObjectOperation(@NotNull Operation operation, @NotNull ObjectKind objectKind, @NotNull List<String> qualifiedNameParts) {
+        this(operation, objectKind, qualifiedNameParts, false);
+    }
+
+    public SQLObjectOperation(
+        @NotNull Operation operation, @NotNull ObjectKind objectKind, @NotNull List<String> qualifiedNameParts, boolean temporary
+    ) {
+        this(operation, objectKind, qualifiedNameParts, temporary, false, List.of());
+    }
+
+    public SQLObjectOperation(
+        @NotNull Operation operation, @NotNull ObjectKind objectKind, @NotNull List<String> qualifiedNameParts,
+        boolean temporary, boolean ifNotExists, @NotNull List<String> newName
+    ) {
+        this(operation, objectKind, qualifiedNameParts, temporary, ifNotExists, newName, List.of());
+    }
+
     public SQLObjectOperation {
         qualifiedNameParts = List.copyOf(qualifiedNameParts);
+        newName = List.copyOf(newName);
+        tableNameParts = List.copyOf(tableNameParts);
     }
 
     public enum Operation {

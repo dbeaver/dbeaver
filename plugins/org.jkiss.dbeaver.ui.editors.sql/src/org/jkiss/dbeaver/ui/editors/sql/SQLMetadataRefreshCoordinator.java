@@ -119,6 +119,12 @@ final class SQLMetadataRefreshCoordinator {
         Set<RefreshTarget> directlyRefreshedTargets = new LinkedHashSet<>();
         boolean directlyRefreshed = false;
         for (RefreshTarget target : refreshTargets) {
+            if (target instanceof RefreshTarget.TemporaryTable temporaryTable) {
+                if (temporaryTable.table().refreshTemporaryMetadata(monitor)) {
+                    directlyRefreshedTargets.add(target);
+                }
+                continue;
+            }
             DBSObject refreshTarget = resolveTarget(monitor, executionContext, target);
             if (refreshTarget == null) {
                 continue;
@@ -198,6 +204,9 @@ final class SQLMetadataRefreshCoordinator {
             }
             case RefreshTarget.Catalog catalog -> catalogName = catalog.catalogName();
             case RefreshTarget.Schema schema -> catalogName = schema.catalogName();
+            case RefreshTarget.TemporaryTable ignored -> {
+                return null;
+            }
         }
         DBCExecutionContextDefaults<?, ?> defaults = executionContext.getContextDefaults();
         DBSCatalog defaultCatalog = defaults == null ? null : defaults.getDefaultCatalog();

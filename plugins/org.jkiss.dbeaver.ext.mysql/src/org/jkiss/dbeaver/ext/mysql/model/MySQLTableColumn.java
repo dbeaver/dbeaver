@@ -180,7 +180,7 @@ public class MySQLTableColumn
 
         this.fullTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_TYPE);
         if (!CommonUtils.isEmpty(fullTypeName) && (isTypeEnum() || isTypeSet())) {
-            enumValues = parseEnumValues(fullTypeName);
+            loadEnumValues(fullTypeName);
         }
 
         if (!getDataSource().isMariaDB() && getDataSource().isServerVersionAtLeast(5, 7)) {
@@ -254,6 +254,12 @@ public class MySQLTableColumn
     public void setFullTypeName(@NotNull String fullTypeName) throws DBException {
         super.setFullTypeName(fullTypeName);
         this.fullTypeName = fullTypeName;
+    }
+
+    void loadEnumValues(@NotNull String declaration) {
+        typeName = declaration.substring(0, declaration.indexOf('('));
+        fullTypeName = declaration;
+        enumValues = parseEnumValues(declaration);
     }
 
     @NotNull

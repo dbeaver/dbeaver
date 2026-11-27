@@ -479,7 +479,7 @@ constraintAttributes: (constraintCheckTime ((NOT)? DEFERRABLE)?|(NOT)? DEFERRABL
 constraintCheckTime: (INITIALLY DEFERRED|INITIALLY IMMEDIATE);
 tableConstraintDefinition: (constraintNameDefinition)? tableConstraint (constraintCheckTime)?;
 tableConstraint: (uniqueConstraintDefinition|referentialConstraintDefinition|checkConstraintDefinition);
-uniqueConstraintDefinition: (UNIQUE|PRIMARY KEY) LeftParen uniqueColumnList RightParen;
+uniqueConstraintDefinition: (UNIQUE (INDEX|KEY)? identifier?|PRIMARY KEY) LeftParen uniqueColumnList RightParen;
 uniqueColumnList: columnNameList;
 referentialConstraintDefinition: FOREIGN KEY LeftParen referencingColumns RightParen referencesSpecification;
 referencingColumns: referenceColumnList;
@@ -506,7 +506,9 @@ authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
 schemaElement: createTableStatement|createViewStatement;
 
-createTableStatement: createTableHead (tableName? createTableExtraHead tableElementList createTableTail)?;
+createTableStatement: createTableHead (tableName? createTableExtraHead
+    (tableElementList createTableTail | LIKE tableName | LeftParen LIKE tableName RightParen
+        | (~(AS|SELECT|WITH|LeftParen|RightParen|Semicolon))* AS? withClause? queryExpression))?;
 createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (IF NOT EXISTS)? ;// here orReplace is MariaDB-specific only
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
@@ -559,7 +561,8 @@ containerStatementTail: (~Semicolon)+;
 dropSchemaStatement: DROP SCHEMA ifExistsSpec? schemaName dropBehaviour?;
 dropBehaviour: (CASCADE|RESTRICT);
 alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? ONLY? (tableName (alterTableAction (Comma alterTableAction)*)?)?;
-alterTableAction: addColumnDefinition|alterColumnDefinition|renameColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|setTableSchemaAction|anyWordsWithProperty;
+alterTableAction: addColumnDefinition|alterColumnDefinition|renameColumnDefinition|renameTableAction|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|setTableSchemaAction|anyWordsWithProperty;
+renameTableAction: RENAME (TO|AS)? tableName;
 setTableSchemaAction: SET SCHEMA schemaName;
 addColumnDefinition: ADD (COLUMN)? columnDefinition;
 renameColumnDefinition: RENAME (COLUMN)? columnName TO identifier;
@@ -570,7 +573,7 @@ dropColumnDefaultClause: DROP DEFAULT;
 dropColumnDefinition: DROP (COLUMN)? columnName dropBehaviour;
 addTableConstraintDefinition: ADD tableConstraintDefinition;
 dropTableConstraintDefinition: DROP CONSTRAINT constraintName dropBehaviour;
-dropTableStatement: DROP TABLE ifExistsSpec? (tableName (Comma tableName)*)? dropBehaviour?;
+dropTableStatement: DROP (TEMPORARY|TEMP)? TABLE ifExistsSpec? (tableName (Comma tableName)*)? dropBehaviour?;
 dropViewStatement: DROP VIEW ifExistsSpec?  (tableName (Comma tableName)*)? dropBehaviour?;
 dropProcedureStatement: DROP PROCEDURE ifExistsSpec? qualifiedName ddlStatementTail?;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;

@@ -194,10 +194,17 @@ public final class SQLObjectOperationRecognizer {
             return createOperation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.SCHEMA, name);
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.createTableStatement)) {
-            return createOperation(
-                SQLObjectOperation.Operation.CREATE,
-                SQLObjectOperation.ObjectKind.TABLE,
-                findDescendant(statement, STMKnownRuleNames.tableName)
+            List<String> nameParts = getNameParts(findDescendant(statement, STMKnownRuleNames.tableName));
+            if (nameParts.isEmpty()) {
+                return null;
+            }
+            STMTreeNode head = statement.findFirstChildOfName(STMKnownRuleNames.createTableHead);
+            boolean temporary = head != null && head.findNonErrorChildren().stream().anyMatch(child ->
+                child.getText().equalsIgnoreCase("TEMPORARY") || child.getText().equalsIgnoreCase("TEMP"));
+            boolean ifNotExists = head != null && head.findNonErrorChildren().stream()
+                .anyMatch(child -> child.getText().equalsIgnoreCase("IF"));
+            return new SQLObjectOperation(
+                SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.TABLE, nameParts, temporary, ifNotExists, List.of()
             );
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.createViewStatement)) {
@@ -272,6 +279,13 @@ public final class SQLObjectOperationRecognizer {
         if (sourceName.isEmpty()) {
             return List.of();
         }
+        STMTreeNode rename = findDescendant(statement, STMKnownRuleNames.renameTableAction);
+        if (rename != null) {
+            return List.of(new SQLObjectOperation(
+                SQLObjectOperation.Operation.RENAME, objectKind, sourceName, false, false,
+                getNameParts(findDescendant(rename, STMKnownRuleNames.tableName))
+            ));
+        }
 
         SQLObjectOperation source = new SQLObjectOperation(
             SQLObjectOperation.Operation.ALTER,
@@ -313,7 +327,7 @@ public final class SQLObjectOperationRecognizer {
             indexName = List.copyOf(qualifiedIndexName);
         }
         return indexName.isEmpty() ? null :
-            new SQLObjectOperation(operation, SQLObjectOperation.ObjectKind.INDEX, indexName);
+            new SQLObjectOperation(operation, SQLObjectOperation.ObjectKind.INDEX, indexName, false, false, List.of(), tableName);
     }
 
     @Nullable

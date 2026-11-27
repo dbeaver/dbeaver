@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
@@ -31,19 +32,128 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * MySQLExecutionContext
  */
-public class MySQLExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<MySQLCatalog, DBSSchema> {
+public class MySQLExecutionContext extends JDBCExecutionContext
+    implements DBCExecutionContextDefaults<MySQLCatalog, DBSSchema>, DBCTemporaryTableManager {
     private static final Log log = Log.getLog(MySQLExecutionContext.class);
 
     //private MySQLCatalog activeDatabase;
     private String activeDatabaseName;
+    private final Map<TemporaryTableName, MySQLTemporaryTable> temporaryTables = new ConcurrentHashMap<>();
 
     MySQLExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance, purpose);
+    }
+
+    @Nullable
+    @Override
+    public TemporaryTable registerTemporaryTable(
+        @NotNull DBCSession session, @NotNull List<String> qualifiedName, boolean ifNotExists
+    ) throws DBException {
+        Connection connection = getConnectionOrNull();
+        TemporaryTableName name = temporaryTableName(session, qualifiedName);
+        if (connection == null || name == null) {
+            return null;
+        }
+        MySQLTemporaryTable existing = temporaryTables.get(name);
+        if (ifNotExists && existing != null && existing.getConnection() == connection) {
+            return existing;
+        }
+        MySQLCatalog catalog = getDataSource().getCatalog(name.catalog());
+        if (catalog == null) {
+            catalog = new MySQLCatalog(getDataSource(), null);
+            catalog.setName(name.catalog());
+            catalog.setPersisted(true);
+        }
+        MySQLTemporaryTable table = new MySQLTemporaryTable(this, connection, catalog, qualifiedName.getLast());
+        temporaryTables.put(name, table);
+        return table;
+    }
+
+    @Nullable
+    @Override
+    public TemporaryTable temporaryTableChanged(
+        @NotNull DBCSession session, @NotNull List<String> qualifiedName, boolean dropped, @NotNull List<String> newName
+    )
+        throws DBException
+    {
+        if (temporaryTables.isEmpty()) {
+            return null;
+        }
+        TemporaryTableName name = temporaryTableName(session, qualifiedName);
+        if (name == null) {
+            return null;
+        }
+        if (!newName.isEmpty() && temporaryTables.remove(name) != null) {
+            return registerTemporaryTable(session, newName.size() == 1 ? List.of(name.catalog(), newName.getFirst()) : newName, false);
+        }
+        if (dropped) {
+            return temporaryTables.remove(name);
+        }
+        return temporaryTables.computeIfPresent(name, (key, table) ->
+            new MySQLTemporaryTable(this, table.getConnection(), table.getContainer(), table.getName()));
+    }
+
+    @Nullable
+    @Override
+    public TemporaryTable findTemporaryTable(@NotNull DBCEntityMetaData metadata) {
+        if (temporaryTables.isEmpty()) {
+            return null;
+        }
+        String catalogName = CommonUtils.isEmpty(metadata.getCatalogName()) ? metadata.getSchemaName() : metadata.getCatalogName();
+        if (CommonUtils.isEmpty(catalogName)) {
+            catalogName = activeDatabaseName;
+        }
+        String tableName = metadata.getEntityName();
+        if (CommonUtils.isEmpty(catalogName) || CommonUtils.isEmpty(tableName)) {
+            return null;
+        }
+        MySQLTemporaryTable table = temporaryTables.get(temporaryTableName(catalogName, tableName));
+        return table != null && table.getConnection() == getConnectionOrNull() ? table : null;
+    }
+
+    boolean isCurrentTemporaryTable(@NotNull MySQLTemporaryTable table) {
+        return table.getConnection() == getConnectionOrNull() &&
+            temporaryTables.get(temporaryTableName(table.getContainer().getName(), table.getName())) == table;
+    }
+
+    @Override
+    protected void disconnect(boolean removeContext) {
+        try {
+            super.disconnect(removeContext);
+        } finally {
+            temporaryTables.clear();
+        }
+    }
+
+    @Nullable
+    private TemporaryTableName temporaryTableName(@NotNull DBCSession session, @NotNull List<String> qualifiedName) throws DBException {
+        if (qualifiedName.isEmpty() || qualifiedName.size() > 2) {
+            return null;
+        }
+        String catalog = qualifiedName.size() == 2 ? qualifiedName.getFirst() :
+            MySQLUtils.determineCurrentDatabase((JDBCSession) session);
+        return CommonUtils.isEmpty(catalog) ? null : temporaryTableName(catalog, qualifiedName.getLast());
+    }
+
+    @NotNull
+    private TemporaryTableName temporaryTableName(@NotNull String catalog, @NotNull String table) {
+        if (getDataSource().getLowerCaseTableNames() != 0) {
+            return new TemporaryTableName(catalog.toLowerCase(Locale.ROOT), table.toLowerCase(Locale.ROOT));
+        }
+        return new TemporaryTableName(catalog, table);
+    }
+
+    private record TemporaryTableName(@NotNull String catalog, @NotNull String table) {
     }
 
     @NotNull

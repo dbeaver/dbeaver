@@ -34,6 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 final class SQLMetadataRefreshTransactionCoordinator {
     private static final String STATE_ATTRIBUTE = SQLMetadataRefreshTransactionCoordinator.class.getName();
@@ -427,6 +428,22 @@ final class SQLMetadataRefreshTransactionCoordinator {
         return MetadataRefreshBehavior.parse(preferences.getString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION));
     }
 
+    static void requestTemporaryTableRefresh(
+        @NotNull DBCExecutionContext context,
+        @NotNull Set<RefreshTarget.TemporaryTable> targets
+    ) {
+        Set<RefreshTarget> refreshTargets = Set.copyOf(targets);
+        String tableNames = targets.stream()
+            .map(target -> target.table().getName())
+            .distinct()
+            .collect(Collectors.joining(", "));
+        showRefreshNotification(
+            tableNames,
+            SQLEditorMessages.sql_editor_metadata_refresh_temporary_tables_notification,
+            () -> SQLMetadataRefreshCoordinator.refresh(context, refreshTargets, null)
+        );
+    }
+
     private static void showRefreshNotification(
         @NotNull DBCExecutionContext context,
         @NotNull String message,
@@ -451,12 +468,13 @@ final class SQLMetadataRefreshTransactionCoordinator {
         if (refreshBehavior == MetadataRefreshBehavior.NEVER) {
             return;
         }
+        showRefreshNotification(context.getDataSource().getContainer().getName(), message, refresh);
+    }
+
+    private static void showRefreshNotification(@NotNull String targetName, @NotNull String message, @NotNull Runnable refresh) {
         DBeaverNotifications.showNotification(
             SQLEditor.NOTIFICATION_SQL_METADATA_REFRESH,
-            NLS.bind(
-                SQLEditorMessages.sql_editor_metadata_refresh_notification_title,
-                context.getDataSource().getContainer().getName()
-            ),
+            NLS.bind(SQLEditorMessages.sql_editor_metadata_refresh_notification_title, targetName),
             message,
             DBPMessageType.WARNING,
             refresh

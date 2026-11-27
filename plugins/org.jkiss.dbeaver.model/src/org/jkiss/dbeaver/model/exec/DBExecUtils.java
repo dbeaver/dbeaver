@@ -666,6 +666,9 @@ public class DBExecUtils {
             }
         }
 
+        if (table instanceof DBCTemporaryTableManager.TemporaryTable) {
+            return null;
+        }
         {
             // Check for pseudo attrs (ROWID)
             // Do this after natural identifiers search (see #3829)

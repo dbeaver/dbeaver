@@ -78,6 +78,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshTarget;
 import org.jkiss.dbeaver.model.sql.semantics.SQLObjectOperationRecognizer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -4471,6 +4472,7 @@ public class SQLEditor extends SQLEditorBase implements
         private final boolean closeTabOnError;
         private boolean metadataChanged;
         private SQLMetadataRefreshTransactionCoordinator.Handling metadataRefreshHandling;
+        private final Set<RefreshTarget.TemporaryTable> temporaryTableRefreshTargets = new LinkedHashSet<>();
         private SQLQueryListener extListener;
 
         SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
@@ -4559,12 +4561,21 @@ public class SQLEditor extends SQLEditorBase implements
                     SQLPreferenceConstants.MetadataRefreshBehavior refreshBehavior = SQLPreferenceConstants.MetadataRefreshBehavior.parse(
                         owner.getActivePreferenceStore().getString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
                     );
-                    if (!result.hasError() && refreshBehavior != SQLPreferenceConstants.MetadataRefreshBehavior.NEVER) {
-                        SQLQuery query = result.getStatement();
+                    SQLQuery query = result.getStatement();
+                    if (!result.hasError() && (refreshBehavior != SQLPreferenceConstants.MetadataRefreshBehavior.NEVER ||
+                        (session.getExecutionContext() instanceof DBCTemporaryTableManager && query.mayBeDDLStatement()))) {
                         List<SQLObjectOperation> objectOperations = query.mayBeDDLStatement()
                             ? owner.recognizeObjectOperations(query)
                             : List.of();
-                        if (query.getType() == SQLQueryType.DDL || !objectOperations.isEmpty()) {
+                        List<SQLObjectOperation> refreshOperations = new ArrayList<>();
+                        for (SQLObjectOperation objectOperation : objectOperations) {
+                            if (!handleTemporaryTableOperation(session, objectOperation, refreshBehavior)) {
+                                refreshOperations.add(objectOperation);
+                            }
+                        }
+                        // Keep the generic refresh for unrecognized DDL, but handle known temporary tables only in their session.
+                        if (refreshBehavior != SQLPreferenceConstants.MetadataRefreshBehavior.NEVER &&
+                            ((query.getType() == SQLQueryType.DDL && objectOperations.isEmpty()) || !refreshOperations.isEmpty())) {
                             metadataChanged = true;
                             if (metadataRefreshHandling == null || !metadataRefreshHandling.acceptsTargets()) {
                                 metadataRefreshHandling = SQLMetadataRefreshTransactionCoordinator.begin(
@@ -4573,7 +4584,7 @@ public class SQLEditor extends SQLEditorBase implements
                                     session
                                 );
                             }
-                            for (SQLObjectOperation objectOperation : objectOperations) {
+                            for (SQLObjectOperation objectOperation : refreshOperations) {
                                 rememberMetadataRefreshTarget(
                                     session.getProgressMonitor(),
                                     session.getExecutionContext(),
@@ -4638,6 +4649,47 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        private boolean handleTemporaryTableOperation(
+            @NotNull DBCSession session,
+            @NotNull SQLObjectOperation operation,
+            @NotNull SQLPreferenceConstants.MetadataRefreshBehavior refreshBehavior
+        ) {
+            boolean indexOperation = operation.objectKind() == SQLObjectOperation.ObjectKind.INDEX && !operation.tableNameParts().isEmpty();
+            if ((!indexOperation && operation.objectKind() != SQLObjectOperation.ObjectKind.TABLE) ||
+                (!indexOperation && operation.operation() == SQLObjectOperation.Operation.CREATE && !operation.temporary()) ||
+                !(session.getExecutionContext() instanceof DBCTemporaryTableManager temporaryTables)) {
+                return false;
+            }
+            SQLDialect dialect = session.getDataSource().getSQLDialect();
+            List<String> name = (indexOperation ? operation.tableNameParts() : operation.qualifiedNameParts()).stream()
+                .map(part -> SQLUtils.identifierToCanonicalForm(dialect, part, true, false))
+                .toList();
+            List<String> newName = operation.newName().stream()
+                .map(part -> SQLUtils.identifierToCanonicalForm(dialect, part, true, false))
+                .toList();
+            boolean removed = !indexOperation && (operation.operation() == SQLObjectOperation.Operation.DROP ||
+                operation.operation() == SQLObjectOperation.Operation.RENAME);
+            try {
+                DBCTemporaryTableManager.TemporaryTable table = operation.temporary() ?
+                    temporaryTables.registerTemporaryTable(session, name, operation.ifNotExists()) :
+                    temporaryTables.temporaryTableChanged(session, name, removed, newName);
+                if (table == null) {
+                    return operation.temporary();
+                }
+                RefreshTarget.TemporaryTable target = new RefreshTarget.TemporaryTable(table);
+                if (removed && newName.isEmpty()) {
+                    temporaryTableRefreshTargets.remove(target);
+                } else if (refreshBehavior == SQLPreferenceConstants.MetadataRefreshBehavior.ASK) {
+                    temporaryTableRefreshTargets.add(target);
+                } else if (refreshBehavior == SQLPreferenceConstants.MetadataRefreshBehavior.ALWAYS) {
+                    table.refreshTemporaryMetadata(session.getProgressMonitor());
+                }
+            } catch (DBException e) {
+                log.debug("Error refreshing temporary table metadata", e);
+            }
+            return true;
+        }
+
         private void rememberMetadataRefreshTarget(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBCExecutionContext executionContext,
@@ -4646,8 +4698,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (objectOperation == null) {
                 return;
             }
-            SQLMetadataRefreshTargetResolver.RefreshTarget target =
-                SQLMetadataRefreshTargetResolver.createTarget(monitor, executionContext, objectOperation);
+            RefreshTarget target = SQLMetadataRefreshTargetResolver.createTarget(monitor, executionContext, objectOperation);
             metadataRefreshHandling.add(target);
         }
 
@@ -4811,6 +4862,13 @@ public class SQLEditor extends SQLEditorBase implements
                 refreshContextDefaults(session);
                 if (metadataChanged && metadataRefreshHandling != null) {
                     metadataRefreshHandling.finish();
+                }
+                temporaryTableRefreshTargets.removeIf(target -> !target.table().isCurrentTemporaryTable());
+                if (!temporaryTableRefreshTargets.isEmpty()) {
+                    SQLMetadataRefreshTransactionCoordinator.requestTemporaryTableRefresh(
+                        session.getExecutionContext(),
+                        temporaryTableRefreshTargets
+                    );
                 }
             }
             if (extListener != null) {

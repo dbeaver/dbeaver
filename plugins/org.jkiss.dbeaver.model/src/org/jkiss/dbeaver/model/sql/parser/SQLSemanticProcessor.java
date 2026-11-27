@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCTemporaryTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQueryGenerator;
@@ -336,6 +337,11 @@ public class SQLSemanticProcessor {
         }
 
         if (attribute instanceof DBDAttributeBinding attributeBinding) {
+            DBSEntityAttribute entityAttribute = attributeBinding.getEntityAttribute();
+            if (table != null && entityAttribute != null &&
+                entityAttribute.getParentObject() instanceof DBCTemporaryTableManager.TemporaryTable) {
+                return true;
+            }
             attribute = attributeBinding.getMetaAttribute();
         }
 

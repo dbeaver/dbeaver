@@ -1,0 +1,276 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.mysql.model;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCTemporaryTableManager;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+
+import java.sql.Connection;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+final class MySQLTemporaryTable extends MySQLTable implements DBCTemporaryTableManager.TemporaryTable {
+    private final MySQLExecutionContext context;
+    private final Connection connection;
+    private volatile Metadata metadata = new Metadata(List.of(), List.of());
+
+    MySQLTemporaryTable(
+        @NotNull MySQLExecutionContext context,
+        @NotNull Connection connection,
+        @NotNull MySQLCatalog catalog,
+        @NotNull String name
+    ) {
+        super(catalog);
+        this.context = context;
+        this.connection = connection;
+        setName(name);
+        setPersisted(true);
+    }
+
+    @NotNull
+    Connection getConnection() {
+        return connection;
+    }
+
+    @Override
+    public boolean isCurrentTemporaryTable() {
+        return context.isCurrentTemporaryTable(this);
+    }
+
+    @Override
+    public boolean refreshTemporaryMetadata(@NotNull DBRProgressMonitor monitor) throws DBException {
+        synchronized (context) {
+            if (!context.isCurrentTemporaryTable(this)) {
+                return false;
+            }
+            try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Read temporary table metadata")) {
+                if (!isTemporaryInSession(session)) {
+                    return false;
+                }
+                String tableName = getFullyQualifiedName(DBPEvaluationContext.DML);
+                List<MySQLTableColumn> columns = readColumns(session, tableName);
+                try (JDBCPreparedStatement statement = session.prepareStatement("SHOW COLUMNS FROM " + tableName);
+                     JDBCResultSet result = statement.executeQuery()) {
+                    while (result.next()) {
+                        MySQLTableColumn column = findColumn(columns, result.getString("Field"));
+                        String type = result.getString("Type");
+                        if (column != null && (type.startsWith("enum(") || type.startsWith("set("))) {
+                            column.loadEnumValues(type);
+                        }
+                    }
+                }
+                List<MySQLTableConstraint> constraints = readKeys(session, tableName, columns);
+                if (!context.isCurrentTemporaryTable(this)) {
+                    return false;
+                }
+                metadata = new Metadata(List.copyOf(columns), constraints);
+                return true;
+            } catch (SQLException e) {
+                throw new DBCException("Could not read metadata for temporary table " + getName(), e);
+            }
+        }
+    }
+
+    @NotNull
+    private List<MySQLTableColumn> readColumns(@NotNull JDBCSession session, @NotNull String tableName)
+        throws SQLException, DBException
+    {
+        try (JDBCPreparedStatement statement = session.prepareStatement("SELECT * FROM " + tableName + " LIMIT 0");
+             JDBCResultSet result = statement.executeQuery()) {
+            ResultSetMetaData columns = result.getMetaData();
+            List<MySQLTableColumn> attributes = new ArrayList<>(columns.getColumnCount());
+            for (int position = 1; position <= columns.getColumnCount(); position++) {
+                MySQLTableColumn column = new MySQLTableColumn(this);
+                column.setName(columns.getColumnName(position));
+                column.setOrdinalPosition(position);
+                column.setFullTypeName(columns.getColumnTypeName(position));
+                column.setValueType(columns.getColumnType(position));
+                column.setPrecision(columns.getPrecision(position));
+                column.setMaxLength(columns.getPrecision(position));
+                column.setScale(columns.getScale(position));
+                column.setRequired(columns.isNullable(position) == ResultSetMetaData.columnNoNulls);
+                column.setAutoGenerated(columns.isAutoIncrement(position));
+                column.setPersisted(true);
+                attributes.add(column);
+            }
+            return attributes;
+        }
+    }
+
+    @NotNull
+    List<MySQLTableConstraint> readKeys(
+        @NotNull JDBCSession session,
+        @NotNull String tableName,
+        @NotNull List<MySQLTableColumn> columns
+    ) throws SQLException, DBException {
+        Map<String, Map<Integer, MySQLTableColumn>> keys = new LinkedHashMap<>();
+        try (JDBCPreparedStatement statement = session.prepareStatement("SHOW INDEX FROM " + tableName + " WHERE Non_unique = 0");
+             JDBCResultSet result = statement.executeQuery()) {
+            while (result.next()) {
+                MySQLTableColumn column = findColumn(columns, result.getString("Column_name"));
+                keys.computeIfAbsent(result.getString("Key_name"), key -> new TreeMap<>())
+                    .put(result.getInt("Seq_in_index"), column != null && column.isRequired() ? column : null);
+            }
+        }
+        List<MySQLTableConstraint> constraints = new ArrayList<>();
+        for (var key : keys.entrySet()) {
+            if (key.getValue().containsValue(null)) {
+                continue;
+            }
+            DBSEntityConstraintType type = key.getKey().equals("PRIMARY") ?
+                DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
+            MySQLTableConstraint constraint = new MySQLTableConstraint(this, key.getKey(), null, type, true);
+            for (MySQLTableColumn column : key.getValue().values()) {
+                constraint.addAttributeReference(column);
+            }
+            constraints.add(constraint);
+        }
+        return List.copyOf(constraints);
+    }
+
+    private boolean isTemporaryInSession(@NotNull JDBCSession session) throws SQLException {
+        String tableName = getFullyQualifiedName(DBPEvaluationContext.DML);
+        try (JDBCPreparedStatement statement = session.prepareStatement("SHOW CREATE TABLE " + tableName);
+             JDBCResultSet result = statement.executeQuery()) {
+            return result.next() && result.getString(2).startsWith("CREATE TEMPORARY TABLE ");
+        }
+    }
+
+    @NotNull
+    @Override
+    public List<MySQLTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) {
+        return metadata.columns();
+    }
+
+    @Nullable
+    @Override
+    public MySQLTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
+        return findColumn(metadata.columns(), name);
+    }
+
+    @NotNull
+    @Override
+    public List<MySQLTableColumn> getCachedAttributes() {
+        return metadata.columns();
+    }
+
+    @Nullable
+    private static MySQLTableColumn findColumn(@NotNull List<MySQLTableColumn> columns, @Nullable String name) {
+        for (MySQLTableColumn column : columns) {
+            if (column.getName().equalsIgnoreCase(name)) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public List<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) {
+        return metadata.constraints();
+    }
+
+    @NotNull
+    @Override
+    public List<MySQLTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) {
+        return List.of();
+    }
+
+    @NotNull
+    @Override
+    public List<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) {
+        return List.of();
+    }
+
+    @NotNull
+    @Override
+    public List<MySQLTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) {
+        return List.of();
+    }
+
+    @NotNull
+    @Override
+    public ExecuteBatch insertData(
+        @NotNull DBCSession session,
+        @NotNull DBSAttributeBase[] attributes,
+        @Nullable DBDDataReceiver keysReceiver,
+        @NotNull DBCExecutionSource source,
+        @NotNull Map<String, Object> options
+    ) throws DBCException {
+        checkWriteSession(session);
+        return super.insertData(session, attributes, keysReceiver, source, options);
+    }
+
+    @NotNull
+    @Override
+    public ExecuteBatch updateData(
+        @NotNull DBCSession session,
+        @NotNull DBSAttributeBase[] updateAttributes,
+        @NotNull DBSAttributeBase[] keyAttributes,
+        @Nullable DBDDataReceiver keysReceiver,
+        @NotNull DBCExecutionSource source
+    ) throws DBCException {
+        checkWriteSession(session);
+        return super.updateData(session, updateAttributes, keyAttributes, keysReceiver, source);
+    }
+
+    @NotNull
+    @Override
+    public ExecuteBatch deleteData(
+        @NotNull DBCSession session,
+        @NotNull DBSAttributeBase[] keyAttributes,
+        @NotNull DBCExecutionSource source
+    ) throws DBCException {
+        checkWriteSession(session);
+        return super.deleteData(session, keyAttributes, source);
+    }
+
+    private void checkWriteSession(@NotNull DBCSession session) throws DBCException {
+        if (session.getExecutionContext() != context || !context.isCurrentTemporaryTable(this)) {
+            throw new DBCException("The temporary table changed or its session ended. Run the query again.");
+        }
+        try {
+            if (!(session instanceof JDBCSession jdbcSession) || !isTemporaryInSession(jdbcSession)) {
+                throw new DBCException("The source table is no longer temporary. Run the query again.");
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Could not verify the temporary table before saving changes", e);
+        }
+    }
+
+    private record Metadata(@NotNull List<MySQLTableColumn> columns, @NotNull List<MySQLTableConstraint> constraints) {
+    }
+}
