@@ -232,7 +232,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         setTargetName(targetName, false);
     }
 
-    void setTargetName(@NotNull String targetName, boolean isRaw) {
+    public void setTargetName(@NotNull String targetName, boolean isRaw) {
         this.targetName = targetName;
         this.targetNameIsRaw = isRaw;
     }
@@ -240,7 +240,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     /**
      * Returns true if the stored target name is a raw database name rather than a SQL-encoded value.
      */
-    boolean isTargetNameRaw() {
+    public boolean isTargetNameRaw() {
         return targetNameIsRaw;
     }
 
@@ -401,9 +401,9 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                             monitor,
                             targetName,
                             storedNameIsRaw);
-                        if (child instanceof DBSDataManipulator) {
-                            target = (DBSDataManipulator) child;
-                        }
+                        target = DatabaseTransferUtils.isValidTargetTable(child)
+                            ? (DBSDataManipulator) child
+                            : null;
                     }
                 }
 

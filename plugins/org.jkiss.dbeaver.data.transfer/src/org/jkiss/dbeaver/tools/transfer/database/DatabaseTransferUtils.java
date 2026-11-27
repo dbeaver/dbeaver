@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
@@ -63,6 +64,24 @@ public class DatabaseTransferUtils {
     private static final Pair<DBPDataKind, String> DATA_TYPE_BOOLEAN = new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
     private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
     private static final Pair<DBPDataKind, String> DATA_TYPE_NATIONAL_STRING = new Pair<>(DBPDataKind.STRING, "NVARCHAR");
+
+    /**
+     * Checks whether the object can be used as a data transfer target.
+     * Some non-table entities (views, sequences) also implement {@link DBSDataManipulator},
+     * but they must not be offered as target tables.
+     */
+    public static boolean isValidTargetTable(@Nullable DBSObject object) {
+        return object instanceof DBSDataManipulator
+            && !(object instanceof DBSSequence)
+            && (!(object instanceof DBSEntity entity) || isValidTargetEntity(entity));
+    }
+
+    private static boolean isValidTargetEntity(@NotNull DBSEntity entity) {
+        DBSEntityType entityType = entity.getEntityType();
+        return entityType != DBSEntityType.VIEW
+            && entityType != DBSEntityType.SEQUENCE
+            && !DBUtils.isView(entity);
+    }
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
         monitor.subTask("Refresh database model");
@@ -116,11 +135,13 @@ public class DatabaseTransferUtils {
             if (updateMappingTarget || force) {
                 monitor.subTask("Refresh database mappings");
 
-                // A resolved target always holds a raw database name; otherwise the stored name is encoded.
+                // A resolved target always holds a raw database name. For unresolved names use the
+                // persisted provenance, so a rejected raw target is not treated as an encoded one.
                 DatabaseMappingType mappingType = containerMapping.getMappingType();
-                boolean storedNameIsRaw = (mappingType == DatabaseMappingType.existing
-                    || mappingType == DatabaseMappingType.recreate)
-                    && containerMapping.getTarget() != null;
+                boolean storedNameIsRaw = containerMapping.isTargetNameRaw()
+                    || ((mappingType == DatabaseMappingType.existing
+                        || mappingType == DatabaseMappingType.recreate)
+                        && containerMapping.getTarget() != null);
                 DBSObject newTarget = findChildByStoredName(
                     container,
                     monitor,
@@ -128,8 +149,10 @@ public class DatabaseTransferUtils {
                     storedNameIsRaw);
                 if (newTarget == null) {
                     throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
-                } else if (!(newTarget instanceof DBSDataManipulator)) {
-                    throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
+                } else if (!isValidTargetTable(newTarget)) {
+                    throw new DBCException(
+                        "New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI)
+                            + " is not a valid data transfer target");
                 }
                 setMappingTarget(containerMapping, (DBSDataManipulator) newTarget);
             }

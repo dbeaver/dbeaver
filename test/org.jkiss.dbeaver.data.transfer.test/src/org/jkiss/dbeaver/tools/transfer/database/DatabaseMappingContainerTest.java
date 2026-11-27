@@ -22,21 +22,26 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -638,6 +643,175 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
 
         Assertions.assertEquals("conflict_name", saved.get("targetName"));
         Assertions.assertEquals(false, saved.get("targetNameIsRaw"));
+    }
+
+    @Test
+    public void savedViewTargetIsNotResolved() throws Exception {
+        DatabaseConsumerSettings settings = new DatabaseConsumerSettings();
+        DBSObjectContainer container = Mockito.mock(DBSObjectContainer.class);
+        DBSView view = Mockito.mock(DBSView.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DBSDataContainer source = Mockito.mock(DBSDataContainer.class);
+        DBRRunnableContext context = Mockito.mock(DBRRunnableContext.class);
+
+        settings.setContainer(container);
+        Mockito.when(container.getChild(Mockito.any(), Mockito.eq("my_view"))).thenReturn(view);
+
+        DatabaseMappingContainer mapping = Mockito.spy(new DatabaseMappingContainer(settings, source));
+        Mockito.doReturn(Collections.emptyList()).when(mapping).getAttributeMappings(Mockito.any());
+
+        mapping.loadSettings(context, Map.of("targetName", "my_view", "mappingType", "existing"));
+
+        Mockito.verify(container).getChild(Mockito.any(), Mockito.eq("my_view"));
+        Assertions.assertNull(mapping.getTarget());
+        Assertions.assertEquals(DatabaseMappingType.create, mapping.getMappingType());
+        Assertions.assertEquals("my_view", mapping.getTargetName());
+    }
+
+    @Test
+    public void savedRawViewIsNotRedirectedToUnquotedTable() throws Exception {
+        DatabaseConsumerSettings settings = new DatabaseConsumerSettings();
+        DBSObjectContainer container = Mockito.mock(DBSObjectContainer.class);
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialect dialect = Mockito.mock(SQLDialect.class);
+        DBSView view = Mockito.mock(DBSView.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DBSDataContainer source = Mockito.mock(DBSDataContainer.class);
+        DBRRunnableContext context = Mockito.mock(DBRRunnableContext.class);
+
+        settings.setContainer(container);
+        Mockito.when(container.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.when(dialect.getUnquotedIdentifier("\"foo\"", true)).thenReturn("foo");
+        Mockito.when(container.getChild(Mockito.any(), Mockito.eq("\"foo\""))).thenReturn(view);
+        Mockito.when(container.getChild(Mockito.any(), Mockito.eq("foo"))).thenReturn(table);
+
+        DatabaseMappingContainer mapping = Mockito.spy(new DatabaseMappingContainer(settings, source));
+        Mockito.doReturn(Collections.emptyList()).when(mapping).getAttributeMappings(Mockito.any());
+
+        mapping.loadSettings(context, Map.of(
+            "targetName", "\"foo\"",
+            "mappingType", "existing",
+            "targetNameIsRaw", true));
+
+        Assertions.assertNull(mapping.getTarget());
+        Assertions.assertEquals(DatabaseMappingType.create, mapping.getMappingType());
+        Assertions.assertTrue(mapping.isTargetNameRaw());
+
+        Map<String, Object> saved = new LinkedHashMap<>();
+        mapping.saveSettings(saved);
+
+        Assertions.assertEquals("\"foo\"", saved.get("targetName"));
+        Assertions.assertEquals(true, saved.get("targetNameIsRaw"));
+    }
+
+    @Test
+    public void demotedRawViewTargetIsNotRedirectedOnRefresh() throws Exception {
+        DatabaseConsumerSettings settings = new DatabaseConsumerSettings();
+        DBSObjectContainer container = Mockito.mock(DBSObjectContainer.class);
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialect dialect = Mockito.mock(SQLDialect.class);
+        DBSView view = Mockito.mock(DBSView.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DBSDataContainer source = Mockito.mock(DBSDataContainer.class);
+        DBRRunnableContext context = Mockito.mock(DBRRunnableContext.class);
+
+        settings.setContainer(container);
+        Mockito.when(container.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.when(dialect.getUnquotedIdentifier("\"foo\"", true)).thenReturn("foo");
+        Mockito.when(container.getChild(Mockito.any(), Mockito.eq("\"foo\""))).thenReturn(view);
+        Mockito.when(container.getChild(Mockito.any(), Mockito.eq("foo"))).thenReturn(table);
+
+        DatabaseMappingContainer mapping = Mockito.spy(new DatabaseMappingContainer(settings, source));
+        Mockito.doReturn(Collections.emptyList()).when(mapping).getAttributeMappings(Mockito.any());
+
+        mapping.loadSettings(context, Map.of(
+            "targetName", "\"foo\"",
+            "mappingType", "existing",
+            "targetNameIsRaw", true));
+
+        Assertions.assertEquals(DatabaseMappingType.create, mapping.getMappingType());
+        Assertions.assertThrows(
+            DBCException.class,
+            () -> DatabaseTransferUtils.refreshDatabaseMappings(new VoidProgressMonitor(), settings, mapping, false));
+        Assertions.assertNull(mapping.getTarget());
+    }
+
+    @Test
+    public void loadingInvalidSavedTargetClearsPreviousTarget() throws Exception {
+        DatabaseConsumerSettings settings = new DatabaseConsumerSettings();
+        DBSObjectContainer container = Mockito.mock(DBSObjectContainer.class);
+        DBSView view = Mockito.mock(DBSView.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DBSDataContainer source = Mockito.mock(DBSDataContainer.class);
+        DBRRunnableContext context = Mockito.mock(DBRRunnableContext.class);
+
+        settings.setContainer(container);
+        Mockito.when(container.getChild(Mockito.any(), Mockito.eq("my_view"))).thenReturn(view);
+
+        DatabaseMappingContainer mapping = Mockito.spy(new DatabaseMappingContainer(settings, source));
+        Mockito.doReturn(Collections.emptyList()).when(mapping).getAttributeMappings(Mockito.any());
+        mapping.setTarget((DBSDataManipulator) table);
+
+        mapping.loadSettings(context, Map.of("targetName", "my_view", "mappingType", "existing"));
+
+        Assertions.assertNull(mapping.getTarget());
+        Assertions.assertEquals(DatabaseMappingType.create, mapping.getMappingType());
+    }
+
+    @Test
+    public void refreshDoesNotBindViewAsTarget() throws Exception {
+        DatabaseConsumerSettings settings = new DatabaseConsumerSettings();
+        DBSObjectContainer container = Mockito.mock(DBSObjectContainer.class);
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialect dialect = Mockito.mock(SQLDialect.class);
+        DBSView view = Mockito.mock(DBSView.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DatabaseMappingContainer mapping = Mockito.mock(DatabaseMappingContainer.class);
+
+        settings.setContainer(container);
+        Mockito.when(container.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.when(dialect.getUnquotedIdentifier("my_view", true)).thenReturn("my_view");
+        Mockito.when(container.getChild(Mockito.any(), Mockito.eq("my_view"))).thenReturn(view);
+        Mockito.when(mapping.getMappingType()).thenReturn(DatabaseMappingType.existing);
+        Mockito.when(mapping.getTargetName()).thenReturn("my_view");
+        Mockito.when(mapping.getAttributeMappings(Mockito.any())).thenReturn(Collections.emptyList());
+
+        Assertions.assertThrows(
+            DBCException.class,
+            () -> DatabaseTransferUtils.refreshDatabaseMappings(
+                Mockito.mock(DBRProgressMonitor.class),
+                settings,
+                mapping,
+                true));
+    }
+
+    @Test
+    public void refreshBindsValidTableAsTarget() throws Exception {
+        DatabaseConsumerSettings settings = new DatabaseConsumerSettings();
+        DBSObjectContainer container = Mockito.mock(DBSObjectContainer.class);
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialect dialect = Mockito.mock(SQLDialect.class);
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DatabaseMappingContainer mapping = Mockito.mock(DatabaseMappingContainer.class);
+
+        settings.setContainer(container);
+        Mockito.when(container.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.when(dialect.getUnquotedIdentifier("my_table", true)).thenReturn("my_table");
+        Mockito.when(container.getChild(Mockito.any(), Mockito.eq("my_table"))).thenReturn(table);
+        Mockito.when(table.getEntityType()).thenReturn(DBSEntityType.TABLE);
+        Mockito.when(mapping.getMappingType()).thenReturn(DatabaseMappingType.existing);
+        Mockito.when(mapping.getTargetName()).thenReturn("my_table");
+        Mockito.when(mapping.getAttributeMappings(Mockito.any())).thenReturn(Collections.emptyList());
+
+        Assertions.assertDoesNotThrow(
+            () -> DatabaseTransferUtils.refreshDatabaseMappings(
+                Mockito.mock(DBRProgressMonitor.class),
+                settings,
+                mapping,
+                true));
+        Mockito.verify(mapping).setTarget((DBSDataManipulator) table);
     }
 
     private static void assertNewTableTargetName(String targetName, String expectedName) throws Exception {
