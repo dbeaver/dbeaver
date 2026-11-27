@@ -740,18 +740,14 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean isTransactionModifyingQuery(String queryString) {
-        queryString = SQLUtils.stripComments(this, queryString);
-        if (queryString.isEmpty()) {
+        String statementKeyword = SQLUtils.getStatementKeyword(this, queryString);
+        if (statementKeyword.isEmpty()) {
             // Empty query - must be some metadata reading or something
             // anyhow it shouldn't be transactional
             return false;
         }
-        String firstKeyword = SQLUtils.getFirstKeyword(this, queryString);
-        if (firstKeyword.isEmpty()) {
-            return false;
-        }
-        firstKeyword = firstKeyword.toUpperCase(DEF_LOCALE);
-        return isTransactionModifyingKeyword(firstKeyword);
+        statementKeyword = statementKeyword.toUpperCase(DEF_LOCALE);
+        return isTransactionModifyingKeyword(statementKeyword);
     }
 
     @Nullable
