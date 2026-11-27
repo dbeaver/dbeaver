@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -220,35 +221,7 @@ public class SQLQuery implements SQLScriptElement {
             switch (statement) {
                 case Select select -> {
                     type = SQLQueryType.SELECT;
-                    if (select instanceof PlainSelect plainSelect) {
-                        // Detect single source table (no joins, no group by, no sub-selects)
-                        FromItem fromItem = plainSelect.getFromItem();
-                        if (fromItem instanceof Table fromTable && isPotentiallySingleSourceSelect(plainSelect)) {
-                            boolean hasSubSelects = false;
-                            boolean hasDirectSelects = false;
-                            for (SelectItem<?> si : plainSelect.getSelectItems()) {
-                                if (si.getExpression() instanceof ParenthesedSelect) {
-                                    hasSubSelects = true;
-                                } else if (si.getExpression() instanceof Column) {
-                                    hasDirectSelects = true;
-                                }
-                            }
-                            if (hasDirectSelects || !hasSubSelects) {
-                                fillSingleSource(fromTable);
-                            }
-                        }
-                        if (!CommonUtils.isEmpty(plainSelect.getJoins()) && fromItem instanceof Table) {
-                            createTargetName(plainSelect, (Table) fromItem);
-                        }
-                        // Extract select items info
-                        final List<SQLSelectItem> items = CommonUtils.safeList(plainSelect.getSelectItems()).stream()
-                            .filter(this::isValidSelectItem)
-                            .map(item -> new SQLSelectItem(this, item))
-                            .collect(Collectors.toList());
-                        if (!items.isEmpty()) {
-                            selectItems = items;
-                        }
-                    }
+                    fillSelectMetadata(select);
                 }
                 case Insert insert -> {
                     type = SQLQueryType.INSERT;
@@ -381,6 +354,63 @@ public class SQLQuery implements SQLScriptElement {
             }
             this.parseError = e;
             //log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
+            // A query the parser gave up on would only take the same time once more
+            if (!(e.getCause() instanceof TimeoutException)) {
+                fillSelectMetadataIgnoringOperators();
+            }
+        }
+    }
+
+    private void fillSelectMetadata(@NotNull Select select) {
+        if (select instanceof PlainSelect plainSelect) {
+            // Detect single source table (no joins, no group by, no sub-selects)
+            FromItem fromItem = plainSelect.getFromItem();
+            if (fromItem instanceof Table fromTable && isPotentiallySingleSourceSelect(plainSelect)) {
+                boolean hasSubSelects = false;
+                boolean hasDirectSelects = false;
+                for (SelectItem<?> si : plainSelect.getSelectItems()) {
+                    if (si.getExpression() instanceof ParenthesedSelect) {
+                        hasSubSelects = true;
+                    } else if (si.getExpression() instanceof Column) {
+                        hasDirectSelects = true;
+                    }
+                }
+                if (hasDirectSelects || !hasSubSelects) {
+                    fillSingleSource(fromTable);
+                }
+            }
+            if (!CommonUtils.isEmpty(plainSelect.getJoins()) && fromItem instanceof Table) {
+                createTargetName(plainSelect, (Table) fromItem);
+            }
+            // Extract select items info
+            final List<SQLSelectItem> items = CommonUtils.safeList(plainSelect.getSelectItems()).stream()
+                .filter(this::isValidSelectItem)
+                .map(item -> new SQLSelectItem(this, select, item))
+                .collect(Collectors.toList());
+            if (!items.isEmpty()) {
+                selectItems = items;
+            }
+        }
+    }
+
+    /**
+     * The parser rejects the whole query because of a single operator it doesn't know (e.g. PostgreSQL {@code @}).
+     * Operators don't change where the data comes from, so the source table and the select items are read from
+     * the query text with such operators masked. That text is not the query itself, so nothing else is taken from it
+     * and the query remains unparsed.
+     */
+    private void fillSelectMetadataIgnoringOperators() {
+        SQLDialect dialect = dataSource == null ? null : dataSource.getSQLDialect();
+        String maskedText = SQLUtils.maskNonStandardOperators(dialect == null ? BasicSQLDialect.INSTANCE : dialect, text);
+        if (maskedText.equals(text)) {
+            return;
+        }
+        try {
+            if (SQLSemanticProcessor.parseQuery(dialect, maskedText) instanceof Select select) {
+                fillSelectMetadata(select);
+            }
+        } catch (Throwable e) {
+            log.trace("Error parsing SQL query with masked operators", e);
         }
     }
 

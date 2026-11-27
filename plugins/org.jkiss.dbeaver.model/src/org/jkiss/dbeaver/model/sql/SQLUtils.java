@@ -64,6 +64,17 @@ public final class SQLUtils {
     private static final String DBEAVER_DDL_WARNING = "-- WARNING: It may differ from actual native database DDL";
     private static final String DBEAVER_SCRIPT_DELIMITER = "$$";
 
+    private static final String OPERATOR_CHARS = "+-*/<>=~!@#%^&|";
+    private static final String OPERATOR_SIGN_CHARS = "+-";
+    private static final String OPERATOR_MASK = "+";
+    private static final char DOLLAR_QUOTE_CHAR = '$';
+    /**
+     * Operators which every SQL parser understands and which therefore never need masking.
+     */
+    private static final Set<String> STANDARD_OPERATORS = Set.of(
+        "+", "-", "*", "/", "%", "=", "<", ">", "<=", ">=", "<>", "!=", "||"
+    );
+
     @Nullable
     public static String stripTransformations(@Nullable String query) {
         return query;
@@ -179,9 +190,7 @@ public final class SQLUtils {
      */
     @NotNull
     public static String maskDialectLineComments(@NotNull SQLDialect dialect, @NotNull String sql) {
-        List<String> extraCommentPrefixes = ArrayUtils.safeArray(dialect.getSingleLineComments()).stream()
-            .filter(prefix -> !CommonUtils.isEmpty(prefix) && !prefix.startsWith(SQLConstants.SL_COMMENT))
-            .toList();
+        List<String> extraCommentPrefixes = getExtraLineCommentPrefixes(dialect);
         if (extraCommentPrefixes.isEmpty()) {
             return sql;
         }
@@ -212,6 +221,119 @@ public final class SQLUtils {
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Replaces every operator which is not a part of standard SQL (e.g. PostgreSQL {@code @}, {@code |/} or {@code @-@})
+     * with a plain {@code +} padded with spaces to the same length.
+     * <p>
+     * JSQLParser rejects the whole query when it meets an operator it doesn't know. A plus sign is valid both as a prefix
+     * and as a binary operator, so the masked text keeps the structure of the query (its tables, joins and select items)
+     * and can be parsed. Its expressions no longer mean the same, so it must never be executed or shown.
+     * <p>
+     * Operators inside string literals (including dollar-quoted ones), quoted identifiers and comments are left untouched.
+     */
+    @NotNull
+    public static String maskNonStandardOperators(@NotNull SQLDialect dialect, @NotNull String sql) {
+        List<String> extraCommentPrefixes = getExtraLineCommentPrefixes(dialect);
+        String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
+        String[][] quotes = identifierQuotes == null
+            ? dialect.getStringQuoteStrings()
+            : ArrayUtils.concatArrays(dialect.getStringQuoteStrings(), identifierQuotes);
+        char escapeChar = dialect.getStringEscapeCharacter();
+        StringBuilder result = null;
+        int pos = 0;
+        while (pos < sql.length()) {
+            String[] quote = quoteStartingAt(sql, pos, quotes);
+            int dollarQuotedEnd = getDollarQuotedEnd(sql, pos);
+            if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
+                pos += 2;
+            } else if (quote != null) {
+                pos = skipQuoted(sql, pos, quote, escapeChar);
+            } else if (dollarQuotedEnd >= 0) {
+                pos = dollarQuotedEnd;
+            } else if (sql.startsWith(SQLConstants.SL_COMMENT, pos) || startsWithAny(sql, pos, extraCommentPrefixes)) {
+                pos = getLineEnd(sql, pos);
+            } else if (sql.startsWith(SQLConstants.ML_COMMENT_START, pos)) {
+                int end = sql.indexOf(SQLConstants.ML_COMMENT_END, pos + 2);
+                pos = end < 0 ? sql.length() : end + 2;
+            } else if (OPERATOR_CHARS.indexOf(sql.charAt(pos)) >= 0) {
+                int end = getOperatorEnd(sql, pos, extraCommentPrefixes);
+                if (!STANDARD_OPERATORS.contains(sql.substring(pos, end))) {
+                    if (result == null) {
+                        result = new StringBuilder(sql);
+                    }
+                    result.replace(pos, end, OPERATOR_MASK + " ".repeat(end - pos - 1));
+                }
+                pos = end;
+            } else {
+                pos++;
+            }
+        }
+        return result == null ? sql : result.toString();
+    }
+
+    /**
+     * Finds the end of the operator which starts at the given position.
+     * An operator is the longest run of operator characters, with two exceptions:
+     * it ends where a comment starts, and a trailing sign belongs to the next value when the rest of the operator
+     * is standard ({@code a=-1} is {@code =} and {@code -1}, but {@code @-@} is a single operator).
+     */
+    private static int getOperatorEnd(@NotNull String sql, int start, @NotNull List<String> extraCommentPrefixes) {
+        int end = start + 1;
+        while (end < sql.length()
+            && OPERATOR_CHARS.indexOf(sql.charAt(end)) >= 0
+            && !sql.startsWith(SQLConstants.SL_COMMENT, end)
+            && !sql.startsWith(SQLConstants.ML_COMMENT_START, end)
+            && !startsWithAny(sql, end, extraCommentPrefixes)
+        ) {
+            end++;
+        }
+        while (end - start > 1
+            && OPERATOR_SIGN_CHARS.indexOf(sql.charAt(end - 1)) >= 0
+            && STANDARD_OPERATORS.contains(sql.substring(start, end - 1))
+        ) {
+            end--;
+        }
+        return end;
+    }
+
+    /**
+     * Finds the end of the dollar-quoted string ({@code $$text$$} or {@code $tag$text$tag$}) which starts at the given position.
+     * The text of such a string is taken literally, so a quote inside it doesn't start anything.
+     *
+     * @return the position after the closing delimiter, or -1 if there is no dollar-quoted string at this position
+     */
+    private static int getDollarQuotedEnd(@NotNull String sql, int start) {
+        if (sql.charAt(start) != DOLLAR_QUOTE_CHAR || (start > 0 && Character.isJavaIdentifierPart(sql.charAt(start - 1)))) {
+            // A dollar sign inside an identifier (v$session) is not a delimiter
+            return -1;
+        }
+        int tagEnd = start + 1;
+        while (tagEnd < sql.length() && isDollarQuoteTagChar(sql.charAt(tagEnd), tagEnd == start + 1)) {
+            tagEnd++;
+        }
+        if (tagEnd >= sql.length() || sql.charAt(tagEnd) != DOLLAR_QUOTE_CHAR) {
+            return -1;
+        }
+        String delimiter = sql.substring(start, tagEnd + 1);
+        int closePos = sql.indexOf(delimiter, tagEnd + 1);
+        return closePos < 0 ? -1 : closePos + delimiter.length();
+    }
+
+    private static boolean isDollarQuoteTagChar(char c, boolean first) {
+        // A tag can't start with a digit: $1 is a parameter
+        return c == '_' || (first ? Character.isLetter(c) : Character.isLetterOrDigit(c));
+    }
+
+    /**
+     * Returns single-line comment prefixes of the dialect other than the standard {@code --}.
+     */
+    @NotNull
+    private static List<String> getExtraLineCommentPrefixes(@NotNull SQLDialect dialect) {
+        return ArrayUtils.safeArray(dialect.getSingleLineComments()).stream()
+            .filter(prefix -> !CommonUtils.isEmpty(prefix) && !prefix.startsWith(SQLConstants.SL_COMMENT))
+            .toList();
     }
 
     /**
@@ -272,7 +394,12 @@ public final class SQLUtils {
             if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
                 pos += 2;
             } else if (startsWith(sql, close, pos)) {
-                return pos + close.length();
+                if (!close.equals(quote[0]) && startsWith(sql, close, pos + close.length())) {
+                    // A doubled closing quote is a part of the quoted text: [a]]b]
+                    pos += close.length() * 2;
+                } else {
+                    return pos + close.length();
+                }
             } else {
                 pos++;
             }
