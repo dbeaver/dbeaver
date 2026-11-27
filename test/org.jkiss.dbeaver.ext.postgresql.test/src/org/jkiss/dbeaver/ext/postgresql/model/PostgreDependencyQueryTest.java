@@ -97,15 +97,15 @@ public class PostgreDependencyQueryTest {
 
     @Test
     public void dependentsMatchOriginalQuery() throws IOException, SQLException {
-        compareQueries(true);
+        assertQueriesMatch(true);
     }
 
     @Test
     public void dependenciesMatchOriginalQuery() throws IOException, SQLException {
-        compareQueries(false);
+        assertQueriesMatch(false);
     }
 
-    private void compareQueries(boolean dependents) throws IOException, SQLException {
+    private void assertQueriesMatch(boolean dependents) throws IOException, SQLException {
         String original;
         try (var input = Objects.requireNonNull(getClass().getResourceAsStream("PostgreDependencyQueryTest.sql"))) {
             original = new String(input.readAllBytes(), StandardCharsets.UTF_8)
