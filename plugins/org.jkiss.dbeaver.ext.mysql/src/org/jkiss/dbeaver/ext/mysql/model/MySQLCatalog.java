@@ -608,7 +608,7 @@ public class MySQLCatalog implements
                         sql.append(" AND Table_type <> 'SEQUENCE'");
                     }
                 } else {
-                    DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(MySQLTable.class, owner, true);
+                    DBSObjectFilter tableFilters = dataSource.getContainer().getEffectiveObjectFilter(MySQLTable.class, owner, true);
                     if (tableFilters != null && !tableFilters.isNotApplicable()) {
                         sql.append(" WHERE ");
                         if (!CommonUtils.isEmpty(tableFilters.getInclude())) {

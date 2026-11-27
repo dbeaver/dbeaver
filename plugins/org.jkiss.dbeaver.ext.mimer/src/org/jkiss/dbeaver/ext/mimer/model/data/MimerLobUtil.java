@@ -1,0 +1,159 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.mimer.model.data;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ByteNumberFormat;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+
+/**
+ * Glue shared between {@link MimerBLOBValueHandler}/{@link MimerCLOBValueHandler}'s {@code
+ * spoolToContent}, {@link MimerChunkedBytesStorage}/{@link MimerChunkedCharsStorage}'s lazy
+ * flatten, and {@link MimerContentBLOB}/{@link MimerContentCLOB}'s {@code getDisplayString} - the
+ * byte-vs-char read loop and storage types genuinely differ between the two and stay separate,
+ * but the temp-file-with-cleanup-on-failure, close-with-release-on-failure, concatenation, and
+ * sized-placeholder-text pieces around them don't.
+ *
+ * @author Mimer Information Technology
+ */
+final class MimerLobUtil {
+
+    private MimerLobUtil() {
+    }
+
+    /**
+     * Concatenates already-read chunks into the one contiguous array {@link
+     * org.jkiss.dbeaver.model.data.storage.BytesContentStorage} needs - a single pass, done once,
+     * called lazily from {@link MimerChunkedBytesStorage#getCachedValue()} rather than eagerly for
+     * every fetched row.
+     */
+    @NotNull
+    static byte[] concatenateBytes(@NotNull List<byte[]> chunks, int total) {
+        byte[] result = new byte[total];
+        int offset = 0;
+        for (byte[] chunk : chunks) {
+            System.arraycopy(chunk, 0, result, offset, chunk.length);
+            offset += chunk.length;
+        }
+        return result;
+    }
+
+    /**
+     * The {@code char[]} sibling of {@link #concatenateBytes(List, int)}, for
+     * {@link org.jkiss.dbeaver.model.data.storage.StringContentStorage}'s {@code String}.
+     */
+    @NotNull
+    static String concatenateChars(@NotNull List<char[]> chunks, int total) {
+        char[] result = new char[total];
+        int offset = 0;
+        for (char[] chunk : chunks) {
+            System.arraycopy(chunk, 0, result, offset, chunk.length);
+            offset += chunk.length;
+        }
+        return new String(result);
+    }
+
+    @FunctionalInterface
+    interface ContentWriter {
+        void write(@NotNull Path tempFile) throws IOException;
+    }
+
+    /**
+     * Creates a temp content file and hands it to {@code writer} to fill - deletes it again if
+     * {@code writer} throws, same cleanup every caller of {@code ContentUtils.createTempContentFile}
+     * otherwise has to do for itself.
+     */
+    @NotNull
+    static Path spoolToTempFile(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPPlatform platform,
+        @NotNull String tempFileNamePrefix,
+        @NotNull ContentWriter writer
+    ) throws IOException {
+        Path tempFile = ContentUtils.createTempContentFile(monitor, platform, tempFileNamePrefix);
+        try {
+            writer.write(tempFile);
+        } catch (IOException e) {
+            ContentUtils.deleteTempFile(tempFile);
+            throw e;
+        } catch (Throwable e) {
+            ContentUtils.deleteTempFile(tempFile);
+            throw new IOException(e);
+        }
+        return tempFile;
+    }
+
+    /**
+     * Closes {@code source}; if that fails after content was already spooled, releases it first
+     * (otherwise nothing else would ever reach it to release it, leaking a temp file on every
+     * retry) before rethrowing. A close failure before anything spooled is logged instead, so it
+     * doesn't mask whatever already failed and is propagating out of the read loop.
+     */
+    static void closeAfterSpooling(
+        @NotNull Closeable source,
+        boolean spooled,
+        @NotNull Runnable releaseContent,
+        @NotNull Log log,
+        @NotNull String kindLabel
+    ) throws IOException {
+        try {
+            source.close();
+        } catch (IOException e) {
+            if (spooled) {
+                releaseContent.run();
+                throw e;
+            }
+            log.debug("Error closing Mimer " + kindLabel + " stream after a failed read", e);
+        }
+    }
+
+    @NotNull
+    static String sizedPlaceholder(@NotNull String label, long contentLength) {
+        return "[" + label + ", " + new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO).format(contentLength) + "]";
+    }
+
+    /**
+     * Up to {@code maxLength} characters from the start of {@code chunks}, without touching any
+     * chunk beyond what's needed - shared by {@link MimerChunkedCharsStorage#peekPreview} and
+     * {@link MimerCLOBValueHandler#spoolToContent} (see {@link MimerSpilledCharsStorage}). Walks
+     * as many chunks as it takes, not just the first - {@code Reader#read(char[])} isn't
+     * guaranteed to fill the buffer in one call.
+     */
+    @NotNull
+    static String extractPreview(@NotNull List<char[]> chunks, int maxLength) {
+        if (chunks.isEmpty()) {
+            return "";
+        }
+        StringBuilder preview = new StringBuilder(Math.min(maxLength, 64));
+        for (char[] chunk : chunks) {
+            int remaining = maxLength - preview.length();
+            if (remaining <= 0) {
+                break;
+            }
+            preview.append(chunk, 0, Math.min(remaining, chunk.length));
+        }
+        return preview.toString();
+    }
+}
