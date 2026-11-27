@@ -953,6 +953,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         int valueType;
         if (ArrayUtils.contains(OID_TYPES, name) || ArrayUtils.contains(VECTOR_TYPES, name) || name.equals(PostgreConstants.TYPE_HSTORE)) {
             valueType = Types.VARCHAR;
+        } else if (typeId == PostgreOid.CHAR) {
+            // Single-byte "char" type. PostgreSQL 15 moved it from category S to Z (internal-use types),
+            // so it can't be resolved by category
+            valueType = Types.CHAR;
         } else {
             if (typeCategory == null) {
                 final long typElem = JDBCUtils.safeGetLong(dbResult, "typelem");

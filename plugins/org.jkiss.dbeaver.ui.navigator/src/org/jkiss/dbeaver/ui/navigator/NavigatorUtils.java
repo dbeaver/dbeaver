@@ -73,6 +73,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
+import org.jkiss.dbeaver.ui.editors.file.FileOpenMenu;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
@@ -302,6 +303,11 @@ public class NavigatorUtils {
     public static void addStandardMenuItem(@Nullable IWorkbenchSite workbenchSite, @NotNull IMenuManager manager, @NotNull ISelectionProvider selectionProvider) {
         final ISelection selection = selectionProvider.getSelection();
         final DBNNode selectedNode = getSelectedNode(selectionProvider);
+        if (selection instanceof IStructuredSelection structuredSelection
+            && structuredSelection.size() == 1 && selectedNode instanceof DBNPathBase pathNode
+        ) {
+            FileOpenMenu.contribute(manager, pathNode);
+        }
         if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
             addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
         }

@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.model.datadam.rpc;
 
+import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
-import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.datadam.transport.DBDamChannel;
 import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -72,11 +74,17 @@ public final class DBDamSessionService implements AutoCloseable {
         }
     };
     private final AtomicReference<DDRemoteDamSubscription> readyObservation = new AtomicReference<>();
-    private final Job rpcInitializationRetry = Job.createSystem("Retry DataDam RPC initialization", monitor -> {
+    private final AtomicReference<CachedDam> cachedDam = new AtomicReference<>();
+    private final SystemJob rpcInitializationRetry = new SystemJob("Retry DataDam RPC initialization", monitor -> {
         initializeRpc();
     });
 
     private final DBDamAccessListener accessListener = new DBDamAccessListener() {
+
+        @Override
+        public void accessTokenRefreshed() {
+            channel.refreshAuthentication();
+        }
 
         @Override
         public void accessChanging() {
@@ -177,6 +185,7 @@ public final class DBDamSessionService implements AutoCloseable {
                     DBDamSettingsStore.getInstance().updateSettings(status.session().settings());
                     initializeRpc();
                 } else {
+                    cachedDam.set(null);
                     DBDamSettingsStore.getInstance().updateSettings(null);
                     rpcInitializationRetry.cancel();
                 }
@@ -199,8 +208,10 @@ public final class DBDamSessionService implements AutoCloseable {
             rpc.getRpc();
             channel.getMonitor().clearError(RPC_INITIALIZATION_ERROR);
         } catch (DBException e) {
-            log.warn("Cannot open desktop DataDam RPC endpoint", e);
-            channel.getMonitor().failed(RPC_INITIALIZATION_ERROR);
+            if (!RPC_INITIALIZATION_ERROR.equals(channel.getMonitor().snapshot().error())) {
+                log.warn("Cannot open desktop DataDam RPC endpoint", e);
+                channel.getMonitor().failed(RPC_INITIALIZATION_ERROR);
+            }
             if (!closed.get() && channel.getStatus().isReady() && access.getStatus() == DBDamAccessService.Status.SIGNED_IN) {
                 rpcInitializationRetry.schedule(RPC_RETRY_DELAY);
             }
@@ -210,6 +221,28 @@ public final class DBDamSessionService implements AutoCloseable {
     @NotNull
     public String getClientDamId() {
         return channel.getClientDamId();
+    }
+
+    @Nullable
+    public DDConnectedRemoteDam getCachedDam() {
+        var status = channel.getStatus();
+        var cached = cachedDam.get();
+        return !closed.get() && status.isReady() && cached != null && cached.session() == status.session()
+            ? cached.dam() : null;
+    }
+
+    /** Associates Account data with the session that requested it, so a reconnect cannot reuse stale data. */
+    public synchronized void cacheDam(@Nullable DDRemoteDamSessionInfo session, @Nullable DDConnectedRemoteDam dam) {
+        if (session != null && dam != null) {
+            var status = channel.getStatus();
+            if (!closed.get() && status.isReady() && session == status.session()) {
+                cachedDam.set(new CachedDam(session, dam));
+                channel.getMonitor().damNameChanged(dam.damName());
+            }
+        }
+    }
+
+    private record CachedDam(@NotNull DDRemoteDamSessionInfo session, @NotNull DDConnectedRemoteDam dam) {
     }
 
     @NotNull

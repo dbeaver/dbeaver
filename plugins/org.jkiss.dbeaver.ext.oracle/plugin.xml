@@ -385,7 +385,7 @@
                 </driver>
                 <provider-properties>
                     <propertyGroup label="Misc">
-                        <property id="@dbeaver-sid-service@" label="Service type" type="string" supportedConfigurationTypes="MANUAL" description="Database type" defaultValue="SID" validValues="SID,SERVICE"/>
+                        <property id="@dbeaver-sid-service@" label="Service type" type="string" supportedConfigurationTypes="MANUAL" description="Database type" defaultValue="SERVICE" validValues="SID,SERVICE"/>
                         <property id="oracle.logon-as" label="Role" type="string" description="Connect as role" defaultValue="Normal" validValues="Normal,SYSASM,SYSBACKUP,SYSDBA,SYSDG,SYSKM,SYSOPER,SYSRAC"/>
                         <property id="oracle.set-os-user" label="Set Username to OS_USER property" type="boolean" description="Sets Username to OS_USER driver property"/>
                     </propertyGroup>

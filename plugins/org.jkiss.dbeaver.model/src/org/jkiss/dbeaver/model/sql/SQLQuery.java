@@ -58,6 +58,8 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -70,6 +72,29 @@ public class SQLQuery implements SQLScriptElement {
     private static final Log log = Log.getLog(SQLQuery.class);
 
     private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("^\\s*(?:--|//|/\\*)\\s*(?:name|title)\\s*:\\s*(.+)$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
+    private static final Set<String> NON_DDL_KEYWORDS = Set.of(
+        SQLConstants.KEYWORD_SELECT,
+        SQLConstants.KEYWORD_INSERT,
+        SQLConstants.KEYWORD_UPDATE,
+        SQLConstants.KEYWORD_DELETE,
+        SQLConstants.KEYWORD_MERGE,
+        SQLConstants.KEYWORD_CALL,
+        SQLConstants.KEYWORD_EXEC,
+        SQLConstants.KEYWORD_EXECUTE,
+        SQLConstants.KEYWORD_SET,
+        SQLConstants.KEYWORD_SHOW,
+        SQLConstants.KEYWORD_DESCRIBE,
+        SQLConstants.KEYWORD_DESC,
+        SQLConstants.KEYWORD_EXPLAIN,
+        SQLConstants.KEYWORD_USE,
+        SQLConstants.KEYWORD_COMMIT,
+        SQLConstants.KEYWORD_ROLLBACK
+    );
+    private static final Set<String> UPDATE_DELETE_DANGER_KEYWORDS = Set.of(
+        SQLConstants.KEYWORD_UPDATE,
+        SQLConstants.KEYWORD_DELETE
+    );
 
     @Nullable
     private final DBPDataSource dataSource;
@@ -84,6 +109,13 @@ public class SQLQuery implements SQLScriptElement {
     private int offset;
     private int length;
     private boolean hasVariableKeyword;
+    @Nullable
+    private String firstKeyword;
+    /**
+     * First keyword of {@link #originalText}. Used by {@link #reset()} to restore the cheap safety-check hint.
+     */
+    @Nullable
+    private String originalFirstKeyword;
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
@@ -121,6 +153,7 @@ public class SQLQuery implements SQLScriptElement {
         if (preserveOriginal) {
             this.originalText = sourceQuery.originalText;
             this.originalRepresentsOneStatement = sourceQuery.originalRepresentsOneStatement;
+            this.originalFirstKeyword = sourceQuery.originalFirstKeyword;
         } else {
             this.originalRepresentsOneStatement = sourceQuery.representsOneStatement;
         }
@@ -129,6 +162,17 @@ public class SQLQuery implements SQLScriptElement {
         this.data = sourceQuery.data;
         this.isEndsWithDelimiter = sourceQuery.isEndsWithDelimiter;
         this.hasVariableKeyword = sourceQuery.hasVariableKeyword;
+        if (text.equals(sourceQuery.getText())) {
+            this.firstKeyword = sourceQuery.firstKeyword;
+        } else if (text.equals(sourceQuery.originalText)) {
+            this.firstKeyword = sourceQuery.originalFirstKeyword;
+        } else {
+            this.firstKeyword = null;
+        }
+        if (!preserveOriginal) {
+            // The copy uses its own text as the baseline, so its keyword hint is the one computed above.
+            this.originalFirstKeyword = this.firstKeyword;
+        }
     }
 
     public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, int offset, int length) {
@@ -590,6 +634,8 @@ public class SQLQuery implements SQLScriptElement {
     public void setOriginalText(@NotNull String originalText, boolean representsOneStatement) {
         this.originalText = originalText;
         this.originalRepresentsOneStatement = representsOneStatement;
+        // The baseline keyword is only known when the new baseline is the current text.
+        this.originalFirstKeyword = originalText.equals(this.text) ? this.firstKeyword : null;
     }
 
     @NotNull
@@ -616,6 +662,8 @@ public class SQLQuery implements SQLScriptElement {
     public void setText(@NotNull String text, boolean representsOneStatement) {
         this.text = text;
         this.representsOneStatement = representsOneStatement;
+        // Restored baseline text keeps its known keyword; any other text invalidates the hint.
+        this.firstKeyword = text.equals(originalText) ? originalFirstKeyword : null;
         this.queryTitle = extractQueryTitle(text);
         resetParsedState();
     }
@@ -661,6 +709,27 @@ public class SQLQuery implements SQLScriptElement {
 
     public void setHasVariableKeyword(boolean hasVariableKeyword) {
         this.hasVariableKeyword = hasVariableKeyword;
+    }
+
+    /**
+     * Returns the first keyword of the statement, or {@code null} when it is unknown.
+     * It is only a hint used to skip expensive safety checks; unknown values must never skip them.
+     */
+    @Nullable
+    public String getFirstKeyword() {
+        return firstKeyword;
+    }
+
+    /**
+     * Sets the first keyword hint. When the current text is still the baseline text, the hint is also
+     * remembered as the original one so that {@link #reset()} can restore it.
+     */
+    public void setFirstKeyword(@Nullable String firstKeyword) {
+        this.firstKeyword = firstKeyword == null ? null : firstKeyword.toUpperCase(Locale.ENGLISH);
+        if (text.equals(originalText)) {
+            // The parser sets the hint right after creating a query, when current text is the baseline.
+            this.originalFirstKeyword = this.firstKeyword;
+        }
     }
 
     /**
@@ -736,6 +805,7 @@ public class SQLQuery implements SQLScriptElement {
     public void reset() {
         this.text = this.originalText;
         this.representsOneStatement = this.originalRepresentsOneStatement;
+        this.firstKeyword = this.originalFirstKeyword;
         this.queryTitle = extractQueryTitle(originalText);
         resetParsedState();
         if (this.parameters != null) {
@@ -776,7 +846,18 @@ public class SQLQuery implements SQLScriptElement {
         return resultsMaxRows;
     }
 
+    public boolean mayBeDDLStatement() {
+        return firstKeyword == null || !NON_DDL_KEYWORDS.contains(firstKeyword);
+    }
+
     public boolean isDeleteUpdateDangerous() {
+        // Only skip parsing for known non-DDL starters. UPDATE/DELETE/WITH and unknown keywords must be parsed.
+        if (firstKeyword != null
+            && NON_DDL_KEYWORDS.contains(firstKeyword)
+            && !UPDATE_DELETE_DANGER_KEYWORDS.contains(firstKeyword)
+        ) {
+            return false;
+        }
         parseQuery();
         return switch (statement) {
             case Delete delete -> delete.getWhere() == null;
@@ -786,6 +867,9 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     public boolean isDropDangerous() {
+        if (!mayBeDDLStatement()) {
+            return false;
+        }
         parseQuery();
         return objectOperation != null && objectOperation.operation() == SQLObjectOperation.Operation.DROP || statement != null &&
             statement instanceof Drop dropStatement &&

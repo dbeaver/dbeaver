@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.datadam;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DBDamNameService;
 import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
+import org.jkiss.dbeaver.model.datadam.rpc.DBDamSettingsStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -46,6 +48,10 @@ public class DBDamService {
 
     private final DDAccountClient account = new DDAccountClient(
         URI.create(DDEndpoints.getAccountBaseUrl()), DBDamAccessService.getInstance());
+    @Nullable
+    private volatile RenamePermission renamePermission;
+    @Nullable
+    private volatile SettingsPermission settingsPermission;
 
     private DBDamService() {
     }
@@ -61,27 +67,83 @@ public class DBDamService {
     @Nullable
     public DDConnectedRemoteDam getDam(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
         var session = DBDamSessionService.getInstance();
+        var cached = session.getCachedDam();
+        if (cached != null) {
+            return cached;
+        }
         String clientDamId = session.getClientDamId();
-        DDConnectedRemoteDam dam = account.getDam(clientDamId);
+        var connectedSession = session.getChannel().getStatus().session();
+        DDConnectedRemoteDam dam = DBDamNameService.getOrInitializeName(account, clientDamId);
         if (dam == null) {
             awaitConnection(session, monitor);
-            dam = account.getDam(clientDamId);
+            connectedSession = session.getChannel().getStatus().session();
+            dam = DBDamNameService.getOrInitializeName(account, clientDamId);
         }
+        session.cacheDam(connectedSession, dam);
         return dam;
+    }
+
+    @Nullable
+    public DDConnectedRemoteDam getCachedDam() throws DBException {
+        return DBDamSessionService.getInstance().getCachedDam();
     }
 
     @NotNull
     public DDConnectedRemoteDam renameDam(@NotNull String name) throws DBException {
-        return account.renameDam(DBDamSessionService.getInstance().getClientDamId(), name);
+        var session = DBDamSessionService.getInstance();
+        var connectedSession = session.getChannel().getStatus().session();
+        var renamed = account.renameDam(session.getClientDamId(), name);
+        session.cacheDam(connectedSession, renamed);
+        return renamed;
     }
 
     public boolean canRenameDam() throws DBException {
-        return account.canRenameDam();
+        var status = DBDamSessionService.getInstance().getChannel().getStatus();
+        var session = status.isReady() ? status.session() : null;
+        var cached = renamePermission;
+        if (session != null && cached != null && session.isSameSession(cached.session())) {
+            return cached.allowed();
+        }
+        boolean allowed = account.canRenameDam();
+        if (session != null) {
+            renamePermission = new RenamePermission(session, allowed);
+        }
+        return allowed;
     }
 
     @NotNull
     public DDAccountClient.DamSettingsState getDamSettings() throws DBException {
-        return account.getDamSettings(DBDamSessionService.getInstance().getClientDamId());
+        var cached = getCachedDamSettings();
+        if (cached != null) {
+            return cached;
+        }
+        var session = DBDamSessionService.getInstance();
+        var connectedSession = session.getChannel().getStatus().session();
+        var settings = account.getDamSettings(session.getClientDamId());
+        if (connectedSession != null) {
+            settingsPermission = new SettingsPermission(connectedSession, settings);
+        }
+        return settings;
+    }
+
+    @Nullable
+    public DDAccountClient.DamSettingsState getCachedDamSettings() throws DBException {
+        var status = DBDamSessionService.getInstance().getChannel().getStatus();
+        var cached = settingsPermission;
+        var settings = DBDamSettingsStore.getInstance().getSettings();
+        if (!status.isReady() || cached == null || !cached.session().isSameSession(status.session()) || settings == null) {
+            return null;
+        }
+        // Settings are pushed over the live channel; only the Account identity and permission need caching.
+        return new DDAccountClient.DamSettingsState(cached.state().accountId(), settings, cached.state().canManage());
+    }
+
+    private record RenamePermission(@NotNull DDRemoteDamSessionInfo session, boolean allowed) {
+    }
+
+    private record SettingsPermission(
+        @NotNull DDRemoteDamSessionInfo session, @NotNull DDAccountClient.DamSettingsState state
+    ) {
     }
 
     @NotNull

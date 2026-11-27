@@ -309,7 +309,7 @@ abstract class QueryResultsContainer implements
     /**
      * Returns the number of this container's result set among the results of its query
      */
-    private int getQueryResultIndex() {
+    private int computeQueryResultIndex() {
         int index = 0;
         for (QueryResultsContainer qrc : queryProcessor.resultContainers) {
             if (qrc == this) {
@@ -339,7 +339,13 @@ abstract class QueryResultsContainer implements
         if (!(query instanceof SQLQuery sqlQuery)) {
             throw new DBCException("Can't count rows for control command");
         }
-        if (!(sqlQuery.getStatement() instanceof PlainSelect) && !(sqlQuery.getStatement() instanceof SetOperationList)) {
+        boolean isSelect = sqlQuery.getStatement() instanceof PlainSelect || sqlQuery.getStatement() instanceof SetOperationList;
+        if (!isSelect && sqlQuery.getType() == SQLQueryType.UNKNOWN) {
+            // Not parsed (e.g. ClickHouse JOIN ... USING without parentheses). The count query wraps the original text.
+            String firstKeyword = SQLUtils.getFirstKeyword(dataSource.getSQLDialect(), sqlQuery.getText());
+            isSelect = "SELECT".equalsIgnoreCase(firstKeyword) || "WITH".equalsIgnoreCase(firstKeyword);
+        }
+        if (!isSelect) {
             throw new DBCException("Can't count rows for non-SELECT queries");
         }
         try {
@@ -441,9 +447,14 @@ abstract class QueryResultsContainer implements
         return query;
     }
 
+    @Override
+    public int getQueryResultIndex() {
+        return queryResultIndex;
+    }
+
     void setQuery(SQLScriptElement query) {
         this.query = query;
-        this.queryResultIndex = getQueryResultIndex();
+        this.queryResultIndex = computeQueryResultIndex();
     }
 
     @Override

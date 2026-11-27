@@ -760,14 +760,14 @@ public class OracleSchema extends OracleGlobalObject implements
             @Nullable String objectName
         ) throws SQLException {
             String tableOper = "=";
-
             boolean fullList = object == null && objectName == null;
             DBSObjectFilter[] filters = new DBSObjectFilter[3];
-            if (fullList && owner.getDataSource().getContainer().getPreferenceStore()
-                .getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)) {
-                filters[0] = owner.getDataSource().getContainer().getObjectFilter(OracleTable.class, owner, false);
-                filters[1] = owner.getDataSource().getContainer().getObjectFilter(OracleView.class, owner, false);
-                filters[2] = owner.getDataSource().getContainer().getObjectFilter(OracleMaterializedView.class, owner, false);
+            if (fullList && owner.getDataSource().getContainer().getPreferenceStore().getBoolean(
+                ModelPreferences.META_USE_SERVER_SIDE_FILTERS
+            )) {
+                filters[0] = owner.getDataSource().getContainer().getEffectiveObjectFilter(OracleTable.class, owner, false);
+                filters[1] = owner.getDataSource().getContainer().getEffectiveObjectFilter(OracleView.class, owner, false);
+                filters[2] = owner.getDataSource().getContainer().getEffectiveObjectFilter(OracleMaterializedView.class, owner, false);
             }
             if (fullList) {
                 listFilterApplied = Arrays.stream(filters).anyMatch(filter -> filter != null && !filter.isNotApplicable());

@@ -16,15 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.keys.DDProjectKeyUIManager;
 
 /**
  * Interactive access check performed before a user-requested network operation.
@@ -57,17 +62,14 @@ public class DBDamTokenUIManager {
             status = accessService.getStatus();
         }
         if (status == DBDamAccessService.Status.INVALID_TOKEN) {
-            Boolean accepted = UIUtils.syncExec(new RunnableWithResult<>() {
-                @Override
-                public Boolean runWithResult() {
-                    return UIUtils.confirmAction(
-                        UIUtils.getActiveWorkbenchShell(),
-                        DDTrackingUIMessages.desktop_relogin_title,
-                        DDTrackingUIMessages.desktop_relogin_message
-                    );
-                }
-            });
-            if (!Boolean.TRUE.equals(accepted)) {
+            DDKeyBundle keys = accessService.getKeyBundle();
+            String message = keys == null ? DDTrackingUIMessages.desktop_relogin_message
+                : DDTrackingUIMessages.desktop_relogin_delete_projects_message;
+            ReloginChoice choice = promptRelogin(message);
+            if (choice == ReloginChoice.SIGN_OUT) {
+                DDProjectKeyUIManager.getInstance().signOut(keys);
+            }
+            if (choice != ReloginChoice.SIGN_IN) {
                 return false;
             }
 
@@ -79,5 +81,28 @@ public class DBDamTokenUIManager {
             }
         }
         return !monitor.isCanceled() && accessService.getStatus() == DBDamAccessService.Status.SIGNED_IN;
+    }
+
+    @Nullable
+    private ReloginChoice promptRelogin(@NotNull String message) {
+        return UIUtils.syncExec(new RunnableWithResult<>() {
+            @Nullable
+            @Override
+            public ReloginChoice runWithResult() {
+                MessageDialog dialog = new MessageDialog(
+                    UIUtils.getActiveWorkbenchShell(), DDTrackingUIMessages.desktop_relogin_title,
+                    null, message, MessageDialog.QUESTION,
+                    new String[] {IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL}, 0);
+                return switch (dialog.open()) {
+                    case 0 -> ReloginChoice.SIGN_IN;
+                    case 1 -> ReloginChoice.SIGN_OUT;
+                    default -> ReloginChoice.CANCEL;
+                };
+            }
+        });
+    }
+
+    private enum ReloginChoice {
+        SIGN_IN, SIGN_OUT, CANCEL
     }
 }

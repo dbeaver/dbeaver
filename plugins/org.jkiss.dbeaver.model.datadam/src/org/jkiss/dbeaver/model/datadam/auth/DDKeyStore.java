@@ -86,12 +86,12 @@ public class DDKeyStore {
         } catch (IllegalArgumentException e) {
             throw new DBException("Invalid encrypted bundle", e);
         }
-        SecretKey kek = DDCrypto.deriveKek(DDRecoveryPhrase.normalizeAndValidate(recoveryPhrase), salt, state.iterations());
+        SecretKey kek = DDCrypto.deriveKek(DDEncryptionKey.normalizeAndValidate(recoveryPhrase), salt, state.iterations());
         byte[] bundle;
         try {
             bundle = DDCrypto.decrypt(kek, encryptedBundle);
         } catch (DBException e) {
-            throw new DBException("Incorrect recovery phrase", e);
+            throw new DBException("Incorrect encryption key", e);
         }
 
         String[] parts = new String(bundle, StandardCharsets.UTF_8).split(BUNDLE_SEPARATOR, 2);

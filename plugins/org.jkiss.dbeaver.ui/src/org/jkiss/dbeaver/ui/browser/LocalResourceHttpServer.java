@@ -297,6 +297,7 @@ public final class LocalResourceHttpServer {
             case "svg" -> "image/svg+xml";
             case "jpg", "jpeg" -> "image/jpeg";
             case "gif" -> "image/gif";
+            case "webp" -> "image/webp";
             case "woff" -> "font/woff";
             case "woff2" -> "font/woff2";
             case null, default -> HttpConstants.CONTENT_TYPE_OCTET_STREAM;

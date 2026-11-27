@@ -16,3 +16,39 @@ Label.dbeaverFormHint,
 .dbeaverFormHint StyledText {
     color: #a0a0a0;
 }
+
+ColorDefinition#org-jkiss-dbeaver-ui-icons-default {
+    color: #CCCCCC;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-icons-secondary {
+    color: #8F8985;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-icons-accent {
+    color: #4489BF;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-icons-tip {
+    color: #51B5A6;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-icons-attention {
+    color: #DC8B4A;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-icons-positive {
+    color: #62A858;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-icons-important {
+    color: #B284E3;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-icons-danger {
+    color: #E17A60;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-icons-background {
+    color: #434349;
+}

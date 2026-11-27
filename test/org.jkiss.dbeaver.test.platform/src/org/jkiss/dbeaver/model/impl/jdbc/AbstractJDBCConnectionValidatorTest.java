@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,21 @@ public class AbstractJDBCConnectionValidatorTest extends DBeaverUnitTest {
             return List.of("loadExtension", "remoteScript");
         }
     };
+
+    @Test
+    public void preservesDesktopRestrictionMessage() {
+        DBWorkbench.getPlatform();
+        Properties properties = new Properties();
+        properties.setProperty("loadExtension", "unused");
+
+        DBCException error = Assertions.assertThrows(DBCException.class,
+            () -> validator.validateConnectionProperties("jdbc:custom:test", properties));
+
+        Assertions.assertEquals(
+            "JDBC driver parameter 'loadExtension' is not allowed while driver parameter sanitization is enabled",
+            error.getMessage()
+        );
+    }
 
     @ParameterizedTest
     @ValueSource(strings = {

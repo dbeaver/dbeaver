@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.datadam;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
+import com.dbeaver.datadam.sso.api.DDPermissionIds;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonParseException;
 import com.google.gson.ToNumberPolicy;
@@ -56,7 +57,6 @@ public class DDAccountClient extends DDClient {
             myPermissions
         }
         """;
-    private static final String RENAME_DAM_PERMISSION = "REMOTE_DAM_MANAGE";
     private static final String CRYPTO_STATE_QUERY = """
         query GatewayCryptoState {
             gatewayCryptoState {
@@ -118,9 +118,9 @@ public class DDAccountClient extends DDClient {
     @NotNull
     public DDCryptoState getCryptoState() throws DBException {
         CryptoData data = executeGraphQl(CRYPTO_STATE_QUERY, CryptoData.class,
-            "Could not read encryption keys from DataDam Account");
+            "Could not read the encryption key from DataDam Account");
         if (data.gatewayCryptoState() == null) {
-            throw new DBException("Could not read encryption keys from DataDam Account");
+            throw new DBException("Could not read the encryption key from DataDam Account");
         }
         DDCryptoState state = data.gatewayCryptoState();
         if (state.accountId() == null) {
@@ -149,13 +149,18 @@ public class DDAccountClient extends DDClient {
         return data.accountInfo().accountName();
     }
 
-    public boolean canRenameDam() throws DBException {
+    /** Checks the current user's account permission without caching its value. */
+    public boolean hasPermission(@NotNull String permission) throws DBException {
         PermissionsData data = executeGraphQl(PERMISSIONS_QUERY, PermissionsData.class,
-            "Could not read Dam permissions from DataDam Account");
+            "Could not read permissions from DataDam Account");
         if (data.myPermissions() == null) {
-            throw new DBException("Could not read Dam permissions from DataDam Account");
+            throw new DBException("Could not read permissions from DataDam Account");
         }
-        return data.myPermissions().contains(RENAME_DAM_PERMISSION);
+        return data.myPermissions().contains(permission);
+    }
+
+    public boolean canRenameDam() throws DBException {
+        return hasPermission(DDPermissionIds.REMOTE_DAM_MANAGE);
     }
 
     @NotNull

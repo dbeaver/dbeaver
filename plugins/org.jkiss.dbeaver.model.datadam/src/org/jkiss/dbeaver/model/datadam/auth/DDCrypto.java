@@ -144,7 +144,7 @@ public final class DDCrypto {
             Arrays.fill(result, (byte) 0);
             return kek;
         } catch (GeneralSecurityException e) {
-            throw new DBException("Error deriving key from recovery phrase", e);
+            throw new DBException("Could not use the encryption key", e);
         } finally {
             Arrays.fill(password, (byte) 0);
             Arrays.fill(initialInput, (byte) 0);

@@ -22,7 +22,8 @@ function createContent(args) {
             link.tabIndex = -1;
             if (image.src) {
                 link.appendChild(createImagePreview(image.src));
-                link.classList.add('message-image-loaded');
+            } else {
+                link.classList.add('message-image-failed');
             }
             const name = document.createElement('span');
             name.className = 'message-image-name';
@@ -51,24 +52,49 @@ function createContent(args) {
     return holder;
 }
 
+let staticPreviewQueue = Promise.resolve();
+
 function createImagePreview(source) {
     const preview = document.createElement('img');
-    preview.src = source;
     preview.alt = '';
     preview.loading = 'lazy';
     preview.decoding = 'async';
     preview.draggable = false;
+    // formats with animation need the original image
+    const isStatic = /\.(png|jpeg)$/.test(source);
+    if (isStatic) {
+        // a painted image stays decoded at full size
+        preview.style.visibility = 'hidden';
+    }
+    preview.addEventListener('load', () => {
+        preview.parentElement?.classList.add('message-image-loaded');
+        if (isStatic) {
+            staticPreviewQueue = staticPreviewQueue.then(() => replaceWithCanvas(preview))
+                .catch(() => preview.style.visibility = 'visible');
+        }
+    }, { once: true });
+    preview.addEventListener('error', () => {
+        preview.parentElement?.classList.add('message-image-failed');
+        preview.remove();
+    }, { once: true });
+    preview.src = source;
     return preview;
 }
 
-function setMessageImage(args) {
-    const message = document.getElementById(args.id);
-    const link = message?.querySelectorAll('.message-image')[args.index];
-    if (link) {
-        link.querySelector('img')?.remove();
-        link.prepend(createImagePreview(args.src));
-        link.classList.add('message-image-loaded');
-    }
+function replaceWithCanvas(preview) {
+    preview.replaceWith(drawScaledImage(preview, 128 * devicePixelRatio));
+    preview.src = '';
+    // the next image is decoded after this one is released
+    return new Promise(resolve => setTimeout(resolve));
+}
+
+function drawScaledImage(image, size) {
+    const scale = Math.min(1, size / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas;
 }
 
 function loadImageThumbnail(args) {
@@ -89,12 +115,7 @@ function loadImageThumbnail(args) {
     image.onerror = () => complete('');
     image.onload = () => {
         try {
-            const scale = Math.min(1, args.size / Math.max(image.naturalWidth, image.naturalHeight));
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-            canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
-            canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
-            complete(canvas.toDataURL('image/png'));
+            complete(drawScaledImage(image, args.size).toDataURL('image/png'));
         } catch (error) {
             complete('');
         }

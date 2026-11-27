@@ -259,12 +259,21 @@
     height: 64px;
 }
 
+.message-image.message-image-failed {
+    width: auto;
+    height: auto;
+    max-width: 256px;
+    color: var(--hyperlink-color);
+    text-decoration: underline;
+}
+
 .message-image:focus {
     outline: 2px solid var(--hyperlink-color);
     outline-offset: 2px;
 }
 
-.message-image img {
+.message-image img,
+.message-image canvas {
     display: block;
     max-width: 128px;
     max-height: 128px;
@@ -272,7 +281,7 @@
     height: auto;
 }
 
-.message-image-name {
+.message-image:not(.message-image-failed) .message-image-name {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -280,5 +289,12 @@
     margin: -1px;
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+.message-image-failed .message-image-name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }

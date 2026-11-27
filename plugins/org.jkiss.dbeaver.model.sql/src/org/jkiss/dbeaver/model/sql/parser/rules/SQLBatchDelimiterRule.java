@@ -67,10 +67,6 @@ public class SQLBatchDelimiterRule extends SQLDelimiterRule {
     @Override
     @NotNull
     public TPToken evaluate(@NotNull TPCharacterScanner scanner) {
-        if (!hasOnlyWhitespaceBefore(scanner)) {
-            return TPTokenAbstract.UNDEFINED;
-        }
-
         int startOffset = scanner.getOffset();
         TPToken token = super.evaluate(scanner);
         if (token.isUndefined()) {
@@ -79,9 +75,14 @@ public class SQLBatchDelimiterRule extends SQLDelimiterRule {
 
         consumeSuffix(scanner);
         int delimiterEndOffset = scanner.getOffset();
-        boolean valid = hasValidLineEnding(scanner);
-        restoreOffset(scanner, valid ? delimiterEndOffset : startOffset);
-        return valid ? token : TPTokenAbstract.UNDEFINED;
+        boolean validEnding = hasValidLineEnding(scanner);
+        restoreOffset(scanner, startOffset);
+        // Only inspect the line prefix for a delimiter candidate with a valid suffix.
+        if (!validEnding || !hasOnlyWhitespaceBefore(scanner)) {
+            return TPTokenAbstract.UNDEFINED;
+        }
+        restoreOffset(scanner, delimiterEndOffset);
+        return token;
     }
 
     /**

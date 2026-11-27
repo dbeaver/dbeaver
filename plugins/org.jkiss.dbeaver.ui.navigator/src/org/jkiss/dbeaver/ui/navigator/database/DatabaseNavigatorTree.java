@@ -163,6 +163,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
 
         new DatabaseNavigatorToolTipSupport(this);
+        NativeThemeUtils.installTreeSelectionFix(treeViewer.getTree());
 
         initEditor();
 
