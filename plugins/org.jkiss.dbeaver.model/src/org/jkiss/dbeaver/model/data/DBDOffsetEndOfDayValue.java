@@ -18,11 +18,15 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 
+import java.io.Serial;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalField;
 
 public class DBDOffsetEndOfDayValue extends DBDEndOfDayValue {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private final ZoneOffset offset;
 

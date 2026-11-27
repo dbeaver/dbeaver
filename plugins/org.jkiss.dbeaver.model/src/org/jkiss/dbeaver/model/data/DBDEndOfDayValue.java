@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.temporal.ChronoField;
@@ -26,7 +28,10 @@ import java.time.temporal.TemporalField;
 import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.Set;
 
-public class DBDEndOfDayValue implements TemporalAccessor {
+public class DBDEndOfDayValue implements TemporalAccessor, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private static final DBDEndOfDayValue INSTANCE = new DBDEndOfDayValue();
 
@@ -53,6 +58,13 @@ public class DBDEndOfDayValue implements TemporalAccessor {
     );
 
     protected DBDEndOfDayValue() {
+    }
+
+    @NotNull
+    @Serial
+    private Object readResolve() {
+        // Keep this private so offset-aware subclasses retain their own state when deserialized.
+        return INSTANCE;
     }
 
     @Override
