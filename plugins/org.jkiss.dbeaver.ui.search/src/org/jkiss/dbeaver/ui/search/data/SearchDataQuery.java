@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,7 +160,8 @@ public class SearchDataQuery implements ISearchQuery {
             }
 
             if (dataReceiver.rowCount > 0) {
-                SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount, dataReceiver.filter);
+                DBDDataFilter filter = getResultFilter(dataContainer, monitor, dataReceiver.filter);
+                SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount, filter);
                 searchResult.addObjects(Collections.singletonList(object));
                 return true;
             }
@@ -185,7 +186,6 @@ public class SearchDataQuery implements ISearchQuery {
         try {
 
             List<DBDAttributeConstraint> constraints = new ArrayList<>();
-            DBDDataFilter dataFilter = searchDataFilterForContainer(dataContainer, session.getProgressMonitor());
             for (DBSEntityAttribute attribute : CommonUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()))) {
                 if (params.fastSearch) {
                     if (DBUtils.findAttributeIndex(session.getProgressMonitor(), attribute) == null) {
@@ -273,14 +273,8 @@ public class SearchDataQuery implements ISearchQuery {
                         }
                     }
                 }
-                DBDAttributeConstraint constraint = null;
-                if (dataFilter != null) {
-                    constraint = dataFilter.getConstraint(attribute, true);
-                }
-                if (constraint == null) {
-                    constraint = new DBDAttributeConstraint(attribute, constraints.size());
-                    constraint.setVisible(true);
-                }
+                DBDAttributeConstraint constraint = new DBDAttributeConstraint(attribute, constraints.size());
+                constraint.setVisible(true);
                 constraint.setOperator(operator);
                 constraint.setValue(value);
                 constraints.add(constraint);
@@ -288,11 +282,7 @@ public class SearchDataQuery implements ISearchQuery {
             if (constraints.isEmpty()) {
                 return null;
             }
-            if (dataFilter != null) {
-                dataReceiver.filter = dataFilter;
-            } else {
-                dataReceiver.filter = new DBDDataFilter(constraints);
-            }
+            dataReceiver.filter = new DBDDataFilter(constraints);
             dataReceiver.filter.setAnyConstraint(true);
             DBCExecutionSource searchSource = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), this);
             return dataContainer.readData(searchSource, session, dataReceiver, dataReceiver.filter, -1, -1, 0, 0);
@@ -305,6 +295,41 @@ public class SearchDataQuery implements ISearchQuery {
         return new SearchDataQuery(params);
     }
 
+    @NotNull
+    private DBDDataFilter getResultFilter(
+        @NotNull DBSDataContainer dataContainer,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBDDataFilter searchFilter
+    ) {
+        DBDDataFilter existingFilter = searchDataFilterForContainer(dataContainer, monitor);
+        if (existingFilter == null) {
+            return searchFilter;
+        }
+
+        // Retain column layout without letting previous row conditions affect search results.
+        DBDDataFilter resultFilter = new DBDDataFilter(existingFilter);
+        resultFilter.setWhere(null);
+        resultFilter.setOrder(null);
+        resultFilter.setUseDisjunctiveNormalForm(false);
+        resultFilter.setAnyConstraint(true);
+        for (DBDAttributeConstraint constraint : resultFilter.getConstraints()) {
+            constraint.setCriteria(null);
+            constraint.setOrderPosition(0);
+            constraint.setOrderDescending(false);
+        }
+        for (DBDAttributeConstraint searchConstraint : searchFilter.getConstraints()) {
+            DBDAttributeConstraint constraint = resultFilter.getConstraint(searchConstraint.getAttribute(), true);
+            if (constraint == null) {
+                resultFilter.addConstraint(new DBDAttributeConstraint(searchConstraint));
+            } else {
+                constraint.setOperator(searchConstraint.getOperator());
+                constraint.setReverseOperator(false);
+                constraint.setValue(searchConstraint.getValue());
+            }
+        }
+        return resultFilter;
+    }
+
     @Nullable
     private DBDDataFilter searchDataFilterForContainer(@NotNull DBSDataContainer dataContainer, @NotNull DBRProgressMonitor monitor) {
         DBDDataFilter dataFilter = null;
@@ -315,17 +340,13 @@ public class SearchDataQuery implements ISearchQuery {
                 IEditorPart pageEditor = ((EntityEditor) editor).getPageEditor(DatabaseDataEditor.class.getName());
                 if (pageEditor != null) {
                     IResultSetController rsc = pageEditor.getAdapter(IResultSetController.class);
-                    if (rsc != null) {
-                        DBSDataContainer rscDataContainer = rsc.getDataContainer();
-                        if (rscDataContainer == dataContainer) {
-                            dataFilter = rsc.getDataFilter();
-                        }
+                    if (rsc != null && rsc.getDataContainer() == dataContainer) {
+                        dataFilter = rsc.getDataFilter();
                     }
                 }
             }
         }
         if (dataFilter == null) {
-            // Now we try to find saved data filters for container
             dataFilter = ResultSetUtils.restoreDataFilter(dataContainer, monitor);
         }
         return dataFilter;
