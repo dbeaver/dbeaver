@@ -23,7 +23,7 @@ ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-cell-matched-background {
 }
 
 ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-selection-background {
-    color: #505050;
+    color: #466b91;
 }
 
 ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-selection-foreground {
@@ -40,7 +40,8 @@ ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-header-border {
 }
 
 ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-header-background {
-    color: #394248;
+    /* Matches Eclipse's DARK_BACKGROUND used by dialogs and toolbars. */
+    color: #48484c;
 }
 
 ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-header-foreground {
@@ -48,7 +49,7 @@ ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-header-foreground {
 }
 
 ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-header-selected-background {
-    color: #5a5a7c;
+    color: #3c5774;
 }
 
 ColorDefinition#org-jkiss-dbeaver-sql-resultset-color-null-foreground {

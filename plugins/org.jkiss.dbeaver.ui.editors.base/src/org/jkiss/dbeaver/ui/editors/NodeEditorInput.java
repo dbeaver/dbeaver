@@ -81,9 +81,11 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
         return true;
     }
 
+    @Nullable
     @Override
     public ImageDescriptor getImageDescriptor() {
-        DBNNode node = getNavigatorNode();
+        // Tab rendering must not resolve remote nodes and prompt for credentials during editor restoration.
+        DBNNode node = this.node;
         return node == null ? null : DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
     }
 

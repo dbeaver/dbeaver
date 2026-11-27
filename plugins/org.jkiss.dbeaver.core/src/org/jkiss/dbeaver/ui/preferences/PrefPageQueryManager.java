@@ -116,7 +116,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
                 new GridData(50, SWT.DEFAULT));
         }
 
-        {
+        if (!DBWorkbench.isDistributed()) {
             Composite storageSettings = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_query_manager_group_storage,
@@ -129,10 +129,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             checkStoreLog.setLayoutData(gd);
-            checkStoreLog.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                    UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
-                    UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
-                }));
+            checkStoreLog.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateLogStorageControls()));
             textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null, false, null);
 
             textOutputFolder.setText(getQMLogStorePath(store));
@@ -157,8 +154,14 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         Collection<String> queryTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',');
         checkObjectTypes(objectTypes);
         checkQueryTypes(queryTypes);
-        UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
-        UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
+        updateLogStorageControls();
+    }
+
+    private void updateLogStorageControls() {
+        if (checkStoreLog != null) {
+            UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
+            UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
+        }
     }
 
     private void checkObjectTypes(Collection<QMObjectType> objectTypes) {
@@ -188,13 +191,14 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkQueryTypes(queryTypes);
 
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        textHistoryDays.setText(store.getDefaultString(QMConstants.PROP_HISTORY_DAYS));
         textEntriesPerPage.setText(store.getDefaultString(QMConstants.PROP_ENTRIES_PER_PAGE));
 
-        checkStoreLog.setSelection(store.getDefaultBoolean(QMConstants.PROP_STORE_LOG_FILE));
-        textOutputFolder.setText(store.getDefaultString(QMConstants.PROP_LOG_DIRECTORY));
-        UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
-        UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
+        if (checkStoreLog != null) {
+            textHistoryDays.setText(store.getDefaultString(QMConstants.PROP_HISTORY_DAYS));
+            checkStoreLog.setSelection(store.getDefaultBoolean(QMConstants.PROP_STORE_LOG_FILE));
+            textOutputFolder.setText(store.getDefaultString(QMConstants.PROP_LOG_DIRECTORY));
+            updateLogStorageControls();
+        }
 
         super.performDefaults();
     }
@@ -215,20 +219,22 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         if (checkQueryTypeMeta.getSelection()) queryTypes.add(DBCExecutionPurpose.META.name());
         if (checkQueryTypeDDL.getSelection()) queryTypes.add(DBCExecutionPurpose.META_DDL.name());
 
-        Integer historyDays = UIUtils.getTextInteger(textHistoryDays);
         Integer entriesPerPage = UIUtils.getTextInteger(textEntriesPerPage);
 
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(QMConstants.PROP_OBJECT_TYPES, QMObjectType.toString(objectTypes));
         store.setValue(QMConstants.PROP_QUERY_TYPES, CommonUtils.makeString(queryTypes, ','));
-        if (historyDays != null) {
-            store.setValue(QMConstants.PROP_HISTORY_DAYS, Math.max(1, historyDays));
-        }
         if (entriesPerPage != null) {
             store.setValue(QMConstants.PROP_ENTRIES_PER_PAGE, Math.max(1, entriesPerPage));
         }
-        store.setValue(QMConstants.PROP_STORE_LOG_FILE, checkStoreLog.getSelection());
-        store.setValue(QMConstants.PROP_LOG_DIRECTORY, textOutputFolder.getText());
+        if (checkStoreLog != null) {
+            Integer historyDays = UIUtils.getTextInteger(textHistoryDays);
+            if (historyDays != null) {
+                store.setValue(QMConstants.PROP_HISTORY_DAYS, Math.max(1, historyDays));
+            }
+            store.setValue(QMConstants.PROP_STORE_LOG_FILE, checkStoreLog.getSelection());
+            store.setValue(QMConstants.PROP_LOG_DIRECTORY, textOutputFolder.getText());
+        }
         PrefUtils.savePreferenceStore(store);
 
         return super.performOk();

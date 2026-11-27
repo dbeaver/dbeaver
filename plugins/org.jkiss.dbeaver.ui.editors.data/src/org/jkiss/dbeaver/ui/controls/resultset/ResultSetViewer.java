@@ -707,7 +707,7 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel != null) {
             DBeaverNotifications.showNotification(
                 DBeaverNotifications.NT_GENERIC,
-                "Data filter was saved",
+                ResultSetMessages.controls_resultset_filter_saved_message,
                 filtersPanel.getFilterText(),
                 DBPMessageType.INFORMATION, null);
         }
@@ -961,7 +961,8 @@ public class ResultSetViewer extends Viewer
                         activePresentationDescriptor = newPresentation;
                         setActivePresentation(instance);
                     } catch (Throwable e) {
-                        DBWorkbench.getPlatformUI().showError("Presentation activate", "Can't instantiate data view '" + newPresentation.getLabel() + "'", e);
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_activate_presentation_title,
+                            NLS.bind(ResultSetMessages.error_instantiate_presentation, newPresentation.getLabel()), e);
                     }
                 } else {
                     log.debug("No presentations for result set [" + resultSet.getClass().getSimpleName() + "]");
@@ -1257,8 +1258,8 @@ public class ResultSetViewer extends Viewer
             return true;
         } catch (Throwable e1) {
             DBWorkbench.getPlatformUI().showError(
-                    "Presentation switch",
-                "Can't switch presentation",
+                ResultSetMessages.error_switch_presentation_title,
+                ResultSetMessages.error_switch_presentation_message,
                 e1);
             return false;
         }
@@ -1372,7 +1373,8 @@ public class ResultSetViewer extends Viewer
         try {
             panel = panelDescriptor.createInstance();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't show panel", "Can't create panel '" + id + "'", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_show_panel_title,
+                NLS.bind(ResultSetMessages.error_create_panel, id), e);
             return false;
         }
         panelInfo = new PanelInfo(panelDescriptor, panel);
@@ -3859,7 +3861,7 @@ public class ResultSetViewer extends Viewer
                                 }
                             }
                         } catch (Exception e) {
-                            DBWorkbench.getPlatformUI().showError("Transform error", "Error transforming column", e);
+                            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_transform_title, ResultSetMessages.error_transform_message, e);
                         }
                     }
                 };
@@ -4084,7 +4086,8 @@ public class ResultSetViewer extends Viewer
         if (targetEntity instanceof DBSDataContainer) {
             getContainer().openNewContainer(monitor, (DBSDataContainer) targetEntity, newFilter);
         } else {
-            UIUtils.showMessageBox(null, "Open link", "Target entity '" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "' - is not a data container", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(null, ResultSetMessages.error_open_link_title,
+                NLS.bind(ResultSetMessages.error_target_not_data_container, DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI)), SWT.ICON_ERROR);
         }
     }
 
@@ -4285,7 +4288,7 @@ public class ResultSetViewer extends Viewer
             // Trick - in fact it is not a refresh but "execute" action
             runDataPump(dataContainer, dataFilter, 0, segmentSize, 0, true, false, false, finalizer);
         } else {
-            DBWorkbench.getPlatformUI().showError("Error executing query", "Viewer detached from data source");
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_execute_query_title, ResultSetMessages.error_viewer_detached);
         }
     }
 
@@ -4342,6 +4345,11 @@ public class ResultSetViewer extends Viewer
 
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null) {
+            if (curState == null && hasData()) {
+                // A result loaded outside this viewer's data pump (e.g. by a whole SQL script execution) has no history state yet.
+                // Save its current filter before the first filtered read so Back can restore the original result.
+                setNewState(dataContainer, model.getDataFilter());
+            }
             dataReceiver.setNextSegmentRead(false);
             runDataPump(
                 dataContainer,
@@ -4631,7 +4639,8 @@ public class ResultSetViewer extends Viewer
         if (executionContext == null) {
             if (finalizer != null) finalizer.run();
             UIUtils.syncExec(() ->
-                UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Can't read data - no active connection", SWT.ICON_WARNING));
+                UIUtils.showMessageBox(viewerPanel.getShell(), ResultSetMessages.error_read_data_title,
+                    ResultSetMessages.error_no_active_connection, SWT.ICON_WARNING));
             return false;
         }
         // Cancel any refresh jobs
@@ -4832,7 +4841,7 @@ public class ResultSetViewer extends Viewer
 
             return executeChanges(monitor, settings, persister, applyListener, false);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_apply_changes_title, ResultSetMessages.error_save_changes_message, e);
             return false;
         }
     }
@@ -4891,7 +4900,7 @@ public class ResultSetViewer extends Viewer
         try {
             return createDataPersister(false).generateReport();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Report error", "Error generating changes report", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_report_title, ResultSetMessages.error_report_message, e);
             return null;
         }
     }
@@ -4904,7 +4913,7 @@ public class ResultSetViewer extends Viewer
             executeChanges(monitor, settings, persister, null, true);
             return persister.getActions();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("SQL script generate error", "Error saving changes in database", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_generate_script_title, ResultSetMessages.error_save_changes_message, e);
             return Collections.emptyList();
         }
     }
@@ -5710,7 +5719,7 @@ public class ResultSetViewer extends Viewer
                     }
 
                     if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {
-                        DBWorkbench.getPlatformUI().showError("Error executing query", "Query execution failed", error);
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.error_execute_query_title, ResultSetMessages.error_execute_query_message, error);
                     } else {
                         if (CommonUtils.isEmpty(errorMessage)) {
                             if (error.getCause() instanceof InterruptedException) {

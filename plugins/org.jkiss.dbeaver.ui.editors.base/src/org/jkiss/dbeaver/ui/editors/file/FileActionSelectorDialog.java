@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
@@ -36,6 +37,7 @@ public class FileActionSelectorDialog extends BaseDialog {
 
     private final List<FileTypeAction> actions;
     private FileTypeAction selectedAction;
+    private boolean rememberAction;
 
     public FileActionSelectorDialog(@NotNull Shell shell, @NotNull List<FileTypeAction> actions) {
         super(shell, EditorsMessages.dialog_file_type_selector_title, null);
@@ -50,7 +52,7 @@ public class FileActionSelectorDialog extends BaseDialog {
 
         for (FileTypeAction action : actions) {
             Button radio = new Button(composite, SWT.RADIO);
-            radio.setText(action.getLabel());
+            radio.setText(getActionLabel(action));
             radio.setSelection(action == selectedAction);
             radio.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                 if (radio.getSelection()) {
@@ -59,7 +61,24 @@ public class FileActionSelectorDialog extends BaseDialog {
             }));
         }
 
+        UIUtils.createCheckbox(composite, EditorsMessages.dialog_file_type_selector_dont_ask_again, false)
+            .addSelectionListener(SelectionListener.widgetSelectedAdapter(event ->
+                rememberAction = ((Button) event.widget).getSelection()));
+
         return composite;
+    }
+
+    public boolean isRememberAction() {
+        return rememberAction;
+    }
+
+    @NotNull
+    public static String getActionLabel(@NotNull FileTypeAction action) {
+        return switch (action) {
+            case DATABASE -> EditorsMessages.file_open_as_database;
+            case INTERNAL_EDITOR -> EditorsMessages.file_open_as_text;
+            case EXTERNAL_EDITOR -> EditorsMessages.file_open_as_external;
+        };
     }
 
     @Nullable

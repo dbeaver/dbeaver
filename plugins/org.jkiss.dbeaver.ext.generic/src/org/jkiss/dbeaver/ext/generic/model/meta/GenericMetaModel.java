@@ -156,7 +156,7 @@ public class GenericMetaModel {
 
         try {
             final GenericMetaObject schemaObject = getMetaObject(GenericConstants.OBJECT_SCHEMA);
-            final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
+            final DBSObjectFilter schemaFilters = dataSource.getContainer().getEffectiveObjectFilter(GenericSchema.class, catalog, false);
 
             final List<GenericSchema> tmpSchemas = new ArrayList<>();
             JDBCResultSet dbResult = null;
@@ -387,7 +387,10 @@ public class GenericMetaModel {
                         }
                     }
                 } catch (Throwable e) {
-                    log.debug("Can't read generic functions", e);
+                    // Drivers may execute functions without supporting function metadata.
+                    if (!CommonUtils.hasCause(e, SQLFeatureNotSupportedException.class)) {
+                        log.debug("Can't read generic functions", e);
+                    }
                 }
             }
 

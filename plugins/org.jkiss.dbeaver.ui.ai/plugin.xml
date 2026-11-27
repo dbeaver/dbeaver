@@ -3,6 +3,7 @@
 
 <plugin>
     <extension-point id="chatView" name="AI Chat View" schema="schema/org.jkiss.dbeaver.ui.ai.chatView.exsd"/>
+    <extension-point id="mcpConnectionsPage" name="MCP connections page contributions"/>
 
     <extension point="org.jkiss.dbeaver.connectionPageConfigurator">
         <page
@@ -61,6 +62,10 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
             <keywordReference id="dbeaver.ai.pref"/>
             <keywordReference id="dbeaver.ai.prompts"/>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.ai.mcpConnections" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.McpConnectionsPreferencePage" name="%pref.page.ai.mcpConnections.name">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="dbeaver.ai.pref"/>
         </page>
     </extension>
     <extension point="org.eclipse.ui.propertyPages">
@@ -272,7 +277,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.notifications">
-        <notification id="ai.model.load" name="AI models loaded"/>
+        <notification id="ai.model.load" name="%notification.ai_model_load.name"/>
     </extension>
 
 </plugin>

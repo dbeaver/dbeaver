@@ -27,9 +27,13 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.net.SocksConstants;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +44,8 @@ public class DB2IDataSource extends GenericDataSource {
     private static final Log log = Log.getLog(DB2IDataSource.class);
     
     private static final String APPLICATION_NAME_PROP = "clientProgramName";
+    private static final String SOCKS5_PROP = "use sock5";
+    private static final String PROXY_SERVER_PROP = "proxy server";
 
     public DB2IDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -64,6 +70,17 @@ public class DB2IDataSource extends GenericDataSource {
         String promptKey = "prompt";
         if (connectionInfo.getProperties().get(promptKey) == null && DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
             props.put(promptKey, "false");
+        }
+        for (DBWHandlerConfiguration handler : connectionInfo.getHandlers()) {
+            if (handler.isEnabled() && handler.getType() == DBWHandlerType.PROXY) {
+                String proxyHost = handler.getStringProperty(SocksConstants.PROP_HOST);
+                int proxyPort = handler.getIntProperty(SocksConstants.PROP_PORT);
+                if (CommonUtils.isNotEmpty(proxyHost) && proxyPort > 0) {
+                    props.put(SOCKS5_PROP, "true");
+                    props.put(PROXY_SERVER_PROP, proxyHost + ":" + proxyPort);
+                }
+                break;
+            }
         }
         return props;
     }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
@@ -43,6 +45,8 @@ public class InvalidateJob extends DataSourceJob {
     private static final Log log = Log.getLog(InvalidateJob.class);
 
     private static final String TASK_INVALIDATE = "dsInvalidate";
+    private static final Map<DBPDataSourceContainer, Long> LOCK_ORDER = new WeakHashMap<>();
+    private static long nextLockOrder;
 
     public static class ContextInvalidateResult {
 
@@ -149,27 +153,36 @@ public class InvalidateJob extends DataSourceJob {
         final Set<DBPDataSourceContainer> containers = new LinkedHashSet<>();
         collectDependentDataSources(dataSource, containers);
 
-        final Map<DBPDataSourceContainer, Object> locks = new HashMap<>();
-        for (var it = containers.iterator(); it.hasNext(); ) {
-            DBPDataSourceContainer container = it.next();
-            monitor.subTask("Obtain exclusive datasource lock for '" + container.getName() + "'");
-
-            final Object lock = container.getExclusiveLock().acquireTaskLock(TASK_INVALIDATE, true);
-            if (lock == DBPExclusiveResource.TASK_PROCESED) {
-                log.debug("Datasource '" + container.getName() + "' was already invalidated");
-                it.remove();
-            } else {
-                locks.put(container, lock);
+        // Shared network handlers can yield the same containers in different traversal orders.
+        // Use runtime ordering: separate containers can have identical persisted project/datasource IDs.
+        // Weak keys avoid retaining containers after their connections are disposed.
+        List<DBPDataSourceContainer> lockOrder = new ArrayList<>(containers);
+        synchronized (LOCK_ORDER) {
+            for (DBPDataSourceContainer container : lockOrder) {
+                LOCK_ORDER.computeIfAbsent(container, key -> nextLockOrder++);
             }
+            lockOrder.sort(Comparator.comparingLong(LOCK_ORDER::get));
         }
 
-        if (locks.isEmpty()) {
-            log.debug("Nothing to invalidate");
-            monitor.done();
-            return List.of();
-        }
-
+        final Map<DBPDataSourceContainer, Object> locks = new HashMap<>();
         try {
+            for (DBPDataSourceContainer container : lockOrder) {
+                monitor.subTask("Obtain exclusive datasource lock for '" + container.getName() + "'");
+
+                final Object lock = container.getExclusiveLock().acquireTaskLock(TASK_INVALIDATE, true);
+                if (lock == DBPExclusiveResource.TASK_PROCESED) {
+                    log.debug("Datasource '" + container.getName() + "' was already invalidated");
+                    containers.remove(container);
+                } else {
+                    locks.put(container, lock);
+                }
+            }
+
+            if (locks.isEmpty()) {
+                log.debug("Nothing to invalidate");
+                return List.of();
+            }
+
             if (feedbackHandler == null || feedbackHandler.confirmInvalidate(containers)) {
                 return invalidateDataSources0(monitor, containers, disconnectOnFailure, showErrors, feedbackHandler);
             } else {
@@ -252,12 +265,11 @@ public class InvalidateJob extends DataSourceJob {
                     String errors = results.stream()
                         .filter(ContextInvalidateResult::isError)
                         .map(result ->
-                            result.getException() == null ? "Unknow error" : result.getException().getMessage())
+                            result.getException() == null ? ModelMessages.forced_disconnect_unknown_error : result.getException().getMessage())
                         .collect(Collectors.joining("\n"));
                     DBWorkbench.getPlatformUI().showError(
-                        "Forced disconnect",
-                        "Datasource '" + container.getName() +
-                            "' was disconnected: destination database unreachable.\n" + errors
+                        ModelMessages.forced_disconnect_title,
+                        NLS.bind(ModelMessages.forced_disconnect_message, container.getName(), errors)
                     );
                 }
 

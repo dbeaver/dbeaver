@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -1461,7 +1462,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 "SELECT n.oid,n.*,d.description FROM pg_catalog.pg_namespace n\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=n.oid AND d.objsubid=0 AND d.classoid='pg_namespace'::regclass\n");
             boolean extraConditionAdded = addExtraCondition(session, catalogQuery);
-            DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, database, false);
+            DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getEffectiveObjectFilter(PostgreSchema.class, database, false);
             if ((catalogFilters != null && !catalogFilters.isNotApplicable()) || object != null || objectName != null) {
                 if (object != null || objectName != null) {
                     catalogFilters = new DBSObjectFilter();
@@ -1534,7 +1535,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
         @Override
         protected boolean handleCacheReadError(@NotNull Exception error) {
-            DBWorkbench.getPlatformUI().showError("Error accessing pgAgent jobs", "Can't access pgAgent jobs.\n\nThis database may not have the extension installed or you don't have sufficient permissions to access them.\n\nIf you believe that this is DBeaver's fault, please report it.", error);
+            DBWorkbench.getPlatformUI().showError(PostgreSQLMessages.pgagent_access_error_title, PostgreSQLMessages.pgagent_access_error_message, error);
             setCache(Collections.emptyList());
             return true;
         }

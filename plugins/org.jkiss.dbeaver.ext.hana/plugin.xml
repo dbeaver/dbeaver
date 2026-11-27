@@ -129,7 +129,7 @@
                     class="com.sap.db.jdbc.Driver"
                     sampleURL="jdbc:sap://{host}[:{port}]"
                     defaultPort="30015"
-                    description=""
+                    description="%driver.sap_hana.description"
                     webURL="https://help.sap.com/viewer/0eec0d68141541d1b07893a39944924e/latest/en-US/ff15928cf5594d78b841fbbe649f04b4.html"
                     categories="sql">
                     <file type="jar" path="maven:/com.sap.cloud.db.jdbc:ngdbc:RELEASE" bundle="!drivers.hana"/>

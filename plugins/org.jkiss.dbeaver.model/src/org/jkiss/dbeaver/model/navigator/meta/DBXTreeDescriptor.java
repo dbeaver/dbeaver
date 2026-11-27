@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.navigator.meta;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -65,6 +67,39 @@ public class DBXTreeDescriptor extends DBXTreeItem {
         return supportsEntityMerge;
     }
 
+    @NotNull
+    public static Class<?> getDataSourceObjectType(
+        @NotNull DBPDataSourceContainer dataSourceDescriptor,
+        @NotNull Class<? extends DBSObject> baseType
+    ) {
+        return getDataSourceObjectType(dataSourceDescriptor, baseType, false);
+    }
+
+    @NotNull
+    public static Class<?> getDataSourceObjectType(
+        @NotNull DBPDataSourceContainer dataSourceDescriptor,
+        @NotNull Class<? extends DBSObject> baseType,
+        boolean preferSubtype
+    ) {
+        DBPDriver driver = dataSourceDescriptor.getDriver();
+        Class<?> dataSourceClass = driver.getDataSourceProvider().getDataSourceClass();
+        DBXTreeDescriptor treeDescriptor = driver.getProviderDescriptor().getTreeDescriptor();
+        if (treeDescriptor != null) {
+            Class<?> type = DBXTreeDescriptor.findImplementorTypeInDataSourceTree(
+                treeDescriptor,
+                dataSourceClass,
+                baseType,
+                null,
+                preferSubtype
+            );
+            if (type != null) {
+                return type;
+            }
+        }
+
+        return baseType;
+    }
+
     /**
      * Find first class which implements baseType.
      * Implementors are property types in DBXTreeItem.
@@ -76,7 +111,8 @@ public class DBXTreeDescriptor extends DBXTreeItem {
         @NotNull DBXTreeNode parent,
         @NotNull Class<?> parentClass,
         @NotNull Class<? extends DBSObject> baseType,
-        @Nullable DBNNode context
+        @Nullable DBNNode context,
+        boolean preferSubtype
     ) {
         // checked nodes are needed to avoid infinite recursion in case node contains itself somewhere in its children
         return findImplementorTypeInDataSourceTree(
@@ -84,7 +120,8 @@ public class DBXTreeDescriptor extends DBXTreeItem {
             parentClass,
             baseType,
             context,
-            Collections.newSetFromMap(new IdentityHashMap<>())
+            Collections.newSetFromMap(new IdentityHashMap<>()),
+            preferSubtype
         );
     }
 
@@ -95,7 +132,8 @@ public class DBXTreeDescriptor extends DBXTreeItem {
         @NotNull Class<?> parentClass,
         @NotNull Class<? extends DBSObject> baseType,
         @Nullable DBNNode context,
-        @NotNull Set<DBXTreeNode> checkedNodes
+        @NotNull Set<DBXTreeNode> checkedNodes,
+        boolean preferSubtype
     ) {
         List<DBXTreeNode> children = parent.getChildren(context);
         {
@@ -106,7 +144,7 @@ public class DBXTreeDescriptor extends DBXTreeItem {
                 }
                 if (node instanceof DBXTreeItem item) {
                     // Check item for a match
-                    Class<?> propertyType = findImplementorTypeInItem(parentClass, baseType, item, context, checkedNodes);
+                    Class<?> propertyType = findImplementorTypeInItem(parentClass, baseType, item, context, checkedNodes, preferSubtype);
                     if (propertyType != null) {
                         return propertyType;
                     }
@@ -119,7 +157,8 @@ public class DBXTreeDescriptor extends DBXTreeItem {
                                 baseType,
                                 folderItem,
                                 context,
-                                checkedNodes
+                                checkedNodes,
+                                preferSubtype
                             );
                             if (propertyType != null) {
                                 return propertyType;
@@ -130,7 +169,8 @@ public class DBXTreeDescriptor extends DBXTreeItem {
                                 parentClass,
                                 baseType,
                                 context,
-                                checkedNodes
+                                checkedNodes,
+                                preferSubtype
                             );
                             if (result != null) {
                                 return result;
@@ -149,16 +189,24 @@ public class DBXTreeDescriptor extends DBXTreeItem {
         @NotNull Class<? extends DBSObject> baseType,
         @NotNull DBXTreeItem item,
         @Nullable DBNNode context,
-        @NotNull Set<DBXTreeNode> checkedNodes
+        @NotNull Set<DBXTreeNode> checkedNodes,
+        boolean preferSubtype
     ) {
         Class<?> propertyType = item.getPropertyOrCollectionItemType(parentClass);
         if (propertyType != null) {
+            if (preferSubtype && item.getParent() instanceof DBXTreeFolder folder
+                && CommonUtils.isNotEmpty(folder.getType())) {
+                Class<?> folderType = folder.getSource().getObjectClass(folder.getType());
+                if (folderType != null && propertyType.isAssignableFrom(folderType)) {
+                    propertyType = folderType;
+                }
+            }
             if (baseType.isAssignableFrom(propertyType)) {
                 return propertyType;
             }
             // Try to go deeper
             if (item.hasChildren(null)) {
-                Class<?> result = findImplementorTypeInDataSourceTree(item, propertyType, baseType, context, checkedNodes);
+                Class<?> result = findImplementorTypeInDataSourceTree(item, propertyType, baseType, context, checkedNodes, preferSubtype);
                 if (result != null) {
                     return result;
                 }
@@ -166,5 +214,4 @@ public class DBXTreeDescriptor extends DBXTreeItem {
         }
         return null;
     }
-
 }

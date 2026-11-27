@@ -38,9 +38,12 @@ public final class SWTThemeUtils {
 
     public static final char[] WINDOW_THEME_COMBO = "CFD\0".toCharArray();
     public static final char[] WINDOW_THEME_DEFAULT = Display.EXPLORER;
+    private static final char[] WINDOW_THEME_LISTVIEW = "LISTVIEW\0".toCharArray();
     private static final int FLUSH_MENU_THEMES_ORDINAL = 136;
     // Windows TREEITEMSTATES.HOTSELECTED is not exposed by SWT's OS constants.
     private static final int TREIS_HOTSELECTED = 6;
+    // Windows LISTITEMSTATES.HOTSELECTED is not exposed by SWT's OS constants.
+    private static final int LISS_HOTSELECTED = 6;
 
     public static void updateShellsAndMenus(@NotNull Display display, boolean dark) {
         // SetPreferredAppMode updates SWT's defaults, but Windows keeps the old menu theme cached.
@@ -127,6 +130,9 @@ public final class SWTThemeUtils {
      * Uses Windows-specific calls and constants to update native widgets look-and-feel
      */
     public static void updateWidgetTheme(@NotNull Control control, boolean dark) {
+        if (control instanceof Text text && (text.getStyle() & SWT.BORDER) != 0) {
+            updateTextBorder(text);
+        }
         // TODO: do not style custom wigets and empty composites
         OS.AllowDarkModeForWindow(control.handle, dark);
         // For Tree and Table we shouldn't set any theme but EXPLORER.
@@ -151,14 +157,28 @@ public final class SWTThemeUtils {
         }
     }
 
+    private static void updateTextBorder(@NotNull Text text) {
+        int style = OS.GetWindowLong(text.handle, OS.GWL_STYLE);
+        int extStyle = OS.GetWindowLong(text.handle, OS.GWL_EXSTYLE);
+        // SWT selects the border style only at creation; match newly created Text controls after a theme switch.
+        int newStyle = text.isUseWsBorder() ? style | OS.WS_BORDER : style & ~OS.WS_BORDER;
+        int newExtStyle = text.isUseWsBorder() ? extStyle & ~OS.WS_EX_CLIENTEDGE : extStyle | OS.WS_EX_CLIENTEDGE;
+        if (newStyle != style || newExtStyle != extStyle) {
+            OS.SetWindowLong(text.handle, OS.GWL_STYLE, newStyle);
+            OS.SetWindowLong(text.handle, OS.GWL_EXSTYLE, newExtStyle);
+            OS.SetWindowPos(text.handle, 0, 0, 0, 0, 0,
+                OS.SWP_NOMOVE | OS.SWP_NOSIZE | OS.SWP_NOZORDER | OS.SWP_NOACTIVATE | OS.SWP_FRAMECHANGED);
+        }
+    }
+
     public static void installTreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
         tree.addListener(SWT.EraseItem, new TreeSelectionFix(tree, isDarkTheme)::eraseItem);
     }
 
     /**
-     * Workaround for SWT's Windows Tree painting: Windows draws the first column, while SWT draws
-     * the remaining columns, producing different hover and selection backgrounds.
-     * TODO: Fix SWT Tree to use the same native TreeView state across all columns and preserve
+     * Matches Windows Tree hover and selection backgrounds to tables, including trees without explicit columns.
+     * Windows draws the first column, while SWT draws the remaining columns, so paint a shared row background.
+     * TODO: Fix SWT Tree to match table backgrounds across all columns and preserve
      * the hovered state when drawing subsequent columns, then remove this workaround.
      */
     private static final class TreeSelectionFix {
@@ -172,9 +192,7 @@ public final class SWTThemeUtils {
         }
 
         private void eraseItem(@NotNull Event event) {
-            if (tree.getColumnCount() < 2) {
-                return;
-            }
+            int columnCount = tree.getColumnCount();
             boolean selected = (event.detail & SWT.SELECTED) != 0;
             if (event.index == tree.getFirstColumnIndex()) {
                 Point cursor = tree.toControl(tree.getDisplay().getCursorLocation());
@@ -189,7 +207,9 @@ public final class SWTThemeUtils {
             }
 
             int zoom = tree.getAutoscalingZoom();
-            long theme = OS.OpenThemeData(tree.handle, Display.TREEVIEW, zoom);
+            boolean useListTheme = isDarkTheme.getAsBoolean() && (hot || tree.isFocusControl());
+            // Windows' dark TreeView hover and selection are gray; match the native table theme.
+            long theme = OS.OpenThemeData(tree.handle, useListTheme ? WINDOW_THEME_LISTVIEW : Display.TREEVIEW, zoom);
             if (theme == 0) {
                 return;
             }
@@ -214,7 +234,19 @@ public final class SWTThemeUtils {
                 cell.right = DPIUtil.pointToPixel(event.x + event.width, zoom);
                 cell.top = row.top;
                 cell.bottom = row.bottom;
-                if (totalWidth < bounds.width && event.index == tree.getColumnOrder()[tree.getColumnCount() - 1]) {
+                if ((tree.getStyle() & SWT.FULL_SELECTION) == 0) {
+                    // Without full-row selection, keep the highlight around the item's image and text.
+                    row = ((TreeItem) event.item).getBounds(event.index, true, true, false, false, false, event.gc.handle);
+                    int extra = DPIUtil.pointToPixel(Tree.EXPLORER_EXTRA, zoom);
+                    row.left -= extra;
+                    row.right += extra;
+                    OS.IntersectRect(cell, row, cell);
+                } else if (columnCount == 0) {
+                    // A tree without explicit columns has one implicit cell spanning the entire row.
+                    cell.left = row.left;
+                    cell.right = row.right;
+                    event.gc.setClipping((Rectangle) null);
+                } else if (totalWidth < bounds.width && event.index == tree.getColumnOrder()[columnCount - 1]) {
                     // SWT normally extends the last selected cell to the right edge of the tree.
                     cell.right = row.right;
                     event.gc.setClipping((Rectangle) null);
@@ -224,7 +256,17 @@ public final class SWTThemeUtils {
                 if (selected && !hot && !tree.isFocusControl()) {
                     state = OS.TREIS_SELECTEDNOTFOCUS;
                 }
-                OS.DrawThemeBackground(theme, event.gc.handle, OS.TVP_TREEITEM, state, row, cell);
+                if (useListTheme) {
+                    int listState = selected ? (hot ? LISS_HOTSELECTED : OS.LISS_SELECTED) : OS.LISS_HOT;
+                    OS.DrawThemeBackground(theme, event.gc.handle, OS.LVP_LISTITEM, listState, row, cell);
+                } else if (state == OS.TREIS_SELECTEDNOTFOCUS && tree.fillsUnfocusedSelection()) {
+                    // Match SWT's table/tree fill instead of the nearly invisible native dark selection.
+                    RECT fill = new RECT();
+                    OS.IntersectRect(fill, row, cell);
+                    tree.fillBackground(event.gc.handle, tree.getUnfocusedSelectionPixel(), fill);
+                } else {
+                    OS.DrawThemeBackground(theme, event.gc.handle, OS.TVP_TREEITEM, state, row, cell);
+                }
                 if (selected) {
                     event.gc.setForeground(isDarkTheme.getAsBoolean()
                         ? tree.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT)

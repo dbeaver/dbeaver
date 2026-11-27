@@ -41,7 +41,7 @@ public class DDProjectShareHandler extends DDProjectHandler<DDProjectSharingJob>
     }
 
     @Override
-    protected void onSuccess(@NotNull DDProjectSharingJob job) {
-        showMessage(DDTrackingUIMessages.project_sync_share_success);
+    protected void onSuccess(@NotNull DBPProject project, @NotNull DDProjectSharingJob job) {
+        showMessage(project, DDTrackingUIMessages.project_sync_share_success);
     }
 }

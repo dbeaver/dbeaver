@@ -141,6 +141,29 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
     }
 
     @Test
+    void temporaryTableOperationsPassDdlPrefilter() {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(BasicSQLDialect.INSTANCE, syntaxManager.getPreferenceStore());
+        for (String sql : List.of(
+            "CREATE TEMPORARY TABLE example (id INT PRIMARY KEY)",
+            "ALTER TABLE example ADD value INT",
+            "RENAME TABLE example TO renamed",
+            "CREATE UNIQUE INDEX uk ON example(id)",
+            "DROP INDEX uk ON example",
+            "DROP TEMPORARY TABLE example"
+        )) {
+            SQLQuery query = new SQLQuery(null, sql);
+            query.setFirstKeyword(sql.substring(0, sql.indexOf(' ')));
+
+            Assertions.assertTrue(query.mayBeDDLStatement(), sql);
+            Assertions.assertFalse(
+                SQLObjectOperationRecognizer.recognizeAll(null, BasicSQLDialect.INSTANCE, syntaxManager, query).isEmpty(),
+                sql
+            );
+        }
+    }
+
+    @Test
     void recognizesTableRenameWithoutConfusingColumnRename() {
         for (String rename : List.of("RENAME TO", "RENAME AS", "RENAME")) {
             Assertions.assertEquals(

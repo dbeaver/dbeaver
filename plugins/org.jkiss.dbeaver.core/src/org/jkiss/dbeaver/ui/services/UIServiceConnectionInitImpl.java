@@ -53,13 +53,44 @@ public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
         @NotNull List<String> scripts
     ) {
         List<String> approvedScripts = List.copyOf(scripts);
+        Map<String, String> execution = new LinkedHashMap<>();
+        for (int index = 0; index < approvedScripts.size(); index++) {
+            String label = CoreMessages.connection_init_confirmation_script;
+            if (approvedScripts.size() > 1) {
+                label += " " + (index + 1);
+            }
+            execution.put(label, approvedScripts.get(index));
+        }
+        return confirmExecution(container, url, approvalKey(container, url, approvedScripts),
+            CoreMessages.connection_init_confirmation_title, CoreMessages.connection_init_confirmation_message, execution);
+    }
+
+    @Override
+    public boolean confirmNativeExtensions(
+        @NotNull DBPDataSourceContainer container,
+        @Nullable String url,
+        @NotNull List<String> settings
+    ) {
+        List<String> approvedSettings = List.copyOf(settings);
+        return confirmExecution(container, url, "native:" + approvalKey(container, url, approvedSettings),
+            CoreMessages.connection_native_confirmation_title, CoreMessages.connection_native_confirmation_message,
+            Map.of(CoreMessages.connection_native_confirmation_settings, String.join("\n", approvedSettings)));
+    }
+
+    private boolean confirmExecution(
+        @NotNull DBPDataSourceContainer container,
+        @Nullable String url,
+        @NotNull String key,
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull Map<String, String> execution
+    ) {
         if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
             return false;
         }
         ConfirmedActionsStore approvals = new ConfirmedActionsStore(
             DBWorkbench.getPlatform().getGlobalConfigurationFile(APPROVALS_FILE_NAME)
         );
-        String key = approvalKey(container, url, approvedScripts);
         try {
             synchronized (APPROVALS_LOCK) {
                 if (approvals.contains(key)) {
@@ -78,18 +109,10 @@ public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
                 if (shell == null || shell.isDisposed()) {
                     return false;
                 }
-                Map<String, String> execution = new LinkedHashMap<>();
-                for (int index = 0; index < approvedScripts.size(); index++) {
-                    String label = CoreMessages.connection_init_confirmation_script;
-                    if (approvedScripts.size() > 1) {
-                        label += " " + (index + 1);
-                    }
-                    execution.put(label, approvedScripts.get(index));
-                }
                 ExecutionConfirmationDialog dialog = new ExecutionConfirmationDialog(
                     shell,
-                    CoreMessages.connection_init_confirmation_title,
-                    CoreMessages.connection_init_confirmation_message,
+                    title,
+                    message,
                     CoreMessages.connection_init_confirmation_allow,
                     Map.of(CoreMessages.connection_init_confirmation_connection, container.getName()),
                     execution

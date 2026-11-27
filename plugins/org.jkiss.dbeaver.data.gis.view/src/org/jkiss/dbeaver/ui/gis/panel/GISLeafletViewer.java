@@ -22,6 +22,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
@@ -280,7 +281,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         try {
             reloadGeometryData(lastValue, true, true);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Setting SRID", "Can't change source SRID to " + srid, e);
+            DBWorkbench.getPlatformUI().showError(GISMessages.gis_srid_set_title, NLS.bind(GISMessages.gis_srid_set_error, srid), e);
             sourceSRID = oldSRID;
         }
         {
@@ -304,7 +305,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         try {
             reloadGeometryData(lastValue, true, false);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Refresh", "Can't refresh value viewer", e);
+            DBWorkbench.getPlatformUI().showError(GISMessages.gis_refresh_title, GISMessages.gis_refresh_error, e);
         }
     }
 
@@ -545,7 +546,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 try (OutputStream fos = new FileOutputStream(outFile)) {
                     imageLoader.save(fos, imageType);
                 } catch (IOException e) {
-                    DBWorkbench.getPlatformUI().showError("Image save error", "Error saving as picture", e);
+                    DBWorkbench.getPlatformUI().showError(GISMessages.gis_image_save_error_title, GISMessages.gis_image_save_error_message, e);
                 }
                 ShellUtils.launchProgram(outFile.getAbsolutePath());
             }
@@ -595,7 +596,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 try {
                     reloadGeometryData(lastValue, true, true);
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Render error", "Error rendering geometry", e);
+                    DBWorkbench.getPlatformUI().showError(GISMessages.gis_render_error_title, GISMessages.gis_render_error_message, e);
                 }
                 saveAttributeSettings();
                 populateToolbar();

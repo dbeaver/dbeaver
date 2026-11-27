@@ -34,7 +34,7 @@
                         sampleURL="jdbc:cloudspanner:/projects/my-project/instances/my-instance/databases/my-database"
                         supportedPageFields="host,database,server"
                         defaultPort=""
-                        description="Google Cloud Spanner Open Source JDBC Driver"
+                        description="%driver.spanner_jdbc_official.description"
                         webURL="https://cloud.google.com/spanner/docs/use-oss-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Google-Cloud-Spanner"
                         categories="sql,bigdata,cloud,gcp"
@@ -55,7 +55,7 @@
                         class="nl.topicus.jdbc.CloudSpannerDriver"
                         sampleURL="jdbc:cloudspanner://localhost"
                         defaultPort=""
-                        description="Google Spanner JDBC community (Topicus) driver (Deprecated, use the officially supported driver instead)"
+                        description="%driver.spanner_jdbc.description"
                         webURL="https://github.com/olavloite/spanner-jdbc"
                         categories="sql,bigdata,cloud">
                     <parameter name="omit-catalog" value="true"/>

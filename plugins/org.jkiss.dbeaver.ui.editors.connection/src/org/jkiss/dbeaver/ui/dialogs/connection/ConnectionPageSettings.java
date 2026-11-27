@@ -380,9 +380,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 }
                 tabFolder.setSelection(0);
                 tabFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> activateCurrentItem()));
-                // Set focus to the first tab
-                // Otherwise focus foes into top right control which breaks traverse keys
-                tabFolder.getSelection().getControl().setFocus();
             }
 
             activateCurrentItem();
@@ -856,13 +853,19 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         UIUtils.applyDialogFont(panel);
                         UIUtils.configureScrolledComposite(panel, page.getControl());
                     } catch (Throwable e) {
-                        DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
+                        DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_configuration_page_error, null, e);
                     } finally {
                         panel.setRedraw(true);
                     }
                 }
                 page.setVisible(true);
                 updatePageCompletion();
+                // Hiding the previous tab can move focus to the top-right toolbar on macOS,
+                // leaving no focus control after lazy page creation and breaking Escape traversal.
+                Control pageControl = page.getControl();
+                if (pageControl != null && !pageControl.setFocus()) {
+                    tabFolder.forceFocus();
+                }
             }
         }
     }

@@ -142,6 +142,13 @@ public class BQSQLDialect extends GenericSQLDialect {
 
         private static final DialectFeatures INSTANCE = new DialectFeatures();
 
+        /** @see <a href="https://cloud.google.com/bigquery/docs/reference/standard-sql/array_functions#array">GoogleSQL ARRAY function</a> */
+        @NotNull
+        @Override
+        public ArraySubquerySemantics getArraySubquerySemantics() {
+            return ArraySubquerySemantics.NO_NESTED_ARRAY;
+        }
+
         /** BigQuery resolves a same-named column before a user-created variable in SQL.
 
          * @see <a href="https://cloud.google.com/bigquery/docs/multi-statement-queries#reference_a_user-created_variable">Variable references</a>

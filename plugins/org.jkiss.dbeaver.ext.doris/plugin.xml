@@ -22,6 +22,9 @@
             <treeInjection path="generic/catalog/schema/table"
                 changeFolderType="org.jkiss.dbeaver.ext.doris.model.DorisTable"/>
 
+            <treeInjection path="generic/catalog/schema/table/attribute"
+                changeFolderType="org.jkiss.dbeaver.ext.doris.model.DorisTableColumn"/>
+
             <drivers managable="true">
                 <driver
                         id="doris"
@@ -32,7 +35,7 @@
                         defaultUser="root"
                         webURL="https://doris.apache.org/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
-                        description="Apache Doris driver (MySQL Connector/J)"
+                        description="%driver.doris.description"
                         categories="sql,federated">
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>
@@ -53,6 +56,7 @@
                     <parameter name="supports-collations" value="false"/>
                     <parameter name="supportsClients" value="false"/>
                     <parameter name="meta-model" value="doris"/>
+                    <parameter name="connection-validator" value="mysql"/>
                 </driver>
             </drivers>
         </datasource>
@@ -76,5 +80,7 @@
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.doris.edit.DorisTableManager"
             objectType="org.jkiss.dbeaver.ext.doris.model.DorisTable"/>
+        <manager class="org.jkiss.dbeaver.ext.doris.edit.DorisTableColumnManager"
+            objectType="org.jkiss.dbeaver.ext.doris.model.DorisTableColumn"/>
     </extension>
 </plugin>

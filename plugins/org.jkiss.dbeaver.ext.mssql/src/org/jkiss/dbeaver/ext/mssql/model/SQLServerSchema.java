@@ -395,39 +395,81 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
             SQLServerDataSource dataSource = owner.getDataSource();
+            boolean supportsExternalTables = dataSource.supportsExternalTables(session);
             sql.append("SELECT o.*,ep.value as description");
-            if (owner.getDataSource().supportsExternalTables(session)) {
+            if (supportsExternalTables) {
                 sql.append(",t.is_external");
             }
             sql.append(" FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" o");
             sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=o.object_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
-            if (owner.getDataSource().supportsExternalTables(session)) {
+            if (supportsExternalTables) {
                 sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" t ON t.object_id=o.object_id");
             }
             sql.append("\nWHERE o.type IN ('U','S','V','TT') AND o.schema_id = ").append(owner.getObjectId());
             if (object != null || objectName != null) {
                 sql.append(" AND o.name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
             } else {
-                DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(SQLServerTableBase.class, owner, false);
-                if (tableFilters != null && !tableFilters.isEmpty()) {
+                DBSObjectFilter tableFilter = dataSource.getContainer().getEffectiveObjectFilter(SQLServerTable.class, owner, false);
+                DBSObjectFilter viewFilter = dataSource.getContainer().getEffectiveObjectFilter(SQLServerView.class, owner, false);
+                DBSObjectFilter tableTypeFilter = dataSource.getContainer().getEffectiveObjectFilter(SQLServerTableType.class, owner, false);
+                DBSObjectFilter externalTableFilter = supportsExternalTables
+                    ? dataSource.getContainer().getEffectiveObjectFilter(SQLServerExternalTable.class, owner, false)
+                    : null;
+                if (isApplicable(tableFilter) || isApplicable(viewFilter) || isApplicable(tableTypeFilter)
+                    || isApplicable(externalTableFilter)) {
+                    // All four object types share this cache query; each filter must apply only to its own rows.
                     sql.append(" AND (");
-                    boolean hasCond = false;
-                    for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
-                        if (hasCond) sql.append(" OR ");
-                        hasCond = true;
-                        sql.append(" o.name LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                    appendTypeFilter(
+                        sql,
+                        supportsExternalTables
+                            ? "o.type IN ('U','S') AND (t.is_external IS NULL OR t.is_external = 0)"
+                            : "o.type IN ('U','S')",
+                        tableFilter, session.getDataSource());
+                    sql.append(" OR ");
+                    appendTypeFilter(sql, "o.type = 'V'", viewFilter, session.getDataSource());
+                    sql.append(" OR ");
+                    appendTypeFilter(sql, "o.type = 'TT'", tableTypeFilter, session.getDataSource());
+                    if (supportsExternalTables) {
+                        sql.append(" OR ");
+                        appendTypeFilter(
+                            sql, "o.type IN ('U','S') AND t.is_external = 1", externalTableFilter, session.getDataSource());
                     }
-                    hasCond = false;
-                    for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
-                        if (hasCond) sql.append(" OR ");
-                        hasCond = true;
-                        sql.append(" o.name NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
-                    }
-                    sql.append(")");
+                    sql.append(')');
                 }
             }
 
             return session.prepareStatement(sql.toString());
+        }
+
+        private static boolean isApplicable(@Nullable DBSObjectFilter filter) {
+            return filter != null && !filter.isNotApplicable();
+        }
+
+        private static void appendTypeFilter(
+            @NotNull StringBuilder sql,
+            @NotNull String typeCondition,
+            @Nullable DBSObjectFilter filter,
+            @NotNull DBPDataSource dataSource
+        ) {
+            sql.append('(').append(typeCondition);
+            if (isApplicable(filter)) {
+                if (!CommonUtils.isEmpty(filter.getInclude())) {
+                    sql.append(" AND (");
+                    boolean first = true;
+                    for (String incName : filter.getInclude()) {
+                        if (!first) {
+                            sql.append(" OR ");
+                        }
+                        first = false;
+                        sql.append("o.name LIKE ").append(SQLUtils.quoteString(dataSource, SQLUtils.makeSQLLike(incName)));
+                    }
+                    sql.append(')');
+                }
+                for (String excName : CommonUtils.safeCollection(filter.getExclude())) {
+                    sql.append(" AND o.name NOT LIKE ").append(SQLUtils.quoteString(dataSource, SQLUtils.makeSQLLike(excName)));
+                }
+            }
+            sql.append(')');
         }
 
         @Override
@@ -456,35 +498,47 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             }
         }
 
+        @NotNull
         @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase forTable)
-            throws SQLException
-        {
+        protected JDBCStatement prepareChildrenStatement(
+            @NotNull JDBCSession session,
+            @NotNull SQLServerSchema owner,
+            @Nullable SQLServerTableBase forTable
+        ) throws SQLException {
+            SQLServerDatabase database = owner.getDatabase();
+            SQLServerDataSource dataSource = owner.getDataSource();
+            boolean supportsColumnProperty = dataSource.supportsColumnProperty();
+            boolean useCatalogScopedQuery = supportsColumnProperty && SQLServerUtils.supportsCrossDatabaseQueries(dataSource);
+
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT c.*,t.name as table_name,t.schema_id,cc.is_persisted,cc.definition as computed_definition");
-            if (owner.getDataSource().supportsColumnProperty()) {
+            if (supportsColumnProperty) {
                 sql.append(", COLUMNPROPERTY(c.object_id, c.name, 'charmaxlen') as char_max_length");
             }
             sql.append(", dc.definition as default_definition,dc.name as default_constraint_name,ep.value as description\nFROM ")
-                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_columns")).append(" c")
-                .append("\nJOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t ON t.object_id=c.object_id")
-                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "default_constraints")).append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id")
-                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=t.object_id AND ep.minor_id=c.column_id AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'")
-                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "computed_columns")).append(" cc ON cc.object_id=t.object_id AND cc.column_id=c.column_id")
-                .append("\nWHERE ");
-            if (forTable != null) {
-                sql.append("t.object_id=?");
-            } else {
-                sql.append("t.schema_id=?");
-            }
-            sql.append("\nORDER BY c.object_id,c.column_id");
+                .append(SQLServerUtils.getSystemTableName(database, "all_columns")).append(" c")
+                .append("\nJOIN ").append(SQLServerUtils.getSystemTableName(database, "all_objects"))
+                .append(" t ON t.object_id=c.object_id")
+                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(database, "default_constraints"))
+                .append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id")
+                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(database))
+                .append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId())
+                .append(" AND ep.major_id=t.object_id AND ep.minor_id=c.column_id AND ep.name='")
+                .append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'")
+                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(database, "computed_columns"))
+                .append(" cc ON cc.object_id=t.object_id AND cc.column_id=c.column_id")
+                .append("\nWHERE ").append(forTable != null ? "t.object_id=" : "t.schema_id=")
+                .append(useCatalogScopedQuery ? "@parent_id" : "?")
+                .append("\nORDER BY c.object_id,c.column_id");
 
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            if (forTable != null) {
-                dbStat.setLong(1, forTable.getObjectId());
-            } else {
-                dbStat.setLong(1, owner.getObjectId());
+            String query = sql.toString();
+            if (useCatalogScopedQuery) {
+                // columnproperty resolves object ids in the database context of the query
+                query = "EXEC " + SQLServerUtils.getSystemTableName(database, "sp_executesql") + " "
+                    + SQLUtils.quoteString(dataSource, query) + ", N'@parent_id bigint', ?";
             }
+            JDBCPreparedStatement dbStat = session.prepareStatement(query);
+            dbStat.setLong(1, forTable != null ? forTable.getObjectId() : owner.getObjectId());
             return dbStat;
         }
 

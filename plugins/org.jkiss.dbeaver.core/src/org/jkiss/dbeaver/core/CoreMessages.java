@@ -21,12 +21,43 @@ import org.eclipse.osgi.util.NLS;
 public class CoreMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
 
+    public static String dialog_export_error_title;
+    public static String dialog_error_title;
+    public static String dialog_project_export_error_message;
+    public static String dialog_project_import_error_message;
+    public static String dialog_scripts_export_error_message;
+    public static String resource_open_error_title;
+    public static String resource_open_external_error_message;
+    public static String resource_open_unknown_error_message;
+    public static String resource_project_missing_title;
+    public static String resource_project_missing_message;
+    public static String actions_navigator_bookmark_connection_message;
+    public static String action_transaction_autocommit_error_message;
+    public static String connection_secrets_error_title;
+    public static String connection_secrets_error_message;
+    public static String pending_transactions_no_active_part_title;
+    public static String pending_transactions_no_active_part_message;
+    public static String external_file_system_not_supported_title;
+    public static String external_file_system_not_supported_message;
+    public static String notification_transaction_committed;
+    public static String notification_transaction_rolled_back;
+    public static String task_transaction_commit_title;
+    public static String task_transaction_rollback_title;
+    public static String notification_agent_title;
+
+    public static String pref_page_ui_language_restart_title;
+    public static String pref_page_ui_language_restart_message;
+    public static String resource_open_remote_confirm_message;
+
     public static String connection_init_confirmation_title;
     public static String connection_init_confirmation_message;
     public static String connection_init_confirmation_connection;
     public static String connection_init_confirmation_url;
     public static String connection_init_confirmation_script;
     public static String connection_init_confirmation_allow;
+    public static String connection_native_confirmation_title;
+    public static String connection_native_confirmation_message;
+    public static String connection_native_confirmation_settings;
 
 
     public static String driver_license_required_title;
@@ -294,6 +325,16 @@ public class CoreMessages extends NLS {
 
     public static String transaction_log_dialog_header_transaction_log;
 
+    public static String pending_transactions_dialog_title;
+    public static String pending_transactions_dialog_column_connection;
+    public static String pending_transactions_dialog_column_transaction;
+    public static String pending_transactions_dialog_checkbox_show_all_connections;
+    public static String pending_transactions_dialog_checkbox_show_all_connections_tip;
+    public static String pending_transactions_dialog_button_commit;
+    public static String pending_transactions_dialog_button_rollback;
+
+    public static String query_manager_view_label;
+
     // Preference/Properties
 
     public static String transaction_log_dialog_error_connect_to_a_database;
@@ -341,6 +382,14 @@ public class CoreMessages extends NLS {
     public static String toolbar_checkbox_connection_not_readonly_tooltip;
 
     public static String monitor_panel_transaction_monitor_tip;
+    public static String monitor_panel_transaction_monitor_not_available;
+    public static String monitor_panel_transaction_monitor_auto;
+    public static String monitor_panel_transaction_monitor_none;
+    public static String monitor_panel_transaction_monitor_total_statements;
+    public static String monitor_panel_transaction_monitor_modifying_statements;
+    public static String monitor_panel_transaction_monitor_uptime;
+    public static String monitor_panel_transaction_monitor_refresh;
+    public static String monitor_panel_transaction_monitor_extract;
 
     public static String dialog_data_source_synchronize_title;
     public static String dialog_data_source_synchronize_message;

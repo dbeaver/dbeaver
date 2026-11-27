@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizerExt;
 import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -100,7 +99,7 @@ public class LoadingJob<RESULT> extends AbstractJob {
         } catch (InvocationTargetException e) {
             error = e.getTargetException();
         } catch (InterruptedException e) {
-            return new Status(Status.CANCEL, UIActivator.PLUGIN_ID, "Loading interrupted");
+            return Status.CANCEL_STATUS;
         } finally {
             loadFinished = true;
             UIUtils.asyncExec(new LoadFinisher(result, error));

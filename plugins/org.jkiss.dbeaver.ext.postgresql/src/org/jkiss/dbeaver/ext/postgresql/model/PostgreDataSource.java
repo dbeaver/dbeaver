@@ -125,12 +125,21 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         settingCache = new SettingCache();
     }
 
+    @Nullable
     @Override
-    public Object getDataSourceFeature(String featureId) {
+    public Object getDataSourceFeature(@NotNull String featureId) {
         return switch (featureId) {
             case DBPDataSource.FEATURE_MAX_STRING_LENGTH -> 10485760;
             case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS -> true;
+            // pgjdbc may query column metadata while the result cursor is active;
+            // CockroachDB rejects that second portal, so describe columns before opening the cursor.
             case DBPDataSource.FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA ->
+                getServerType() instanceof PostgreServerCockroachDB;
+            // A fetch-size-limited pgjdbc cursor can leave a portal active between pages;
+            // CockroachDB rejects another portal while the previous one remains active.
+            // Successful SQL pagination fetches each bounded page without a fetching cursor,
+            // preventing portal conflicts between batched data-transfer queries.
+            case DBPDataSource.FEATURE_JDBC_ATTEMPT_LIMIT_TRANSFORMER_FOR_PAGINATED_TABLE_READ ->
                 getServerType() instanceof PostgreServerCockroachDB;
             default -> super.getDataSourceFeature(featureId);
         };
@@ -220,7 +229,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         @NotNull DBPConnectionConfiguration configuration) throws SQLException
     {
         // Make initial connection to read database list
-        DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
+        DBSObjectFilter catalogFilters = getContainer().getEffectiveObjectFilter(PostgreDatabase.class, null, false);
         StringBuilder catalogQuery = new StringBuilder("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE 1 = 1");
         boolean addExclusionName = false;
         String connectionDBName = PostgreUtils.getDatabaseNameFromConfiguration(getContainer().getConnectionConfiguration());
@@ -419,7 +428,20 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (!CommonUtils.isEmpty(factoryProp)) {
             props.put("sslfactory", factoryProp);
         }
+        initSSLNegotiation(props, sslConfig);
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
+    }
+
+    /**
+     * Direct SSL negotiation (PostgreSQL 17+) starts the TLS handshake immediately, with ALPN "postgresql"
+     * and SNI set to the host name. This lets standard TLS proxies (e.g. Caddy) route by SNI.
+     * Empty value keeps the driver default ("postgres").
+     */
+    static void initSSLNegotiation(@NotNull Map<String, String> props, @NotNull DBWHandlerConfiguration sslConfig) {
+        final String negotiationProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_NEGOTIATION);
+        if (!CommonUtils.isEmpty(negotiationProp)) {
+            props.put(PostgreConstants.DRIVER_PROP_SSL_NEGOTIATION, negotiationProp);
+        }
     }
 
     private boolean isMultiUserOrDistributed() {

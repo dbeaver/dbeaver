@@ -74,7 +74,7 @@ public class PostgreEventTriggerManager extends SQLTriggerManager<PostgreEventTr
 
     @Override
     protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) {
-        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
+        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
             createOrReplaceTriggerQuery(monitor, executionContext, actions, command.getObject(), false);
         }
     }

@@ -299,6 +299,9 @@ public class SQLSemanticProcessor {
                 if (co.isOrderDescending()) {
                     element.setAsc(false);
                     element.setAscDescPresent(true);
+                } else if (dataSource.getSQLDialect().requiresExplicitOrderByAsc()) {
+                    element.setAsc(true);
+                    element.setAscDescPresent(true);
                 }
                 orderByElements.add(element);
             }

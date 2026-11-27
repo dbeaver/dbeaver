@@ -96,6 +96,9 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 listener.taskStarted(task);
                 Throwable error = null;
                 try {
+                    if (settings instanceof AbstractScriptExecuteSettings<?> scriptSettings) {
+                        scriptSettings.prepareInputFile(monitor);
+                    }
                     final boolean executionResult = doExecute(monitor, task, settings, log);
                     if (!executionResult) {
                         error = new DBCException("Task execution failed, reason: " + taskErrorMessage);
@@ -103,6 +106,16 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 } catch (Exception e) {
                     error = e;
                 } finally {
+                    if (settings instanceof AbstractScriptExecuteSettings<?> scriptSettings) {
+                        Path file = scriptSettings.clearExecutionInputFile();
+                        if (file != null) {
+                            try {
+                                Files.deleteIfExists(file);
+                            } catch (IOException e) {
+                                log.error("Error deleting temporary native script '" + file + "'", e);
+                            }
+                        }
+                    }
                     listener.taskFinished(task, null, error, settings);
                     Log.setLogWriter(null);
 

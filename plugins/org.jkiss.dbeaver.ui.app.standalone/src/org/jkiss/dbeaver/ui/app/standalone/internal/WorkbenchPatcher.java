@@ -33,6 +33,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor;
+import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.eclipse.ui.internal.menus.MenuHelper;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.jkiss.code.NotNull;
@@ -42,6 +43,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -60,7 +62,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -71,6 +75,9 @@ import javax.xml.transform.stream.StreamResult;
 
 public final class WorkbenchPatcher {
     private static final Log log = Log.getLog(WorkbenchPatcher.class);
+    private static final String NL_STATE_FILENAME = "last_nl.properties";
+    private static final String NL_STATE_KEY = "eclipse.last.nl";
+    private static final String DASHBOARD_VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
     private static final String ERROR_LOG_ICON_URI = DBIcon.SMALL_ERROR.getLocation();
     private static final String DEBUG_VIEW_ICON_URI = RuntimeUtils.makePlatformResourceUrl(
         IActionConstants.DEBUG_UI_PLUGIN_ID, "icons/debug_config.png");
@@ -250,19 +257,41 @@ public final class WorkbenchPatcher {
     }
 
     private static void patchWorkbenchXmi(@NotNull Path workbenchXmi) throws Exception {
+        Path nlFile = workbenchXmi.resolveSibling(NL_STATE_FILENAME);
+        Properties localeState = new Properties();
+        if (Files.isRegularFile(nlFile)) {
+            try (var input = Files.newInputStream(nlFile)) {
+                localeState.load(input);
+            }
+        }
+        String locale = Platform.getNL();
+        boolean localeChanged = !locale.equals(localeState.getProperty(NL_STATE_KEY));
         var parts = collectContributedParts();
-        var checker = new PartIconChecker(parts);
-        try (var input = Files.newInputStream(workbenchXmi)) {
-            XMLUtils.newSecureSAXParserFactory().newSAXParser().parse(input, checker);
-            return;
-        } catch (SAXException e) {
-            if (e != PartIconChecker.PATCH_REQUIRED) {
-                throw e;
+        if (!localeChanged) {
+            var checker = new PartIconChecker(parts);
+            try (var input = Files.newInputStream(workbenchXmi)) {
+                XMLUtils.newSecureSAXParserFactory().newSAXParser().parse(input, checker);
+                return;
+            } catch (SAXException e) {
+                if (e != PartIconChecker.PATCH_REQUIRED) {
+                    throw e;
+                }
             }
         }
 
         var document = XMLUtils.parseDocument(workbenchXmi);
-        if (patchPartIconsRecursively(document, parts)) {
+        Map<String, String> labels = new HashMap<>();
+        Map<String, String> previousLabels = new HashMap<>();
+        if (localeChanged) {
+            getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_VIEWS)
+                .map(IExtension::getConfigurationElements).flatMap(Stream::of)
+                .filter(element -> element.getName().equals(IWorkbenchRegistryConstants.TAG_VIEW))
+                .forEach(element -> labels.put(element.getAttribute("id"), element.getAttribute("name")));
+            for (Element descriptor : XMLUtils.getChildElementList(document.getDocumentElement(), "descriptors")) {
+                previousLabels.put(descriptor.getAttribute("elementId"), descriptor.getAttribute("label"));
+            }
+        }
+        if (patchPartsRecursively(document, parts, labels, previousLabels)) {
             var transformerFactory = XMLUtils.newSecureTransformerFactory();
             var transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -280,6 +309,19 @@ public final class WorkbenchPatcher {
 
             // Then replace the original file with the patched one
             Files.move(workbenchXmiPatch, workbenchXmi, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        }
+        if (localeChanged) {
+            // eclipse must see the new locale only after the saved labels have been updated
+            localeState.setProperty(NL_STATE_KEY, locale);
+            Path patch = workbenchXmi.resolveSibling(NL_STATE_FILENAME + ".patch");
+            try {
+                try (var output = Files.newOutputStream(patch)) {
+                    localeState.store(output, "Eclipse last used NL locale");
+                }
+                Files.move(patch, nlFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } finally {
+                Files.deleteIfExists(patch);
+            }
         }
     }
 
@@ -340,7 +382,12 @@ public final class WorkbenchPatcher {
         }
     }
 
-    private static boolean patchPartIconsRecursively(@NotNull Node node, @NotNull Map<String, PartDescriptor> parts) {
+    private static boolean patchPartsRecursively(
+        @NotNull Node node,
+        @NotNull Map<String, PartDescriptor> parts,
+        @NotNull Map<String, String> labels,
+        @NotNull Map<String, String> previousLabels
+    ) {
         NodeList children = node.getChildNodes();
         boolean modified = false;
 
@@ -367,7 +414,26 @@ public final class WorkbenchPatcher {
                 }
             }
 
-            modified |= patchPartIconsRecursively(child, parts);
+            if (CompatibilityPart.COMPATIBILITY_VIEW_URI.equals(child.getAttribute("contributionURI"))) {
+                String[] viewIds = child.getAttribute("elementId").split(":", 2);
+                String viewId = viewIds[0];
+                String label = labels.get(viewId);
+                String oldLabel = child.getAttribute("label");
+                String previousLabel = previousLabels.get(viewId);
+                // secondary browsers and dashboards use object names even when they match the default view title
+                boolean objectTitle = viewIds.length > 1 &&
+                    (DatabaseBrowserView.VIEW_ID.equals(viewId) || DASHBOARD_VIEW_ID.equals(viewId));
+                boolean defaultLabel = !objectTitle &&
+                    (child.getTagName().equals("descriptors") || previousLabel == null || previousLabel.equals(oldLabel));
+                if (label != null && defaultLabel && !label.equals(oldLabel)) {
+                    child.setAttribute("label", label);
+                    if (child.hasAttribute("tooltip") && oldLabel.equals(child.getAttribute("tooltip"))) {
+                        child.setAttribute("tooltip", label);
+                    }
+                    modified = true;
+                }
+            }
+            modified |= patchPartsRecursively(child, parts, labels, previousLabels);
         }
 
         return modified;

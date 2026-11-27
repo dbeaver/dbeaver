@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
@@ -72,6 +73,8 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
+import org.jkiss.dbeaver.ui.editors.file.FileOpenMenu;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -300,6 +303,11 @@ public class NavigatorUtils {
     public static void addStandardMenuItem(@Nullable IWorkbenchSite workbenchSite, @NotNull IMenuManager manager, @NotNull ISelectionProvider selectionProvider) {
         final ISelection selection = selectionProvider.getSelection();
         final DBNNode selectedNode = getSelectedNode(selectionProvider);
+        if (selection instanceof IStructuredSelection structuredSelection
+            && structuredSelection.size() == 1 && selectedNode instanceof DBNPathBase pathNode
+        ) {
+            FileOpenMenu.contribute(manager, pathNode);
+        }
         if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
             addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
         }
@@ -587,8 +595,8 @@ public class NavigatorUtils {
             }
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
-                "Error opening object",
-                "Error while opening object '" + node + "'",
+                UINavigatorMessages.error_open_object_title,
+                NLS.bind(UINavigatorMessages.error_open_object_message, node),
                 e);
         }
     }
@@ -684,7 +692,8 @@ public class NavigatorUtils {
                 }
             }
         } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Can't open view", "Error opening navigator view", e);
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.error_open_view_title, UINavigatorMessages.error_open_navigator_view_message, e);
             return;
         }
         if (nodeView != null) {

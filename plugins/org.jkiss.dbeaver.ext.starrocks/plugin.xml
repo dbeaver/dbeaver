@@ -38,7 +38,7 @@
                         defaultPort="9030"
                         defaultUser="root"
                         webURL="https://docs.starrocks.io/"
-                        description="StarRocks JDBC driver"
+                        description="%driver.starrocks.description"
                         categories="sql">
                     <replace provider="mysql" driver="starRocks"/>
                     <file type="jar" path="maven:/com.starrocks:starrocks-connector-j:RELEASE[1.1.2]"/>
@@ -52,6 +52,7 @@
                     <parameter name="supports-charsets" value="false"/>
                     <parameter name="supports-collations" value="false"/>
                     <parameter name="supportsClients" value="false"/>
+                    <parameter name="connection-validator" value="mysql"/>
                 </driver>
             </drivers>
         </datasource>

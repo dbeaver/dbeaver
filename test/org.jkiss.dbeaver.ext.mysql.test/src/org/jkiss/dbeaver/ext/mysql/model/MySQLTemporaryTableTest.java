@@ -26,11 +26,14 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -38,6 +41,25 @@ import java.sql.Connection;
 import java.util.List;
 
 public class MySQLTemporaryTableTest extends DBeaverUnitTest {
+    private static boolean queryManagerInitialized;
+
+    @BeforeAll
+    static void initializeQueryManager() {
+        try {
+            QMUtils.getDefaultHandler();
+        } catch (IllegalStateException e) {
+            QMUtils.initPlatform(false);
+            queryManagerInitialized = true;
+        }
+    }
+
+    @AfterAll
+    static void restoreQueryManager() {
+        if (queryManagerInitialized) {
+            QMUtils.disposePlatform();
+        }
+    }
+
     @Test
     void keepsExistingTableForIfNotExistsAndInvalidatesReplacements() throws Exception {
         MySQLExecutionContext context = createContext();

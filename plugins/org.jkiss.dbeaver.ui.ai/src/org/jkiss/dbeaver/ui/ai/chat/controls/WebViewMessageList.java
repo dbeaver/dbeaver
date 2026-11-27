@@ -96,7 +96,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
             cssInitializer.close();
         });
-        renderer = new WebViewMessageRenderer(browser, thumbnailBrowser, this::getDataSource, cssInitializer);
+        renderer = new WebViewMessageRenderer(browser, this::getDataSource, cssInitializer);
 
         messageChunkBuffer = new AIMessageChunkBuffer(getDisplay(), renderer::addMessageChunk, this::isDisposed);
         chat.getChatSession().addListener(new AIChatListener() {
@@ -438,11 +438,15 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                     if (Files.exists(file)) {
                         ShellUtils.showInSystemExplorer(file.toFile());
                     } else {
-                        DBWorkbench.getPlatformUI().showError("File not found", NLS.bind("The file does not exist: {0}", file));
+                        DBWorkbench.getPlatformUI().showError(
+                            AIChatMessagesUI.ai_chat_file_not_found_title,
+                            NLS.bind(AIChatMessagesUI.ai_chat_file_not_found_message, file));
                     }
                 } catch (Exception e) {
                     log.error("Error opening file in explorer: " + file, e);
-                    DBWorkbench.getPlatformUI().showError("Error", NLS.bind("Failed to open file in explorer: {0}", e.getMessage()));
+                    DBWorkbench.getPlatformUI().showError(
+                        AIChatMessagesUI.ai_chat_message_role_error_label,
+                        NLS.bind(AIChatMessagesUI.ai_chat_file_explorer_error, e.getMessage()));
                 }
             });
 
@@ -535,7 +539,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         createFunction("traverseOut", arguments -> {
             boolean forward = arguments.length < 1 || CommonUtils.toBoolean(arguments[0]);
             UIUtils.asyncExec(() -> {
-                if (browser.isDisposed()) {
+                if (browser.isDisposed() || browser.getShell() != browser.getDisplay().getActiveShell()) {
                     return;
                 }
                 if (forward) {
@@ -797,7 +801,11 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             }
         }
 
-        submission.whenComplete((ignored, error) -> chat.getChatSession().setBusy(false));
+        submission.whenComplete((ignored, error) -> UIUtils.asyncExec(() -> {
+            if (!chat.isDisposed() && chat.getActiveConversation() == conversation) {
+                chat.getChatSession().setBusy(false);
+            }
+        }));
     }
 
     @NotNull
