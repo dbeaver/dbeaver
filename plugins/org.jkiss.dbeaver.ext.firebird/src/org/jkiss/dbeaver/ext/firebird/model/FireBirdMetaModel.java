@@ -463,30 +463,69 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
-        String sql = "select " +
-                "RC.RDB$RELATION_NAME TABLE_NAME," +
-                "ISGMT.RDB$FIELD_NAME as COLUMN_NAME," +
-                "CAST((ISGMT.RDB$FIELD_POSITION + 1) as SMALLINT) as KEY_SEQ," +
-                "RC.RDB$CONSTRAINT_NAME as PK_NAME," +
-                "RC.RDB$CONSTRAINT_TYPE as CONSTRAINT_TYPE " +
-                "FROM " +
-                "RDB$RELATION_CONSTRAINTS RC " +
-                "INNER JOIN RDB$INDEX_SEGMENTS ISGMT ON RC.RDB$INDEX_NAME = ISGMT.RDB$INDEX_NAME " +
-                "where RC.RDB$CONSTRAINT_TYPE IN ('PRIMARY KEY','UNIQUE') " +
-                (forParent == null ? "" : "AND RC.RDB$RELATION_NAME = ? ") +
-                "ORDER BY ISGMT.RDB$FIELD_NAME ";
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forParent
+    ) throws SQLException {
+        String tableFilter = forParent == null ? "" : "AND RC.RDB$RELATION_NAME = ?\n";
+        // Primary and unique keys with the columns of their index, plus CHECK constraints.
+        // A CHECK constraint is implemented by an insert (type 1) and an update (type 3) trigger with the same source;
+        // the columns it uses are the dependencies of the insert trigger.
+        String sql = "SELECT RC.RDB$RELATION_NAME AS TABLE_NAME,ISGMT.RDB$FIELD_NAME AS COLUMN_NAME,\n" +
+            "CAST(ISGMT.RDB$FIELD_POSITION + 1 AS SMALLINT) AS KEY_SEQ,RC.RDB$CONSTRAINT_NAME AS PK_NAME,\n" +
+            "RC.RDB$CONSTRAINT_TYPE AS CONSTRAINT_TYPE,CAST(NULL AS BLOB SUB_TYPE TEXT) AS CHECK_SOURCE\n" +
+            "FROM RDB$RELATION_CONSTRAINTS RC\n" +
+            "INNER JOIN RDB$INDEX_SEGMENTS ISGMT ON RC.RDB$INDEX_NAME = ISGMT.RDB$INDEX_NAME\n" +
+            "WHERE RC.RDB$CONSTRAINT_TYPE IN ('PRIMARY KEY','UNIQUE')\n" +
+            tableFilter +
+            "UNION ALL\n" +
+            "SELECT RC.RDB$RELATION_NAME,D.RDB$FIELD_NAME,CAST(1 AS SMALLINT),RC.RDB$CONSTRAINT_NAME,\n" +
+            "RC.RDB$CONSTRAINT_TYPE,T.RDB$TRIGGER_SOURCE\n" +
+            "FROM RDB$RELATION_CONSTRAINTS RC\n" +
+            "INNER JOIN RDB$CHECK_CONSTRAINTS CC ON CC.RDB$CONSTRAINT_NAME = RC.RDB$CONSTRAINT_NAME\n" +
+            "INNER JOIN RDB$TRIGGERS T ON T.RDB$TRIGGER_NAME = CC.RDB$TRIGGER_NAME AND T.RDB$TRIGGER_TYPE = 1\n" +
+            "LEFT JOIN RDB$DEPENDENCIES D ON D.RDB$DEPENDENT_NAME = T.RDB$TRIGGER_NAME\n" +
+            "AND D.RDB$DEPENDED_ON_NAME = RC.RDB$RELATION_NAME AND D.RDB$FIELD_NAME IS NOT NULL\n" +
+            "WHERE RC.RDB$CONSTRAINT_TYPE = 'CHECK'\n" +
+            tableFilter +
+            "ORDER BY 2";
         JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         if (forParent != null) {
             dbStat.setString(1, forParent.getName());
+            dbStat.setString(2, forParent.getName());
         }
         return dbStat;
     }
 
     @Override
     public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
-        String constraintType = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE");
+        String constraintType = JDBCUtils.safeGetStringTrimmed(dbResult, "CONSTRAINT_TYPE");
+        if (DBSEntityConstraintType.CHECK.getName().equals(constraintType)) {
+            return DBSEntityConstraintType.CHECK;
+        }
         return "PRIMARY KEY".equals(constraintType) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
+    }
+
+    @NotNull
+    @Override
+    public GenericUniqueKey createConstraintImpl(
+        @NotNull GenericTableBase table,
+        String constraintName,
+        DBSEntityConstraintType constraintType,
+        JDBCResultSet dbResult,
+        boolean persisted
+    ) {
+        String checkCondition = null;
+        if (dbResult != null && constraintType == DBSEntityConstraintType.CHECK) {
+            checkCondition = FireBirdTableConstraint.extractCheckCondition(JDBCUtils.safeGetString(dbResult, "CHECK_SOURCE"));
+        }
+        return new FireBirdTableConstraint(table, constraintName, constraintType, checkCondition, persisted);
+    }
+
+    @Override
+    public boolean supportsCheckConstraints() {
+        return true;
     }
 
     @Override
