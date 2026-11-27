@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>../../dbeaver-osgi/bundles/org.eclipse.osgi</module>
         <module>org.jkiss.dbeaver.launcher</module>
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.ai</module>
