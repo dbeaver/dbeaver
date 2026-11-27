@@ -222,7 +222,6 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         edition = HANAEdition.fromTitle(editionCombo.getText());
         
         portText.setEditable(edition == HANAEdition.GENERIC || edition == HANAEdition.EXPRESS);
-        UIUtils.fixReadonlyTextBackground(portText);
         switch (edition) {
         case GENERIC:
             portText.setText(portValue);
@@ -261,7 +260,6 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
             instanceText.setText("");
             instanceText.setEditable(false);
         }
-        UIUtils.fixReadonlyTextBackground(instanceText);
 
         if (edition == HANAEdition.PLATFORM_TENANT_DB) {
             databaseText.setText(databaseValue);
@@ -270,7 +268,6 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
             databaseText.setText("");
             databaseText.setEditable(false);
         }
-        UIUtils.fixReadonlyTextBackground(databaseText);
 
         boolean visible = edition != HANAEdition.GENERIC && edition != HANAEdition.CLOUD;
         toggleControlVisibility(instanceLabel, visible);

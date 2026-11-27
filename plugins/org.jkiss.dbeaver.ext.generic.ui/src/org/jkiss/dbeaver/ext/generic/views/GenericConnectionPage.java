@@ -587,7 +587,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             urlText.setEditable(true);
             controlGroupsByUrl = Collections.emptyList();
         }
-        UIUtils.fixReadonlyTextBackground(urlText);
         showControlGroup(GROUP_LOGIN, !driver.isAnonymousAccess());
 
         settingsGroup.getParent().layout();
