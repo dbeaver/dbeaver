@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,6 +121,7 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     @NotNull
     @Override
     public ErrorNode addErrorNode(@NotNull Token badToken) {
+        this.hasErrorChildren = true;
         return super.addAnyChild(new STMTreeTermErrorNode(badToken));
     }
 
@@ -130,6 +131,7 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
         if (!(errorNode instanceof STMTreeNode)) {
             throw new IllegalStateException();
         } else {
+            this.hasErrorChildren = true;
             return super.addErrorNode(errorNode);
         }
     }
