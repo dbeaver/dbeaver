@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamEncryptionKeyService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DBDamService;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
@@ -359,7 +360,7 @@ final class DDEncryptionKeysSection {
         }
     }
 
-    private void runKeyOperation(@NotNull String errorMessage, @NotNull KeyOperation operation) {
+    private void runKeyOperation(@NotNull String errorMessage, @NotNull DBRRunnable operation) {
         try {
             DDUIUtils.runWithProgressBlocking(DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_title, monitor -> {
                 try {
@@ -373,10 +374,5 @@ final class DDEncryptionKeysSection {
         } finally {
             onKeysChanged.run();
         }
-    }
-
-    @FunctionalInterface
-    private interface KeyOperation {
-        void run() throws DBException;
     }
 }
