@@ -61,7 +61,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     private int historyPosition = 0;
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         itemControl = new FolderListControl(parent);
         itemControl.createProgressPanel();
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
@@ -74,11 +74,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                 return;
             }
 
-            setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIconDefault()));
-            setPartName(navigatorNode.getNodeDisplayName());
-
-            itemControl.setRootNode(navigatorNode);
-            itemControl.loadData();
+            itemControl.changeCurrentNode(navigatorNode);
 
             DBNNode rootNode = getRootNode();
             history.add(rootNode.getNodeUri());

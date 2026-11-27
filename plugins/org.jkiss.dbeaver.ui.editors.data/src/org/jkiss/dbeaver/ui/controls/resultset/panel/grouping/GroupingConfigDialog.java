@@ -54,7 +54,7 @@ public class GroupingConfigDialog extends BaseDialog {
     private Table functionsTable;
 
     public GroupingConfigDialog(Shell parentShell, GroupingResultsContainer resultsContainer) {
-        super(parentShell, "Grouping configuration", null);
+        super(parentShell, ResultSetMessages.dialog_grouping_config_title, null);
         this.resultsContainer = resultsContainer;
     }
 

@@ -48,7 +48,7 @@
                         sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
                         defaultPort="9092"
                         webURL="https://www.h2database.com/"
-                        description="H2 Server"
+                        description="%driver.h2_server.description"
                         categories="sql"
                         dialect="h2">
 
@@ -73,7 +73,7 @@
                         sampleURL="jdbc:h2:{file}"
                         webURL="https://www.h2database.com/"
                         embedded="true"
-                        description="H2 Embedded legacy (database versions before 2.1.210)"
+                        description="%driver.h2_embedded.description"
                         categories="sql,embedded"
                         dialect="h2">
                     <replace provider="generic" driver="h2_embedded"/>
@@ -98,7 +98,7 @@
                         sampleURL="jdbc:h2:{file}"
                         webURL="https://www.h2database.com/"
                         embedded="true"
-                        description="H2 Embedded (database versions 2.1-2.4)"
+                        description="%driver.h2_embedded_v2.description"
                         categories="sql,embedded"
                         dialect="h2">
 
@@ -124,7 +124,7 @@
                     sampleURL="jdbc:h2:{file}"
                     webURL="https://www.h2database.com/"
                     embedded="true"
-                    description="H2 Embedded (database versions 2.4+)"
+                    description="%driver.h2_embedded_v3.description"
                     categories="sql,embedded"
                     dialect="h2">
 
@@ -163,7 +163,7 @@
                         sampleURL="jdbc:h2:{file}"
                         webURL="http://www.h2gis.org/"
                         embedded="true"
-                        description="H2GIS Embedded"
+                        description="%driver.h2gis_embedded.description"
                         categories="spatial,sql,embedded">
 
                     <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE"/>
@@ -184,7 +184,7 @@
                         sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
                         defaultPort="9092"
                         webURL="http://www.h2gis.org/"
-                        description="H2GIS Server"
+                        description="%driver.h2gis_server.description"
                         categories="spatial,sql,server">
 
                     <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE"/>

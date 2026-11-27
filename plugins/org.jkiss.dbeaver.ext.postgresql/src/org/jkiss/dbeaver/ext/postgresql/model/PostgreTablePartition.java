@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,14 @@ import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PostgreTablePartition extends PostgreTable implements DBSTablePartition {
@@ -64,6 +66,16 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
         return false;
     }
 
+    /**
+     * Partitions are directly addressable in their schema, but the navigator shows them
+     * under the parent table (or parent partition), so the parent is used as structural parent once known.
+     */
+    @Nullable
+    @Override
+    public DBSObject getStructuralParent() {
+        return partitionOf != null ? partitionOf : getParentObject();
+    }
+
     @Property(viewable = true, editable = true, updatable = true, order = 60)
     @Nullable
     public String getPartitionExpression() {
@@ -88,6 +100,23 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
 
     public PostgreTable getPartitionOf() {
         return partitionOf;
+    }
+
+    /**
+     * Resolves the parent table (and, for subpartitions, the whole parent chain) from inheritance metadata.
+     * Partitions read from the schema table list do not know their parent table.
+     */
+    void resolveParentTable(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (partitionOf == null) {
+            List<PostgreTableInheritance> inheritance = getSuperInheritance(monitor);
+            if (inheritance != null && !inheritance.isEmpty()
+                && inheritance.getFirst().getAssociatedEntity() instanceof PostgreTable table) {
+                partitionOf = table;
+            }
+        }
+        if (partitionOf instanceof PostgreTablePartition parentPartition && parentPartition != this) {
+            parentPartition.resolveParentTable(monitor);
+        }
     }
 
     @Override

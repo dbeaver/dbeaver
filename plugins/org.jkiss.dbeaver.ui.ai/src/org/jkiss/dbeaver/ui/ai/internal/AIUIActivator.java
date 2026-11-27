@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.ai.internal;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIProjectConnectionCount;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -48,7 +47,6 @@ public class AIUIActivator extends AbstractUIPlugin {
 
     @Override
     public void stop(@NotNull BundleContext context) throws Exception {
-        AIProjectConnectionCount.getInstance().stop();
         plugin = null;
         super.stop(context);
     }

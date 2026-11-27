@@ -49,6 +49,16 @@ public class DamengTable extends GenericTable implements DBPObjectStatistics {
         super(container, tableName, tableCatalogName, tableSchemaName);
     }
 
+    @Override
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
+        return OPTION_INCLUDE_COMMENTS.equals(option) || super.supportsObjectDefinitionOption(option);
+    }
+
+    @Override
+    protected boolean isCacheDDL() {
+        return false;
+    }
+
     @NotNull
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {

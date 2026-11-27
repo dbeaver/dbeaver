@@ -19,10 +19,6 @@ package org.jkiss.dbeaver.ui.datadam.mcp;
 import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.TreeViewerColumn;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.widgets.Button;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
@@ -32,9 +28,9 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DBDamSettingsStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.preferences.McpBooleanColumn;
 import org.jkiss.dbeaver.ui.ai.preferences.McpConnectionsPreferencePage.McpConnectionsPageRegistry.McpConnectionsPageContribution;
-import org.jkiss.dbeaver.ui.controls.CellControlColumn;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 
 import java.util.IdentityHashMap;
@@ -91,33 +87,19 @@ public class DDMcpConnectionsContribution implements McpConnectionsPageContribut
     }
 
     @Override
-    public void createColumns(
+    @NotNull
+    public McpBooleanColumn createColumns(
         @NotNull TreeViewer viewer,
+        @NotNull ViewerColumnController<McpBooleanColumn, Object> columnController,
         @NotNull Function<DBPDataSourceContainer, AIContextSettingsDataSource> settings
     ) {
-        TreeViewerColumn column = new TreeViewerColumn(viewer, SWT.CENTER);
-        column.getColumn().setText(DDMcpMessages.mcp_connection_settings_group);
-        column.getColumn().setWidth(100);
-        UIUtils.attachCellControlColumn(
+        return McpBooleanColumn.create(
             viewer,
-            column,
-            DBPDataSourceContainer.class,
-            (parent, connection) -> {
-                Button checkbox = UIUtils.createCheckbox(parent, false);
-                checkbox.setToolTipText(DDMcpMessages.mcp_connection_settings_enabled_tip);
-                checkbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
-                    if (!isVisible() || column.getColumn().isDisposed() || column.getColumn().getWidth() == 0) {
-                        checkbox.setSelection(settings.apply(connection).isDatadamMcpEnabled());
-                        return;
-                    }
-                    settings.apply(connection).setDatadamMcpEnabled(checkbox.getSelection());
-                }));
-                return checkbox;
-            },
-            (checkbox, connection) -> {
-                checkbox.setSelection(settings.apply(connection).isDatadamMcpEnabled());
-                CellControlColumn.updateSelectionColors(checkbox, viewer, connection);
-            },
+            columnController,
+            DDMcpMessages.mcp_connection_settings_group,
+            DDMcpMessages.mcp_connection_settings_enabled_tip,
+            connection -> settings.apply(connection).isDatadamMcpEnabled(),
+            (connection, checked) -> settings.apply(connection).setDatadamMcpEnabled(checked),
             this::isVisible
         );
     }

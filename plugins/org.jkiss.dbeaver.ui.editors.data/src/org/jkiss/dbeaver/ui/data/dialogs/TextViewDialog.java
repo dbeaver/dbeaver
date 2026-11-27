@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.data.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -146,7 +147,7 @@ public class TextViewDialog extends ValueViewDialog {
 
             if (hexEditorService != null) {
                 CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
-                item.setText("Text");
+                item.setText(ResultSetMessages.dialog_text_view_tab_text);
                 item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_TEXT));
                 item.setControl(textEdit);
                 editorContainer.setSelection(item);
@@ -160,7 +161,7 @@ public class TextViewDialog extends ValueViewDialog {
             minSize.x += 50;
             minSize.y += 50;
             CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
-            item.setText("Hex");
+            item.setText(ResultSetMessages.dialog_text_view_tab_hex);
             item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_BINARY));
             item.setControl(hexEditControl);
 
@@ -295,7 +296,8 @@ public class TextViewDialog extends ValueViewDialog {
         if (lengthLabel != null) {
             long maxSize = getValueController().getValueType().getMaxLength();
             long length = textEdit.getText().length();
-            lengthLabel.setText("Length: " + length + (maxSize > 0 ? " [" + maxSize + "]" : ""));
+            lengthLabel.setText(NLS.bind(ResultSetMessages.dialog_text_view_length, length) +
+                (maxSize > 0 ? " [" + maxSize + "]" : "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
     }
 
