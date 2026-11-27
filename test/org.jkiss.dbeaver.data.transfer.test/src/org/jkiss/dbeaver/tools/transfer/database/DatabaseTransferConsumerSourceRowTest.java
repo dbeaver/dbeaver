@@ -91,10 +91,22 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"true,true,false", "false,true,false", "true,false,false", "false,false,false", "true,true,true", "false,true,true"})
-    void skippedColumnsAreAvailableToExpressionsButExcludedFromOutput(boolean preview, boolean transform, boolean sharedOrdinal) throws Exception {
+    @CsvSource({
+        "true,expression,false", "false,expression,false", "true,none,false", "false,none,false",
+        "true,expression,true", "false,expression,true", "true,constant,false", "false,constant,false",
+        "true,null,false", "false,null,false", "true,literal,false", "false,literal,false",
+        "true,selected,false", "false,selected,false", "true,quoted,false", "false,quoted,false",
+        "true,dotted,false", "false,dotted,false", "true,property,false", "false,property,false",
+        "true,ambiguous,false", "false,ambiguous,false"
+    })
+    void skippedColumnsAreReadOnlyWhenReferenced(boolean preview, @NotNull String transformer, boolean sharedOrdinal) throws Exception {
+        boolean structuredId = transformer.equals("property") || transformer.equals("ambiguous");
+        boolean referencesId = transformer.equals("expression") || transformer.equals("dotted") || structuredId;
         StreamEntityMapping source = new StreamEntityMapping(Path.of("source.csv"));
-        String[] names = {"id", "dataToDrop", "country", "fk_relation"};
+        String[] names = {
+            transformer.equals("dotted") ? "id.part" : "id", transformer.equals("ambiguous") ? "id.part" : "dataToDrop",
+            "country", "fk_relation"
+        };
         for (int i = 0; i < names.length; i++) {
             source.getStreamColumns().add(new StreamDataImporterColumnInfo(
                 source, sharedOrdinal && i == 3 ? 2 : i, names[i], "VARCHAR", 100, DBPDataKind.STRING));
@@ -116,10 +128,17 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
             String columnName = attribute.getSource().getName();
             attribute.setMappingType(index < 2 ? DatabaseMappingType.skip : DatabaseMappingType.existing);
             attribute.setTarget((StreamDataImporterColumnInfo) attribute.getSource());
-            if (transform && index >= 2 && (!sharedOrdinal || columnName.equals("country"))) {
-                attribute.setTransformer(DataTransferRegistry.getInstance().getAttributeTransformer("expression"));
-                String expression = columnName.equals("country") ? "'TSO_' + id" : "country + '_tail'";
-                attribute.setTransformerProperties(Map.of("expression", expression));
+            if (!transformer.equals("none") && index >= 2 && (!sharedOrdinal || columnName.equals("country"))) {
+                String transformerId = transformer.equals("constant") || transformer.equals("null") ? transformer : "expression";
+                attribute.setTransformer(DataTransferRegistry.getInstance().getAttributeTransformer(transformerId));
+                String expression = switch (transformer) {
+                    case "expression", "dotted", "property", "ambiguous" -> columnName.equals("country")
+                        ? "'TSO_' + " + (transformer.equals("expression") ? "id" : "id.part") : "country + '_tail'";
+                    case "selected" -> "country";
+                    case "quoted" -> "'id dataToDrop' /* id + dataToDrop */";
+                    default -> "'fixed'";
+                };
+                attribute.setTransformerProperties(Map.of("expression", expression, "constant", "fixed"));
             }
         }
         DatabaseTransferConsumer consumer = new DatabaseTransferConsumer(target);
@@ -128,7 +147,7 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
         try (DBCSession sourceSession = source.getDataSource().getDefaultInstance()
             .getDefaultContext(new VoidProgressMonitor(), false).openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Test")) {
             StreamTransferResultSet rows = Mockito.spy(new StreamTransferResultSet(sourceSession, Mockito.mock(DBCStatement.class), source));
-            rows.setStreamRow(new Object[]{1, "ignored", "NL", 8});
+            rows.setStreamRow(new Object[]{structuredId ? Map.of("part", 1) : 1, "ignored", "NL", 8});
             consumer.fetchStart(sourceSession, rows, 0, 2);
             if (sharedOrdinal) {
                 var column = consumer.getColumnMappings()[3];
@@ -136,9 +155,13 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
                 Mockito.when(column.sourceValueHandler.fetchValueObject(sourceSession, rows, column.sourceAttr, 2))
                     .thenAnswer(invocation -> rows.getAttributeValue(3));
             }
+            Mockito.doThrow(new DBCException("Unused skipped column cannot be read")).when(rows).getAttributeValue(1);
+            if (!referencesId) {
+                Mockito.doThrow(new DBCException("Unused ID cannot be read")).when(rows).getAttributeValue(0);
+            }
             Mockito.clearInvocations(rows);
             consumer.fetchRow(sourceSession, rows);
-            rows.setStreamRow(new Object[]{2, "ignored again", "IE", 9});
+            rows.setStreamRow(new Object[]{structuredId ? Map.of("part", 2) : 2, "ignored again", "IE", 9});
             consumer.fetchRow(sourceSession, rows);
 
             Assertions.assertEquals(List.of("country", "fk_relation"), consumer.getTargetAttributes().stream()
@@ -151,21 +174,34 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
                 Mockito.verify(batch, Mockito.times(2)).add(captor.capture());
                 output = captor.getAllValues();
             }
-            Assertions.assertArrayEquals(transform ? new Object[]{"TSO_1", sharedOrdinal ? 8 : "TSO_1_tail"} : new Object[]{"NL", 8}, output.get(0));
-            Assertions.assertArrayEquals(transform ? new Object[]{"TSO_2", sharedOrdinal ? 9 : "TSO_2_tail"} : new Object[]{"IE", 9}, output.get(1));
+            for (int row = 0; row < 2; row++) {
+                String countryValue = row == 0 ? "NL" : "IE";
+                Object[] expected = switch (transformer) {
+                    case "expression", "dotted", "property", "ambiguous" -> new Object[]{
+                        "TSO_" + (row + 1), sharedOrdinal ? row + 8 : "TSO_" + (row + 1) + "_tail"};
+                    case "constant", "literal" -> new Object[]{"fixed", "fixed"};
+                    case "null" -> new Object[]{null, null};
+                    case "selected" -> new Object[]{countryValue, countryValue};
+                    case "quoted" -> new Object[]{"id dataToDrop", "id dataToDrop"};
+                    default -> new Object[]{countryValue, row + 8};
+                };
+                Assertions.assertArrayEquals(expected, output.get(row));
+            }
             for (int i = 0; i < names.length; i++) {
-                Mockito.verify(rows, Mockito.times(i < 2 && !transform ? 0 : 2)).getAttributeValue(i);
+                Mockito.verify(rows, Mockito.times(i == 1 || i == 0 && !referencesId ? 0 : 2)).getAttributeValue(i);
             }
             var order = Mockito.inOrder(rows);
             for (int row = 0; row < 2; row++) {
-                for (int i = transform ? 0 : 2; i < names.length; i++) {
-                    order.verify(rows).getAttributeValue(i);
+                if (referencesId) {
+                    order.verify(rows).getAttributeValue(0);
                 }
+                order.verify(rows).getAttributeValue(2);
+                order.verify(rows).getAttributeValue(3);
             }
-            if (transform) {
+            if (referencesId) {
                 DBDValue skippedValue = Mockito.mock(DBDValue.class);
                 rows.setStreamRow(new Object[]{skippedValue, "ignored", "unused", 0});
-                Mockito.doThrow(new DBCException("Read failed")).when(rows).getAttributeValue(1);
+                Mockito.doThrow(new DBCException("Read failed")).when(rows).getAttributeValue(2);
                 Assertions.assertThrows(DBCException.class, () -> consumer.fetchRow(sourceSession, rows));
                 Mockito.verify(skippedValue).release();
             }
