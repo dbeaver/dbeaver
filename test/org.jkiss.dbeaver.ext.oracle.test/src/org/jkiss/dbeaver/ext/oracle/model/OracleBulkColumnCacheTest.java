@@ -226,7 +226,7 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
     private void filteredCache(@NotNull OracleSchema.TableCache cache) throws Exception {
         DBSObjectFilter filter = new DBSObjectFilter();
         filter.addInclude("TABLE_*");
-        Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(filter);
+        Mockito.when(container.getEffectiveObjectFilter(OracleTable.class, schema, false)).thenReturn(filter);
         cache.prepareLookupStatement(session, schema, null, null);
         Mockito.clearInvocations(session, statement);
     }

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -171,6 +172,27 @@ public interface DBPDataSourceContainer extends
      */
     @Nullable
     DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch);
+
+    /**
+     * Finds an object filter for a server-side metadata query using the type exposed by the driver's navigator tree.
+     * If a compatible navigator folder subtype exists, it is preferred over the getter-declared type; otherwise,
+     * the getter-declared type or the requested base type is used.
+     * <p>
+     * Unlike {@link #getObjectFilter(Class, DBSObject, boolean)}, which searches for a filter using the supplied type,
+     * this method first resolves the effective navigator type and then delegates to that lookup. This allows metadata
+     * queries to honor filters configured on subtype-specific folders. Queries loading multiple object types must
+     * apply each resolved filter only to rows of its corresponding type.
+     *
+     * @param type base object type requested by the metadata query
+     * @param parentObject parent object in the DBS object hierarchy
+     * @param firstMatch whether to use the first matching filter
+     * @return matching filter, or {@code null} if none is configured
+     */
+    @Nullable
+    default DBSObjectFilter getEffectiveObjectFilter(Class<? extends DBSObject> type, @Nullable DBSObject parentObject, boolean firstMatch) {
+        Class<?> effectiveType = DBXTreeDescriptor.getDataSourceObjectType(this, type, true);
+        return this.getObjectFilter(effectiveType, parentObject, firstMatch);
+    }
 
     void setObjectFilter(@NotNull Class<?> type, @Nullable DBSObject parentObject, @Nullable DBSObjectFilter filter);
 

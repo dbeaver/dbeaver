@@ -745,6 +745,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return super.createQueryTransformer(type);
     }
 
+    @Nullable
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
@@ -769,8 +770,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             });
         } else if (adapter == DBCQueryPlanner.class) {
             return adapter.cast(new MySQLPlanAnalyser(this));
-        } else if (adapter == JDBCConnectionValidator.class) {
-            return adapter.cast(new MySQLConnectionValidator());
         }
         return super.getAdapter(adapter);
     }
@@ -863,7 +862,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException {
             StringBuilder catalogQuery = new StringBuilder("show databases");
-            DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
+            DBSObjectFilter catalogFilters = owner.getContainer().getEffectiveObjectFilter(MySQLCatalog.class, null, false);
             DBPConnectionConfiguration configuration = owner.getContainer().getConnectionConfiguration();
             boolean showAllDatabases = CommonUtils.getBoolean(
                 configuration.getProviderProperty(MySQLConstants.PROP_SHOW_ALL_DBS),

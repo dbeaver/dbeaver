@@ -2460,9 +2460,12 @@ public abstract class LightGrid extends Canvas {
             gc.drawLine(rowHeaderWidth + pinnedColumnsWidth, 0, rowHeaderWidth + pinnedColumnsWidth, y);
         }
 
-        if (!columns.isEmpty() && gridRows.length > 0) {
+        if (gridRows.length > 0) {
             int lastRow = row >= gridRows.length ? gridRows.length - 1 : row;
-            getContentProvider().validateDataPresence(columns.getLast(), gridRows[lastRow]);
+            getContentProvider().validateDataPresence(columns.isEmpty() ? null : columns.getLast(), gridRows[lastRow]);
+        } else if (!columns.isEmpty()) {
+            // Record mode can have records as columns without any attribute rows.
+            getContentProvider().validateDataPresence(columns.getLast(), null);
         }
     }
 
@@ -2690,7 +2693,7 @@ public abstract class LightGrid extends Canvas {
         int stateMask,
         boolean dragging,
         boolean reverseDuplicateSelections,
-        EventSource eventSource
+        @NotNull EventSource eventSource
     ) {
         if (RuntimeUtils.isMacOS() && (stateMask & SWT.CTRL) == SWT.CTRL) {
             /*
@@ -2730,6 +2733,9 @@ public abstract class LightGrid extends Canvas {
             }
 
         } else if (shift) {
+            if (newCells.isEmpty()) {
+                return null;
+            }
 
             GridPos newCell = newCells.getFirst(); //shift selection should only occur with one cell, ignoring others
             oldSelection = new ArrayList<>(selectedCells);
@@ -3035,7 +3041,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @param e event
      */
-    private void onMouseDown(MouseEvent e)
+    private void onMouseDown(@NotNull MouseEvent e)
     {
         // for some reason, SWT prefers the children to get focus if
         // there are any children
@@ -3107,11 +3113,13 @@ public abstract class LightGrid extends Canvas {
                     cellSelectionDragStarted = false;
                     return;
                 }
-            } else if (row >= 0 && e.button == 1) {
+            } else if (row >= 0 && e.button == 1 && CommonUtils.isBitSet(e.stateMask, SWT.MOD3)) {
+                // Reserve cell export for Alt+drag so plain drags can start a new range selection.
                 GridColumn cellColumn = getColumn(point);
                 if (cellColumn != null
                     && !getContentProvider().isVoidCell(cellColumn, gridRows[row])
                     && selectedCells.contains(new GridPos(cellColumn.getIndex(), row))
+                    && getContentProvider().canStartCellSelectionDrag(getCellSelection())
                     && dragDetect(e)
                 ) {
                     cellSelectionDragStarted = true;
@@ -3766,7 +3774,10 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    private void onKeyDown(Event e) {
+    private void onKeyDown(@NotNull Event e) {
+        if (getItemCount() == 0) {
+            return;
+        }
         if (focusColumn == null) {
             if (columns.isEmpty())
                 return;

@@ -28,8 +28,6 @@ import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.dbeaver.messaging.rpc.MessagingRpcException;
 import com.dbeaver.messaging.rpc.MessagingRpcMessage;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -701,7 +699,7 @@ class DBDamRpcServiceTest {
     }
 
     @NotNull
-    private static MessagingRpcCodec<JsonElement> codec() {
+    private static MessagingRpcCodec<Object> codec() {
         return new DDRemoteDamGsonRpcCodec(new Gson());
     }
 
@@ -936,17 +934,17 @@ class DBDamRpcServiceTest {
     private record TopicSubscription(@NotNull String topic, @NotNull DDRemoteDamMessageListener listener) {
     }
 
-    private record TaggedCodec(@NotNull String tag) implements MessagingRpcCodec<JsonElement> {
+    private record TaggedCodec(@NotNull String tag) implements MessagingRpcCodec<Object> {
         @Override
         @NotNull
-        public JsonElement encode(@Nullable Object value, @NotNull Type type) {
-            return new JsonPrimitive(tag + Objects.requireNonNull(value));
+        public Object encode(@Nullable Object value, @NotNull Type type) {
+            return tag + Objects.requireNonNull(value);
         }
 
         @Override
         @NotNull
-        public Object decode(@Nullable JsonElement payload, @NotNull Type type) {
-            String encoded = Objects.requireNonNull(payload).getAsString();
+        public Object decode(@Nullable Object payload, @NotNull Type type) {
+            String encoded = (String) Objects.requireNonNull(payload);
             if (!encoded.startsWith(tag)) {
                 throw new IllegalArgumentException("Unexpected codec tag");
             }

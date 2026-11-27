@@ -1050,7 +1050,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             }
 //                }
 
-            DBSObjectFilter schemaFilters = owner.getContainer().getObjectFilter(OracleSchema.class, null, false);
+            DBSObjectFilter schemaFilters = owner.getContainer().getEffectiveObjectFilter(OracleSchema.class, null, false);
             if (!showOnlyOneSchema && schemaFilters != null) {
                 JDBCUtils.appendFilterClause(schemasQuery, schemaFilters, "U.USERNAME", false, owner);
             }

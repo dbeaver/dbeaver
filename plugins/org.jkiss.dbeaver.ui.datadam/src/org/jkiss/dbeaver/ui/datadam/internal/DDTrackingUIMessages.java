@@ -195,6 +195,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String signed_in;
     public static String signed_out;
     public static String invalid_token;
+    public static String name_changed;
     public static String error;
     public static String mcp_request;
     public static String connected_at;

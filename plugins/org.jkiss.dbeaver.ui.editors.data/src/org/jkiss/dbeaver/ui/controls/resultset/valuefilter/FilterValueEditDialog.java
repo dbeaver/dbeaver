@@ -168,13 +168,19 @@ public class FilterValueEditDialog extends BaseDialog{
 
 
         ViewerColumnController columnController = new ViewerColumnController(getClass().getName(), handler.getTableViewer());
-        columnController.addColumn("Value", "Value", SWT.LEFT, true, true, new ColumnLabelProvider() {
+        columnController.addColumn(
+            ResultSetMessages.dialog_filter_value_edit_column_value,
+            ResultSetMessages.dialog_filter_value_edit_column_value,
+            SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return handler.getAttribute().getValueHandler().getValueDisplayString(handler.getAttribute(), ((DBDLabelValuePair)element).getValue(), DBDDisplayFormat.UI);
             }
         });
-        columnController.addColumn("Description", "Row description (composed from dictionary columns)", SWT.LEFT, true, true, new ColumnLabelProvider() {
+        columnController.addColumn(
+            ResultSetMessages.dialog_filter_value_edit_column_description,
+            ResultSetMessages.dialog_filter_value_edit_column_description_tip,
+            SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return ((DBDLabelValuePair)element).getLabel();
@@ -191,7 +197,7 @@ public class FilterValueEditDialog extends BaseDialog{
                     }
 	            }
 	        },
-	        new Action("Select &None") {
+	        new Action(ResultSetMessages.dialog_filter_value_edit_select_none) {
 	            @Override
 	            public void run() {
                     for (TableItem item : handler.getTableViewer().getTable().getItems()) {

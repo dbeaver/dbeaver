@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.LongSupplier;
 
 /**
@@ -46,7 +47,7 @@ public final class DDConnectionMonitor {
 
     public enum EventType {
         CONNECTING, CONNECTED, DISCONNECTED, CLOSED, SIGNED_IN, SIGNED_OUT, INVALID_TOKEN, ERROR,
-        MCP_REQUEST, MCP_RESPONSE
+        MCP_REQUEST, MCP_RESPONSE, NAME_CHANGED
     }
 
     public record Event(
@@ -131,6 +132,8 @@ public final class DDConnectionMonitor {
     private Instant connectedAt;
     @Nullable
     private String error;
+    @Nullable
+    private String damName;
     private long startedNanos;
     private long durationNanos;
     private boolean open;
@@ -165,11 +168,24 @@ public final class DDConnectionMonitor {
     }
 
     synchronized void stateChanged(@NotNull DDRemoteDamChannelStatus status) {
+        stateChanged(status, true);
+    }
+
+    synchronized void stateChanged(@NotNull DDRemoteDamChannelStatus status, boolean recordEvent) {
         state = status.state();
         if (status.isReady()) {
             error = null;
         }
-        record(EventType.valueOf(state.name()), status.session() == null ? "" : status.session().damSessionId());
+        if (recordEvent) {
+            record(EventType.valueOf(state.name()), status.session() == null ? "" : status.session().damSessionId());
+        }
+    }
+
+    public synchronized void damNameChanged(@Nullable String name) {
+        if (!Objects.equals(damName, name)) {
+            damName = name;
+            record(EventType.NAME_CHANGED, name == null ? "" : name);
+        }
     }
 
     synchronized void sent(long bytes) {

@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.file.FileOpenHandler;
+import org.jkiss.dbeaver.model.file.FileOpenPreferences;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.model.file.FileTypeHandlerDescriptor;
 import org.jkiss.dbeaver.model.file.FileTypeHandlerRegistry;
@@ -64,6 +65,7 @@ import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.editors.file.FileActionSelectorDialog;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -781,37 +783,54 @@ public class EditorUtils {
         boolean databaseOnly,
         @Nullable DBNPathBase sourceNode
     ) {
+        return openFileEditors(fileNames, currentContainer, openedFiles, databaseOnly, sourceNode, null);
+    }
+
+    public static boolean openFileEditors(
+        @NotNull Path[] fileNames,
+        @Nullable DBPDataSourceContainer currentContainer,
+        @NotNull List<Path> openedFiles,
+        boolean databaseOnly,
+        @Nullable DBNPathBase sourceNode,
+        @Nullable FileTypeAction requestedAction
+    ) {
+        if (sourceNode != null && sourceNode.isDirectory()) {
+            return false;
+        }
         Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = getHandlerFiles(fileNames, openedFiles, databaseOnly);
         for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
             FileTypeHandlerDescriptor handler = entry.getKey();
             List<Path> pathList = entry.getValue();
-            boolean allRemote = pathList.stream().noneMatch(IOUtils::isLocalPath);
 
             try {
+                if (handler == null) {
+                    return false;
+                }
                 for (int i = 0; i < pathList.size(); i++) {
                     Path path = pathList.get(i);
                     if (!IOUtils.isLocalPath(path)) {
-                        if (handler == null || Files.isDirectory(path)) {
+                        if (Files.isDirectory(path)) {
                             return false;
                         } else if (!handler.supportsRemoteFiles()) {
                             pathList.set(i, copyRemoteFileToTempDir(path));
                         }
                     }
                 }
-
-
                 FileOpenHandler fileOpenHandler = handler.createHandler();
-
                 if (sourceNode != null) {
                     fileOpenHandler.setSourceNode(sourceNode);
                 }
-
-                Set<FileTypeAction> actions = fileOpenHandler.supportedActions();
-                FileTypeAction selectedAction = getFileTypeActionWithDialog(actions, !allRemote);
-
-                if (selectedAction != null) {
-                    fileOpenHandler.openFiles(pathList, currentContainer, selectedAction);
+                List<FileTypeAction> actions = FileOpenPreferences.getAvailableActions(
+                    fileOpenHandler.supportedActions());
+                if (requestedAction != null && !actions.contains(requestedAction)) {
+                    return false;
                 }
+                FileTypeAction selectedAction = requestedAction == null
+                    ? getFileTypeActionWithDialog(handler.getId(), actions) : requestedAction;
+                if (selectedAction == null) {
+                    continue;
+                }
+                fileOpenHandler.openFiles(pathList, currentContainer, selectedAction);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
                     EditorsMessages.editor_open_file_error_title,
@@ -823,18 +842,25 @@ public class EditorUtils {
 
 
     @Nullable
-    private static FileTypeAction getFileTypeActionWithDialog(@NotNull Set<FileTypeAction> actions, boolean hasLocalFiles) {
-        List<FileTypeAction> actionList = new ArrayList<>(actions.stream()
-            .sorted()
-            .toList());
-        if (hasLocalFiles) {
-            actionList.remove(FileTypeAction.EXTERNAL_EDITOR);
+    private static FileTypeAction getFileTypeActionWithDialog(
+        @NotNull String handlerId,
+        @NotNull List<FileTypeAction> actionList
+    ) {
+        var store = DBWorkbench.getPlatform().getPreferenceStore();
+        var preferences = new FileOpenPreferences(store, handlerId);
+        FileTypeAction savedAction = preferences.getSavedAction(actionList);
+        if (savedAction != null) {
+            return savedAction;
         }
         FileTypeAction selectedAction = null;
         if (actionList.size() > 1 && UIUtils.getActiveWorkbenchShell() != null) {
             FileActionSelectorDialog dialog = new FileActionSelectorDialog(UIUtils.getActiveWorkbenchShell(), actionList);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 selectedAction = dialog.getSelectedAction();
+                if (dialog.isRememberAction() && selectedAction != null) {
+                    preferences.setSavedAction(selectedAction);
+                    PrefUtils.savePreferenceStore(store);
+                }
             }
         } else if (actionList.size() == 1) {
             selectedAction = actionList.getFirst();

@@ -395,39 +395,81 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
             SQLServerDataSource dataSource = owner.getDataSource();
+            boolean supportsExternalTables = dataSource.supportsExternalTables(session);
             sql.append("SELECT o.*,ep.value as description");
-            if (owner.getDataSource().supportsExternalTables(session)) {
+            if (supportsExternalTables) {
                 sql.append(",t.is_external");
             }
             sql.append(" FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" o");
             sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=o.object_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
-            if (owner.getDataSource().supportsExternalTables(session)) {
+            if (supportsExternalTables) {
                 sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" t ON t.object_id=o.object_id");
             }
             sql.append("\nWHERE o.type IN ('U','S','V','TT') AND o.schema_id = ").append(owner.getObjectId());
             if (object != null || objectName != null) {
                 sql.append(" AND o.name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
             } else {
-                DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(SQLServerTableBase.class, owner, false);
-                if (tableFilters != null && !tableFilters.isEmpty()) {
+                DBSObjectFilter tableFilter = dataSource.getContainer().getEffectiveObjectFilter(SQLServerTable.class, owner, false);
+                DBSObjectFilter viewFilter = dataSource.getContainer().getEffectiveObjectFilter(SQLServerView.class, owner, false);
+                DBSObjectFilter tableTypeFilter = dataSource.getContainer().getEffectiveObjectFilter(SQLServerTableType.class, owner, false);
+                DBSObjectFilter externalTableFilter = supportsExternalTables
+                    ? dataSource.getContainer().getEffectiveObjectFilter(SQLServerExternalTable.class, owner, false)
+                    : null;
+                if (isApplicable(tableFilter) || isApplicable(viewFilter) || isApplicable(tableTypeFilter)
+                    || isApplicable(externalTableFilter)) {
+                    // All four object types share this cache query; each filter must apply only to its own rows.
                     sql.append(" AND (");
-                    boolean hasCond = false;
-                    for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
-                        if (hasCond) sql.append(" OR ");
-                        hasCond = true;
-                        sql.append(" o.name LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                    appendTypeFilter(
+                        sql,
+                        supportsExternalTables
+                            ? "o.type IN ('U','S') AND (t.is_external IS NULL OR t.is_external = 0)"
+                            : "o.type IN ('U','S')",
+                        tableFilter, session.getDataSource());
+                    sql.append(" OR ");
+                    appendTypeFilter(sql, "o.type = 'V'", viewFilter, session.getDataSource());
+                    sql.append(" OR ");
+                    appendTypeFilter(sql, "o.type = 'TT'", tableTypeFilter, session.getDataSource());
+                    if (supportsExternalTables) {
+                        sql.append(" OR ");
+                        appendTypeFilter(
+                            sql, "o.type IN ('U','S') AND t.is_external = 1", externalTableFilter, session.getDataSource());
                     }
-                    hasCond = false;
-                    for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
-                        if (hasCond) sql.append(" OR ");
-                        hasCond = true;
-                        sql.append(" o.name NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
-                    }
-                    sql.append(")");
+                    sql.append(')');
                 }
             }
 
             return session.prepareStatement(sql.toString());
+        }
+
+        private static boolean isApplicable(@Nullable DBSObjectFilter filter) {
+            return filter != null && !filter.isNotApplicable();
+        }
+
+        private static void appendTypeFilter(
+            @NotNull StringBuilder sql,
+            @NotNull String typeCondition,
+            @Nullable DBSObjectFilter filter,
+            @NotNull DBPDataSource dataSource
+        ) {
+            sql.append('(').append(typeCondition);
+            if (isApplicable(filter)) {
+                if (!CommonUtils.isEmpty(filter.getInclude())) {
+                    sql.append(" AND (");
+                    boolean first = true;
+                    for (String incName : filter.getInclude()) {
+                        if (!first) {
+                            sql.append(" OR ");
+                        }
+                        first = false;
+                        sql.append("o.name LIKE ").append(SQLUtils.quoteString(dataSource, SQLUtils.makeSQLLike(incName)));
+                    }
+                    sql.append(')');
+                }
+                for (String excName : CommonUtils.safeCollection(filter.getExclude())) {
+                    sql.append(" AND o.name NOT LIKE ").append(SQLUtils.quoteString(dataSource, SQLUtils.makeSQLLike(excName)));
+                }
+            }
+            sql.append(')');
         }
 
         @Override
