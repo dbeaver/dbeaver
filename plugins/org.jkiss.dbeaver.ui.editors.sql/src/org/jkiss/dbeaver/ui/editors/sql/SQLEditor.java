@@ -151,6 +151,14 @@ public class SQLEditor extends SQLEditorBase implements
     DBCSmartTransactionManager,
     IStatefulEditor
 {
+    private static final IStatus CANCEL_LARGE_SCRIPT_OPEN_STATUS = new Status(
+        IStatus.CANCEL,
+        SQLEditorActivator.PLUGIN_ID,
+        IStatus.CANCEL,
+        SQLEditorMessages.sql_editor_large_file_open_cancelled,
+        null
+    );
+
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
     static final String NOTIFICATION_SQL_METADATA_REFRESH = "sql.metadata.refresh";
@@ -2571,8 +2579,9 @@ public class SQLEditor extends SQLEditorBase implements
     // Initialization
 
     @Override
-    public void init(IEditorSite site, IEditorInput editorInput)
+    public void init(@NotNull IEditorSite site, @NotNull IEditorInput editorInput)
     throws PartInitException {
+        // AbstractTextEditor.init sets the site before doSetInput checks the initial file load.
         super.init(site, editorInput);
 
         updateResultSetOrientation();
@@ -2662,7 +2671,15 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    protected void doSetInput(IEditorInput editorInput) throws CoreException {
+    protected void doSetInput(@NotNull IEditorInput editorInput) throws CoreException {
+        // Only guard initial loading. Other reload scenarios (Save As, moved or renamed files, and external refreshes)
+        // need coordinated document-provider and text-buffer lifecycle handling
+        // to avoid unwanted rereading the file or leaving a stale input (see TextFileDocumentProvider), which is out of scope for now.
+        if (this.getEditorInput() == null
+            && !SQLScriptMemoryEstimate.confirmLargeScriptOpen(this.getSite().getShell(), editorInput)) {
+            // Keep the refusal outside the catch(Throwable) below: it is not a load error.
+            throw new CoreException(CANCEL_LARGE_SCRIPT_OPEN_STATUS);
+        }
         checkInputFileExistence(editorInput);
         try {
             super.doSetInput(editorInput);
