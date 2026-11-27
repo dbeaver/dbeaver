@@ -128,10 +128,9 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     private void printStatus(@NotNull IStatus status, int level) {
-        char[] indent = new char[level * 4];
-        for (int i = 0; i < indent.length; i++) indent[i] = ' ';
+        String indent = " ".repeat(level * 4);
         if (status.getMessage() != null) {
-            System.out.println("" + indent + status.getMessage());
+            System.out.println(indent + status.getMessage());
         }
         if (status.getException() != null) {
             status.getException().printStackTrace(System.out);
