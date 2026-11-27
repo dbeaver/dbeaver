@@ -173,9 +173,9 @@ public class PropertySourceLazyLoadTest {
     }
 
     @Test
-    public void failedBatchReleasesPendingProperties() throws Exception {
+    public void failedBatchRetriesOnlyAfterExplicitRefresh() throws Exception {
         ObjectPropertyDescriptor first = addProperty("first");
-        addProperty("second");
+        ObjectPropertyDescriptor second = addProperty("second");
         Mockito.when(first.readValue(Mockito.same(object), Mockito.any(), Mockito.eq(true)))
             .thenThrow(new InvocationTargetException(new IllegalStateException("Read failed")));
         source.getPropertyValue(null, "first");
@@ -187,12 +187,45 @@ public class PropertySourceLazyLoadTest {
 
         source.getPropertyValue(null, "first");
         source.getPropertyValue(null, "second");
+        assertEquals(1, loads.size());
+
+        source.clearProperties();
+        source.addProperty(first);
+        source.addProperty(second);
+        source.getPropertyValue(null, "first");
+        source.getPropertyValue(null, "second");
         assertEquals(2, loads.size());
         Mockito.when(first.readValue(Mockito.same(object), Mockito.any(), Mockito.eq(true))).thenReturn("value");
         Load retry = loads.getLast();
         Map<ObjectPropertyDescriptor, Object> result = retry.service.evaluate(new VoidProgressMonitor());
         assertEquals(2, result.size());
         retry.complete(result);
+    }
+
+    @Test
+    public void cachesEntireBatchBeforeListenersRefreshThePropertySheet() throws Exception {
+        ObjectPropertyDescriptor first = addProperty("first");
+        ObjectPropertyDescriptor second = addProperty("second");
+        Mockito.when(first.readValue(Mockito.same(object), Mockito.any(), Mockito.eq(true))).thenReturn("first value");
+        Mockito.when(second.readValue(Mockito.same(object), Mockito.any(), Mockito.eq(true))).thenReturn("second value");
+        source.getPropertyValue(null, "first");
+        source.getPropertyValue(null, "second");
+        List<Object> observedValues = new ArrayList<>();
+        ILazyPropertyLoadListener listener = (loadedObject, property, value, completed) -> {
+            if (loadedObject == object) {
+                observedValues.add(source.getPropertyValue(null, "first"));
+                observedValues.add(source.getPropertyValue(null, "second"));
+            }
+        };
+        PropertiesContributor.getInstance().addLazyListener(listener);
+        try {
+            Load load = loads.getFirst();
+            load.complete(load.service.evaluate(new VoidProgressMonitor()));
+        } finally {
+            PropertiesContributor.getInstance().removeLazyListener(listener);
+        }
+        assertEquals(List.of("first value", "second value", "first value", "second value"), observedValues);
+        assertEquals(1, loads.size());
     }
 
     @Test

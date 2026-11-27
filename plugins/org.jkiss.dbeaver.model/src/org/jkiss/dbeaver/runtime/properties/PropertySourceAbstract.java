@@ -495,6 +495,23 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             completed = true;
             synchronized (lazyProps) {
                 List<ObjectPropertyDescriptor> properties = service.completedBatches.pollFirst();
+                if (isLazyLoadAvailable()) {
+                    if (result == null && properties != null) {
+                        // Ordinary failures must not be retried by painting the property sheet.
+                        // An explicit property refresh clears this cache and permits another attempt.
+                        for (ObjectPropertyDescriptor prop : properties) {
+                            lazyValues.putIfAbsent(prop.getId(), null);
+                        }
+                    } else if (result != null) {
+                        // Listeners can synchronously reread the entire property sheet.
+                        // Publish the whole batch before releasing pending markers or notifying them.
+                        for (Map.Entry<ObjectPropertyDescriptor, Object> entry : result.entrySet()) {
+                            if (entry.getValue() != LAZY_VALUE_NOT_LOADED) {
+                                lazyValues.put(entry.getKey().getId(), entry.getValue());
+                            }
+                        }
+                    }
+                }
                 if (properties != null) {
                     for (ObjectPropertyDescriptor prop : properties) {
                         pendingLazyValues.remove(prop.getId());
@@ -504,7 +521,6 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             if (result != null) {
                 for (Map.Entry<ObjectPropertyDescriptor, Object> entry : result.entrySet()) {
                     if (entry.getValue() != LAZY_VALUE_NOT_LOADED && isLazyLoadAvailable()) {
-                        lazyValues.put(entry.getKey().getId(), entry.getValue());
                         PropertiesContributor.getInstance().notifyPropertyLoad(getEditableValue(), entry.getKey(), entry.getValue(), true);
                     }
                 }

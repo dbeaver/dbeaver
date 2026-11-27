@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -39,7 +41,7 @@ public class LoadingJob<RESULT> extends AbstractJob {
     private static final Log log = Log.getLog(LoadingJob.class);
 
     public static final Object LOADING_FAMILY = new Object();
-    private boolean loadFinished;
+    private volatile boolean loadFinished;
     private boolean showErrors = true;
 
     public static <RESULT> LoadingJob<RESULT> createService(
@@ -57,6 +59,14 @@ public class LoadingJob<RESULT> extends AbstractJob {
         this.loadingService = loadingService;
         this.visualizer = visualizer;
         setUser(false);
+        addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(@NotNull IJobChangeEvent event) {
+                // Cancellation before run() must also release visualizer state (e.g. tree placeholders).
+                Runnable finisher = event.getResult() instanceof LoadStatus status ? status.takeFinisher() : null;
+                UIUtils.asyncExec(finisher == null ? new LoadFinisher(null, null) : finisher);
+            }
+        });
     }
 
     public ILoadService<RESULT> getLoadingService() {
@@ -84,6 +94,8 @@ public class LoadingJob<RESULT> extends AbstractJob {
     @NotNull
     @Override
     protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+        boolean scheduledRun = getThread() == Thread.currentThread();
+        loadFinished = false;
         monitor = visualizer.overwriteMonitor(monitor);
         if (this.loadingService instanceof AbstractLoadService<?> als) {
             als.initService(monitor, this);
@@ -102,10 +114,31 @@ public class LoadingJob<RESULT> extends AbstractJob {
             return Status.CANCEL_STATUS;
         } finally {
             loadFinished = true;
-            UIUtils.asyncExec(new LoadFinisher(result, error));
+            if (!scheduledRun) {
+                // syncRun()/runDirectly() do not fire job completion events.
+                UIUtils.asyncExec(new LoadFinisher(result, error));
+            }
             monitor.done();
         }
-        return Status.OK_STATUS;
+        // Keep the completion with this execution's status, not mutable state shared with a later run.
+        return scheduledRun ? new LoadStatus(new LoadFinisher(result, error)) : Status.OK_STATUS;
+    }
+
+    private static class LoadStatus extends Status {
+        private Runnable finisher;
+
+        private LoadStatus(@NotNull Runnable finisher) {
+            super(IStatus.OK, LoadingJob.class, IStatus.OK, "", null);
+            this.finisher = finisher;
+        }
+
+        @Nullable
+        private Runnable takeFinisher() {
+            Runnable result = finisher;
+            // A retained job result must not retain the loaded data or visualizer.
+            finisher = null;
+            return result;
+        }
     }
 
     @Override
@@ -121,7 +154,7 @@ public class LoadingJob<RESULT> extends AbstractJob {
         private final RESULT innerResult;
         private final Throwable innerError;
 
-        LoadFinisher(@NotNull RESULT innerResult, @Nullable Throwable innerError) {
+        LoadFinisher(@Nullable RESULT innerResult, @Nullable Throwable innerError) {
             this.innerResult = innerResult;
             this.innerError = innerError;
         }

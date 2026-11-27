@@ -71,7 +71,9 @@ public class SSHTunnelImplTest extends DBeaverUnitTest {
         };
         Mockito.when(controller.getDependentDataSources(session)).thenReturn(dependencies);
 
-        try (var registryMock = Mockito.mockStatic(SSHSessionControllerRegistry.class)) {
+        try (var registryMock = Mockito.mockStatic(
+            SSHSessionControllerRegistry.class, Mockito.withSettings().mockMaker("mock-maker-inline")
+        )) {
             registryMock.when(SSHSessionControllerRegistry::getInstance).thenReturn(registry);
             tunnel.initializeHandler(monitor, configuration, connectionInfo);
         }
