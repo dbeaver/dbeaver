@@ -25,6 +25,7 @@ security exposure, maintenance risk, or misleading documentation. Check for:
 - Pasted secrets, credentials, API keys, tokens, private keys, connection
   strings, personal data, internal URLs, or other sensitive values in source,
   tests, fixtures, configuration, logs, exceptions, and documentation.
+- Usage of `VoidProgressMonitor` when a proper monitor can be used
 
 For each finding, identify the affected file and line, explain why the pasted
 content is incorrect or sensitive in this context, and recommend a focused
