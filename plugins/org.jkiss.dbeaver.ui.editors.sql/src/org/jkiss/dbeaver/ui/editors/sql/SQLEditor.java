@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IExecutionListener;
+import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
@@ -27,6 +31,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
@@ -39,6 +44,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.IMenuService;
@@ -233,6 +239,8 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<SQLEditorListener> listeners = new ArrayList<>();
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
+    private final IExecutionListener saveCommandListener = new SaveCommandListener();
+    private boolean isSaveCommandRunning;
     private boolean isResultSetAutoFocusEnabled = true;
     private boolean isShowScriptRulerOnExecution = true;
     private Boolean isDisableFetchResultSet = null;
@@ -2583,6 +2591,11 @@ public class SQLEditor extends SQLEditorBase implements
     throws PartInitException {
         super.init(site, editorInput);
 
+        ICommandService commandService = site.getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.addExecutionListener(saveCommandListener);
+        }
+
         updateResultSetOrientation();
 
         SQLScriptContext parentContext = null;
@@ -3792,6 +3805,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void dispose() {
+        ICommandService commandService = getSite().getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.removeExecutionListener(saveCommandListener);
+        }
         if (extraPresentationManager != null) {
             extraPresentationManager.dispose();
         }
@@ -3983,6 +4000,10 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
+        if (isSaveCommandRunning && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FORMAT_ON_SAVE)) {
+            formatScript();
+        }
+
         if (!EditorUtils.isInAutoSaveJob()) {
             monitor.beginTask("Save data changes...", 1);
             try {
@@ -4007,6 +4028,185 @@ public class SQLEditor extends SQLEditorBase implements
         super.doSave(monitor);
 
         updateDataSourceContainer();
+    }
+
+    /**
+     * Formats the whole script with the SQL formatter. The selection and the caret are kept
+     * and formatting is a single undo step.
+     */
+    private void formatScript() {
+        ISourceViewer viewer = getSourceViewer();
+        if (viewer == null || viewer.getDocument() == null) {
+            return;
+        }
+        ITextOperationTarget target = viewer.getTextOperationTarget();
+        if (target == null || !target.canDoOperation(ISourceViewer.FORMAT)) {
+            return;
+        }
+        Point selection = viewer.getSelectedRange();
+        StyledText textWidget = viewer.getTextWidget();
+        boolean caretAtStart = selection.y > 0 && textWidget != null
+            && textWidget.getCaretOffset() == textWidget.getSelection().x;
+
+        // The formatter replaces the text at once, so document positions do not survive it
+        String text = viewer.getDocument().get();
+
+        // With a selection only the selected text is formatted
+        viewer.setSelectedRange(selection.x, 0);
+        // "Format active query only" must not apply here, the whole script is formatted
+        setFormatWholeScript(true);
+        try {
+            target.doOperation(ISourceViewer.FORMAT);
+        } finally {
+            setFormatWholeScript(false);
+        }
+
+        FormatOffsetMapper mapper = new FormatOffsetMapper(text, viewer.getDocument().get());
+        int end = mapper.map(selection.x + selection.y);
+        if (selection.y == 0) {
+            viewer.setSelectedRange(end, 0);
+            return;
+        }
+        int start = Math.min(mapper.map(selection.x), end);
+        if (caretAtStart) {
+            viewer.setSelectedRange(end, start - end);
+        } else {
+            viewer.setSelectedRange(start, end - start);
+        }
+    }
+
+    /**
+     * Maps offsets in the original text to the same places in the formatted text.
+     * The formatter mostly changes whitespace and letter case, but it may also add or remove
+     * tokens (e.g. statement delimiters), so the non-whitespace characters of both texts are
+     * matched with a diff. An offset is placed relative to the matched characters around it:
+     * right before a token it stays before that token, inside whitespace it keeps its distance
+     * from the start of the whitespace run, limited by the length of the formatted run.
+     * If the formatter left the text unchanged, offsets are kept as they are.
+     */
+    static final class FormatOffsetMapper {
+        // Diffs with more inserted and removed characters fall back to matching by position
+        private static final int MAX_DIFF = 500;
+
+        private final String formatted;
+        private final int[] originalPos;
+        private final int[] formattedPos;
+        private final int[] matches;
+
+        FormatOffsetMapper(@NotNull String original, @NotNull String formatted) {
+            this.formatted = formatted;
+            this.originalPos = nonWhitespacePositions(original);
+            this.formattedPos = nonWhitespacePositions(formatted);
+            this.matches = matchCharacters(original, formatted, originalPos, formattedPos);
+        }
+
+        int map(int offset) {
+            int count = Arrays.binarySearch(originalPos, offset);
+            boolean beforeToken = count >= 0;
+            if (!beforeToken) {
+                count = -count - 1;
+            }
+            int prev = 0;
+            for (int i = count - 1; i >= 0; i--) {
+                if (matches[i] >= 0) {
+                    prev = formattedPos[matches[i]] + 1;
+                    break;
+                }
+            }
+            int next = formatted.length();
+            for (int i = count; i < matches.length; i++) {
+                if (matches[i] >= 0) {
+                    next = formattedPos[matches[i]];
+                    break;
+                }
+            }
+            if (beforeToken) {
+                return next;
+            }
+            // Characters added by the formatter before the next token stay before the offset
+            int runStart = next;
+            while (runStart > prev && Character.isWhitespace(formatted.charAt(runStart - 1))) {
+                runStart--;
+            }
+            int gap = offset - (count == 0 ? 0 : originalPos[count - 1] + 1);
+            return runStart + Math.min(gap, next - runStart);
+        }
+
+        @NotNull
+        private static int[] nonWhitespacePositions(@NotNull String text) {
+            int[] positions = new int[text.length()];
+            int count = 0;
+            for (int i = 0; i < text.length(); i++) {
+                if (!Character.isWhitespace(text.charAt(i))) {
+                    positions[count++] = i;
+                }
+            }
+            return Arrays.copyOf(positions, count);
+        }
+
+        /**
+         * Returns the index of the matching formatted character for each original character,
+         * or -1 if it has no match. Uses the Myers diff algorithm, letter case is ignored.
+         */
+        @NotNull
+        private static int[] matchCharacters(
+            @NotNull String original,
+            @NotNull String formatted,
+            @NotNull int[] originalPos,
+            @NotNull int[] formattedPos
+        ) {
+            int n = originalPos.length;
+            int m = formattedPos.length;
+            int[] matches = new int[n];
+            Arrays.fill(matches, -1);
+            int limit = Math.min(n + m, MAX_DIFF);
+            int shift = limit + 1;
+            int[] v = new int[2 * limit + 3];
+            List<int[]> trace = new ArrayList<>();
+            for (int d = 0; d <= limit; d++) {
+                trace.add(v.clone());
+                for (int k = -d; k <= d; k += 2) {
+                    int x = k == -d || (k != d && v[k - 1 + shift] < v[k + 1 + shift])
+                        ? v[k + 1 + shift]
+                        : v[k - 1 + shift] + 1;
+                    int y = x - k;
+                    while (x < n && y < m && sameChar(original.charAt(originalPos[x]), formatted.charAt(formattedPos[y]))) {
+                        x++;
+                        y++;
+                    }
+                    v[k + shift] = x;
+                    if (x >= n && y >= m) {
+                        backtrack(trace, shift, n, m, matches);
+                        return matches;
+                    }
+                }
+            }
+            for (int i = 0; i < Math.min(n, m); i++) {
+                matches[i] = i;
+            }
+            return matches;
+        }
+
+        private static void backtrack(@NotNull List<int[]> trace, int shift, int x, int y, @NotNull int[] matches) {
+            for (int d = trace.size() - 1; d >= 0; d--) {
+                int[] v = trace.get(d);
+                int k = x - y;
+                int prevK = k == -d || (k != d && v[k - 1 + shift] < v[k + 1 + shift]) ? k + 1 : k - 1;
+                int prevX = v[prevK + shift];
+                int prevY = prevX - prevK;
+                while (x > prevX && y > prevY) {
+                    x--;
+                    y--;
+                    matches[x] = y;
+                }
+                x = prevX;
+                y = prevY;
+            }
+        }
+
+        private static boolean sameChar(char a, char b) {
+            return a == b || Character.toLowerCase(a) == Character.toLowerCase(b);
+        }
     }
 
     @Override
@@ -4932,6 +5132,44 @@ public class SQLEditor extends SQLEditorBase implements
                 viewItem.setImage(image);
             }
 */
+        }
+    }
+
+    /**
+     * Tracks Save and Save All commands, so the script is formatted only on saves started by the user.
+     * Other saves (on query execution, on editor close, on disconnect) call doSave directly.
+     */
+    private class SaveCommandListener implements IExecutionListener {
+        @Override
+        public void preExecute(@NotNull String commandId, @NotNull ExecutionEvent event) {
+            if (isSaveCommand(commandId)) {
+                isSaveCommandRunning = true;
+            }
+        }
+
+        @Override
+        public void postExecuteSuccess(@NotNull String commandId, @Nullable Object returnValue) {
+            finishCommand(commandId);
+        }
+
+        @Override
+        public void postExecuteFailure(@NotNull String commandId, @NotNull ExecutionException exception) {
+            finishCommand(commandId);
+        }
+
+        @Override
+        public void notHandled(@NotNull String commandId, @NotNull NotHandledException exception) {
+            finishCommand(commandId);
+        }
+
+        private void finishCommand(@NotNull String commandId) {
+            if (isSaveCommand(commandId)) {
+                isSaveCommandRunning = false;
+            }
+        }
+
+        private boolean isSaveCommand(@NotNull String commandId) {
+            return IWorkbenchCommandConstants.FILE_SAVE.equals(commandId) || IWorkbenchCommandConstants.FILE_SAVE_ALL.equals(commandId);
         }
     }
 
