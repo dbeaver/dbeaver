@@ -43,10 +43,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -67,6 +64,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private static DataSourceProviderDescriptor nullProvider;
 
     private final DataSourceProviderRegistry registry;
+    @Nullable
+    private final InheritedConfiguration<DataSourceProviderDescriptor> declaration;
     private DataSourceProviderDescriptor parentProvider;
     private final String id;
     private ObjectType implType;
@@ -103,46 +102,42 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private boolean inheritAuthModels = true;
     private boolean inheritProviderProperties;
 
-    public DataSourceProviderDescriptor(@NotNull DataSourceProviderRegistry registry, @NotNull IConfigurationElement config) {
-        super(config);
+    public DataSourceProviderDescriptor(@NotNull DataSourceProviderRegistry registry, @NotNull IConfigurationElement element) {
+        super(element);
         this.registry = registry;
         this.temporary = false;
 
         // Provider declarations are constructed in parent-first order.
-        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
-        var metadataParent = !CommonUtils.isEmpty(parentId) && CommonUtils.toBoolean(config.getAttribute("inheritMetadata"))
+        String parentId = element.getAttribute(RegistryConstants.ATTR_PARENT);
+        var parent = !CommonUtils.isEmpty(parentId) && CommonUtils.toBoolean(element.getAttribute("inheritDrivers"))
             ? registry.getDataSourceProvider(parentId)
             : null;
-        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        String label = config.getAttribute(RegistryConstants.ATTR_LABEL);
-        this.name = label == null && metadataParent != null ? metadataParent.name : label;
-        String description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.description = description == null && metadataParent != null ? metadataParent.description : description;
-        String typeId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE);
-        this.dataSourceTypeId = typeId == null && metadataParent != null ? metadataParent.dataSourceTypeId : typeId;
-        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.declaration = new InheritedConfiguration<>(element, this, parent == null ? null : parent.declaration);
+        InheritedConfiguration<DataSourceProviderDescriptor> config = this.declaration;
+        this.id = element.getAttribute(RegistryConstants.ATTR_ID);
+        this.implType = new ObjectType(element.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.dataSourceTypeId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE);
+        this.icon = config.getAttributeSource(RegistryConstants.ATTR_ICON)
+            .iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
-            this.icon = metadataParent == null ? DBIcon.DATABASE_DEFAULT : metadataParent.icon;
+            this.icon = DBIcon.DATABASE_DEFAULT;
         }
         String dialectId = config.getAttribute(RegistryConstants.ATTR_DIALECT);
-        if (dialectId == null && metadataParent != null) {
-            this.scriptDialect = metadataParent.scriptDialect;
-        } else {
-            if (CommonUtils.isEmpty(dialectId)) {
-                log.debug("No SQL dialect specified for data source provider '" + this.id + "'. Use default.");
-                dialectId = BasicSQLDialect.ID;
-            }
-            SQLDialectMetadataRegistry dialectRegistry = DBWorkbench.getPlatform().getSQLDialectRegistry();
-            this.scriptDialect = dialectRegistry.getDialect(dialectId);
-            if (this.scriptDialect == null) {
-                log.debug("Script dialect '" + dialectId + "' not found in registry (for data source provider " + id + "). Use default.");
-                this.scriptDialect = dialectRegistry.getDialect(BasicSQLDialect.ID);
-            }
+        if (CommonUtils.isEmpty(dialectId)) {
+            log.debug("No SQL dialect specified for data source provider '" + this.id + "'. Use default.");
+            dialectId = BasicSQLDialect.ID;
+        }
+        SQLDialectMetadataRegistry dialectRegistry = DBWorkbench.getPlatform().getSQLDialectRegistry();
+        this.scriptDialect = dialectRegistry.getDialect(dialectId);
+        if (this.scriptDialect == null) {
+            log.debug("Script dialect '" + dialectId + "' not found in registry (for data source provider " + id + "). Use default.");
+            this.scriptDialect = dialectRegistry.getDialect(BasicSQLDialect.ID);
         }
 
         // Keep tree configuration until a navigator actually requests this provider's tree.
-        IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
+        IConfigurationElement[] trees = element.getChildren(RegistryConstants.TAG_TREE);
         this.treeConfig = ArrayUtils.isEmpty(trees) ? null : trees[0];
         this.supportsDriverMigration = CommonUtils.toBoolean(config.getAttribute("supports-migration"));
         this.migrationCompletedProperty = config.getAttribute("migration-completed-property");
@@ -172,6 +167,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
     void loadExtraConfig(@NotNull IConfigurationElement config) {
         addTreeInjections(config);
+        InheritedConfiguration<DataSourceProviderDescriptor> attributes = Objects.requireNonNull(declaration);
 
         // Load driver properties
         {
@@ -222,7 +218,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
                 // Load provider properties
                 {
-                    inheritProviderProperties = CommonUtils.getBoolean(config.getAttribute("inheritProviderProperties"), false);
+                    inheritProviderProperties = CommonUtils.getBoolean(attributes.getAttribute("inheritProviderProperties"), false);
                     for (IConfigurationElement propsElement : driversElement.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES)) {
                         String driversSpec = propsElement.getAttribute("drivers");
                         List<ProviderPropertyDescriptor> providerProperties = new ArrayList<>();
@@ -240,7 +236,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
         // Load native clients
         {
-            inheritClients = CommonUtils.getBoolean(config.getAttribute("inheritClients"),
+            inheritClients = CommonUtils.getBoolean(attributes.getAttribute("inheritClients"),
                 false); // Will be "true" if we can use native clients list from the parent
 
             for (IConfigurationElement nativeClientsElement : config.getChildren("nativeClients")) {
@@ -255,6 +251,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     DataSourceProviderDescriptor(@NotNull DataSourceProviderRegistry registry, String id) {
         super("org.jkiss.dbeaver.registry");
         this.registry = registry;
+        this.declaration = null;
         this.id = id;
         this.name = id;
         this.description = "Missing datasource provider " + id;

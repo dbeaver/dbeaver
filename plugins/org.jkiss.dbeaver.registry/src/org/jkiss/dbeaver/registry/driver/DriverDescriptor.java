@@ -38,10 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.NativeClientDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -87,7 +84,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final DataSourceProviderDescriptor providerDescriptor;
     private final String id;
     @Nullable
-    private DriverConfiguration declaration;
+    private InheritedConfiguration<DriverDescriptor> declaration;
     private DBPDataSourceType dataSourceType;
     private String category;
     private final List<String> categories;
@@ -298,37 +295,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this(providerDescriptor, config, null);
     }
 
-    private record DriverConfiguration(
-        @NotNull IConfigurationElement element,
-        @Nullable DriverConfiguration parent
-    ) {
-        @Nullable
-        String getAttribute(@NotNull String name) {
-            String value = element.getAttribute(name);
-            return value != null || parent == null ? value : parent.getAttribute(name);
-        }
-
-        @NotNull
-        IConfigurationElement[] getChildren(@NotNull String name) {
-            IConfigurationElement[] children = element.getChildren(name);
-            // Library delivery and replacement rules belong to the concrete driver.
-            if (children.length > 0 || parent == null || RegistryConstants.TAG_FILE.equals(name)
-                || RegistryConstants.TAG_FILE_SOURCE.equals(name) || RegistryConstants.TAG_REPLACE.equals(name)) {
-                return children;
-            }
-            return parent.getChildren(name);
-        }
-    }
-
     public DriverDescriptor(
         @NotNull DataSourceProviderDescriptor providerDescriptor,
         @NotNull IConfigurationElement element,
         @Nullable DriverDescriptor parent
     ) {
-        super(providerDescriptor.getPluginId());
+        super(element);
         this.providerDescriptor = providerDescriptor;
-        this.declaration = new DriverConfiguration(element, parent == null ? null : parent.declaration);
-        DriverConfiguration config = this.declaration;
+        this.declaration = new InheritedConfiguration<>(element, this, parent == null ? null : parent.declaration);
+        InheritedConfiguration<DriverDescriptor> config = this.declaration;
         this.id = CommonUtils.notEmpty(element.getAttribute(RegistryConstants.ATTR_ID));
         this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
 
@@ -385,7 +360,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
         this.custom = false;
 
-        this.pendingLibraryConfigs = config.getChildren(RegistryConstants.TAG_FILE);
+        this.pendingLibraryConfigs = element.getChildren(RegistryConstants.TAG_FILE);
 
         String[] supportedConfigurationTypes = CommonUtils.split(
             config.getAttribute(RegistryConstants.ATTR_SUPPORTED_CONFIGURATION_TYPES), ",");
@@ -400,31 +375,25 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (supportedPageFields.length > 0) {
             this.supportedPageFields = Stream.of(supportedPageFields).collect(Collectors.toSet());
         }
-        for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE_SOURCE)) {
+        for (IConfigurationElement lib : element.getChildren(RegistryConstants.TAG_FILE_SOURCE)) {
             this.fileSources.add(new DriverFileSource(lib));
         }
 
         this.dataSourceType = CommonUtils.isEmpty(dataSourceTypeId) ? null :
             providerDescriptor.getRegistry().getDataSourceType(dataSourceTypeId);
 
-        String icon = element.getAttribute(RegistryConstants.ATTR_ICON);
-        this.iconPlain = icon == null && parent != null ? parent.iconPlain : iconToImage(icon);
+        this.iconPlain = config.getAttributeSource(RegistryConstants.ATTR_ICON)
+            .iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.iconPlain == null) {
             this.iconPlain = dataSourceType == null ? providerDescriptor.getIcon() : dataSourceType.getIcon();
         }
-        this.iconBig = dataSourceType == null ? this.iconPlain : dataSourceType.getIconBig();
-        String iconBig = element.getAttribute(RegistryConstants.ATTR_ICON_BIG);
-        if (iconBig != null) {
-            this.iconBig = iconToImage(iconBig);
-        } else if (parent != null) {
-            this.iconBig = parent.iconBig;
+        this.iconBig = config.getAttributeSource(RegistryConstants.ATTR_ICON_BIG)
+            .iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON_BIG));
+        if (this.iconBig == null) {
+            this.iconBig = dataSourceType == null ? this.iconPlain : dataSourceType.getIconBig();
         }
-        String logoImageAttr = element.getAttribute("logoImage");
-        if (!CommonUtils.isEmpty(logoImageAttr)) {
-            this.logoImage = iconToImage(logoImageAttr);
-        } else if (parent != null) {
-            this.logoImage = parent.logoImage;
-        } else if (dataSourceType != null) {
+        this.logoImage = config.getAttributeSource("logoImage").iconToImage(config.getAttribute("logoImage"));
+        if (this.logoImage == null && dataSourceType != null) {
             this.logoImage = dataSourceType.getLogoImage();
         }
         this.dataSourceType = providerDescriptor.getRegistry().resolveDataSourceType(dataSourceTypeId, this);
@@ -432,7 +401,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         {
             // OSes
-            for (IConfigurationElement os : config.getChildren(RegistryConstants.TAG_OS)) {
+            for (IConfigurationElement os : element.getChildren(RegistryConstants.TAG_OS)) {
                 supportedSystems.add(new OSDescriptor(
                         os.getAttribute(RegistryConstants.ATTR_NAME),
                         os.getAttribute(RegistryConstants.ATTR_ARCH)
@@ -441,7 +410,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
 
         {
-            IConfigurationElement[] pp = config.getChildren(RegistryConstants.TAG_MAIN_PROPERTIES);
+            IConfigurationElement[] pp = element.getChildren(RegistryConstants.TAG_MAIN_PROPERTIES);
             if (!ArrayUtils.isEmpty(pp)) {
                 String copyFromDriverId = pp[0].getAttribute("copyFrom");
                 if (!CommonUtils.isEmpty(copyFromDriverId)) {
@@ -461,7 +430,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
 
         {
-            IConfigurationElement[] pp = config.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES);
+            IConfigurationElement[] pp = element.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES);
             if (!ArrayUtils.isEmpty(pp)) {
                 String copyFromDriverId = pp[0].getAttribute("copyFrom");
                 if (!CommonUtils.isEmpty(copyFromDriverId)) {
@@ -482,7 +451,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         {
             // Driver parameters
-            IConfigurationElement[] paramElements = config.getChildren(RegistryConstants.TAG_PARAMETER);
+            if (parent != null) {
+                defaultParameters.putAll(parent.defaultParameters);
+                customParameters.putAll(parent.defaultParameters);
+            }
+            IConfigurationElement[] paramElements = element.getChildren(RegistryConstants.TAG_PARAMETER);
             for (IConfigurationElement param : paramElements) {
                 String paramName = param.getAttribute(RegistryConstants.ATTR_NAME);
                 String paramValue = param.getAttribute(RegistryConstants.ATTR_VALUE);
@@ -497,7 +470,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         {
             // Connection properties
-            IConfigurationElement[] propElements = config.getChildren(RegistryConstants.TAG_PROPERTY);
+            IConfigurationElement[] propElements = element.getChildren(RegistryConstants.TAG_PROPERTY);
             for (IConfigurationElement param : propElements) {
                 String paramName = param.getAttribute(RegistryConstants.ATTR_NAME);
                 String paramValue = param.getAttribute(RegistryConstants.ATTR_VALUE);
@@ -516,7 +489,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         {
             // Driver replacements
-            IConfigurationElement[] replaceElements = config.getChildren(RegistryConstants.TAG_REPLACE);
+            IConfigurationElement[] replaceElements = element.getChildren(RegistryConstants.TAG_REPLACE);
             for (IConfigurationElement replace : replaceElements) {
                 String providerId = replace.getAttribute(RegistryConstants.ATTR_PROVIDER);
                 String driverId = replace.getAttribute(RegistryConstants.ATTR_DRIVER);
@@ -527,7 +500,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
 
         {
-            IConfigurationElement[] notAvailable = config.getChildren(RegistryConstants.ATTR_NOT_AVAILABLE_DRIVER);
+            IConfigurationElement[] notAvailable = element.getChildren(RegistryConstants.ATTR_NOT_AVAILABLE_DRIVER);
             for (IConfigurationElement unavailable : notAvailable) {
                 this.stub = new DBPDriverStub(
                     unavailable.getAttribute(RegistryConstants.ATTR_MESSAGE),

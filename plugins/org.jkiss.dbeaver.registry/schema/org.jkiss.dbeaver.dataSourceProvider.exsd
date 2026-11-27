@@ -118,9 +118,9 @@
          <attribute name="supports-migration" type="boolean"/>
          <attribute name="migration-completed-property" type="string"/>
          <attribute name="inheritAuthModels" type="boolean"/>
-         <attribute name="inheritMetadata" type="boolean">
+         <attribute name="inheritDrivers" type="boolean">
             <annotation>
-               <documentation>Inherit the parent provider's label, description, data source type, icon, and SQL dialect when not specified. Defaults to false.</documentation>
+                <documentation>Inherit missing attributes from the parent provider. Explicitly specified attributes override the parent, including empty values. Does not copy parent drivers; use the driver parent attribute to inherit driver attributes. Defaults to false.</documentation>
             </annotation>
          </attribute>
          <attribute name="driverProvider" type="boolean"/>
@@ -374,7 +374,7 @@
          <attribute name="category" type="string"/>
          <attribute name="parent" type="string">
             <annotation>
-               <documentation>ID of a driver declared by the parent data source provider. Missing attributes and child element groups are inherited, except for file, fileSource, and replace elements.</documentation>
+                <documentation>ID of a driver declared by the parent data source provider. Missing attributes and driver parameters are inherited; explicitly specified attributes override the parent, including empty values. Other child elements are not inherited.</documentation>
             </annotation>
          </attribute>
          <attribute name="anonymous" type="boolean"/>
