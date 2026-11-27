@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -41,6 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -226,6 +228,158 @@ public class PropertySourceLazyLoadTest {
         }
         assertEquals(List.of("first value", "second value", "first value", "second value"), observedValues);
         assertEquals(1, loads.size());
+    }
+
+    @Test
+    public void emptySelectionDoesNotScheduleLazyLoading() {
+        AtomicReference<Object> selection = new AtomicReference<>();
+        PropertySourceEditable selectedSource = selectionSource(selection);
+        selectedSource.addProperty(addProperty("value"));
+        assertNull(selectedSource.getPropertyValue(null, "value"));
+        assertTrue(loads.isEmpty());
+    }
+
+    @Test
+    public void clearingSelectionBeforeEvaluationKeepsFamilyStableAndAllowsRetry() throws Exception {
+        AtomicReference<Object> selection = new AtomicReference<>(object);
+        PropertySourceEditable selectedSource = selectionSource(selection);
+        ObjectPropertyDescriptor property = addProperty("value");
+        selectedSource.addProperty(property);
+        selectedSource.getPropertyValue(null, "value");
+        Load load = loads.getFirst();
+
+        selection.set(null);
+        assertSame(dataSource, load.service.getFamily());
+        load.complete(load.service.evaluate(new VoidProgressMonitor()));
+        assertTrue(load.visualizer.isCompleted());
+        Mockito.verify(property, Mockito.never()).readValue(Mockito.any(), Mockito.any(), Mockito.anyBoolean());
+
+        selection.set(object);
+        selectedSource.getPropertyValue(null, "value");
+        assertEquals(2, loads.size());
+    }
+
+    @Test
+    public void clearingSelectionBeforeCompletionDiscardsResultsWithoutCachingNull() throws Exception {
+        AtomicReference<Object> selection = new AtomicReference<>(object);
+        PropertySourceEditable selectedSource = selectionSource(selection);
+        ObjectPropertyDescriptor property = addProperty("value");
+        Mockito.when(property.readValue(Mockito.same(object), Mockito.any(), Mockito.eq(true))).thenReturn("old value");
+        selectedSource.addProperty(property);
+        selectedSource.getPropertyValue(null, "value");
+        Load load = loads.getFirst();
+        Map<ObjectPropertyDescriptor, Object> result = load.service.evaluate(new VoidProgressMonitor());
+
+        selection.set(null);
+        assertSame(dataSource, load.service.getFamily());
+        load.complete(result);
+        selection.set(object);
+        assertNull(selectedSource.getPropertyValue(null, "value"));
+        assertEquals(2, loads.size());
+    }
+
+    @Test
+    public void clearingSelectionBeforeQueuedCancellationReleasesPendingProperties() {
+        AtomicReference<Object> selection = new AtomicReference<>(object);
+        PropertySourceEditable selectedSource = selectionSource(selection);
+        selectedSource.addProperty(addProperty("value"));
+        selectedSource.getPropertyValue(null, "value");
+        Load load = loads.getFirst();
+        selection.set(null);
+        assertSame(dataSource, load.service.getFamily());
+        load.done(Status.CANCEL_STATUS);
+        load.visualizer.completeLoading(null);
+        selection.set(object);
+        selectedSource.getPropertyValue(null, "value");
+        assertEquals(2, loads.size());
+    }
+
+    @Test
+    public void newSelectionGetsItsOwnJobAndIgnoresOldCompletion() throws Exception {
+        AtomicReference<Object> selection = new AtomicReference<>(object);
+        PropertySourceEditable selectedSource = selectionSource(selection);
+        ObjectPropertyDescriptor property = addProperty("value");
+        Mockito.when(property.readValue(Mockito.same(object), Mockito.any(), Mockito.eq(true))).thenReturn("old value");
+        selectedSource.addProperty(property);
+        selectedSource.getPropertyValue(null, "value");
+        Load oldLoad = loads.getFirst();
+        Map<ObjectPropertyDescriptor, Object> oldResult = oldLoad.service.evaluate(new VoidProgressMonitor());
+
+        Object newSelection = new Object();
+        Mockito.when(property.isLazy(newSelection, true)).thenReturn(true);
+        Mockito.when(property.readValue(Mockito.same(newSelection), Mockito.any(), Mockito.eq(true))).thenReturn("new value");
+        selection.set(newSelection);
+        selectedSource.getPropertyValue(null, "value");
+        assertEquals(2, loads.size());
+        Load newLoad = loads.getLast();
+        assertSame(dataSource, oldLoad.service.getFamily());
+        assertSame(newSelection, newLoad.service.getFamily());
+        oldLoad.done(Status.OK_STATUS);
+        newLoad.complete(newLoad.service.evaluate(new VoidProgressMonitor()));
+        oldLoad.visualizer.completeLoading(oldResult);
+        assertEquals("new value", selectedSource.getPropertyValue(null, "value"));
+        assertEquals(2, loads.size());
+    }
+
+    @Test
+    public void readingUnselectedRowDoesNotInvalidateSelectedTarget() throws Exception {
+        AtomicReference<Object> selection = new AtomicReference<>(object);
+        PropertySourceEditable selectedSource = selectionSource(selection);
+        ObjectPropertyDescriptor property = addProperty("value");
+        Mockito.when(property.readValue(Mockito.same(object), Mockito.any(), Mockito.eq(true))).thenReturn("selected value");
+        selectedSource.addProperty(property);
+        selectedSource.getPropertyValue(null, "value");
+        Load selectedLoad = loads.getFirst();
+
+        Object unselected = new Object();
+        Mockito.when(property.isLazy(unselected, true)).thenReturn(true);
+        assertNull(selectedSource.getPropertyValue(null, unselected, property, true));
+        assertEquals(1, loads.size());
+        selectedLoad.complete(selectedLoad.service.evaluate(new VoidProgressMonitor()));
+        assertEquals("selected value", selectedSource.getPropertyValue(null, "value"));
+
+        assertNull(selectedSource.getPropertyValue(null, unselected, property, true));
+        assertEquals("selected value", selectedSource.getPropertyValue(null, "value"));
+        assertEquals(1, loads.size());
+        Mockito.verify(property, Mockito.never()).readValue(Mockito.same(unselected), Mockito.any(), Mockito.anyBoolean());
+    }
+
+    @Test
+    public void reselectingOriginalObjectDoesNotReactivateItsOldJob() throws Exception {
+        AtomicReference<Object> selection = new AtomicReference<>(object);
+        PropertySourceEditable selectedSource = selectionSource(selection);
+        ObjectPropertyDescriptor property = addProperty("value");
+        Mockito.when(property.readValue(Mockito.same(object), Mockito.any(), Mockito.eq(true))).thenReturn("old value", "new value");
+        selectedSource.addProperty(property);
+        selectedSource.getPropertyValue(null, "value");
+        Load oldLoad = loads.getFirst();
+        Map<ObjectPropertyDescriptor, Object> oldResult = oldLoad.service.evaluate(new VoidProgressMonitor());
+
+        Object other = new Object();
+        Mockito.when(property.isLazy(other, true)).thenReturn(true);
+        selection.set(other);
+        selectedSource.getPropertyValue(null, "value");
+        Load otherLoad = loads.getLast();
+        selection.set(object);
+        selectedSource.getPropertyValue(null, "value");
+        assertEquals(3, loads.size());
+        Load currentLoad = loads.getLast();
+        currentLoad.complete(currentLoad.service.evaluate(new VoidProgressMonitor()));
+        oldLoad.complete(oldResult);
+        otherLoad.complete(otherLoad.service.evaluate(new VoidProgressMonitor()));
+        assertEquals("new value", selectedSource.getPropertyValue(null, "value"));
+        Mockito.verify(property, Mockito.never()).readValue(Mockito.same(other), Mockito.any(), Mockito.anyBoolean());
+    }
+
+    @NotNull
+    private PropertySourceEditable selectionSource(@NotNull AtomicReference<Object> selection) {
+        return new PropertySourceEditable(object, object) {
+            @Nullable
+            @Override
+            public Object getEditableValue() {
+                return selection.get();
+            }
+        };
     }
 
     @Test

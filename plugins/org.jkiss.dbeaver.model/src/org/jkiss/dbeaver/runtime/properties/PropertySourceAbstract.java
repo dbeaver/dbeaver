@@ -58,9 +58,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     private Map<DBPPropertyDescriptor, Object> changedPropertiesValues = new HashMap<>();
     private final Map<Object, Object> propValues = new HashMap<>();
     private final Map<Object, Object> lazyValues = new HashMap<>();
-    private final List<ObjectPropertyDescriptor> lazyProps = new ArrayList<>();
-    private final Set<Object> pendingLazyValues = new HashSet<>();
-    private Job lazyLoadJob;
+    private final Object lazyLoadLock = new Object();
+    @Nullable
+    private volatile PropertyValueLoadService lazyLoadService;
     private String locale;
     private boolean enableFilters = true;
 
@@ -163,7 +163,8 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull final String id) {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor opd) {
-            value = getPropertyValue(monitor, getEditableValue(), opd, true);
+            Object editableValue = getEditableValue();
+            value = editableValue == null ? null : getPropertyValue(monitor, editableValue, opd, true);
         }
         return value;
     }
@@ -178,54 +179,33 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     ) {
         try {
             if (monitor == null && prop.isLazy(object, true) && !prop.supportsPreview()) {
-                final Object value = lazyValues.get(prop.getId());
-                if (value != null) {
-                    return value;
-                }
-                if (lazyValues.containsKey(prop.getId())) {
-                    // Some lazy props has null value
-                    return null;
-                }
-                if (!loadLazyProps || !isLazyLoadAvailable()) {
-                    return null;
-                } else {
-                    synchronized (lazyProps) {
-                        if (!pendingLazyValues.add(prop.getId())) {
-                            return null;
-                        }
-                        lazyProps.add(prop);
-                        if (lazyLoadJob == null) {
-                            // We assume that it can be called ONLY by properties viewer
-                            // So, start lazy loading job to update it after value will be loaded
-                            PropertyValueLoadService service = new PropertyValueLoadService();
-                            lazyLoadJob = DBWorkbench.getPlatformUI().createLoadingService(
-                                service,
-                                new PropertyValueLoadVisualizer(service));
-                            lazyLoadJob.addJobChangeListener(new JobChangeAdapter() {
-                                @Override
-                                public void done(IJobChangeEvent event)
-                                {
-                                    synchronized (lazyProps) {
-                                        if (!isLazyLoadAvailable() || event.getResult().matches(IStatus.CANCEL)) {
-                                            for (ObjectPropertyDescriptor pending : lazyProps) {
-                                                pendingLazyValues.remove(pending.getId());
-                                            }
-                                            lazyProps.clear();
-                                        }
-                                        if (!lazyProps.isEmpty()) {
-                                            lazyLoadJob.schedule(100);
-                                        } else {
-                                            lazyLoadJob = null;
-                                        }
-                                    }
-                                }
-                            });
-                            lazyLoadJob.schedule(100);
-                        }
+                synchronized (lazyLoadLock) {
+                    if (getEditableValue() != object) {
+                        // Dynamic lists may ask for an unselected row while painting it.
+                        return null;
                     }
-                    // Return dummy string for now
-                    return null;
+                    if (lazyLoadService != null && lazyLoadService.target != object) {
+                        // A list property source can be reused for another selection while the old job is still running.
+                        lazyValues.clear();
+                        lazyLoadService = null;
+                    }
+                    if (lazyValues.containsKey(prop.getId())) {
+                        // A loaded property (or a failed read) can have a null value.
+                        return lazyValues.get(prop.getId());
+                    }
+                    if (!loadLazyProps) {
+                        return null;
+                    }
+                    DBPDataSource dataSource = DBUtils.getObjectDataSource(object);
+                    if (!isLazyLoadAvailable(object, dataSource)) {
+                        return null;
+                    }
+                    if (lazyLoadService == null) {
+                        lazyLoadService = new PropertyValueLoadService(object, dataSource);
+                    }
+                    lazyLoadService.schedule(prop);
                 }
+                return null;
             } else {
                 return prop.readValue(object, monitor, formatValue);
             }
@@ -375,8 +355,11 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         return changedPropertiesValues;
     }
 
-    private boolean isLazyLoadAvailable() {
-        DBPDataSource dataSource = DBUtils.getObjectDataSource(getEditableValue());
+    private boolean isLazyLoadAvailable(@NotNull Object target, @Nullable DBPDataSource dataSource) {
+        // List property sources follow the selection, which can disappear while loading is pending.
+        if (getEditableValue() != target) {
+            return false;
+        }
         if (dataSource == null) {
             return true;
         }
@@ -387,10 +370,50 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 
     private class PropertyValueLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
         private final Deque<List<ObjectPropertyDescriptor>> completedBatches = new ArrayDeque<>();
+        private final Object target;
+        @Nullable
+        private final DBPDataSource dataSource;
+        private final List<ObjectPropertyDescriptor> lazyProps = new ArrayList<>();
+        private final Set<Object> pendingLazyValues = new HashSet<>();
+        private Job lazyLoadJob;
 
-        public PropertyValueLoadService()
-        {
+        private PropertyValueLoadService(@NotNull Object target, @Nullable DBPDataSource dataSource) {
             super(ModelMessages.model_navigator_load_);
+            this.target = target;
+            this.dataSource = dataSource;
+        }
+
+        private boolean isAvailable() {
+            return lazyLoadService == this && isLazyLoadAvailable(target, dataSource);
+        }
+
+        private void schedule(@NotNull ObjectPropertyDescriptor prop) {
+            if (!pendingLazyValues.add(prop.getId())) {
+                return;
+            }
+            lazyProps.add(prop);
+            if (lazyLoadJob == null) {
+                lazyLoadJob = DBWorkbench.getPlatformUI().createLoadingService(this, new PropertyValueLoadVisualizer(this));
+                lazyLoadJob.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(@NotNull IJobChangeEvent event) {
+                        synchronized (lazyLoadLock) {
+                            if (!isAvailable() || event.getResult().matches(IStatus.CANCEL)) {
+                                for (ObjectPropertyDescriptor pending : lazyProps) {
+                                    pendingLazyValues.remove(pending.getId());
+                                }
+                                lazyProps.clear();
+                            }
+                            if (!lazyProps.isEmpty()) {
+                                lazyLoadJob.schedule(100);
+                            } else {
+                                lazyLoadJob = null;
+                            }
+                        }
+                    }
+                });
+                lazyLoadJob.schedule(100);
+            }
         }
 
         @NotNull
@@ -405,14 +428,14 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             }
             try {
                 for (ObjectPropertyDescriptor prop : properties) {
-                    if (monitor.isCanceled() || !isLazyLoadAvailable()) {
+                    if (monitor.isCanceled() || !isAvailable()) {
                         break;
                     }
-                    result.put(prop, prop.readValue(getEditableValue(), monitor, true));
+                    result.put(prop, prop.readValue(target, monitor, true));
                 }
                 return result;
             } catch (Throwable ex) {
-                if (monitor.isCanceled() || !isLazyLoadAvailable()) {
+                if (monitor.isCanceled() || !isAvailable()) {
                     return result;
                 }
                 if (ex instanceof InvocationTargetException ite) {
@@ -421,7 +444,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                     throw new InvocationTargetException(ex);
                 }
             } finally {
-                synchronized (lazyProps) {
+                synchronized (lazyLoadLock) {
                     // UI completions are queued in run order, including failed runs with a null result.
                     completedBatches.addLast(properties);
                 }
@@ -431,18 +454,13 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         @NotNull
         @Override
         public Object getFamily() {
-            final Object editableValue = getEditableValue();
-            DBPDataSource dataSource = DBUtils.getObjectDataSource(editableValue);
-            return dataSource == null ? editableValue : dataSource;
+            // JobManager queries families during disconnect, independently of the current UI selection.
+            return dataSource == null ? target : dataSource;
         }
-    }
 
-    private List<ObjectPropertyDescriptor> obtainLazyProperties()
-    {
-        synchronized (lazyProps) {
-            if (lazyProps.isEmpty()) {
-                return Collections.emptyList();
-            } else {
+        @NotNull
+        private List<ObjectPropertyDescriptor> obtainLazyProperties() {
+            synchronized (lazyLoadLock) {
                 List<ObjectPropertyDescriptor> result = new ArrayList<>(lazyProps);
                 lazyProps.clear();
                 return result;
@@ -493,9 +511,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         public void completeLoading(@Nullable Map<ObjectPropertyDescriptor, Object> result)
         {
             completed = true;
-            synchronized (lazyProps) {
+            synchronized (lazyLoadLock) {
                 List<ObjectPropertyDescriptor> properties = service.completedBatches.pollFirst();
-                if (isLazyLoadAvailable()) {
+                if (service.isAvailable()) {
                     if (result == null && properties != null) {
                         // Ordinary failures must not be retried by painting the property sheet.
                         // An explicit property refresh clears this cache and permits another attempt.
@@ -514,14 +532,14 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                 }
                 if (properties != null) {
                     for (ObjectPropertyDescriptor prop : properties) {
-                        pendingLazyValues.remove(prop.getId());
+                        service.pendingLazyValues.remove(prop.getId());
                     }
                 }
             }
             if (result != null) {
                 for (Map.Entry<ObjectPropertyDescriptor, Object> entry : result.entrySet()) {
-                    if (entry.getValue() != LAZY_VALUE_NOT_LOADED && isLazyLoadAvailable()) {
-                        PropertiesContributor.getInstance().notifyPropertyLoad(getEditableValue(), entry.getKey(), entry.getValue(), true);
+                    if (entry.getValue() != LAZY_VALUE_NOT_LOADED && service.isAvailable()) {
+                        PropertiesContributor.getInstance().notifyPropertyLoad(service.target, entry.getKey(), entry.getValue(), true);
                     }
                 }
             }
