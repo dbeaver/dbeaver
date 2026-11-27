@@ -4863,6 +4863,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (metadataChanged && metadataRefreshHandling != null) {
                     metadataRefreshHandling.finish();
                 }
+                temporaryTableRefreshTargets.removeIf(target -> !target.table().isCurrentTemporaryTable());
                 if (!temporaryTableRefreshTargets.isEmpty()) {
                     SQLMetadataRefreshTransactionCoordinator.requestTemporaryTableRefresh(
                         session.getExecutionContext(),

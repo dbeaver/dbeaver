@@ -66,6 +66,11 @@ final class MySQLTemporaryTable extends MySQLTable implements DBCTemporaryTableM
     }
 
     @Override
+    public boolean isCurrentTemporaryTable() {
+        return context.isCurrentTemporaryTable(this);
+    }
+
+    @Override
     public boolean refreshTemporaryMetadata(@NotNull DBRProgressMonitor monitor) throws DBException {
         synchronized (context) {
             if (!context.isCurrentTemporaryTable(this)) {

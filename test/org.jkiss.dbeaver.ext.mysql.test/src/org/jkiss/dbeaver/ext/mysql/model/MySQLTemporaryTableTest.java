@@ -106,6 +106,26 @@ public class MySQLTemporaryTableTest extends DBeaverUnitTest {
     }
 
     @Test
+    void invalidatesTemporaryMetadataRefreshTargetsAcrossAlterAndDrop() throws Exception {
+        MySQLExecutionContext context = createContext();
+        JDBCSession session = Mockito.mock(JDBCSession.class);
+        List<String> name = List.of("test", "temp_table");
+        var original = context.registerTemporaryTable(session, name, false);
+        var other = context.registerTemporaryTable(session, List.of("test", "other"), false);
+        var altered = context.temporaryTableChanged(session, name, false, List.of());
+
+        Assertions.assertFalse(original.isCurrentTemporaryTable());
+        Assertions.assertTrue(altered.isCurrentTemporaryTable());
+        context.temporaryTableChanged(session, name, true, List.of());
+        Assertions.assertFalse(original.isCurrentTemporaryTable());
+        Assertions.assertFalse(altered.isCurrentTemporaryTable());
+        Assertions.assertTrue(other.isCurrentTemporaryTable());
+
+        Mockito.doReturn(Mockito.mock(Connection.class)).when(context).getConnectionOrNull();
+        Assertions.assertFalse(other.isCurrentTemporaryTable());
+    }
+
+    @Test
     void populatesEnumAndSetMembersFromFullType() throws Exception {
         MySQLTableColumn column = new MySQLTableColumn(Mockito.mock(MySQLTable.class));
         column.loadEnumValues("enum('first','second','it''s')");

@@ -39,6 +39,11 @@ public interface DBCTemporaryTableManager {
     TemporaryTable findTemporaryTable(@NotNull DBCEntityMetaData metadata);
 
     interface TemporaryTable extends DBSEntity {
+        /** Whether this metadata still represents the table in its original physical session. */
+        default boolean isCurrentTemporaryTable() {
+            return true;
+        }
+
         boolean refreshTemporaryMetadata(@NotNull DBRProgressMonitor monitor) throws DBException;
     }
 }
