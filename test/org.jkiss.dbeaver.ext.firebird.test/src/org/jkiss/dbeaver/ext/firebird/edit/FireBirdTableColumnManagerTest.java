@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.firebird.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdColumnDomain;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataSource;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataType;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdFieldType;
@@ -76,6 +77,30 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(DOMAIN_NAME, column.getDomainName());
         Assertions.assertEquals("TEST_NAME DOM_UUID NOT NULL", getDeclaration(column));
+    }
+
+    @Test
+    public void columnDeclarationKeepsCollationDeclaredOnColumn() throws DBException {
+        Mockito.when(table.getColumnDomain(Mockito.any(), Mockito.any()))
+            .thenReturn(new FireBirdColumnDomain(DOMAIN_NAME, "UNICODE_CI"));
+        FireBirdTableColumn column = loadColumn(DOMAIN_NAME);
+
+        Assertions.assertEquals("UNICODE_CI", column.getCollation());
+        Assertions.assertEquals("TEST_NAME DOM_UUID NOT NULL COLLATE UNICODE_CI", getDeclaration(column));
+        // The collation declared on the column belongs to the previous domain
+        column.setTypeName(DOMAIN_NAME);
+        Assertions.assertEquals("TEST_NAME DOM_UUID NOT NULL", getDeclaration(column));
+    }
+
+    @Test
+    public void columnDeclarationOmitsCollationEqualToDomain() throws DBException {
+        FireBirdDataType domain = registerDomain(charDomain("DOM_CODE", 16, "UTF8"));
+        domain.setCollationName("UNICODE_CI");
+        Mockito.when(table.getColumnDomain(Mockito.any(), Mockito.any()))
+            .thenReturn(new FireBirdColumnDomain("DOM_CODE", "UNICODE_CI"));
+        FireBirdTableColumn column = loadColumn("DOM_CODE");
+
+        Assertions.assertEquals("TEST_NAME DOM_CODE NOT NULL", getDeclaration(column));
     }
 
     @Test
@@ -142,6 +167,33 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
                 "ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE DOM_UUID",
                 "ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE CHAR(20)"),
             getModifyScripts(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, DOMAIN_NAME, "maxLength", 20L)));
+    }
+
+    @Test
+    public void alterSizeAfterSwitchingToShorterDomainWithOtherCollationIsRejected() throws DBException {
+        FireBirdDataType domain = registerDomain(charDomain("DOM_CODE", 16, "OCTETS"));
+        domain.setCollationName("CUSTOM_COLLATION");
+        FireBirdTableColumn column = loadColumn(IMPLICIT_DOMAIN_NAME, 100);
+        column.setTypeName("DOM_CODE");
+        column.setMaxLength(200);
+
+        // Firebird can't shorten the column to the domain, and nothing else would take over the collation
+        DBException error = Assertions.assertThrows(DBException.class, () -> getModifyScripts(
+            column, Map.of(DBConstants.PROP_ID_TYPE_NAME, "DOM_CODE", DBConstants.PROP_ID_MAX_LENGTH, 200L)));
+        Assertions.assertTrue(error.getMessage().contains("at least 100 characters"), error.getMessage());
+    }
+
+    @Test
+    public void alterSizeAfterSwitchingToShorterDomainWithSameCollationOnlyResizes() throws DBException {
+        registerDomain(charDomain("DOM_CODE", 16, "OCTETS"));
+        FireBirdTableColumn column = loadColumn(IMPLICIT_DOMAIN_NAME, 100);
+        column.setTypeName("DOM_CODE");
+        column.setMaxLength(200);
+
+        // The resize keeps the column's character set and collation, which are those of the domain
+        Assertions.assertEquals(
+            List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE CHAR(200)"),
+            getModifyScripts(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, "DOM_CODE", DBConstants.PROP_ID_MAX_LENGTH, 200L)));
     }
 
     @Test
@@ -278,10 +330,22 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
 
     @NotNull
     private FireBirdTableColumn loadColumn(@NotNull String fieldSource) throws DBException {
+        return loadColumn(fieldSource, 16);
+    }
+
+    @NotNull
+    private FireBirdTableColumn loadColumn(@NotNull String fieldSource, long length) throws DBException {
         Mockito.when(table.getColumnDomainType(Mockito.any(), Mockito.any())).thenReturn(fieldSource);
         return new FireBirdTableColumn(
             progressMonitor, null, table, "TEST_NAME", FireBirdFieldType.CHAR.getName(), Types.CHAR, Types.CHAR,
-            1, 16, 16, null, null, 10, true, null, null, false, false);
+            1, length, length, null, null, 10, true, null, null, false, false);
+    }
+
+    @NotNull
+    private FireBirdDataType charDomain(@NotNull String name, int length, @NotNull String charset) {
+        return new FireBirdDataType(
+            dataSource, FireBirdFieldType.CHAR, 0, name, null, false, true, 0, 0, 0,
+            length, length, null, null, null, charset, false);
     }
 
     @NotNull

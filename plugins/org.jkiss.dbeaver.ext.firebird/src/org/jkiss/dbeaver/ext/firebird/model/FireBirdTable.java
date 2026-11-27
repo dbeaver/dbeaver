@@ -37,7 +37,7 @@ public class FireBirdTable extends GenericTable implements FireBirdTableBase, DB
     private int keyLength;
     private String externalFile;
     private String ownerName;
-    private Map<String, String> columnDomainTypes;
+    private Map<String, FireBirdColumnDomain> columnDomains;
 
     public FireBirdTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
@@ -85,16 +85,16 @@ public class FireBirdTable extends GenericTable implements FireBirdTableBase, DB
 
     @Nullable
     @Override
-    public String getColumnDomainType(@NotNull DBRProgressMonitor monitor, @NotNull FireBirdTableColumn column) throws DBException {
-        if (columnDomainTypes == null) {
-            columnDomainTypes = FireBirdUtils.readColumnDomainTypes(monitor, this);
+    public FireBirdColumnDomain getColumnDomain(@NotNull DBRProgressMonitor monitor, @NotNull FireBirdTableColumn column) throws DBException {
+        if (columnDomains == null) {
+            columnDomains = FireBirdUtils.readColumnDomains(monitor, this);
         }
-        return columnDomainTypes.get(column.getName());
+        return columnDomains.get(column.getName());
     }
 
     @Override
-    public void setColumnDomainTypes(@NotNull Map<String, String> columnDomainTypes) {
-        this.columnDomainTypes = columnDomainTypes;
+    public void setColumnDomains(@NotNull Map<String, FireBirdColumnDomain> columnDomains) {
+        this.columnDomains = columnDomains;
     }
 
 }

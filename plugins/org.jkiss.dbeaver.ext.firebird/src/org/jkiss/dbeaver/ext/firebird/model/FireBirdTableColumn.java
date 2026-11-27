@@ -49,6 +49,17 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
      */
     @Nullable
     private String domainName;
+    /**
+     * Collation declared on the column itself (DOMAIN_NAME COLLATE X), or null if the column uses the collation of its type
+     */
+    @Nullable
+    private String columnCollation;
+    // Character length, character set and collation of the column as loaded from the database
+    private long persistedLength;
+    @Nullable
+    private String persistedCharset;
+    @Nullable
+    private String persistedCollation;
 
     public FireBirdTableColumn(GenericTableBase table) {
         super(table);
@@ -65,6 +76,13 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
         } else {
             dataType = (FireBirdDataType) table.getDataSource().getLocalDataType(typeName);
         }
+        if (table instanceof FireBirdTableBase fbTable) {
+            FireBirdColumnDomain columnDomain = fbTable.getColumnDomain(monitor, this);
+            columnCollation = columnDomain == null ? null : columnDomain.collationName();
+        }
+        persistedLength = getMaxLength();
+        persistedCharset = getCharset();
+        persistedCollation = getCollation();
     }
 
     @NotNull
@@ -105,11 +123,45 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     }
 
     /**
-     * Collation of the column's data type, or null if unknown. Used when a domain's underlying type is declared.
+     * Collation of the column: the one declared on the column itself, otherwise the one of its data type.
+     * Null if unknown.
      */
     @Nullable
     public String getCollation() {
+        if (columnCollation != null) {
+            return columnCollation;
+        }
         return dataType == null ? null : dataType.getCollationName();
+    }
+
+    /**
+     * True if the column declares a collation other than the one of its data type (DOMAIN_NAME COLLATE X).
+     */
+    public boolean hasCollationOverride() {
+        return columnCollation != null && (dataType == null || !columnCollation.equalsIgnoreCase(dataType.getCollationName()));
+    }
+
+    /**
+     * Character length of the column as loaded from the database, 0 for a new column
+     */
+    public long getPersistedLength() {
+        return persistedLength;
+    }
+
+    /**
+     * Character set of the column as loaded from the database, null for a new column
+     */
+    @Nullable
+    public String getPersistedCharset() {
+        return persistedCharset;
+    }
+
+    /**
+     * Collation of the column as loaded from the database, null for a new column
+     */
+    @Nullable
+    public String getPersistedCollation() {
+        return persistedCollation;
     }
 
     @NotNull
@@ -198,6 +250,8 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
             this.dataType = fbDataType;
         }
         this.domainName = getUserDomainName(typeName);
+        // The collation declared on the column belonged to the previous type
+        this.columnCollation = null;
     }
 
     @Override
@@ -205,6 +259,7 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
         this.dataType = dataType;
         this.typeName = dataType.getTypeName();
         this.domainName = dataType.isDomain() ? getUserDomainName(dataType.getTypeName()) : null;
+        this.columnCollation = null;
     }
 
     /**
