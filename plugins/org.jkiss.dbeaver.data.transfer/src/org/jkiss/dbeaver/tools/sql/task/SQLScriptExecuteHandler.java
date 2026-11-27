@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.sql.task;
 
+import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -60,6 +61,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * SQLScriptExecuteHandler
@@ -142,7 +144,12 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler, DBTTaskImportTra
                         if (DBWorkbench.getService(DBServiceConnections.class) == null) {
                             dataSourceContainer.connect(monitor, true, true);
                         } else {
-                            DBUtils.initDataSource(monitor, dataSourceContainer, null);
+                            AtomicReference<IStatus> connectionStatus = new AtomicReference<>();
+                            DBUtils.initDataSource(monitor, dataSourceContainer, connectionStatus::set);
+                            IStatus status = connectionStatus.get();
+                            if (status != null && !status.isOK() && status.getSeverity() != IStatus.CANCEL) {
+                                throw new DBException(status.getMessage(), status.getException());
+                            }
                         }
                     }
                     DBPDataSource dataSource = dataSourceContainer.getDataSource();
