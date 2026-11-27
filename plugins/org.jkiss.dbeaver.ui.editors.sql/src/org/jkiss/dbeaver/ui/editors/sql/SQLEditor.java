@@ -2581,7 +2581,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void init(@NotNull IEditorSite site, @NotNull IEditorInput editorInput)
     throws PartInitException {
-        // AbstractTextEditor.init sets the site and calls doSetInput, so its size check also covers the initial file load.
+        // AbstractTextEditor.init sets the site before doSetInput checks the initial file load.
         super.init(site, editorInput);
 
         updateResultSetOrientation();
@@ -2672,19 +2672,13 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     protected void doSetInput(@NotNull IEditorInput editorInput) throws CoreException {
-        // Setting input can reload the document even when the file is already open, so the
-        // memory check applies to both initial loading and subsequent input changes.
-        if (!SQLScriptMemoryEstimate.confirmLargeScriptOpen(this.getSite().getShell(), editorInput)) {
-            // setInputWithNotify displays a CoreException as an input error. Keep the existing input
-            // on refusal; only initial editor creation needs an exception to abort initialization.
-            if (this.getEditorInput() != null) {
-                // Save As may already have written the new file, and a file move may have changed its
-                // location. Neither requires replacing this editor's document with one the user
-                // declined to load; leave the current input and document untouched.
-                return;
-            } else {
-                throw new CoreException(CANCEL_LARGE_SCRIPT_OPEN_STATUS);
-            }
+        // Only guard initial loading. Other reload scenarios (Save As, moved or renamed files, and external refreshes)
+        // need coordinated document-provider and text-buffer lifecycle handling
+        // to avoid unwanted rereading the file or leaving a stale input (see TextFileDocumentProvider), which is out of scope for now.
+        if (this.getEditorInput() == null
+            && !SQLScriptMemoryEstimate.confirmLargeScriptOpen(this.getSite().getShell(), editorInput)) {
+            // Keep the refusal outside the catch(Throwable) below: it is not a load error.
+            throw new CoreException(CANCEL_LARGE_SCRIPT_OPEN_STATUS);
         }
         checkInputFileExistence(editorInput);
         try {
