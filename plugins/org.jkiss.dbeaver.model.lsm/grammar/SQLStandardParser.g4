@@ -732,7 +732,7 @@ proceduralLoop: {isGenericProceduralSyntax()}? LOOP proceduralStatements END LOO
 proceduralExceptionSection: EXCEPTION (WHEN proceduralCondition THEN proceduralStatements)+;
 proceduralCondition: (~(THEN|DO|LOOP|Semicolon|BEGIN|DECLARE|END|ELSE|ELSEIF|ELSIF|EXCEPTION))+;
 // Structured statement starts must not also enter the unknown-statement fallback.
-proceduralStatementTokens: ~(Semicolon|BEGIN|DECLARE|END|ELSE|ELSEIF|ELSIF|THEN|WHEN|IF|CASE|LOOP|WHILE|FOR|REPEAT|UNTIL|EXCEPTION|
+proceduralStatementTokens: ~(Semicolon|Period|BEGIN|DECLARE|END|ELSE|ELSEIF|ELSIF|THEN|WHEN|IF|CASE|LOOP|WHILE|FOR|REPEAT|UNTIL|EXCEPTION|
     SELECT|WITH|INSERT|UPDATE|DELETE|CALL|EXEC|EXECUTE|OPEN|FETCH|CLOSE|DEALLOCATE|FUNCTION|PROCEDURE|PROC)
     (~(Semicolon|BEGIN|END|ELSE|ELSEIF|ELSIF|THEN|WHEN|IF|CASE|LOOP|WHILE|FOR|REPEAT|UNTIL|EXCEPTION))*;
 
