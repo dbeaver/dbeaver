@@ -344,17 +344,17 @@ final class WebViewMessageRenderer {
     void initChat() {
         Map<String, Object> icons = Map.of(
             "copy",
-            getActionData(UIIcon.COPY, AIChatMessagesUI.ai_chat_message_copy_to_clipboard_tip),
+            getActionData(UIIcon.COPY),
             "execute",
-            getActionData(UIIcon.SQL_EXECUTE, AIChatMessagesUI.ai_chat_message_execute_query_tip),
+            getActionData(UIIcon.SQL_EXECUTE),
             "editor",
-            getActionData(UIIcon.MOVE, AIChatMessagesUI.ai_chat_message_copy_to_editor_tip),
+            getActionData(UIIcon.MOVE),
             "info",
-            getActionData(DBIcon.SMALL_INFO, ""),
+            getActionData(DBIcon.SMALL_INFO),
             "clean",
-            getActionData(UIIcon.CLEAN, AIChatMessagesUI.ai_chat_message_clear_up_to_here_tip),
+            getActionData(UIIcon.CLEAN),
             "close",
-            getActionData(UIIcon.CLOSE, AIChatMessagesUI.ai_chat_message_delete_message_tip),
+            getActionData(UIIcon.CLOSE),
             "settings",
             Map.of(
                 "showMessageTime", AIConstants.AI_CHAT_SHOW_MESSAGE_TIME,
@@ -362,45 +362,9 @@ final class WebViewMessageRenderer {
                 "showTokensSpent", AIConstants.AI_CHAT_SHOW_TOKENS_SPENT,
                 "showTotalTokensSpent", AIConstants.AI_CHAT_SHOW_TOTAL_TOKENS_SPENT
             ),
-            "notice",
-            AIChatMessagesUI.ai_chat_ai_notice,
-            "strings",
-            Map.ofEntries(
-                Map.entry("allowOptions", AIChatMessagesUI.ai_chat_confirm_allow_options),
-                Map.entry("allowTitlePrefix", AIChatMessagesUI.ai_chat_confirm_title_prefix),
-                Map.entry("allowTitleMiddle", AIChatMessagesUI.ai_chat_confirm_title_middle),
-                Map.entry("parameters", AIChatMessagesUI.ai_chat_confirm_params),
-                Map.entry("result", AIChatMessagesUI.ai_chat_confirm_result),
-                Map.entry("invalidAttachmentData", AIChatMessagesUI.ai_chat_attachment_invalid_data),
-                Map.entry("unknownFile", AIChatMessagesUI.ai_chat_attachment_unknown_file),
-                Map.entry("showInExplorer", AIChatMessagesUI.ai_chat_attachment_show_in_explorer),
-                Map.entry("attachmentError", AIChatMessagesUI.ai_chat_attachment_create_error),
-                Map.entry("chooseType", AIChatMessagesUI.ai_chat_attachment_choose_type),
-                Map.entry("chooseTypeTip", AIChatMessagesUI.ai_chat_attachment_choose_type_tip),
-                Map.entry("noHandlers", AIChatMessagesUI.ai_chat_attachment_no_handlers),
-                Map.entry("noActions", AIChatMessagesUI.ai_chat_attachment_no_actions),
-                Map.entry("noTypeActions", AIChatMessagesUI.ai_chat_attachment_no_type_actions),
-                Map.entry("openAsTable", AIChatMessagesUI.ai_chat_attachment_open_as_table),
-                Map.entry("importFile", AIChatMessagesUI.ai_chat_attachment_import_file),
-                Map.entry("importFiles", AIChatMessagesUI.ai_chat_attachment_import_files),
-                Map.entry("openCompleted", AIChatMessagesUI.ai_chat_attachment_open_completed),
-                Map.entry("importCompleted", AIChatMessagesUI.ai_chat_attachment_import_completed)
-            ),
             "a11y",
             Map.of(
-                "notifyOutsideWebView", "edge".equals(browser.getBrowserType()),
-                "transcriptLabel", AIChatMessagesUI.ai_chat_a11y_transcript_label,
-                "waitingForResponse", AIChatMessagesUI.ai_chat_a11y_waiting_for_response,
-                "roles", Map.of(
-                    "user", AIChatMessagesUI.ai_chat_message_role_user_label,
-                    "assistant", AIChatMessagesUI.ai_chat_message_role_assistant_label,
-                    "function", AIChatMessagesUI.ai_chat_message_role_function_label,
-                    "system", AIChatMessagesUI.ai_chat_message_role_system_label,
-                    "generated", AIChatMessagesUI.ai_chat_message_role_generated_label,
-                    "warning", AIChatMessagesUI.ai_chat_message_role_warning_label,
-                    "error", AIChatMessagesUI.ai_chat_message_role_error_label,
-                    "attachment", AIChatMessagesUI.ai_chat_message_role_attachment_label
-                )
+                "notifyOutsideWebView", "edge".equals(browser.getBrowserType())
             )
         );
 
@@ -418,13 +382,13 @@ final class WebViewMessageRenderer {
     }
 
     @NotNull
-    private Map<String, String> getActionData(@NotNull DBIcon icon, @NotNull String tooltipMessage) {
+    private Map<String, String> getActionData(@NotNull DBIcon icon) {
         Map<String, String> iconData;
         try {
-            iconData = Map.of("icon", cssInitializer.getResourceUrl(icon), "tooltip", tooltipMessage);
+            iconData = Map.of("icon", cssInitializer.getResourceUrl(icon));
         } catch (IOException e) {
             log.error("Error getting icon path for " + icon, e);
-            iconData = Map.of("icon", "", "tooltip", tooltipMessage);
+            iconData = Map.of("icon", "");
         }
         return iconData;
     }

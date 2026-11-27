@@ -8,10 +8,13 @@ statusBar.className = 'status-bar';
 statusBar.setAttribute('aria-hidden', 'true');
 statusBar.innerHTML = '<span class="loader"></span><span class="status-bar-text"></span>';
 let isBusy = false;
-let chatStrings = {};
 
 let copyIcon, executeIcon, editorIcon, infoIcon, cleanIcon, closeIcon;
-let copyTooltip, executeTooltip, editorTooltip, cleanTooltip, closeTooltip;
+const copyTooltip = '%#ai_chat_message_copy_to_clipboard_tip';
+const executeTooltip = '%#ai_chat_message_execute_query_tip';
+const editorTooltip = '%#ai_chat_message_copy_to_editor_tip';
+const cleanTooltip = '%#ai_chat_message_clear_up_to_here_tip';
+const closeTooltip = '%#ai_chat_message_delete_message_tip';
 
 const settings = {
     showMessageTime: false,
@@ -76,15 +79,9 @@ function initChat(args) {
     cleanIcon = args.clean.icon;
     closeIcon = args.close.icon;
 
-    copyTooltip = args.copy.tooltip;
-    executeTooltip = args.execute.tooltip;
-    editorTooltip = args.editor.tooltip;
-    cleanTooltip = args.clean.tooltip;
-    closeTooltip = args.close.tooltip;
     settingKeys = args.settings || {};
-    aiNotice.textContent = args.notice;
-    chatStrings = args.strings;
-    statusBar.querySelector('.status-bar-text').textContent = args.a11y.waitingForResponse + '...';
+    aiNotice.textContent = '%#ai_chat_ai_notice';
+    statusBar.querySelector('.status-bar-text').textContent = '%#ai_chat_a11y_waiting_for_response' + '...';
 
     initA11y(args.a11y || {});
     settingsChanged();

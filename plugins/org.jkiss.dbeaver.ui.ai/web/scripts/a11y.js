@@ -3,15 +3,25 @@ const A11Y_INTERACTIVE_SELECTOR =
 const A11Y_DISMISS_SELECTOR = '.message-clean-btn, .attachment-close-icon';
 const A11Y_ANNOUNCE_MAX_LENGTH = 4000;
 
-let a11yStrings = {roles: {}};
+const a11yStrings = {
+    transcriptLabel: '%#ai_chat_a11y_transcript_label',
+    roles: {
+        user: '%#ai_chat_message_role_user_label',
+        assistant: '%#ai_chat_message_role_assistant_label',
+        function: '%#ai_chat_message_role_function_label',
+        system: '%#ai_chat_message_role_system_label',
+        generated: '%#ai_chat_message_role_generated_label',
+        warning: '%#ai_chat_message_role_warning_label',
+        error: '%#ai_chat_message_role_error_label',
+        attachment: '%#ai_chat_message_role_attachment_label'
+    }
+};
 let a11yNotifyOutsideWebView = false;
 let a11yAnnouncementsSuspended = false;
 let a11yCurrentItem = null;
 
-function initA11y(strings) {
-    a11yStrings = strings || {};
-    a11yStrings.roles = a11yStrings.roles || {};
-    a11yNotifyOutsideWebView = Boolean(a11yStrings.notifyOutsideWebView) && typeof document.ariaNotify === 'function';
+function initA11y(options) {
+    a11yNotifyOutsideWebView = Boolean(options.notifyOutsideWebView) && typeof document.ariaNotify === 'function';
 
     if (a11yStrings.transcriptLabel) {
         chat.setAttribute('aria-label', a11yStrings.transcriptLabel);
@@ -380,7 +390,7 @@ function getMessageText(element) {
 }
 
 function announceWaiting() {
-    announce(a11yStrings.waitingForResponse);
+    announce('%#ai_chat_a11y_waiting_for_response');
 }
 
 function setAnnouncementsSuspended(suspended) {

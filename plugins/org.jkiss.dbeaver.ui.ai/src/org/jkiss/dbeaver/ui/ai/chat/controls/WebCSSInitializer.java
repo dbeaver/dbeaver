@@ -29,9 +29,11 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatThemeSettings;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
 import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
+import org.jkiss.dbeaver.utils.NlsUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 
@@ -91,7 +93,14 @@ public class WebCSSInitializer implements AutoCloseable {
                     .map(this::updateThemeValues)
                     .map(content -> content.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent()))
             );
-            default -> server.addResource(resource, url::openStream);
+            default -> {
+                if (resource.equals("script.js") || resource.startsWith("scripts/") && resource.endsWith(".js")) {
+                    server.addTextResource(resource, LocalResourceHttpServer.Resource.of(url::openStream)
+                        .map(content -> NlsUtils.formatNlsMessages(content, AIChatMessagesUI.class)));
+                } else {
+                    server.addResource(resource, url::openStream);
+                }
+            }
         }
     }
 
