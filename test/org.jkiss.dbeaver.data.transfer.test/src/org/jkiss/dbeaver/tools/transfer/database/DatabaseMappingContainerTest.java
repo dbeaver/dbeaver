@@ -695,6 +695,46 @@ public class DatabaseMappingContainerTest extends DBeaverUnitTest {
 
         Assertions.assertNull(mapping.getTarget());
         Assertions.assertEquals(DatabaseMappingType.create, mapping.getMappingType());
+        Assertions.assertTrue(mapping.isTargetNameRaw());
+
+        Map<String, Object> saved = new LinkedHashMap<>();
+        mapping.saveSettings(saved);
+
+        Assertions.assertEquals("\"foo\"", saved.get("targetName"));
+        Assertions.assertEquals(true, saved.get("targetNameIsRaw"));
+    }
+
+    @Test
+    public void demotedRawViewTargetIsNotRedirectedOnRefresh() throws Exception {
+        DatabaseConsumerSettings settings = new DatabaseConsumerSettings();
+        DBSObjectContainer container = Mockito.mock(DBSObjectContainer.class);
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialect dialect = Mockito.mock(SQLDialect.class);
+        DBSView view = Mockito.mock(DBSView.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        DBSDataContainer source = Mockito.mock(DBSDataContainer.class);
+        DBRRunnableContext context = Mockito.mock(DBRRunnableContext.class);
+
+        settings.setContainer(container);
+        Mockito.when(container.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.when(dialect.getUnquotedIdentifier("\"foo\"", true)).thenReturn("foo");
+        Mockito.when(container.getChild(Mockito.any(), Mockito.eq("\"foo\""))).thenReturn(view);
+        Mockito.when(container.getChild(Mockito.any(), Mockito.eq("foo"))).thenReturn(table);
+
+        DatabaseMappingContainer mapping = Mockito.spy(new DatabaseMappingContainer(settings, source));
+        Mockito.doReturn(Collections.emptyList()).when(mapping).getAttributeMappings(Mockito.any());
+
+        mapping.loadSettings(context, Map.of(
+            "targetName", "\"foo\"",
+            "mappingType", "existing",
+            "targetNameIsRaw", true));
+
+        Assertions.assertEquals(DatabaseMappingType.create, mapping.getMappingType());
+        Assertions.assertThrows(
+            DBCException.class,
+            () -> DatabaseTransferUtils.refreshDatabaseMappings(new VoidProgressMonitor(), settings, mapping, false));
+        Assertions.assertNull(mapping.getTarget());
     }
 
     @Test

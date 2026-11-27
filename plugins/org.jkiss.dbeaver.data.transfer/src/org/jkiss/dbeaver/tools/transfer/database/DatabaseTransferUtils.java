@@ -134,11 +134,13 @@ public class DatabaseTransferUtils {
             if (updateMappingTarget || force) {
                 monitor.subTask("Refresh database mappings");
 
-                // A resolved target always holds a raw database name; otherwise the stored name is encoded.
+                // A resolved target always holds a raw database name. For unresolved names use the
+                // persisted provenance, so a rejected raw target is not treated as an encoded one.
                 DatabaseMappingType mappingType = containerMapping.getMappingType();
-                boolean storedNameIsRaw = (mappingType == DatabaseMappingType.existing
-                    || mappingType == DatabaseMappingType.recreate)
-                    && containerMapping.getTarget() != null;
+                boolean storedNameIsRaw = containerMapping.isTargetNameRaw()
+                    || ((mappingType == DatabaseMappingType.existing
+                        || mappingType == DatabaseMappingType.recreate)
+                        && containerMapping.getTarget() != null);
                 DBSObject newTarget = findChildByStoredName(
                     container,
                     monitor,
