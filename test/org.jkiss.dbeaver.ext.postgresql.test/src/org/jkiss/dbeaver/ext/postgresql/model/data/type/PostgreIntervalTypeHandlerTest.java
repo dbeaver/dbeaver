@@ -20,12 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class PostgreIntervalTypeHandlerTest {
+public class PostgreIntervalTypeHandlerTest extends DBeaverUnitTest {
 
     // Type modifiers as PostgreSQL stores them in pg_attribute.atttypmod
     private static final int TYPMOD_INTERVAL = -1;
