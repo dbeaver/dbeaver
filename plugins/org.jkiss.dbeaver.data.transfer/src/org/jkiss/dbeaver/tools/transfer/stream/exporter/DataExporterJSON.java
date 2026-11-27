@@ -112,7 +112,10 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
                     writeTextCell(null, true);
                 } else if (cellValue instanceof DBDContent content) {
                     writeContentValue(session, resultSet, content);
-                } else if (cellValue instanceof Number || cellValue instanceof Boolean) {
+                } else if (cellValue instanceof Number number) {
+                    // JSON has no literals for NaN and infinity. Write them as strings, like PostgreSQL to_json does
+                    writeTextCell(number.toString(), !isFiniteNumber(number));
+                } else if (cellValue instanceof Boolean) {
                     out.write(cellValue.toString());
                 } else if (cellValue instanceof Date && formatDateISO) {
                     writeTextCell(JSONUtils.formatDate((Date) cellValue), true);
@@ -158,6 +161,15 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
             out.write("}");
         }
         out.write("\n");
+    }
+
+    private static boolean isFiniteNumber(@NotNull Number number) {
+        if (number instanceof Double doubleValue) {
+            return Double.isFinite(doubleValue);
+        } else if (number instanceof Float floatValue) {
+            return Float.isFinite(floatValue);
+        }
+        return true;
     }
 
     private void writeTextCell(@Nullable String value, boolean escape) {
