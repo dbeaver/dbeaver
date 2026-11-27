@@ -20,7 +20,7 @@ import com.dbeaver.datadam.dam.remote.api.model.DDGatewayKeyMaterial;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
-import org.jkiss.dbeaver.model.datadam.auth.DDRecoveryPhrase;
+import org.jkiss.dbeaver.model.datadam.auth.DDEncryptionKey;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
@@ -43,7 +43,7 @@ public class DDGatewayKeyMaterialGenerator {
 
     @NotNull
     public DDGatewayKeyMaterial generate(@NotNull String phrase) throws DBException {
-        String normalizedPhrase = DDRecoveryPhrase.normalizeAndValidate(phrase);
+        String normalizedPhrase = DDEncryptionKey.normalizeAndValidate(phrase);
         byte[] salt = new byte[SALT_BYTES];
         byte[] dataKey = new byte[DATA_KEY_BYTES];
         byte[] privateKey = null;

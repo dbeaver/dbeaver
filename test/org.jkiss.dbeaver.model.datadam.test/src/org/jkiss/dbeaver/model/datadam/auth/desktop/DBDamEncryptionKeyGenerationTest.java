@@ -25,8 +25,8 @@ import com.dbeaver.messaging.rpc.MessagingRpcException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.keys.DDEncryptionKeyGenerator;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.keys.DDGatewayKeyMaterialGenerator;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.keys.DDRecoveryPhraseGenerator;
 import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.jupiter.api.Assertions;
@@ -184,7 +184,7 @@ class DBDamEncryptionKeyGenerationTest {
         private final UUID accountId = UUID.randomUUID();
         private final DDAccountClient account = Mockito.mock(DDAccountClient.class);
         private final DBDamAccessService access = Mockito.mock(DBDamAccessService.class);
-        private final DDRecoveryPhraseGenerator phrases = Mockito.mock(DDRecoveryPhraseGenerator.class);
+        private final DDEncryptionKeyGenerator phrases = Mockito.mock(DDEncryptionKeyGenerator.class);
         private final DDGatewayKeyMaterialGenerator materials = Mockito.mock(DDGatewayKeyMaterialGenerator.class);
         private final DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
         private final DBDamSessionService session = Mockito.mock(DBDamSessionService.class);

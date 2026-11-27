@@ -25,18 +25,18 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 /** Creates a 12-word BIP-39 English phrase from 128 bits of random entropy. */
-public class DDRecoveryPhraseGenerator {
+public class DDEncryptionKeyGenerator {
     private static final int ENTROPY_BYTES = 16;
     private static final int WORD_COUNT = 12;
     private static final int BITS_PER_WORD = 11;
 
     private final SecureRandom random;
 
-    public DDRecoveryPhraseGenerator() {
+    public DDEncryptionKeyGenerator() {
         this(new SecureRandom());
     }
 
-    DDRecoveryPhraseGenerator(@NotNull SecureRandom random) {
+    DDEncryptionKeyGenerator(@NotNull SecureRandom random) {
         this.random = random;
     }
 

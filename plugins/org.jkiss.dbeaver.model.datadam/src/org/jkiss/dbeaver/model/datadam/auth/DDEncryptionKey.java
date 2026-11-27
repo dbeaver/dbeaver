@@ -26,13 +26,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class DDRecoveryPhrase {
+public final class DDEncryptionKey {
 
     private static final int WORD_COUNT = 12;
     private static final int ENTROPY_BYTES = 16;
     private static final Map<String, Integer> WORD_INDICES = buildWordIndices();
 
-    private DDRecoveryPhrase() {
+    private DDEncryptionKey() {
     }
 
     @NotNull

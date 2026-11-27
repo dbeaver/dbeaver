@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop.keys;
 
-import org.jkiss.dbeaver.model.datadam.auth.DDRecoveryPhrase;
+import org.jkiss.dbeaver.model.datadam.auth.DDEncryptionKey;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,26 +24,26 @@ import org.mockito.Mockito;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
-class DDRecoveryPhraseGeneratorTest {
+class DDEncryptionKeyGeneratorTest {
     @Test
     void matchesOfficialBip39EnglishVectors() throws Exception {
         Assertions.assertEquals(2048, DDBip39Wordlist.WORDS.size());
 
         String zero = generatorFor((byte) 0x00).generate();
         Assertions.assertEquals("abandon ".repeat(11) + "about", zero);
-        Assertions.assertEquals(zero, DDRecoveryPhrase.normalizeAndValidate(zero));
+        Assertions.assertEquals(zero, DDEncryptionKey.normalizeAndValidate(zero));
 
         String ones = generatorFor((byte) 0xFF).generate();
         Assertions.assertEquals("zoo ".repeat(11) + "wrong", ones);
-        Assertions.assertEquals(ones, DDRecoveryPhrase.normalizeAndValidate(ones));
+        Assertions.assertEquals(ones, DDEncryptionKey.normalizeAndValidate(ones));
     }
 
-    private static DDRecoveryPhraseGenerator generatorFor(byte entropy) {
+    private static DDEncryptionKeyGenerator generatorFor(byte entropy) {
         SecureRandom random = Mockito.mock(SecureRandom.class);
         Mockito.doAnswer(invocation -> {
             Arrays.fill(invocation.getArgument(0, byte[].class), entropy);
             return null;
         }).when(random).nextBytes(Mockito.any(byte[].class));
-        return new DDRecoveryPhraseGenerator(random);
+        return new DDEncryptionKeyGenerator(random);
     }
 }

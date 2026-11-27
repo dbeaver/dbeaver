@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.keys.DDEncryptionKeyGenerator;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.keys.DDGatewayKeyMaterialGenerator;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.keys.DDRecoveryPhraseGenerator;
 import org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionService;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -44,12 +44,12 @@ public final class DBDamEncryptionKeyService {
 
     private final DDAccountClient account;
     private final DBDamAccessService access;
-    private final DDRecoveryPhraseGenerator phraseGenerator;
+    private final DDEncryptionKeyGenerator phraseGenerator;
     private final DDGatewayKeyMaterialGenerator materialGenerator;
     DBDamEncryptionKeyService(
         @NotNull DDAccountClient account,
         @NotNull DBDamAccessService access,
-        @NotNull DDRecoveryPhraseGenerator phraseGenerator,
+        @NotNull DDEncryptionKeyGenerator phraseGenerator,
         @NotNull DDGatewayKeyMaterialGenerator materialGenerator
     ) {
         this.account = account;
@@ -64,7 +64,7 @@ public final class DBDamEncryptionKeyService {
             DBDamAccessService access = DBDamAccessService.getInstance();
             instance = new DBDamEncryptionKeyService(
                 new DDAccountClient(URI.create(DDEndpoints.getAccountBaseUrl()), access), access,
-                new DDRecoveryPhraseGenerator(), new DDGatewayKeyMaterialGenerator());
+                new DDEncryptionKeyGenerator(), new DDGatewayKeyMaterialGenerator());
         }
         return instance;
     }
