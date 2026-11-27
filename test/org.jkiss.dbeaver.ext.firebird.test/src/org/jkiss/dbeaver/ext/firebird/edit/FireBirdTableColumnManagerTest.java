@@ -191,6 +191,84 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
             getCreateDeclaration(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, DOMAIN_NAME)));
     }
 
+    @Test
+    public void newNumericDomainColumnTakesUneditedSizesFromDomain() {
+        FireBirdDataType domain = registerDomain(numericDomain("DOM_MONEY", FireBirdFieldType.BIGINT.getTypeID(), 18, 2));
+        FireBirdTableColumn column = newColumn(domain);
+        // The new column still has the sizes of its previous type
+        column.setMaxLength(100);
+        column.setPrecision(10);
+        column.setScale(3);
+
+        Assertions.assertEquals("TEST_NAME NUMERIC(18,3)", getCreateDeclaration(column, Map.of("scale", 3)));
+        column.setPrecision(12);
+        Assertions.assertEquals("TEST_NAME NUMERIC(12,2)", getCreateDeclaration(column, Map.of("precision", 12)));
+    }
+
+    @Test
+    public void newSmallNumericDomainColumnKeepsNumericType() {
+        // NUMERIC(4,2) is stored as SMALLINT (type 7, subtype 1)
+        FireBirdDataType domain = registerDomain(numericDomain("DOM_RATE", FireBirdFieldType.SMALLINT.getTypeID(), 4, 2));
+        FireBirdTableColumn column = newColumn(domain);
+        column.setPrecision(6);
+
+        Assertions.assertEquals("TEST_NAME NUMERIC(6,2)", getCreateDeclaration(column, Map.of("precision", 6)));
+    }
+
+    @Test
+    public void textBlobDomainColumnKeepsDomainOnLengthEdit() throws DBException {
+        FireBirdDataType memo = new FireBirdDataType(dataSource, FireBirdFieldType.BLOB, 1, "DOM_MEMO", null, 0, 0);
+        memo.setFieldLength(8);
+        memo.setCharsetName("UTF8");
+        FireBirdDataType domain = registerDomain(memo);
+        FireBirdTableColumn column = newColumn(domain);
+        column.setMaxLength(20);
+
+        // A size has no meaning for BLOB, and a bare BLOB would lose SUB_TYPE TEXT and the character set
+        Assertions.assertEquals("TEST_NAME DOM_MEMO", getCreateDeclaration(column, Map.of(DBConstants.PROP_ID_MAX_LENGTH, 20L)));
+        FireBirdTableColumn loaded = loadColumn(DOMAIN_NAME);
+        loaded.setTypeName("DOM_MEMO");
+        loaded.setMaxLength(20);
+        Assertions.assertEquals(
+            List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE DOM_MEMO"),
+            getModifyScripts(loaded, Map.of(DBConstants.PROP_ID_TYPE_NAME, "DOM_MEMO", DBConstants.PROP_ID_MAX_LENGTH, 20L)));
+    }
+
+    @Test
+    public void alterAfterSwitchingToNumericDomainTakesUneditedSizesFromDomain() throws DBException {
+        registerDomain(numericDomain("DOM_MONEY", FireBirdFieldType.BIGINT.getTypeID(), 18, 2));
+        FireBirdTableColumn column = loadColumn(IMPLICIT_DOMAIN_NAME);
+        column.setTypeName("DOM_MONEY");
+        column.setScale(3);
+
+        Assertions.assertEquals(
+            List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE NUMERIC(18,3)"),
+            getModifyScripts(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, "DOM_MONEY", "scale", 3)));
+    }
+
+    @NotNull
+    private FireBirdDataType numericDomain(@NotNull String name, int storageType, int precision, int scale) {
+        // Subtype 1 is NUMERIC; Firebird stores the scale as a negative number
+        FireBirdFieldType fieldType = FireBirdFieldType.getById(storageType, 1);
+        FireBirdDataType domain = new FireBirdDataType(dataSource, fieldType, 1, name, null, precision, scale);
+        domain.setFieldLength(8);
+        return domain;
+    }
+
+    @NotNull
+    private FireBirdDataType registerDomain(@NotNull FireBirdDataType domain) {
+        Mockito.when(dataSource.getLocalDataType(domain.getName())).thenReturn(domain);
+        return domain;
+    }
+
+    @NotNull
+    private FireBirdTableColumn newColumn(@NotNull FireBirdDataType domain) {
+        FireBirdTableColumn column = new FireBirdTableColumn(table);
+        column.setName("TEST_NAME");
+        column.setDataType(domain);
+        return column;
+    }
+
     @NotNull
     private List<String> getModifyScripts(@NotNull FireBirdTableColumn column, @NotNull Map<String, Object> properties)
         throws DBException {
