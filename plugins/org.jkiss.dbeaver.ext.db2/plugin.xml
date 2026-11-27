@@ -451,6 +451,7 @@
                     promoted="1"
                     categories="sql">
 
+                    <parameter name="connection-validator" value="db2-jcc"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectionTimeout" value="20"/>
                     <property name="maxStatements" value="50"/>
