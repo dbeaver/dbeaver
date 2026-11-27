@@ -22,7 +22,6 @@ import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeResponse;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamMessage;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
-import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.internal.DDConnectionMessages;
@@ -39,6 +38,7 @@ import java.net.URI;
 import java.net.http.WebSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -145,9 +145,7 @@ public class DBDamMonitoringTest extends DBeaverUnitTest {
 
     @NotNull
     private static DDRemoteDamMessage message(@NotNull String value) {
-        JsonObject payload = new JsonObject();
-        payload.addProperty("value", value);
-        return new DDRemoteDamMessage("test", "message", payload);
+        return new DDRemoteDamMessage("test", "message", Map.of("value", value));
     }
 
     @NotNull

@@ -35,7 +35,7 @@
                         class="com.clickhouse.jdbc.ClickHouseDriver"
                         sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
                         defaultPort="8123"
-                        description="Legacy ClickHouse JDBC driver for ClickHouse 20.7 and later column-oriented analytical databases."
+                        description="%driver.yandex_clickhouse.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://github.com/yandex/clickhouse-jdbc"
                         databaseDocumentationSuffixURL="Clickhouse"
@@ -58,21 +58,23 @@
                     class="com.clickhouse.jdbc.ClickHouseDriver"
                     sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
                     defaultPort="8123"
-                    description="ClickHouse JDBC driver for column-oriented analytical databases over HTTP."
+                    description="%driver.com_clickhouse.description"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/ClickHouse/clickhouse-java"
                     databaseDocumentationSuffixURL="Clickhouse"
                     categories="sql,analytic,columns"
                     singleConnection="true"
                     allowsEmptyPassword="true">
-                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.10.0]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
-                    <file type="jar" path="maven:/org.apache.httpcomponents.client5:httpclient5:RELEASE[5.4.4]" bundle="!drivers.clickhouse_com"/>
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.11.2]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
+                    <file type="jar" path="maven:/org.apache.httpcomponents.client5:httpclient5:RELEASE[5.6.4]" bundle="!drivers.clickhouse_com"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
                     <file type="jar" path="bundle:/org.apache.commons.lang3" bundle="drivers.clickhouse_com"/>
                     <!-- Disable server timezone as it confuses during timestamp edit -->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <!-- Avoid exceeding the HTTP response header limit on long queries: https://github.com/ClickHouse/clickhouse-java/issues/3080 -->
+                    <property name="clickhouse_setting_send_progress_in_http_headers" value="0"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>

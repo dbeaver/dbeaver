@@ -319,14 +319,14 @@
         <image commandId="org.jkiss.dbeaver.core.object.filter.add.include" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.svg"/>
 
         <image commandId="org.jkiss.dbeaver.core.edit.save.resource" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save_as.svg"/>
-        <image commandId="org.jkiss.dbeaver.core.edit.load.resource" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/load.png"/>
+        <image commandId="org.jkiss.dbeaver.core.edit.load.resource" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/load.svg"/>
 
         <image commandId="org.jkiss.dbeaver.core.project.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project_add.svg"/>
         <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.svg"/>
         <image commandId="org.jkiss.dbeaver.core.project.select" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/folder_add.svg"/>
-        <image commandId="org.jkiss.dbeaver.core.resource.link.file" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png"/>
-        <image commandId="org.jkiss.dbeaver.core.resource.link.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resource.link.file" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.resource.link.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.svg"/>
 
         <image commandId="org.jkiss.dbeaver.core.new.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/folder_add.svg"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/link_to_editor.svg"/>

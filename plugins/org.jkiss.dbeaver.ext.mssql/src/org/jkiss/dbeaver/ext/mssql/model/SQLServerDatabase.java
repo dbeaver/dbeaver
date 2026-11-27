@@ -612,7 +612,7 @@ public class SQLServerDatabase
                     sql.append("sysobjects o ").append("ON s.schema_id=o.uid");
                 }
             }
-            final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
+            final DBSObjectFilter schemaFilters = dataSource.getContainer().getEffectiveObjectFilter(SQLServerSchema.class, owner, false);
             if (schemaFilters != null && schemaFilters.isEnabled()) {
                 sql.append("\n");
                 JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", true, owner.getDataSource());

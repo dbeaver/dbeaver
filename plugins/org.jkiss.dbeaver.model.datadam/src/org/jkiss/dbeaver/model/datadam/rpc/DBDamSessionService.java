@@ -82,6 +82,11 @@ public final class DBDamSessionService implements AutoCloseable {
     private final DBDamAccessListener accessListener = new DBDamAccessListener() {
 
         @Override
+        public void accessTokenRefreshed() {
+            channel.refreshAuthentication();
+        }
+
+        @Override
         public void accessChanging() {
             rpc.suspend(false);
             rpcInitializationRetry.cancel();
@@ -180,6 +185,7 @@ public final class DBDamSessionService implements AutoCloseable {
                     DBDamSettingsStore.getInstance().updateSettings(status.session().settings());
                     initializeRpc();
                 } else {
+                    cachedDam.set(null);
                     DBDamSettingsStore.getInstance().updateSettings(null);
                     rpcInitializationRetry.cancel();
                 }
@@ -219,7 +225,7 @@ public final class DBDamSessionService implements AutoCloseable {
     public DDConnectedRemoteDam getCachedDam() {
         var status = channel.getStatus();
         var cached = cachedDam.get();
-        return !closed.get() && status.isReady() && cached != null && cached.session().isSameSession(status.session())
+        return !closed.get() && status.isReady() && cached != null && cached.session() == status.session()
             ? cached.dam() : null;
     }
 
@@ -228,7 +234,7 @@ public final class DBDamSessionService implements AutoCloseable {
         if (session != null && dam != null) {
             cachedDam.updateAndGet(cached -> {
                 var status = channel.getStatus();
-                return !closed.get() && status.isReady() && session.isSameSession(status.session())
+                return !closed.get() && status.isReady() && session == status.session()
                     ? new CachedDam(session, dam) : cached;
             });
         }

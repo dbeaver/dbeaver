@@ -50,7 +50,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
     private Button rollbackButton;
 
     private PendingTransactionsDialog(Shell parentShell, IWorkbenchPart activePart) {
-        super(parentShell, "Pending transactions", activePart);
+        super(parentShell, CoreMessages.pending_transactions_dialog_title, activePart);
     }
 
     @Override
@@ -72,9 +72,9 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
         contextTree.setHeaderVisible(true);
         contextTree.setLinesVisible(true);
         TreeColumn colName = new TreeColumn(contextTree, SWT.NONE);
-        colName.setText("Connection");
+        colName.setText(CoreMessages.pending_transactions_dialog_column_connection);
         TreeColumn colTxn = new TreeColumn(contextTree, SWT.RIGHT);
-        colTxn.setText("Transaction");
+        colTxn.setText(CoreMessages.pending_transactions_dialog_column_transaction);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = contextTree.getHeaderHeight() + contextTree.getItemHeight() * 5;
         contextTree.setLayoutData(gd);
@@ -94,15 +94,15 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
         {
             Composite controlPanel = UIUtils.createPlaceholder(composite, 3, 5);
             controlPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            final Button showAllCheck = UIUtils.createCheckbox(controlPanel, "Show all connections", "Show all datasource connections. Otherwise shows only transactional connections.", false, 1);
+            final Button showAllCheck = UIUtils.createCheckbox(controlPanel, CoreMessages.pending_transactions_dialog_checkbox_show_all_connections, CoreMessages.pending_transactions_dialog_checkbox_show_all_connections_tip, false, 1);
             showAllCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> loadContexts(showAllCheck.getSelection())));
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             showAllCheck.setLayoutData(gd);
-            commitButton = UIUtils.createPushButton(controlPanel, "Commit", DBeaverIcons.getImage(UIIcon.TXN_COMMIT));
+            commitButton = UIUtils.createPushButton(controlPanel, CoreMessages.pending_transactions_dialog_button_commit, DBeaverIcons.getImage(UIIcon.TXN_COMMIT));
             commitButton.setEnabled(false);
             commitButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> endTransaction(true)));
-            rollbackButton = UIUtils.createPushButton(controlPanel, "Rollback", DBeaverIcons.getImage(UIIcon.TXN_ROLLBACK));
+            rollbackButton = UIUtils.createPushButton(controlPanel, CoreMessages.pending_transactions_dialog_button_rollback, DBeaverIcons.getImage(UIIcon.TXN_ROLLBACK));
             rollbackButton.setEnabled(false);
             rollbackButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> endTransaction(false)));
         }

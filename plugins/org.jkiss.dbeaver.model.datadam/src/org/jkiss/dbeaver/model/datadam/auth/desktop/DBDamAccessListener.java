@@ -21,4 +21,8 @@ public interface DBDamAccessListener {
     void accessChanging();
 
     void accessChanged();
+
+    /** A credential was renewed for the same signed-in user; active connections can authenticate in place. */
+    default void accessTokenRefreshed() {
+    }
 }

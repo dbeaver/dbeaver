@@ -55,6 +55,9 @@ public class CoreMessages extends NLS {
     public static String connection_init_confirmation_url;
     public static String connection_init_confirmation_script;
     public static String connection_init_confirmation_allow;
+    public static String connection_native_confirmation_title;
+    public static String connection_native_confirmation_message;
+    public static String connection_native_confirmation_settings;
 
 
     public static String driver_license_required_title;
@@ -321,6 +324,16 @@ public class CoreMessages extends NLS {
     public static String transaction_info_dialog_label_show_all_transaction_queries;
 
     public static String transaction_log_dialog_header_transaction_log;
+
+    public static String pending_transactions_dialog_title;
+    public static String pending_transactions_dialog_column_connection;
+    public static String pending_transactions_dialog_column_transaction;
+    public static String pending_transactions_dialog_checkbox_show_all_connections;
+    public static String pending_transactions_dialog_checkbox_show_all_connections_tip;
+    public static String pending_transactions_dialog_button_commit;
+    public static String pending_transactions_dialog_button_rollback;
+
+    public static String query_manager_view_label;
 
     // Preference/Properties
 
