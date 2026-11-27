@@ -26,8 +26,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Map;
-
 /**
  * Data source provider
  */
@@ -64,14 +62,6 @@ public interface DBPDataSourceProvider<DATASOURCE extends DBPDataSource> extends
         @Nullable DBPDataSourceContainer dataSourceContainer,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBException;
-
-    /**
-     * Returns effective provider settings, including values stored by older clients.
-     */
-    @NotNull
-    default Map<String, String> getConnectionProviderProperties(@NotNull DBPConnectionConfiguration configuration) {
-        return configuration.getProviderProperties();
-    }
 
     /**
      * Class of datasource.

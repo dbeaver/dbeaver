@@ -26,27 +26,25 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.w3c.dom.Element;
 
-import java.util.Map;
+import java.io.InputStream;
 import java.util.Properties;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 class OracleConnectionSettingsTest extends DBeaverUnitTest {
 
     @Test
-    void readsOldDesktopSettingsWithoutResaving() throws DBException {
+    void sharesDesktopRoleAndReadsOldSettings() throws DBException {
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
         configuration.setAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS, "sysoper");
-        Map<String, String> properties = new OracleDataSourceProvider().getConnectionProviderProperties(configuration);
-        Assertions.assertEquals("SYSOPER", properties.get(OracleConstants.PROP_AUTH_LOGON_AS));
-        Assertions.assertEquals(OracleConnectionType.SERVICE.name(), properties.get(OracleConstants.PROP_SID_SERVICE));
-        Assertions.assertTrue(configuration.getProviderProperties().isEmpty());
-        Assertions.assertEquals("sysoper", configuration.getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS));
-        Assertions.assertEquals("sys AS SYSOPER", getAuthenticatedUserName(configuration));
+        Assertions.assertEquals("sysoper", OracleAuthModelDatabaseNative.getConnectionRole(configuration));
 
         OracleAuthModelDatabaseNative.setConnectionRole(configuration, OracleConnectionRole.SYSDBA.getTitle());
 
@@ -58,15 +56,43 @@ class OracleConnectionSettingsTest extends DBeaverUnitTest {
     @Test
     void normalRoleOverridesAndClearsOldRoles() throws DBException {
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
-        configuration.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, "sysoper");
-        Assertions.assertEquals("SYSOPER", OracleAuthModelDatabaseNative.getConnectionRole(configuration));
         configuration.setAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS, "sysdba");
+        configuration.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, "sysoper");
         configuration.setProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS, OracleConnectionRole.NORMAL.getTitle());
 
         Assertions.assertEquals("sys", getAuthenticatedUserName(configuration));
         OracleAuthModelDatabaseNative.setConnectionRole(configuration, OracleConnectionRole.NORMAL.getTitle());
         Assertions.assertNull(configuration.getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS));
         Assertions.assertNull(configuration.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON));
+    }
+
+    @Test
+    void defaultServiceTypeMatchesConnectionUrl() throws Exception {
+        String defaultServiceType = null;
+        try (InputStream stream = OracleDataSourceProvider.class.getResourceAsStream("/plugin.xml")) {
+            Assertions.assertNotNull(stream);
+            var document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
+            var propertyNodes = document.getElementsByTagName("property");
+            for (int i = 0; i < propertyNodes.getLength(); i++) {
+                var property = (Element) propertyNodes.item(i);
+                if (OracleConstants.PROP_SID_SERVICE.equals(property.getAttribute("id"))) {
+                    defaultServiceType = property.getAttribute("defaultValue");
+                    break;
+                }
+            }
+        }
+        Assertions.assertEquals(OracleConnectionType.SERVICE.name(), defaultServiceType);
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+        configuration.setHostName("localhost");
+        configuration.setHostPort("1521");
+        configuration.setDatabaseName("ORCL");
+        OracleDataSourceProvider provider = new OracleDataSourceProvider();
+        DBPDriver driver = Mockito.mock(DBPDriver.class);
+        String defaultUrl = provider.getConnectionURL(driver, configuration);
+        configuration.setProviderProperty(OracleConstants.PROP_SID_SERVICE, defaultServiceType);
+
+        Assertions.assertEquals("jdbc:oracle:thin:@//localhost:1521/ORCL", defaultUrl);
+        Assertions.assertEquals(defaultUrl, provider.getConnectionURL(driver, configuration));
     }
 
     @NotNull
