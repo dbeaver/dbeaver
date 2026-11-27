@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.WebSocket;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -168,7 +169,8 @@ public class DBDamMonitoringTest extends DBeaverUnitTest {
             var clients = new LinkedBlockingQueue<BaseWebSocketClient>();
             clients.add(client());
             clients.add(client());
-            channel = new DBDamChannel(URI.create("wss://example.com/ws"), HELLO, resource -> "token", clients::remove);
+            channel = new DBDamChannel(URI.create("wss://example.com/ws"), HELLO, resource -> "token", clients::remove,
+                Duration.ofSeconds(90), Duration.ofMillis(10));
             channel.subscribe("test", (session, message) -> received.add(message));
             stateObservation = channel.observeState(status -> {
                 if (status.isReady()) {
