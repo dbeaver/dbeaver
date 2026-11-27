@@ -50,11 +50,7 @@ public class GenericTableForeignKeyConfigurator implements DBEObjectConfigurator
             EditForeignKeyPage editPage = new EditForeignKeyPage(
                 "Create foreign key",
                 foreignKey,
-                new DBSForeignKeyModifyRule[] {
-                    DBSForeignKeyModifyRule.NO_ACTION,
-                    DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                    DBSForeignKeyModifyRule.SET_NULL,
-                    DBSForeignKeyModifyRule.SET_DEFAULT }, options);
+                getSupportedModifyRules(), options);
             if (!editPage.edit()) {
                 return null;
             }
@@ -78,4 +74,16 @@ public class GenericTableForeignKeyConfigurator implements DBEObjectConfigurator
         });
     }
 
+    /**
+     * Rules offered for ON DELETE and ON UPDATE. Extensions override this method if their database
+     * does not support all of them.
+     */
+    @NotNull
+    protected DBSForeignKeyModifyRule[] getSupportedModifyRules() {
+        return new DBSForeignKeyModifyRule[] {
+            DBSForeignKeyModifyRule.NO_ACTION,
+            DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+            DBSForeignKeyModifyRule.SET_NULL,
+            DBSForeignKeyModifyRule.SET_DEFAULT };
+    }
 }

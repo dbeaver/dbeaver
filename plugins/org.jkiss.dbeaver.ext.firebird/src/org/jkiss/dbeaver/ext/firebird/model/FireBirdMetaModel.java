@@ -34,6 +34,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
@@ -487,6 +490,21 @@ public class FireBirdMetaModel extends GenericMetaModel
     public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
         String constraintType = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE");
         return "PRIMARY KEY".equals(constraintType) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
+    }
+
+    @NotNull
+    @Override
+    public GenericTableForeignKey createTableForeignKeyImpl(
+        @NotNull GenericTableBase table,
+        String name,
+        @Nullable String remarks,
+        DBSEntityReferrer referencedKey,
+        DBSForeignKeyModifyRule deleteRule,
+        DBSForeignKeyModifyRule updateRule,
+        DBSForeignKeyDeferability deferability,
+        boolean persisted
+    ) {
+        return new FireBirdTableForeignKey(table, name, remarks, referencedKey, deleteRule, updateRule, deferability, persisted);
     }
 
     @Override
