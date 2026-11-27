@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
@@ -62,6 +63,7 @@ import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * DBUtils
@@ -705,7 +707,12 @@ public final class DBUtils {
                 if (connectionService == null) {
                     dataSourceContainer.connect(monitor, true, true);
                 } else {
-                    connectionService.initConnection(monitor, dataSourceContainer, null);
+                    AtomicReference<IStatus> connectionStatus = new AtomicReference<>();
+                    connectionService.initConnection(monitor, dataSourceContainer, connectionStatus::set);
+                    IStatus status = connectionStatus.get();
+                    if (status != null && !status.isOK() && status.getSeverity() != IStatus.CANCEL) {
+                        throw new DBException(status.getMessage(), status.getException());
+                    }
                 }
             } catch (DBException e) {
                 throw new DBException("Error connecting to datasource '" + dataSourceContainer.getName() + "'", e);
