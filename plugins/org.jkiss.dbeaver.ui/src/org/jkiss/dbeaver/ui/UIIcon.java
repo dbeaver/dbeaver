@@ -280,9 +280,9 @@ public class UIIcon {
 
     public static final DBIcon RUN = new DBIcon("run.svg"); //$NON-NLS-1$
 
-    public static final DBIcon BUTTON_READ_ONLY = new DBIcon("buttons/lock.png"); //$NON-NLS-1$
-    public static final DBIcon BUTTON_TUNNEL = new DBIcon("buttons/tunnel.png"); //$NON-NLS-1$
-    public static final DBIcon BUTTON_CLOUD = new DBIcon("buttons/cloud.png"); //$NON-NLS-1$
+    public static final DBIcon BUTTON_READ_ONLY = new DBIcon("buttons/lock.svg"); //$NON-NLS-1$
+    public static final DBIcon BUTTON_TUNNEL = new DBIcon("buttons/tunnel.svg"); //$NON-NLS-1$
+    public static final DBIcon BUTTON_CLOUD = new DBIcon("buttons/cloud.svg"); //$NON-NLS-1$
 
     public static final DBIcon FILE = new DBIcon("file/file.svg"); //$NON-NLS-1$
     public static final DBIcon OPEN = new DBIcon("file/open.png"); //$NON-NLS-1$
