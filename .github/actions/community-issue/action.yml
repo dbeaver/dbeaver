@@ -1,0 +1,37 @@
+name: Evaluate a community issue
+description: Reconcile replies and the deadline for the current wait period
+inputs:
+  issue:
+    description: Issue number
+    required: true
+  client-id:
+    description: Organization membership reader App client ID
+    required: true
+  private-key:
+    description: Organization membership reader App private key
+    required: true
+  private-member:
+    description: Known private organization member used to verify membership visibility
+    required: true
+  timeout-mode:
+    description: Ignore, report, or apply timeouts
+    default: ignore
+runs:
+  using: composite
+  steps:
+    - id: membership
+      uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+      with:
+        client-id: ${{ inputs.client-id }}
+        private-key: ${{ inputs.private-key }}
+        permission-members: read
+    - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        MEMBERS_TOKEN: ${{ steps.membership.outputs.token }}
+        PRIVATE_MEMBER: ${{ inputs.private-member }}
+        ISSUE: ${{ inputs.issue }}
+        TIMEOUT_MODE: ${{ inputs.timeout-mode }}
+      with:
+        script: |
+          const triage = require('./.github/actions/community-issue/triage.cjs');
+          await triage({github, context, core, members: getOctokit(process.env.MEMBERS_TOKEN)});
