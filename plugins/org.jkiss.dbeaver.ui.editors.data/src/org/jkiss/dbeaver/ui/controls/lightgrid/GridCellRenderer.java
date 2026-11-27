@@ -125,9 +125,9 @@ public class GridCellRenderer extends AbstractRenderer {
 
         Color background = cellInfo.background;
         if (focus || hover) {
-            colorLineFocused = UIStyles.getContrastColor(background);
+            colorLineFocused = UIStyles.isHighContrastTheme() ? grid.getForeground() : UIStyles.getContrastColor(background);
         }
-        if (hover && !selected && background != null) {
+        if (hover && !selected && background != null && !UIStyles.isHighContrastTheme()) {
             // Tint rather than replace backgrounds used for cell states and custom coloring.
             background = UIUtils.getSharedColor(UIUtils.blend(
                 colorLineFocused.getRGB(), background.getRGB(), HOVER_BACKGROUND_BLEND));
