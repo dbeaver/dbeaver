@@ -1332,11 +1332,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DBSObject existingObject;
                 if (storedNameIsRaw) {
                     // A raw name may literally start and end with the quote delimiter, so resolve it first.
+                    // Only fall back to the unquoted form for non-manipulator matches: an exact match on a
+                    // data manipulator takes precedence even if it is not a valid target (e.g. a view).
                     lookupName = name;
                     existingObject = ns.getObjectByName(monitor, lookupName);
-                    if (!DatabaseTransferUtils.isValidTargetTable(existingObject) && !unquotedName.equals(name)) {
+                    if (!(existingObject instanceof DBSDataManipulator) && !unquotedName.equals(name)) {
                         DBSObject unquotedObject = ns.getObjectByName(monitor, unquotedName);
-                        if (DatabaseTransferUtils.isValidTargetTable(unquotedObject) || existingObject == null) {
+                        if (unquotedObject instanceof DBSDataManipulator || existingObject == null) {
                             lookupName = unquotedName;
                             existingObject = unquotedObject;
                         }
@@ -1379,6 +1381,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     if (targetDataContainer == null) {
                         targetDataContainer = (DBSDataManipulator) child;
                     }
+                } else if (exactPrimary && child instanceof DBSDataManipulator) {
+                    // An exact raw-name match takes precedence over the unquoted fallback even when
+                    // the matched object cannot be used as a target (e.g. a view or a sequence).
+                    return reportTargetNameConflict(monitor, containerMapping, name, primaryName, child);
                 } else if (conflictingObject == null) {
                     conflictingObject = child;
                     conflictingName = matchesPrimary ? primaryName : secondaryName;
