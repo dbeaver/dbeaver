@@ -9,7 +9,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
- org.jkiss.dbeaver.registry
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.ext.generic
 Export-Package: org.jkiss.dbeaver.ext.db2,
  org.jkiss.dbeaver.ext.db2.data,
  org.jkiss.dbeaver.ext.db2.editors,
