@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.csv.CSVParser;
 import org.jkiss.utils.csv.CSVReader;
 import org.junit.jupiter.api.Assertions;
@@ -24,9 +26,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class PostgreCopyLoaderTest {
@@ -58,6 +62,55 @@ public class PostgreCopyLoaderTest {
             Arguments.of("a\rb", "\"a\rb\""),
             Arguments.of("a\r\nb", "\"a\r\nb\"")
         );
+    }
+
+    @Test
+    public void buildsCopyColumnListInTableOrder() {
+        DBSAttributeBase id = column("col_id");
+        DBSAttributeBase value = column("col_value");
+
+        String columnList = PostgreCopyLoader.buildCopyColumnList(
+            List.of(value, id),
+            mockDataSource()
+        );
+
+        Assertions.assertEquals("col_value, col_id", columnList);
+    }
+
+    @Test
+    public void quotesMixedCaseCopyColumnNames() {
+        DBSAttributeBase mixedCase = column("MixedCase");
+
+        String columnList = PostgreCopyLoader.buildCopyColumnList(
+            List.of(mixedCase),
+            mockDataSource()
+        );
+
+        Assertions.assertEquals("\"MixedCase\"", columnList);
+    }
+
+    @Test
+    public void returnsEmptyColumnListWhenNoColumnsAreMapped() {
+        String columnList = PostgreCopyLoader.buildCopyColumnList(
+            List.of(),
+            mockDataSource()
+        );
+
+        Assertions.assertTrue(columnList.isEmpty());
+    }
+
+    @NotNull
+    private static DBSAttributeBase column(@NotNull String name) {
+        DBSAttributeBase column = Mockito.mock(DBSAttributeBase.class);
+        Mockito.when(column.getName()).thenReturn(name);
+        return column;
+    }
+
+    @NotNull
+    private static DBPDataSource mockDataSource() {
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(new PostgreDialect());
+        return dataSource;
     }
 
     @Test
