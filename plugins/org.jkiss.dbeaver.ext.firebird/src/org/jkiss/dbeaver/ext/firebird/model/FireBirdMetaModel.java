@@ -34,9 +34,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -487,6 +489,79 @@ public class FireBirdMetaModel extends GenericMetaModel
     public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
         String constraintType = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE");
         return "PRIMARY KEY".equals(constraintType) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
+    }
+
+    @NotNull
+    @Override
+    public JDBCStatement prepareIndexesLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forParent
+    ) throws SQLException {
+        // Read RDB$INDICES directly: the driver's getIndexInfo() has no inactive flag, expression or condition.
+        // Column names follow DatabaseMetaData.getIndexInfo(), which the generic index cache reads.
+        boolean partialIndexes = session.getDataSource().isServerVersionAtLeast(5, 0);
+        String sql = "SELECT TRIM(I.RDB$RELATION_NAME) AS TABLE_NAME,TRIM(I.RDB$INDEX_NAME) AS INDEX_NAME,\n" +
+            "CASE WHEN I.RDB$UNIQUE_FLAG = 1 THEN 0 ELSE 1 END AS NON_UNIQUE," +
+            DatabaseMetaData.tableIndexOther + " AS TYPE,\n" +
+            "CAST(S.RDB$FIELD_POSITION + 1 AS SMALLINT) AS ORDINAL_POSITION,TRIM(S.RDB$FIELD_NAME) AS COLUMN_NAME,\n" +
+            "CASE WHEN I.RDB$INDEX_TYPE = 1 THEN 'D' ELSE 'A' END AS ASC_OR_DESC,\n" +
+            "I.RDB$INDEX_INACTIVE,I.RDB$STATISTICS,I.RDB$EXPRESSION_SOURCE,I.RDB$DESCRIPTION" +
+            (partialIndexes ? ",I.RDB$CONDITION_SOURCE" : "") + "\n" +
+            "FROM RDB$INDICES I\n" +
+            "LEFT JOIN RDB$INDEX_SEGMENTS S ON S.RDB$INDEX_NAME = I.RDB$INDEX_NAME\n" +
+            (forParent == null ? "" : "WHERE I.RDB$RELATION_NAME = ?\n") +
+            "ORDER BY I.RDB$INDEX_NAME,S.RDB$FIELD_POSITION";
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        if (forParent != null) {
+            dbStat.setString(1, forParent.getName());
+        }
+        return dbStat;
+    }
+
+    @Override
+    public boolean isIndexWithoutColumnsAllowed() {
+        // Expression indexes (COMPUTED BY) have no rows in RDB$INDEX_SEGMENTS
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public GenericTableIndex createIndexImpl(
+        @NotNull GenericTableBase table,
+        boolean nonUnique,
+        String qualifier,
+        long cardinality,
+        String indexName,
+        DBSIndexType indexType,
+        boolean persisted
+    ) {
+        return new FireBirdTableIndex(table, nonUnique, indexName, persisted);
+    }
+
+    @NotNull
+    @Override
+    public GenericTableIndex createIndexImpl(
+        @NotNull GenericTableBase table,
+        boolean nonUnique,
+        String qualifier,
+        long cardinality,
+        String indexName,
+        DBSIndexType indexType,
+        boolean persisted,
+        @Nullable JDBCResultSet dbResult
+    ) {
+        if (dbResult == null) {
+            return createIndexImpl(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
+        }
+        FireBirdTableIndex index = new FireBirdTableIndex(table, nonUnique, indexName, persisted);
+        index.setDescending("D".equals(JDBCUtils.safeGetString(dbResult, "ASC_OR_DESC")));
+        index.setInactive(JDBCUtils.safeGetInt(dbResult, "RDB$INDEX_INACTIVE") != 0);
+        index.setSelectivity(JDBCUtils.safeGetDouble(dbResult, "RDB$STATISTICS"));
+        index.setExpression(FireBirdTableIndex.extractExpression(JDBCUtils.safeGetString(dbResult, "RDB$EXPRESSION_SOURCE")));
+        index.setCondition(FireBirdTableIndex.extractCondition(JDBCUtils.safeGetString(dbResult, "RDB$CONDITION_SOURCE")));
+        index.setDescription(JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION"));
+        return index;
     }
 
     @Override
