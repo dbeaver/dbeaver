@@ -1473,8 +1473,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             DatabaseMappingType.unspecified,
             false,
             false);
-        mappingErrorMessage =
-            "Name '" + conflictName + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
+        mappingErrorMessage = NLS.bind(
+            DTUIMessages.database_consumer_page_mapping_error_message_target_name_conflict,
+            conflictName,
+            DBUtils.getObjectTypeName(existingObject));
         mappingErrorSource = containerMapping;
 
         UIUtils.asyncExec(() -> mappingViewer.refresh());

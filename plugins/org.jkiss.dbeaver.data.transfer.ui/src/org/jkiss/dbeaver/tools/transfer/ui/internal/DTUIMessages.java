@@ -247,6 +247,7 @@ public class DTUIMessages extends NLS {
     public static String database_consumer_page_mapping_error_message_set_target_container;
     public static String database_consumer_page_mapping_error_message_import_not_supported;
     public static String database_consumer_page_mapping_error_message_set_all_tables_mappings;
+    public static String database_consumer_page_mapping_error_message_target_name_conflict;
     public static String database_consumer_page_mapping_error_no_schema_changes_info;
     public static String database_consumer_page_mapping_error_schema_save_title;
     public static String database_consumer_page_mapping_error_schema_save_info;
