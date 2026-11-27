@@ -28,6 +28,16 @@
                 label="Firebird"
                 icon="icons/firebird_icon.png"
                 dialect="firebird">
+            <!-- Packages with their procedures and functions (Firebird 3+) -->
+            <treeInjection path="generic/catalog/schema" after="function">
+                <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdPackage" label="%tree.packages.node.name" icon="#folder" description="%tree.packages.node.tip" visibleIf="object.dataSource.supportsPackages()">
+                    <items label="%tree.package.node.name" path="firebirdPackage" property="fireBirdPackages" icon="#package">
+                        <items label="%tree.package.routine.node.name" path="routine" property="routines" icon="#procedure" navigable="false">
+                            <icon if="object.function" icon="#function"/>
+                        </items>
+                    </items>
+                </folder>
+            </treeInjection>
             <drivers managable="true">
 
                 <driver
