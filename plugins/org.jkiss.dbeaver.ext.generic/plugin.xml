@@ -1003,6 +1003,7 @@
                     <file type="jar" path="maven:/org.apache.kyuubi:kyuubi-hive-jdbc-shaded:RELEASE" bundle="!drivers.kyuubi"/>
                     <file type="jar" path="drivers/kyuubi" bundle="drivers.kyuubi"/>
 
+                    <parameter name="connection-validator" value="kyuubi"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
                 </driver>
@@ -1542,6 +1543,7 @@
                         description="DB2 LUW driver for older DB2 versions (8.x)">
                     <replace provider="generic" driver="db2"/>
 
+                    <parameter name="connection-validator" value="db2-jcc"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectionTimeout" value="20"/>
                     <property name="fullyMaterializeLobData" value="true"/>
@@ -2073,6 +2075,11 @@
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="generic" parent="basic" class="org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect" label="Generic" description="Dialect based on JDBC API information." icon="#database_icon_default" hidden="true">
         </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.connectionValidator">
+        <validator id="db2-jcc" class="org.jkiss.dbeaver.ext.generic.model.DB2JccConnectionValidator"/>
+        <validator id="kyuubi" class="org.jkiss.dbeaver.ext.generic.model.KyuubiConnectionValidator"/>
     </extension>
 
 </plugin>
