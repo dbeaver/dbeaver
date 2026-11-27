@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -252,54 +252,17 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
      * Reads list of dependent objects.
      * SQL query originally copy-pasted from pgAdmin sources with some modifications.
      */
-    public static List<PostgreDependency> readDependencies(DBRProgressMonitor monitor, PostgreObject object, boolean dependents) throws DBCException {
+    @NotNull
+    public static List<PostgreDependency> readDependencies(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreObject object,
+        boolean dependents
+    ) throws DBCException {
         List<PostgreDependency> dependencies = new ArrayList<>();
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load object dependencies")) {
             String queryObjId = dependents ? "objid" : "refobjid";
-            String condObjId = dependents ? "refobjid" : "objid";
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT DISTINCT dep.deptype, dep.classid, dep." + queryObjId + ", cl.relkind, attr.attname,pg_get_expr(ad.adbin, ad.adrelid) adefval,\n" +
-                    "    CASE WHEN cl.relkind IS NOT NULL THEN cl.relkind::text || COALESCE(dep.objsubid::text, '')::text\n" +
-                    "        WHEN tg.oid IS NOT NULL THEN 'T'::text\n" +
-                    "        WHEN ty.oid IS NOT NULL THEN 'y'::text\n" +
-                    "        WHEN ns.oid IS NOT NULL THEN 'n'::text\n" +
-                    "        WHEN pr.oid IS NOT NULL THEN 'p'::text\n" +
-                    "        WHEN la.oid IS NOT NULL THEN 'l'::text\n" +
-                    "        WHEN rw.oid IS NOT NULL THEN 'R'::text\n" +
-                    "        WHEN co.oid IS NOT NULL THEN 'C'::text || contype::text\n" +
-                    "        WHEN ad.oid IS NOT NULL THEN 'A'::text\n" +
-                    "        ELSE ''\n" +
-                    "    END AS type,\n" +
-                    "    COALESCE(coc.relname, clrw.relname, tgr.relname) AS ownertable,\n" +
-                    "    CASE WHEN cl.relname IS NOT NULL AND att.attname IS NOT NULL THEN cl.relname || '.' || att.attname\n" +
-                    "    ELSE COALESCE(cl.relname, co.conname, pr.proname, tg.tgname, ty.typname, la.lanname, rw.rulename, ns.nspname)\n" +
-                    "    END AS refname,\n" +
-                    "    COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname, tgrn.nspname) AS nspname\n" +
-                    "FROM pg_depend dep\n" +
-                    "LEFT JOIN pg_class cl ON dep." + queryObjId + "=cl.oid\n" +
-                    "LEFT JOIN pg_attribute att ON dep." + queryObjId + "=att.attrelid AND dep.objsubid=att.attnum\n" +
-                    "LEFT JOIN pg_namespace nsc ON cl.relnamespace=nsc.oid\n" +
-                    "LEFT JOIN pg_proc pr ON dep." + queryObjId + "=pr.oid\n" +
-                    "LEFT JOIN pg_namespace nsp ON pr.pronamespace=nsp.oid\n" +
-                    "LEFT JOIN pg_trigger tg ON dep." + queryObjId + "=tg.oid\n" +
-                    "LEFT JOIN pg_class tgr ON tg.tgrelid=tgr.oid\n" +
-                    "LEFT JOIN pg_namespace tgrn ON tgr.relnamespace=tgrn.oid\n" +
-                    "LEFT JOIN pg_type ty ON dep." + queryObjId + "=ty.oid\n" +
-                    "LEFT JOIN pg_namespace nst ON ty.typnamespace=nst.oid\n" +
-                    "LEFT JOIN pg_constraint co ON dep." + queryObjId + "=co.oid\n" +
-                    "LEFT JOIN pg_class coc ON co.conrelid=coc.oid\n" +
-                    "LEFT JOIN pg_namespace nso ON co.connamespace=nso.oid\n" +
-                    "LEFT JOIN pg_rewrite rw ON dep." + queryObjId + "=rw.oid\n" +
-                    "LEFT JOIN pg_class clrw ON clrw.oid=rw.ev_class\n" +
-                    "LEFT JOIN pg_namespace nsrw ON clrw.relnamespace=nsrw.oid\n" +
-                    "LEFT JOIN pg_language la ON dep." + queryObjId + "=la.oid\n" +
-                    "LEFT JOIN pg_namespace ns ON dep." + queryObjId + "=ns.oid\n" +
-                    "LEFT JOIN pg_attrdef ad ON ad.oid=dep." + queryObjId + "\n" +
-                    "LEFT JOIN pg_attribute attr ON attr.attrelid=ad.adrelid and attr.attnum=ad.adnum\n" +
-                    "WHERE dep." + condObjId + "=?\n" +
-                    "ORDER BY type"))
-            {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(getDependenciesQuery(dependents))) {
                 dbStat.setLong(1, object.getObjectId());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
@@ -328,6 +291,65 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
         }
 
         return dependencies;
+    }
+
+    @NotNull
+    static String getDependenciesQuery(boolean dependents) {
+        String queryObjId = dependents ? "objid" : "refobjid";
+        String condObjId = dependents ? "refobjid" : "objid";
+        // Keep each join search small even with Greenplum's join_collapse_limit=20.
+        // OFFSET 0 prevents flattening the filtered subquery back into a single 21-relation join.
+        return """
+            SELECT DISTINCT dep.deptype, dep.classid, dep.%1$s, dep.relkind, attr.attname,
+                pg_get_expr(ad.adbin, ad.adrelid) adefval,
+                CASE WHEN dep.relkind IS NOT NULL THEN dep.relkind::text || COALESCE(dep.objsubid::text, '')::text
+                    WHEN dep.tgoid IS NOT NULL THEN 'T'::text
+                    WHEN dep.typoid IS NOT NULL THEN 'y'::text
+                    WHEN ns.oid IS NOT NULL THEN 'n'::text
+                    WHEN dep.proid IS NOT NULL THEN 'p'::text
+                    WHEN la.oid IS NOT NULL THEN 'l'::text
+                    WHEN rw.oid IS NOT NULL THEN 'R'::text
+                    WHEN co.oid IS NOT NULL THEN 'C'::text || contype::text
+                    WHEN ad.oid IS NOT NULL THEN 'A'::text
+                    ELSE ''
+                END AS type,
+                COALESCE(coc.relname, clrw.relname, dep.tgtable) AS ownertable,
+                CASE WHEN dep.relname IS NOT NULL AND dep.colname IS NOT NULL THEN dep.relname || '.' || dep.colname
+                ELSE COALESCE(dep.relname, co.conname, dep.proname, dep.tgname, dep.typname, la.lanname, rw.rulename, ns.nspname)
+                END AS refname,
+                COALESCE(dep.relschema, nso.nspname, dep.procschema, dep.typeschema, nsrw.nspname, dep.tgschema) AS nspname
+            FROM (
+                SELECT dep.deptype, dep.classid, dep.objid, dep.refobjid, dep.objsubid,
+                    cl.relkind, cl.relname, att.attname AS colname, nsc.nspname AS relschema,
+                    pr.oid AS proid, pr.proname, nsp.nspname AS procschema,
+                    tg.oid AS tgoid, tg.tgname, tgr.relname AS tgtable, tgrn.nspname AS tgschema,
+                    ty.oid AS typoid, ty.typname, nst.nspname AS typeschema
+                FROM pg_depend dep
+                LEFT JOIN pg_class cl ON dep.%1$s=cl.oid
+                LEFT JOIN pg_attribute att ON dep.%1$s=att.attrelid AND dep.objsubid=att.attnum
+                LEFT JOIN pg_namespace nsc ON cl.relnamespace=nsc.oid
+                LEFT JOIN pg_proc pr ON dep.%1$s=pr.oid
+                LEFT JOIN pg_namespace nsp ON pr.pronamespace=nsp.oid
+                LEFT JOIN pg_trigger tg ON dep.%1$s=tg.oid
+                LEFT JOIN pg_class tgr ON tg.tgrelid=tgr.oid
+                LEFT JOIN pg_namespace tgrn ON tgr.relnamespace=tgrn.oid
+                LEFT JOIN pg_type ty ON dep.%1$s=ty.oid
+                LEFT JOIN pg_namespace nst ON ty.typnamespace=nst.oid
+                WHERE dep.%2$s=?
+                OFFSET 0
+            ) dep
+            LEFT JOIN pg_constraint co ON dep.%1$s=co.oid
+            LEFT JOIN pg_class coc ON co.conrelid=coc.oid
+            LEFT JOIN pg_namespace nso ON co.connamespace=nso.oid
+            LEFT JOIN pg_rewrite rw ON dep.%1$s=rw.oid
+            LEFT JOIN pg_class clrw ON clrw.oid=rw.ev_class
+            LEFT JOIN pg_namespace nsrw ON clrw.relnamespace=nsrw.oid
+            LEFT JOIN pg_language la ON dep.%1$s=la.oid
+            LEFT JOIN pg_namespace ns ON dep.%1$s=ns.oid
+            LEFT JOIN pg_attrdef ad ON ad.oid=dep.%1$s
+            LEFT JOIN pg_attribute attr ON attr.attrelid=ad.adrelid and attr.attnum=ad.adnum
+            ORDER BY type
+            """.formatted(queryObjId, condObjId);
     }
 
 }
