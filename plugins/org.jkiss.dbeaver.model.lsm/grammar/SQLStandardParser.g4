@@ -307,7 +307,7 @@ booleanTest: booleanPrimary (IS (NOT)? truthValue)?;
 booleanPrimary: (predicate|LeftParen searchCondition RightParen|truthValue);
 predicate: (existsPredicate|likePredicate|rowValuePredicate);
 
-rowValuePredicate: rowValueConstructor (comparisonPredicate|betweenPredicate|inPredicate|nullPredicate|quantifiedComparisonPredicate|matchPredicate|overlapsPredicate)?;
+rowValuePredicate: rowValueConstructor (comparisonPredicate|betweenPredicate|inPredicate|distinctPredicate|nullPredicate|quantifiedComparisonPredicate|matchPredicate|overlapsPredicate)?;
 comparisonPredicate: compOp rowValueConstructor?;
 betweenPredicate: (NOT)? BETWEEN (rowValueConstructor (AND rowValueConstructor?)?)?;
 inPredicate: (NOT)? IN inPredicateValue?;
@@ -442,14 +442,14 @@ intervalOperation:       intervalQualifier?((((Asterisk|Solidus) factor)+ (sign 
 intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
 
 valueExpressionPrimary: valueExpressionAtom valueExpressionAttributeSpec? valueExpressionCastSpec?;
-valueExpressionAttributeSpec: Colon Identifier; // https://docs.snowflake.com/en/user-guide/tutorials/json-basics-tutorial
+valueExpressionAttributeSpec: Colon colonIdentifier; // https://docs.snowflake.com/en/user-guide/tutorials/json-basics-tutorial
 valueExpressionCastSpec: TypeCast dataType typeModifier*;
 valueExpressionAtom: unsignedNumericLiteral|generalLiteral|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
-    |nullSpecification|truthValue|variableExpression|generalValueSpecification|functionCallExpression|aggregateExpression|valueReference|anyWordsWithProperty;
+    |nullSpecification|truthValue|variableExpression|generalValueSpecification|extractExpression|functionCallExpression|aggregateExpression|valueReference|anyWordsWithProperty;
 
 variableExpression: BatchVariableName|ClientVariableName|namedParameter|anonymouseParameter;
-namedParameter: {isNamedParametersEnabled}? (Colon|CustomNamedParameterPrefix) Identifier;
+namedParameter: {isNamedParametersEnabled}? (Colon|CustomNamedParameterPrefix) colonIdentifier;
 anonymouseParameter: {isAnonymousParametersEnabled}? (QuestionMark|CustomAnonymousParameterMark);
 
 numericPrimary: (valueExpressionPrimary|extractExpression);
@@ -466,11 +466,11 @@ intervalTerm: ((intervalFactor)|(term Asterisk intervalFactor)) ((Asterisk|Solid
 intervalValueExpression: ((intervalTerm)|(LeftParen datetimeValueExpression MinusSign anyWordsWithProperty RightParen intervalQualifier)) (sign intervalTerm)*;
 
 datetimeValueExpression: (anyWordsWithProperty|(intervalValueExpression PlusSign anyWordsWithProperty)) (sign intervalTerm)*;
-extractSource: (datetimeValueExpression|intervalValueExpression); // L
+extractSource: valueExpression;
 
 countAllExpression: COUNT LeftParen Asterisk RightParen;
 extractExpression: EXTRACT LeftParen extractField FROM extractSource RightParen;
-extractField: (datetimeField|timeZoneField);
+extractField: (datetimeField|timeZoneField|actualIdentifier);
 datetimeField: (nonSecondDatetimeField|SECOND);
 timeZoneField: (TIMEZONE_HOUR|TIMEZONE_MINUTE);
 
@@ -628,7 +628,8 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
-functionCallExpression: functionCallTargetName LeftParen (functionCallOperand ((Comma|anyWord) functionCallOperand)*)? RightParen overClause?;
+functionCallExpression: trimFunctionName LeftParen (trimSpecification? functionCallOperand? FROM)? functionCallOperand (Comma functionCallOperand)* RightParen
+    | functionCallTargetName LeftParen (functionCallOperand ((Comma|FROM|anyWord) functionCallOperand)*)? RightParen overClause?;
 functionCallTargetName: qualifiedName|IF;
 functionCallOperand: anyValue|directSubqueryExpression;
 
@@ -659,7 +660,8 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     INDEX | MATERIALIZED | ROLE | SEQUENCE | SYNONYM | AFTER | BEFORE | ATOMIC | BLOCK |
     CATCH | CLOSE | CURSOR | DEALLOCATE | DEFINER | EACH | ELSIF | FETCH | FIRST | FOR | HANDLER |
     INSTEAD | LANGUAGE | LAST | NEXT | OPEN | PRIOR | PROC | RECREATE | RELATIVE |
-    NEW | OLD | REFERENCING | RETURN | RETURNS | ROW | SIGNAL | TRIGGER | TRY | EXPLAIN | QUERY | PLAN
+    NEW | OLD | REFERENCING | RETURN | RETURNS | ROW | SIGNAL | TRIGGER | TRY | EXPLAIN | QUERY | PLAN |
+    TRIM | BOTH | LEADING | TRAILING
 ;
 
 // Keep the procedural rules below in their existing relative order.
@@ -792,3 +794,11 @@ explainOptionItem: anyWord (EqualsOperator? explainOptionValue)?;
 explainOptionValue: anyWord|literal|TRUE|FALSE|ON;
 explainTarget: qualifiedName (identifier|StringLiteralContent|Asterisk)? // EXPLAIN table [column or wildcard]
     | FOR anyWord UnsignedInteger;              // MySQL/MariaDB/TiDB FOR CONNECTION
+
+// TRIM specification words became tokens, but parameter and attribute names after a colon may still use them.
+colonIdentifier: Identifier|TRIM|BOTH|LEADING|TRAILING;
+
+// IS [NOT] DISTINCT FROM, and TRIM([BOTH|LEADING|TRAILING] [chars] FROM source).
+distinctPredicate: IS NOT? DISTINCT FROM rowValueConstructor?;
+trimFunctionName: TRIM;
+trimSpecification: BOTH|LEADING|TRAILING;
