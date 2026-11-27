@@ -28,13 +28,21 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CInfoLabel;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class DDUIUtils {
     private DDUIUtils() {
@@ -53,6 +61,30 @@ public class DDUIUtils {
     public static void showError(@NotNull String title, @Nullable String message, @NotNull Throwable error) {
         UIUtils.syncExec(() -> new StandardErrorDialog(UIUtils.getActiveWorkbenchShell(), title, message,
             GeneralUtils.makeExceptionStatus(error), IStatus.ERROR).open());
+    }
+
+    public static void runWithProgressBlocking(
+        @NotNull String description, @NotNull DBRRunnableWithProgress operation
+    ) throws InvocationTargetException {
+        Future<Void> completion = DBWorkbench.getPlatformUI().executeWithProgressBlocking(description,
+            new DBRRunnableWithResult<Future<Void>>() {
+                @Override
+                public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    operation.run(monitor);
+                    result = CompletableFuture.completedFuture(null);
+                }
+            });
+        try {
+            completion.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new InvocationTargetException(e);
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof InvocationTargetException invocation) {
+                throw invocation;
+            }
+            throw new InvocationTargetException(e.getCause());
+        }
     }
 
     @NotNull

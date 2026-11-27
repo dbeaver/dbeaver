@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.datadam;
 
 import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
+import com.dbeaver.datadam.sso.api.DDPermissionIds;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
@@ -146,6 +147,28 @@ class DDAccountClientTest {
 
         response.set("{\"data\":{\"myPermissions\":null}}");
         Assertions.assertThrows(DBException.class, client::canRenameDam);
+    }
+
+    @Test
+    void checksAnyPermissionAgainstTheCurrentAccountResponse() throws Exception {
+        var client = client();
+        response.set("{\"data\":{\"myPermissions\":[\"ACCOUNT_READ\",\"STORAGE_KEY_MANAGE\"]}}");
+        Assertions.assertTrue(client.hasPermission(DDPermissionIds.STORAGE_KEY_MANAGE));
+        Assertions.assertFalse(client.hasPermission(DDPermissionIds.REMOTE_DAM_MANAGE));
+        Assertions.assertEquals("Bearer test-access-token", authorization.get());
+        Assertions.assertTrue(JsonParser.parseString(posted.get()).getAsJsonObject().get("query").getAsString()
+            .contains("myPermissions"));
+
+        response.set("{\"data\":{\"myPermissions\":[\"REMOTE_DAM_MANAGE\"]}}");
+        Assertions.assertFalse(client.hasPermission(DDPermissionIds.STORAGE_KEY_MANAGE));
+        Assertions.assertTrue(client.hasPermission(DDPermissionIds.REMOTE_DAM_MANAGE));
+    }
+
+    @Test
+    void doesNotTreatMissingPermissionDataAsDenial() {
+        var client = client();
+        response.set("{\"data\":{\"myPermissions\":null}}");
+        Assertions.assertThrows(DBException.class, () -> client.hasPermission(DDPermissionIds.STORAGE_KEY_MANAGE));
     }
 
     @Test

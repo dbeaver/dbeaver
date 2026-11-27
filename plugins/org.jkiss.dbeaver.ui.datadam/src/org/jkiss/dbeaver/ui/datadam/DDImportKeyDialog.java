@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.auth.DDRecoveryPhrase;
+import org.jkiss.dbeaver.model.datadam.auth.DDEncryptionKey;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -72,7 +72,7 @@ public class DDImportKeyDialog extends BaseDialog {
     protected void okPressed() {
         String value;
         try {
-            value = DDRecoveryPhrase.normalizeAndValidate(phraseText.getText());
+            value = DDEncryptionKey.normalizeAndValidate(phraseText.getText());
         } catch (DBException e) {
             MessageDialog.openError(getShell(), DDTrackingUIMessages.import_key_dialog_title, e.getMessage());
             return;
