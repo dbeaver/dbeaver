@@ -241,7 +241,14 @@ public final class SWTThemeUtils {
                 if (selected && !hot && !tree.isFocusControl()) {
                     state = OS.TREIS_SELECTEDNOTFOCUS;
                 }
-                OS.DrawThemeBackground(theme, event.gc.handle, OS.TVP_TREEITEM, state, row, cell);
+                if (state == OS.TREIS_SELECTEDNOTFOCUS && tree.fillsUnfocusedSelection()) {
+                    // Match SWT's table/tree fill instead of the nearly invisible native dark selection.
+                    RECT fill = new RECT();
+                    OS.IntersectRect(fill, row, cell);
+                    tree.fillBackground(event.gc.handle, tree.getUnfocusedSelectionPixel(), fill);
+                } else {
+                    OS.DrawThemeBackground(theme, event.gc.handle, OS.TVP_TREEITEM, state, row, cell);
+                }
                 if (selected) {
                     event.gc.setForeground(isDarkTheme.getAsBoolean()
                         ? tree.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT)
