@@ -22,8 +22,16 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.util.List;
 
-/** Approval for driver initialization SQL executed before a JDBC connection is available. */
+/** Approval for connection initialization SQL and native extensions. */
 public interface UIServiceConnectionInit {
+    default boolean confirmNativeExtensions(
+        @NotNull DBPDataSourceContainer container,
+        @Nullable String url,
+        @NotNull List<String> settings
+    ) {
+        return false;
+    }
+
     default boolean confirmInitScripts(
         @NotNull DBPDataSourceContainer container,
         @Nullable String url,
