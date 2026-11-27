@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,9 @@ class KeepAlivePingJob extends AbstractJob {
     @Override
     protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         boolean hasDeadContexts = false;
-        for (final DBSInstance instance : dataSource.getAvailableInstances()) {
+        // The instance list can be the live cache of the data source: iterate over a copy,
+        // otherwise instances deleted during the ping cause ConcurrentModificationException
+        for (final DBSInstance instance : new ArrayList<>(dataSource.getAvailableInstances())) {
             for (final DBCExecutionContext context : instance.getAllContexts()) {
                 try {
                     context.checkContextAlive(monitor);
