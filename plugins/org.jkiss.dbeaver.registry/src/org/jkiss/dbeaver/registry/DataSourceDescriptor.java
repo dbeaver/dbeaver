@@ -1632,44 +1632,50 @@ public class DataSourceDescriptor
         return false;
     }
 
-    private void releaseDataSourceUsers(DBRProgressMonitor monitor) {
+    private void releaseDataSourceUsers(@NotNull DBRProgressMonitor monitor) {
         List<DBPDataSourceTask> usersStamp;
         synchronized (users) {
             usersStamp = new ArrayList<>(users);
         }
 
-        int jobCount = 0;
+        Set<Job> jobs = new LinkedHashSet<>();
         // Save all unsaved data
         for (DBPDataSourceTask user : usersStamp) {
-            if (user instanceof Job) {
-                jobCount++;
+            if (user instanceof Job job) {
+                jobs.add(job);
             }
             if (user instanceof DBPDataSourceAcquirer) {
                 ((DBPDataSourceAcquirer) user).beforeDisconnect();
             }
         }
-        if (jobCount > 0) {
-            monitor.beginTask("Waiting for all active tasks to finish", jobCount);
-            // Stop all jobs
-            for (DBPDataSourceTask user : usersStamp) {
-                if (user instanceof Job job) {
-                    monitor.subTask("Stop '" + job.getName() + "'");
-                    if (job.getState() == Job.RUNNING) {
-                        job.cancel();
-                        try {
-                            // Wait for 3 seconds
-                            for (int i = 0; i < 30; i++) {
-                                Thread.sleep(100);
-                                if (job.getState() != Job.RUNNING) {
-                                    break;
-                                }
+        // Metadata loading jobs belong to the data source but are not registered data-source tasks.
+        DBPDataSource currentDataSource = dataSource;
+        if (currentDataSource != null) {
+            Collections.addAll(jobs, Job.getJobManager().find(currentDataSource));
+        }
+        jobs.remove(Job.getJobManager().currentJob());
+        if (!jobs.isEmpty()) {
+            monitor.beginTask("Waiting for all active tasks to finish", jobs.size());
+            // Cancel queued jobs too, and signal all running jobs before waiting for any of them.
+            for (Job job : jobs) {
+                job.cancel();
+            }
+            for (Job job : jobs) {
+                monitor.subTask("Stop '" + job.getName() + "'");
+                if (job.getState() == Job.RUNNING) {
+                    try {
+                        // Wait for 3 seconds
+                        for (int i = 0; i < 30; i++) {
+                            Thread.sleep(100);
+                            if (job.getState() != Job.RUNNING) {
+                                break;
                             }
-                        } catch (InterruptedException e) {
-                            // its ok, do nothing
                         }
+                    } catch (InterruptedException e) {
+                        // its ok, do nothing
                     }
-                    monitor.worked(1);
                 }
+                monitor.worked(1);
             }
             monitor.done();
         }
