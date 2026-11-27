@@ -36,7 +36,7 @@ import java.util.*;
 public class FireBirdView extends GenericView implements FireBirdTableBase, DBSObjectWithScript, DBSView {
 
     private String ownerName;
-    private Map<String, String> columnDomainTypes;
+    private Map<String, FireBirdColumnDomain> columnDomains;
 
     public FireBirdView(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
@@ -72,16 +72,16 @@ public class FireBirdView extends GenericView implements FireBirdTableBase, DBSO
 
     @Nullable
     @Override
-    public String getColumnDomainType(@NotNull DBRProgressMonitor monitor, @NotNull FireBirdTableColumn column) throws DBException {
-        if (columnDomainTypes == null) {
-            columnDomainTypes = FireBirdUtils.readColumnDomainTypes(monitor, this);
+    public FireBirdColumnDomain getColumnDomain(@NotNull DBRProgressMonitor monitor, @NotNull FireBirdTableColumn column) throws DBException {
+        if (columnDomains == null) {
+            columnDomains = FireBirdUtils.readColumnDomains(monitor, this);
         }
-        return columnDomainTypes.get(column.getName());
+        return columnDomains.get(column.getName());
     }
 
     @Override
-    public void setColumnDomainTypes(@NotNull Map<String, String> columnDomainTypes) {
-        this.columnDomainTypes = columnDomainTypes;
+    public void setColumnDomains(@NotNull Map<String, FireBirdColumnDomain> columnDomains) {
+        this.columnDomains = columnDomains;
     }
 
 }

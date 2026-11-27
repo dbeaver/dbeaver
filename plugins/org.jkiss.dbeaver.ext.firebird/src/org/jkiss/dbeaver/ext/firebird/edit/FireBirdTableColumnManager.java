@@ -72,14 +72,18 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     };
 
     /**
-     * Adds the domain's collation to a column declared with the domain's underlying type (see above).
+     * Adds the collation to a column declared with the domain's underlying type (see above),
+     * and to a column declared with a domain and a collation of its own (DOMAIN_NAME COLLATE X).
      * Firebird accepts COLLATE only at the end of a column definition, after DEFAULT and NOT NULL.
      */
     private final ColumnModifier<GenericTableColumn> domainCollateModifier = (monitor, column, sql, command) -> {
         final FireBirdTableColumn fbColumn = (FireBirdTableColumn) column;
         final String collation = fbColumn.getCollation();
-        if (isDetachedFromDomain(fbColumn, command) && CommonUtils.isNotEmpty(collation)
-            && isCharacterType(fbColumn.getBaseTypeName())) {
+        if (fbColumn.getDomainName() == null || CommonUtils.isEmpty(collation)) {
+            return;
+        }
+        boolean detached = isDetachedFromDomain(fbColumn, command);
+        if ((detached && isCharacterType(fbColumn.getBaseTypeName())) || (!detached && fbColumn.hasCollationOverride())) {
             sql.append(" COLLATE ").append(DBUtils.getQuotedIdentifier(column.getDataSource(), collation));
         }
     };
@@ -150,7 +154,8 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         boolean typeNameChanged = command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null;
         String typeClause = getAlterTypeClause(column, command);
         String computedDefinition = column.getComputedDefinition(monitor);
-        if (typeNameChanged && isDetachedFromDomain(column, command) && isCharacterType(column.getBaseTypeName())) {
+        if (typeNameChanged && isDetachedFromDomain(column, command) && isCharacterType(column.getBaseTypeName())
+            && needsDomainSwitch(column)) {
             // Switched to a character domain and resized in one change. The resize detaches the column from the
             // domain, and ALTER COLUMN ... TYPE doesn't accept COLLATE. So the column is switched to the domain first,
             // which takes over the domain's character set and collation; the resize below then keeps both.
@@ -246,6 +251,38 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
             ddl += " GENERATED ALWAYS AS " + computedDefinition;
         }
         return ddl;
+    }
+
+    /**
+     * Checks whether an existing column must be switched to its new domain before it is resized (see above).
+     * Firebird never shortens a column, so a domain shorter than the column can't be used as an intermediate type.
+     * This is only a problem if the domain has another character set or collation: ALTER COLUMN ... TYPE can't
+     * change them in any other way. Otherwise the resize alone gives the same result.
+     */
+    private static boolean needsDomainSwitch(@NotNull FireBirdTableColumn column) throws DBException {
+        FireBirdDataType domain = column.getFireBirdDataType();
+        if (domain == null || domain.getCharLength() <= 0 || domain.getCharLength() >= column.getPersistedLength()) {
+            return true;
+        }
+        String charset = column.getPersistedCharset();
+        if (charset != null && charset.equalsIgnoreCase(domain.getCharsetName())
+            && getEffectiveCollation(charset, column.getPersistedCollation())
+                .equalsIgnoreCase(getEffectiveCollation(charset, domain.getCollationName()))) {
+            return false;
+        }
+        throw new DBException("Can't switch column " + column.getName() + " to domain " + column.getDomainName()
+            + ": the domain (" + domain.getCharLength() + " characters) is shorter than the column ("
+            + column.getPersistedLength() + " characters). Firebird can't shorten a column, and ALTER COLUMN TYPE"
+            + " can't change its character set or collation otherwise. Choose a domain with at least "
+            + column.getPersistedLength() + " characters.");
+    }
+
+    /**
+     * The default collation of a character set has the name of the character set
+     */
+    @NotNull
+    private static String getEffectiveCollation(@NotNull String charset, @Nullable String collation) {
+        return CommonUtils.isEmpty(collation) ? charset : collation;
     }
 
     /**

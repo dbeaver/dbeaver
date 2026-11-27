@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdColumnDomain;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdProcedureParameter;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTrigger;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTriggerType;
@@ -342,6 +343,14 @@ public class FireBirdUtils {
 
     private static Pattern VERSION_PATTERN = Pattern.compile(".+\\-V([0-9]+\\.[0-9]+\\.[0-9]+).+");
 
+    /**
+     * Collation declared on the column itself (DOMAIN_NAME COLLATE X) and the FROM clause over RDB$RELATION_FIELDS RF.
+     * A column collation is stored in RDB$RELATION_FIELDS, its character set comes from the column's domain.
+     */
+    private static final String COLUMN_COLLATION_SELECT = "CO.RDB$COLLATION_NAME FROM RDB$RELATION_FIELDS RF\n" +
+        "LEFT JOIN RDB$FIELDS F ON F.RDB$FIELD_NAME=RF.RDB$FIELD_SOURCE\n" +
+        "LEFT JOIN RDB$COLLATIONS CO ON CO.RDB$CHARACTER_SET_ID=F.RDB$CHARACTER_SET_ID AND CO.RDB$COLLATION_ID=RF.RDB$COLLATION_ID";
+
     public static Version getFireBirdServerVersion(DBPDataSource dataSource) {
         String versionInfo = dataSource.getInfo().getDatabaseProductVersion();
         Matcher matcher = VERSION_PATTERN.matcher(versionInfo);
@@ -352,25 +361,26 @@ public class FireBirdUtils {
     }
 
     @NotNull
-    public static Map<String, String> readColumnDomainTypes(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase table) throws DBException {
+    public static Map<String, FireBirdColumnDomain> readColumnDomains(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read column domain type")) {
-            return readColumnDomainTypes(session, table);
+            return readColumnDomains(session, table);
         } catch (SQLException ex) {
             throw new DBException("Error reading column domain types for " + table.getName(), ex);
         }
     }
 
     @NotNull
-    public static Map<String, String> readColumnDomainTypes(@NotNull JDBCSession session, @NotNull GenericTableBase table) throws SQLException {
-        try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF WHERE RF.RDB$RELATION_NAME=?")) {
+    public static Map<String, FireBirdColumnDomain> readColumnDomains(@NotNull JDBCSession session, @NotNull GenericTableBase table) throws SQLException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE," + COLUMN_COLLATION_SELECT + " WHERE RF.RDB$RELATION_NAME=?")) {
             dbStat.setString(1, table.getName());
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                Map<String, String> dtMap = new HashMap<>();
+                Map<String, FireBirdColumnDomain> dtMap = new HashMap<>();
                 while (dbResult.next()) {
                     String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
                     String domainTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, 2);
                     if (!CommonUtils.isEmpty(columnName) && !CommonUtils.isEmpty(domainTypeName)) {
-                        dtMap.put(columnName, domainTypeName);
+                        dtMap.put(columnName, new FireBirdColumnDomain(domainTypeName, JDBCUtils.safeGetStringTrimmed(dbResult, 3)));
                     }
                 }
                 return dtMap;
@@ -379,17 +389,18 @@ public class FireBirdUtils {
     }
 
     @NotNull
-    public static Map<String, Map<String, String>> readAllColumnDomainTypes(@NotNull JDBCSession session) throws SQLException {
+    public static Map<String, Map<String, FireBirdColumnDomain>> readAllColumnDomains(@NotNull JDBCSession session) throws SQLException {
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT RF.RDB$RELATION_NAME,RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF")) {
+            "SELECT RF.RDB$RELATION_NAME,RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE," + COLUMN_COLLATION_SELECT)) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                Map<String, Map<String, String>> domainsByTable = new HashMap<>();
+                Map<String, Map<String, FireBirdColumnDomain>> domainsByTable = new HashMap<>();
                 while (dbResult.next()) {
                     String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
                     String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, 2);
                     String domainTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, 3);
                     if (!CommonUtils.isEmpty(tableName) && !CommonUtils.isEmpty(columnName) && !CommonUtils.isEmpty(domainTypeName)) {
-                        domainsByTable.computeIfAbsent(tableName, key -> new HashMap<>()).put(columnName, domainTypeName);
+                        domainsByTable.computeIfAbsent(tableName, key -> new HashMap<>())
+                            .put(columnName, new FireBirdColumnDomain(domainTypeName, JDBCUtils.safeGetStringTrimmed(dbResult, 4)));
                     }
                 }
                 return domainsByTable;
