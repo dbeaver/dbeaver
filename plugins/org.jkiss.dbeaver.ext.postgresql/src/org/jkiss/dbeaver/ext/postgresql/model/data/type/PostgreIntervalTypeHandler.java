@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
     private static final int INTERVAL_TYPE_NONE         = 0x7fff_0000;
     private static final int INTERVAL_MASK_TYPE         = 0xffff_0000;
     private static final int INTERVAL_MASK_PRECISION    = 0x0000_ffff;
+    // The server stores this value when an interval is declared without precision, 0 is a precision on its own
+    private static final int INTERVAL_PRECISION_NONE    = 0x0000_ffff;
 
     private PostgreIntervalTypeHandler() {
         // disallow constructing singleton class
@@ -47,7 +49,7 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
     public int getTypeModifiers(@NotNull PostgreDataType type, @NotNull String typeName, @NotNull String[] typmod) throws DBException {
         switch (typmod.length) {
             case 0:
-                return getIntervalModifiers(typeName, 0);
+                return getIntervalModifiers(typeName, null);
             case 1:
                 return getIntervalModifiers(typeName, CommonUtils.toInt(typmod[0]));
             default:
@@ -64,7 +66,8 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
                 sb.append(' ').append(getIntervalType(typmod));
             }
             final Integer precision = getTypePrecision(type, typmod);
-            if (precision != null && precision > 0) {
+            // Missing precision is read as -1
+            if (precision != null && precision >= 0) {
                 sb.append('(').append(precision).append(')');
             }
         }
@@ -127,11 +130,11 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
         return (typmod & INTERVAL_TYPE_NONE) != INTERVAL_TYPE_NONE;
     }
 
-    private static int getIntervalModifiers(@NotNull String name, int precision) throws DBException {
-        if (precision < 0 || precision > 6) {
+    private static int getIntervalModifiers(@NotNull String name, @Nullable Integer precision) throws DBException {
+        if (precision != null && (precision < 0 || precision > 6)) {
             throw new DBException("Interval precision " + precision + " must be between 0 and 6");
         }
-        int typmod = precision;
+        int typmod = precision == null ? INTERVAL_PRECISION_NONE : precision;
         switch (name) {
             case "interval year":
                 typmod |= INTERVAL_TYPE_YEAR;
@@ -178,7 +181,7 @@ public class PostgreIntervalTypeHandler extends PostgreTypeHandler {
             default:
                 throw new DBException("Unsupported interval type: '" + name + "'");
         }
-        if (!isPreciseInterval(typmod) && precision != 0) {
+        if (!isPreciseInterval(typmod) && precision != null && precision != 0) {
             throw new DBException("Interval '" + name + "' may not have precision");
         }
         return typmod;
