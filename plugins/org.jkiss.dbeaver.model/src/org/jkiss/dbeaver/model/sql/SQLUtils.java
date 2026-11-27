@@ -67,6 +67,7 @@ public final class SQLUtils {
     private static final String OPERATOR_CHARS = "+-*/<>=~!@#%^&|";
     private static final String OPERATOR_SIGN_CHARS = "+-";
     private static final String OPERATOR_MASK = "+";
+    private static final char DOLLAR_QUOTE_CHAR = '$';
     /**
      * Operators which every SQL parser understands and which therefore never need masking.
      */
@@ -230,7 +231,7 @@ public final class SQLUtils {
      * and as a binary operator, so the masked text keeps the structure of the query (its tables, joins and select items)
      * and can be parsed. Its expressions no longer mean the same, so it must never be executed or shown.
      * <p>
-     * Operators inside string literals, quoted identifiers and comments are left untouched.
+     * Operators inside string literals (including dollar-quoted ones), quoted identifiers and comments are left untouched.
      */
     @NotNull
     public static String maskNonStandardOperators(@NotNull SQLDialect dialect, @NotNull String sql) {
@@ -244,10 +245,13 @@ public final class SQLUtils {
         int pos = 0;
         while (pos < sql.length()) {
             String[] quote = quoteStartingAt(sql, pos, quotes);
+            int dollarQuotedEnd = getDollarQuotedEnd(sql, pos);
             if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
                 pos += 2;
             } else if (quote != null) {
                 pos = skipQuoted(sql, pos, quote, escapeChar);
+            } else if (dollarQuotedEnd >= 0) {
+                pos = dollarQuotedEnd;
             } else if (sql.startsWith(SQLConstants.SL_COMMENT, pos) || startsWithAny(sql, pos, extraCommentPrefixes)) {
                 pos = getLineEnd(sql, pos);
             } else if (sql.startsWith(SQLConstants.ML_COMMENT_START, pos)) {
@@ -292,6 +296,34 @@ public final class SQLUtils {
             end--;
         }
         return end;
+    }
+
+    /**
+     * Finds the end of the dollar-quoted string ({@code $$text$$} or {@code $tag$text$tag$}) which starts at the given position.
+     * The text of such a string is taken literally, so a quote inside it doesn't start anything.
+     *
+     * @return the position after the closing delimiter, or -1 if there is no dollar-quoted string at this position
+     */
+    private static int getDollarQuotedEnd(@NotNull String sql, int start) {
+        if (sql.charAt(start) != DOLLAR_QUOTE_CHAR || (start > 0 && Character.isJavaIdentifierPart(sql.charAt(start - 1)))) {
+            // A dollar sign inside an identifier (v$session) is not a delimiter
+            return -1;
+        }
+        int tagEnd = start + 1;
+        while (tagEnd < sql.length() && isDollarQuoteTagChar(sql.charAt(tagEnd), tagEnd == start + 1)) {
+            tagEnd++;
+        }
+        if (tagEnd >= sql.length() || sql.charAt(tagEnd) != DOLLAR_QUOTE_CHAR) {
+            return -1;
+        }
+        String delimiter = sql.substring(start, tagEnd + 1);
+        int closePos = sql.indexOf(delimiter, tagEnd + 1);
+        return closePos < 0 ? -1 : closePos + delimiter.length();
+    }
+
+    private static boolean isDollarQuoteTagChar(char c, boolean first) {
+        // A tag can't start with a digit: $1 is a parameter
+        return c == '_' || (first ? Character.isLetter(c) : Character.isLetterOrDigit(c));
     }
 
     /**
@@ -362,7 +394,12 @@ public final class SQLUtils {
             if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
                 pos += 2;
             } else if (startsWith(sql, close, pos)) {
-                return pos + close.length();
+                if (!close.equals(quote[0]) && startsWith(sql, close, pos + close.length())) {
+                    // A doubled closing quote is a part of the quoted text: [a]]b]
+                    pos += close.length() * 2;
+                } else {
+                    return pos + close.length();
+                }
             } else {
                 pos++;
             }

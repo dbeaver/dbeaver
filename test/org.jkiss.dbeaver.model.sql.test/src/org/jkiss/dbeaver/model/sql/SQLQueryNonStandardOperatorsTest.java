@@ -47,6 +47,14 @@ public class SQLQueryNonStandardOperatorsTest extends DBeaverUnitTest {
         }
     };
 
+    private static final SQLDialect SQL_SERVER_LIKE_DIALECT = new BasicSQLDialect() {
+        @Nullable
+        @Override
+        public String[][] getIdentifierQuoteStrings() {
+            return new String[][]{{"[", "]"}, {"\"", "\""}};
+        }
+    };
+
     @NotNull
     private static String mask(@NotNull String sql) {
         return SQLUtils.maskNonStandardOperators(BasicSQLDialect.INSTANCE, sql);
@@ -175,6 +183,47 @@ public class SQLQueryNonStandardOperatorsTest extends DBeaverUnitTest {
         )) {
             Assertions.assertSame(sql, mask(sql));
         }
+    }
+
+    @Test
+    public void dollarQuotedLiteralShouldNotHideSourceTable() {
+        SQLQuery query = new SQLQuery(null, "SELECT $$Joe's$$, id FROM orders WHERE @(total) > 10");
+
+        DBCEntityMetaData entityMeta = query.getEntityMetadata(false);
+        Assertions.assertNotNull(entityMeta);
+        Assertions.assertEquals("orders", entityMeta.getEntityName());
+        Assertions.assertEquals(2, query.getSelectItemCount());
+    }
+
+    @Test
+    public void maskShouldSkipDollarQuotedLiterals() {
+        for (String sql : List.of(
+            "SELECT $$Joe's @ home$$ FROM t",
+            "SELECT $fn$it's a <-> b$fn$, $_1$ @ $$ @ $_1$ FROM t"
+        )) {
+            Assertions.assertSame(sql, mask(sql));
+        }
+        Assertions.assertEquals(
+            "SELECT $$Joe's$$, id FROM orders WHERE +(total) > 10",
+            mask("SELECT $$Joe's$$, id FROM orders WHERE @(total) > 10")
+        );
+        // Parameters, identifiers with a dollar sign and an unclosed delimiter don't start a literal
+        Assertions.assertEquals(
+            "SELECT a$b$ FROM v$session WHERE +(c) = $1 AND +(d) = $2 AND e = $$",
+            mask("SELECT a$b$ FROM v$session WHERE @(c) = $1 AND @(d) = $2 AND e = $$")
+        );
+    }
+
+    @Test
+    public void maskShouldSkipDoubledClosingQuotes() {
+        Assertions.assertEquals(
+            "SELECT a FROM [odd]]@table] WHERE +(b) = 1",
+            SQLUtils.maskNonStandardOperators(SQL_SERVER_LIKE_DIALECT, "SELECT a FROM [odd]]@table] WHERE @(b) = 1")
+        );
+        Assertions.assertEquals(
+            "SELECT \"a\"\"@b\", 'it''s @' FROM t WHERE +(c) = 1",
+            mask("SELECT \"a\"\"@b\", 'it''s @' FROM t WHERE @(c) = 1")
+        );
     }
 
     @Test
