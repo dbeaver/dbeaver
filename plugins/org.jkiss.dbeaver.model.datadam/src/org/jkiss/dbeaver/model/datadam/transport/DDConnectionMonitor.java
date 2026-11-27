@@ -131,6 +131,8 @@ public final class DDConnectionMonitor {
     private Instant connectedAt;
     @Nullable
     private String error;
+    @Nullable
+    private String registrationRejection;
     private long startedNanos;
     private long durationNanos;
     private boolean open;
@@ -183,6 +185,23 @@ public final class DDConnectionMonitor {
     public synchronized void failed(@NotNull String message) {
         error = limit(message);
         record(EventType.ERROR, error);
+    }
+
+    synchronized void registrationRejected(@NotNull String reason) {
+        registrationRejection = reason;
+        failed(reason);
+    }
+
+    @Nullable
+    public synchronized String getRegistrationRejection() {
+        return registrationRejection;
+    }
+
+    synchronized void clearRegistrationRejection() {
+        if (registrationRejection != null) {
+            clearError(registrationRejection);
+            registrationRejection = null;
+        }
     }
 
     public synchronized void clearError(@NotNull String expectedError) {

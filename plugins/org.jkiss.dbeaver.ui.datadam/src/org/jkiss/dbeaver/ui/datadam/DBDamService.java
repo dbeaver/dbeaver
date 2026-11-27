@@ -67,6 +67,7 @@ public class DBDamService {
     @Nullable
     public DDConnectedRemoteDam getDam(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
         var session = DBDamSessionService.getInstance();
+        checkRegistration(session);
         var cached = session.getCachedDam();
         if (cached != null) {
             return cached;
@@ -156,14 +157,14 @@ public class DBDamService {
     ) throws DBException, InterruptedException {
         var channel = session.getChannel();
         if (!channel.getStatus().isReady()) {
-            CountDownLatch ready = new CountDownLatch(1);
+            CountDownLatch settled = new CountDownLatch(1);
             long started = System.nanoTime();
             try (DDRemoteDamSubscription ignored = channel.observeState(status -> {
-                if (status.isReady()) {
-                    ready.countDown();
+                if (status.isReady() || session.getMonitor().getRegistrationRejection() != null) {
+                    settled.countDown();
                 }
             })) {
-                while (!ready.await(250, TimeUnit.MILLISECONDS)) {
+                while (!settled.await(250, TimeUnit.MILLISECONDS)) {
                     if (monitor.isCanceled()) {
                         throw new InterruptedException("Waiting for DataDam connection was canceled");
                     }
@@ -175,6 +176,20 @@ public class DBDamService {
         }
         if (monitor.isCanceled()) {
             throw new InterruptedException("Waiting for DataDam connection was canceled");
+        }
+        checkRegistration(session);
+    }
+
+    private static void checkRegistration(@NotNull DBDamSessionService session) throws DamRegistrationRejectedException {
+        String reason = session.getMonitor().getRegistrationRejection();
+        if (reason != null) {
+            throw new DamRegistrationRejectedException(reason);
+        }
+    }
+
+    static final class DamRegistrationRejectedException extends DBException {
+        DamRegistrationRejectedException(@NotNull String reason) {
+            super(reason);
         }
     }
 

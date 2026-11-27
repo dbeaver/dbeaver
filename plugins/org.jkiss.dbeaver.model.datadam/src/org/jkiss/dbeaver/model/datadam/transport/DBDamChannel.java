@@ -131,6 +131,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
             if (closed || running) {
                 return;
             }
+            monitor.clearRegistrationRejection();
             running = true;
             scheduleAttempt(0);
         }
@@ -580,11 +581,19 @@ public final class DBDamChannel implements DDRemoteDamChannel {
     }
 
     private void finish(@NotNull Attempt attempt, boolean retry, @NotNull String failure) {
+        finish(attempt, retry, failure, false);
+    }
+
+    private void finish(@NotNull Attempt attempt, boolean retry, @NotNull String failure, boolean registrationRejected) {
         synchronized (lock) {
             if (current != attempt) {
                 return;
             }
-            monitor.failed(failure);
+            if (registrationRejected) {
+                monitor.registrationRejected(failure);
+            } else {
+                monitor.failed(failure);
+            }
             detach(attempt, retry);
         }
         cleanup(attempt);
@@ -754,10 +763,19 @@ public final class DBDamChannel implements DDRemoteDamChannel {
 
         @Override
         protected void closed(int statusCode, @NotNull String reason) {
-            if (isCurrent(attempt)) {
-                log.warn("DataDam desktop channel closed by remote server (code " + statusCode + ")");
+            boolean quotaExceeded = statusCode == DDRemoteDamProtocol.REGISTRATION_LIMIT_EXCEEDED;
+            String failure = NLS.bind(DDConnectionMessages.remote_closed, Integer.toString(statusCode));
+            if (quotaExceeded) {
+                String safeReason = reason.replaceAll("[\\p{Cc}\\p{Cf}\\p{Zl}\\p{Zp}]", " ").strip();
+                if (!safeReason.isBlank()) {
+                    failure = safeReason;
+                }
             }
-            finish(attempt, true, NLS.bind(DDConnectionMessages.remote_closed, Integer.toString(statusCode)));
+            if (isCurrent(attempt)) {
+                log.warn("DataDam desktop channel closed by remote server (code " + statusCode + ")"
+                    + (quotaExceeded ? ": " + failure : ""));
+            }
+            finish(attempt, !quotaExceeded, failure, quotaExceeded);
         }
 
         @Override
