@@ -21,13 +21,12 @@ import org.jkiss.dbeaver.model.connection.DBPDriverConstants;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConnectionValidator;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Properties;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class KyuubiConnectionValidatorTest {
     private static final String URL = "jdbc:hive2://localhost/default";
@@ -48,7 +47,8 @@ class KyuubiConnectionValidatorTest {
 
     @Test
     void rejectsInitFileInJdbcUrl() {
-        assertThrows(DBCException.class, () -> validator.validateConnectionProperties(URL + ";initFile=unused", new Properties()));
+        Assertions.assertThrows(DBCException.class,
+            () -> validator.validateConnectionProperties(URL + ";initFile=unused", new Properties()));
     }
 
     @Test
@@ -56,7 +56,7 @@ class KyuubiConnectionValidatorTest {
         Properties properties = new Properties();
         properties.setProperty("initFile", "unused");
 
-        assertThrows(DBCException.class, () -> validator.validateConnectionProperties(URL, properties));
+        Assertions.assertThrows(DBCException.class, () -> validator.validateConnectionProperties(URL, properties));
     }
 
     @Test

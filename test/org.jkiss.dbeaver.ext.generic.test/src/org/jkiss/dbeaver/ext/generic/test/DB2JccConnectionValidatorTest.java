@@ -18,12 +18,11 @@ package org.jkiss.dbeaver.ext.generic.test;
 
 import org.jkiss.dbeaver.ext.generic.model.DB2JccConnectionValidator;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Properties;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DB2JccConnectionValidatorTest {
     private static final String URL = "jdbc:db2://localhost/SAMPLE";
@@ -32,12 +31,12 @@ class DB2JccConnectionValidatorTest {
     @Test
     void rejectsTraceOptionsInJdbcUrlAndProperties() {
         for (String name : List.of("traceDirectory", "traceFile", "traceFileAppend", "traceLevel")) {
-            assertThrows(DBCException.class, () -> validator.validateConnectionProperties(URL + ":" + name + "=unused;",
+            Assertions.assertThrows(DBCException.class, () -> validator.validateConnectionProperties(URL + ":" + name + "=unused;",
                 new Properties()), name);
 
             Properties properties = new Properties();
             properties.setProperty(name, "unused");
-            assertThrows(DBCException.class, () -> validator.validateConnectionProperties(URL, properties), name);
+            Assertions.assertThrows(DBCException.class, () -> validator.validateConnectionProperties(URL, properties), name);
         }
     }
 
