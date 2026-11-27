@@ -28,6 +28,8 @@
                 label="Firebird"
                 icon="icons/firebird_icon.png"
                 dialect="firebird">
+            <!-- Firebird has database triggers (ON CONNECT, ON TRANSACTION, DDL) next to the table triggers -->
+            <treeInjection path="generic/catalog/schema/trigger" changeFolderType="org.jkiss.dbeaver.ext.generic.model.GenericContainerTrigger" changeFolderLabel="%tree.databaseTriggers.node.name"/>
             <drivers managable="true">
 
                 <driver
@@ -58,6 +60,7 @@
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="split-procedures-and-functions" value="true"/>
                 </driver>
 
                 <driver
@@ -87,6 +90,7 @@
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="split-procedures-and-functions" value="true"/>
                 </driver>
             </drivers>
 
