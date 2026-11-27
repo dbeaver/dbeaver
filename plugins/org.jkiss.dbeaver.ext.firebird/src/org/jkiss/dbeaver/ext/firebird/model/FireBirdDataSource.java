@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.parser.SQLQueryParameterParser;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
@@ -170,6 +171,27 @@ public class FireBirdDataSource extends GenericDataSource
     @Override
     public List<FireBirdTable> getPhysicalTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdTable>) super.getPhysicalTables(monitor);
+    }
+
+    /**
+     * Tables without system tables, shown in the navigator "Tables" folder.
+     */
+    @NotNull
+    public List<FireBirdTable> getUserTables(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return CommonUtils.safeList(getPhysicalTables(monitor)).stream()
+            .filter(table -> !table.isSystem())
+            .toList();
+    }
+
+    /**
+     * System tables (RDB$, MON$, SEC$), shown in the navigator "System Info" folder.
+     * They are only loaded if system objects are shown in the navigator.
+     */
+    @NotNull
+    public List<FireBirdTable> getSystemTables(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return CommonUtils.safeList(getPhysicalTables(monitor)).stream()
+            .filter(FireBirdTable::isSystem)
+            .toList();
     }
 
     @Override
