@@ -90,14 +90,13 @@ public enum FireBirdFieldType {
     }
 
     public static FireBirdFieldType getById(int id, int subTypeId) {
-        if (id == 16 || id == 8) {
-            switch (subTypeId) {
-                case 1:
-                    return NUMERIC;
-                case 2:
-                    return DECIMAL;
-                default:
-                    return id == 16 ? BIGINT : INTEGER;
+        // NUMERIC and DECIMAL are stored as SMALLINT, INTEGER, BIGINT or INT128 (depending on the precision)
+        // with subtype 1 (NUMERIC) or 2 (DECIMAL)
+        if (id == SMALLINT.typeID || id == INTEGER.typeID || id == BIGINT.typeID || id == INT128.typeID) {
+            if (subTypeId == 1) {
+                return NUMERIC;
+            } else if (subTypeId == 2) {
+                return DECIMAL;
             }
         }
         for (FireBirdFieldType ft : values()) {
