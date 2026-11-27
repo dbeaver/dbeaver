@@ -403,7 +403,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
 
         final String string = handler.getValueDisplayString(type, value, DBDDisplayFormat.NATIVE);
 
-        if (format == DBDDisplayFormat.NATIVE && isQuotingRequired(string)) {
+        if (format != DBDDisplayFormat.UI && isQuotingRequired(string)) {
             return '"' + string.replace("\"", "\"\"") + '"';
         }
 
