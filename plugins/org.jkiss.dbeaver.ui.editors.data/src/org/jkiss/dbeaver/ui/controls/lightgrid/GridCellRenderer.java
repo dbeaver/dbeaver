@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -48,6 +49,7 @@ public class GridCellRenderer extends AbstractRenderer {
     private static final int INSIDE_MARGIN = 3;
     private static final int HINT_ICON_MARGIN = 4;
     private static final int HINT_ICON_SPACING = 1;
+    private static final int HOVER_BACKGROUND_BLEND = 12;
 
     static final Image LINK_IMAGE = DBeaverIcons.getImage(UIIcon.LINK);
     static final Image LINK2_IMAGE = DBeaverIcons.getImage(UIIcon.LINK2);
@@ -121,8 +123,17 @@ public class GridCellRenderer extends AbstractRenderer {
             cellInfo.foreground = grid.getForeground();
         }
 
-        if (cellInfo.background != null) {
-            gc.setBackground(cellInfo.background);
+        Color background = cellInfo.background;
+        if (focus || hover) {
+            colorLineFocused = UIStyles.getContrastColor(background);
+        }
+        if (hover && !selected && background != null) {
+            // Tint rather than replace backgrounds used for cell states and custom coloring.
+            background = UIUtils.getSharedColor(UIUtils.blend(
+                colorLineFocused.getRGB(), background.getRGB(), HOVER_BACKGROUND_BLEND));
+        }
+        if (background != null) {
+            gc.setBackground(background);
         } else {
             drawBackground = false;
         }
@@ -285,7 +296,7 @@ public class GridCellRenderer extends AbstractRenderer {
                         cellHints,
                         selected,
                         renderedTextWidth,
-                        cellInfo.background,
+                        background,
                         x,
                         textTopPos,
                         focus,
