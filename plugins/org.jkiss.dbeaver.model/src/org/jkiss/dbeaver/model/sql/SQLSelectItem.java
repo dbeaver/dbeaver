@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
@@ -32,13 +33,15 @@ import org.jkiss.utils.CommonUtils;
  */
 public class SQLSelectItem {
     private final SQLQuery query;
+    private final Select select;
     private final SelectItem<?> source;
     private final Table table;
     private final String name;
     private boolean plainColumn;
 
-    SQLSelectItem(SQLQuery query, SelectItem<?> item) {
+    SQLSelectItem(@NotNull SQLQuery query, @NotNull Select select, @NotNull SelectItem<?> item) {
         this.query = query;
+        this.select = select;
         this.source = item;
         Expression itemExpression = item.getExpression();
         if (itemExpression instanceof Column) {
@@ -77,11 +80,9 @@ public class SQLSelectItem {
         Database tableDatabase = table.getDatabase();
         if (table.getAlias() == null && (tableDatabase == null || CommonUtils.isEmpty(tableDatabase.getDatabaseName())) && table.getSchemaName() == null) {
             // Only name was specified. Probably an alias.
-            if (query.getStatement() instanceof Select) {
-                Table refTable = SQLSemanticProcessor.findTableByNameOrAlias((Select) query.getStatement(), table.getName());
-                if (refTable != null) {
-                    return query.createTableMetaData(refTable);
-                }
+            Table refTable = SQLSemanticProcessor.findTableByNameOrAlias(select, table.getName());
+            if (refTable != null) {
+                return query.createTableMetaData(refTable);
             }
         }
         return query.createTableMetaData(table);
