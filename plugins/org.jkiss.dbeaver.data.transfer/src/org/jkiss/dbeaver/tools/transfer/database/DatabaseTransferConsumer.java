@@ -55,9 +55,12 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Stream transfer consumer
@@ -73,6 +76,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
+    private boolean hasValueTransformers;
     private DBDAttributeBinding[] sourceBindings;
     private DBCExecutionContext targetContext;
     private DBCSession targetSession;
@@ -207,6 +211,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             rsAttributes = DTUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
         }
         columnMappings = new ColumnMapping[rsAttributes.length];
+        hasValueTransformers = false;
         sourceBindings = rsAttributes;
         targetAttributes = new ArrayList<>(columnMappings.length);
         for (int i = 0; i < rsAttributes.length; i++) {
@@ -257,6 +262,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 try {
                     columnMapping.valueTransformer = columnMapping.targetAttr.getTransformer().createTransformer();
                     columnMapping.valueTransformerProperties = columnMapping.targetAttr.getTransformerProperties();
+                    hasValueTransformers = true;
                 } catch (DBException e) {
                     throw new DBCException("Can't create attribute transformer", e);
                 }
@@ -316,26 +322,53 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     /**
-     * Transformers read other column values by source attribute position, but row values are ordered by target columns,
-     * which don't include skipped source columns. Skipped columns are null in the returned row.
+     * Expressions can reference any source column, including columns excluded from the target mapping.
+     * Read in source order so that streaming result sets do not have to revisit earlier columns.
      */
     @NotNull
-    static Object[] makeSourceRow(
-        @NotNull DBDAttributeBinding[] sourceAttributes,
-        @NotNull ColumnMapping[] columnMappings,
-        @NotNull Object[] rowValues
-    ) {
+    static Object[] readSourceRow(
+        @NotNull DBCSession session,
+        @NotNull DBCResultSet resultSet,
+        @NotNull DBDAttributeBinding[] sourceAttributes
+    ) throws DBCException {
         int rowSize = 0;
         for (DBDAttributeBinding attr : sourceAttributes) {
             rowSize = Math.max(rowSize, attr.getOrdinalPosition() + 1);
         }
         Object[] sourceRow = new Object[rowSize];
-        for (ColumnMapping column : columnMappings) {
-            if (column != null && column.targetIndex >= 0) {
-                sourceRow[column.sourceAttr.getOrdinalPosition()] = rowValues[column.targetIndex];
+        try {
+            for (DBDAttributeBinding attribute : sourceAttributes) {
+                if (!attribute.isPseudoAttribute() && !attribute.isCustom()) {
+                    int index = attribute.getOrdinalPosition();
+                    sourceRow[index] = attribute.getValueHandler().fetchValueObject(session, resultSet, attribute, index);
+                }
             }
+        } catch (DBCException | RuntimeException e) {
+            for (Object value : sourceRow) {
+                DBUtils.releaseValue(value);
+            }
+            throw e;
         }
         return sourceRow;
+    }
+
+    static void releaseSkippedSourceValues(
+        @NotNull DBDAttributeBinding[] sourceAttributes,
+        @NotNull ColumnMapping[] columnMappings,
+        @NotNull Object[] sourceRow,
+        @NotNull Object[] rowValues
+    ) {
+        // A transformer may pass a skipped value through to the target row. The batch then owns that value.
+        Set<Object> retainedValues = Collections.newSetFromMap(new IdentityHashMap<>());
+        Collections.addAll(retainedValues, rowValues);
+        for (int i = 0; i < sourceAttributes.length; i++) {
+            if (columnMappings[i] == null && !sourceAttributes[i].isPseudoAttribute() && !sourceAttributes[i].isCustom()) {
+                Object value = sourceRow[sourceAttributes[i].getOrdinalPosition()];
+                if (retainedValues.add(value)) {
+                    DBUtils.releaseValue(value);
+                }
+            }
+        }
     }
 
     private boolean isSkipColumn(DBDAttributeBinding attr) {
@@ -360,68 +393,77 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         Object[] rowValues = new Object[targetAttributes.size()];
-        for (int i = 0; i < columnMappings.length; i++) {
-            ColumnMapping column = columnMappings[i];
-            if (column == null || column.targetIndex < 0) {
-                continue;
-            }
-            Object attrValue;
-            if (column.sourceValueHandler != null) {
-                if (column.sourceAttr instanceof DBDAttributeBindingCustom) {
-                    attrValue = DBUtils.getAttributeValue(column.sourceAttr, sourceBindings, rowValues);
-                } else {
-                    attrValue = column.sourceValueHandler.fetchValueObject(
-                        session,
-                        resultSet,
-                        column.sourceAttr,
-                        column.sourceAttr.getOrdinalPosition());
+        Object[] sourceRow = document == null && hasValueTransformers ? readSourceRow(session, resultSet, rsAttributes) : null;
+        try {
+            for (int i = 0; i < columnMappings.length; i++) {
+                ColumnMapping column = columnMappings[i];
+                if (column == null || column.targetIndex < 0) {
+                    continue;
                 }
-            } else {
-                // No value handler - get raw value
-                attrValue = resultSet.getAttributeValue(i);
-            }
-
-            if (containerMapping != null && containerMapping.getTarget() instanceof DBSDocumentContainer) {
-                rowValues[column.targetIndex] = attrValue;
-            } else {
-                DatabaseMappingAttribute targetAttr = column.targetAttr;
-                rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
-                    targetSession,
-                    targetAttr.getTarget() == null ? targetAttr.getSource() : targetAttr.getTarget(),
-                    attrValue,
-                    false, false);
-            }
-        }
-
-        // Transform value
-        Object[] sourceRow = null;
-        for (ColumnMapping column : columnMappings) {
-            if (column == null || column.targetIndex < 0) {
-                continue;
-            }
-            if (column.valueTransformer != null) {
-                if (document == null && sourceRow == null) {
-                    sourceRow = makeSourceRow(rsAttributes, columnMappings, rowValues);
-                }
-                Object attrValue = rowValues[column.targetIndex];
-                try {
-                    Object value = column.valueTransformer.transformAttribute(
-                        session,
-                        rsAttributes,
-                        document != null ? new Object[]{document} : sourceRow,
-                        column.sourceAttr,
-                        document != null ? document : attrValue,
-                        column.valueTransformerProperties);
-                    rowValues[column.targetIndex] = value;
-                    if (sourceRow != null) {
-                        // Next transformers see the transformed value
-                        sourceRow[column.sourceAttr.getOrdinalPosition()] = value;
+                Object attrValue;
+                if (sourceRow != null) {
+                    attrValue = sourceRow[column.sourceAttr.getOrdinalPosition()];
+                } else if (column.sourceValueHandler != null) {
+                    if (column.sourceAttr instanceof DBDAttributeBindingCustom) {
+                        attrValue = DBUtils.getAttributeValue(column.sourceAttr, sourceBindings, rowValues);
+                    } else {
+                        attrValue = column.sourceValueHandler.fetchValueObject(
+                            session,
+                            resultSet,
+                            column.sourceAttr,
+                            column.sourceAttr.getOrdinalPosition());
                     }
-                } catch (DBException e) {
-                    throw new DBCException(
-                        "Error transforming attribute '" + column.sourceAttr.getName() +
-                            "' value with transformer '" + column.targetAttr.getTransformer().getName() + "'", e);
+                } else {
+                    // No value handler - get raw value
+                    attrValue = resultSet.getAttributeValue(i);
                 }
+
+                if (containerMapping != null && containerMapping.getTarget() instanceof DBSDocumentContainer) {
+                    rowValues[column.targetIndex] = attrValue;
+                } else {
+                    DatabaseMappingAttribute targetAttr = column.targetAttr;
+                    rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
+                        targetSession,
+                        targetAttr.getTarget() == null ? targetAttr.getSource() : targetAttr.getTarget(),
+                        attrValue,
+                        false, false);
+                }
+                if (sourceRow != null) {
+                    // Preserve the target conversions seen by expressions before source and target rows were separated.
+                    sourceRow[column.sourceAttr.getOrdinalPosition()] = rowValues[column.targetIndex];
+                }
+            }
+
+            // Transform value
+            for (ColumnMapping column : columnMappings) {
+                if (column == null || column.targetIndex < 0) {
+                    continue;
+                }
+                if (column.valueTransformer != null) {
+                    Object attrValue = rowValues[column.targetIndex];
+                    try {
+                        Object value = column.valueTransformer.transformAttribute(
+                            session,
+                            rsAttributes,
+                            document != null ? new Object[]{document} : sourceRow,
+                            column.sourceAttr,
+                            document != null ? document : attrValue,
+                            column.valueTransformerProperties);
+                        rowValues[column.targetIndex] = value;
+                        if (sourceRow != null) {
+                            // Next transformers see the transformed value
+                            sourceRow[column.sourceAttr.getOrdinalPosition()] = value;
+                        }
+                    } catch (DBException e) {
+                        throw new DBCException(
+                            "Error transforming attribute '" + column.sourceAttr.getName() +
+                                "' value with transformer '" + column.targetAttr.getTransformer().getName() + "'", e);
+                    }
+                }
+            }
+        } finally {
+            if (sourceRow != null) {
+                releaseSkippedSourceValues(rsAttributes, columnMappings, sourceRow, rowValues);
             }
         }
 
