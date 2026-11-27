@@ -205,6 +205,27 @@ public class DatabaseTransferConsumerSourceRowTest extends DBeaverUnitTest {
                 Assertions.assertThrows(DBCException.class, () -> consumer.fetchRow(sourceSession, rows));
                 Mockito.verify(skippedValue).release();
             }
+            if (transformer.equals("expression") && !sharedOrdinal) {
+                Mockito.doCallRealMethod().when(rows).getAttributeValue(2);
+                DBDValue skippedValue = Mockito.mock(DBDValue.class);
+                rows.setStreamRow(new Object[]{skippedValue, "ignored", "NL", 8});
+                var firstColumn = consumer.getColumnMappings()[2];
+                firstColumn.valueTransformer = new DataTransferTransformerExpression();
+                firstColumn.valueTransformerProperties = Map.of("expression", "id");
+                consumer.getColumnMappings()[3].valueTransformer = (session, attrs, row, attribute, value, options) -> {
+                    throw new DBCException("Later transformer failed");
+                };
+                Assertions.assertThrows(DBCException.class, () -> consumer.fetchRow(sourceSession, rows));
+                Mockito.verify(skippedValue).release();
+                if (!preview) {
+                    DBDValue rejectedValue = Mockito.mock(DBDValue.class);
+                    rows.setStreamRow(new Object[]{rejectedValue, "ignored", "NL", 8});
+                    consumer.getColumnMappings()[3].valueTransformer = (session, attrs, row, attribute, value, options) -> value;
+                    Mockito.doThrow(new DBCException("Batch rejected the row")).when(batch).add(Mockito.any(Object[].class));
+                    Assertions.assertThrows(DBCException.class, () -> consumer.fetchRow(sourceSession, rows));
+                    Mockito.verify(rejectedValue).release();
+                }
+            }
             consumer.fetchEnd(sourceSession, rows);
         } finally {
             consumer.close();

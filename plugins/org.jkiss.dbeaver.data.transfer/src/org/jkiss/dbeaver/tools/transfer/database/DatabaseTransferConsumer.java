@@ -400,6 +400,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
         Object[] rowValues = new Object[targetAttributes.size()];
         Object[] skippedValues = document == null && !expressionColumns.isEmpty() ? new Object[rsAttributes.length] : null;
+        boolean rowAdded = false;
         try {
             for (int i = 0; i < columnMappings.length; i++) {
                 ColumnMapping column = columnMappings[i];
@@ -472,16 +473,16 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     }
                 }
             }
+            if (bulkLoadManager != null) {
+                bulkLoadManager.addRow(targetSession, rowValues);
+            } else {
+                executeBatch.add(rowValues);
+            }
+            rowAdded = true;
         } finally {
             if (skippedValues != null) {
-                releaseSkippedSourceValues(skippedValues, rowValues);
+                releaseSkippedSourceValues(skippedValues, rowAdded ? rowValues : new Object[0]);
             }
-        }
-
-        if (bulkLoadManager != null) {
-            bulkLoadManager.addRow(targetSession, rowValues);
-        } else {
-            executeBatch.add(rowValues);
         }
 
         rowsExported++;
