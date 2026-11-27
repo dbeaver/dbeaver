@@ -109,7 +109,7 @@
                 supportsRecordMode="true"
                 supportsHints="true"
                 order="100">
-            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes() || context.hasRows()"/>
         </presentation>
         <presentation
                 id="plaintext"
@@ -120,7 +120,7 @@
                 type="columns"
                 supportsRecordMode="true"
                 order="200">
-            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes() || context.hasRows()"/>
         </presentation>
     </extension>
 
@@ -371,7 +371,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.generateScript" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_inspector.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/grid.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.grid.toggleLayout" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/rotate_left.svg"/>
-        <image commandId="org.jkiss.dbeaver.core.resultset.navigateLink" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/link.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.navigateLink" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/link.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.cell.save" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_customize.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.export" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.svg"/>
@@ -379,7 +379,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.filterSettings" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/config_table.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.filterSave" icon="platform:/plugin/org.jkiss.dbeaver.ui.editors.data/icons/pin.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.filterReset" icon="platform:/plugin/org.jkiss.dbeaver.ui.editors.data/icons/unpin.svg"/>
-        <image commandId="org.jkiss.dbeaver.core.resultset.filterClear" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/erase.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.filterClear" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/erase.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.filterMenu.distinct" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_input.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.zoomIn" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_in.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.zoomOut" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_out.svg"/>
@@ -1336,7 +1336,7 @@
             description="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.tip"
             message="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.message"
             toggleMessage="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.toggleMessage"
-            group="Object Editor"/>
+            group="%confirm.object.editor.group.name"/>
         <confirmation
                 id="keep_statement_open"
                 title="%confirm.keep_statement_open.title"
