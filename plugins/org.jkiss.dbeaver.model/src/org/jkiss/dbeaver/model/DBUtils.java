@@ -701,7 +701,12 @@ public final class DBUtils {
         }
         if (!dataSourceContainer.isConnected()) {
             try {
-                dataSourceContainer.connect(monitor, true, true);
+                DBServiceConnections connectionService = DBWorkbench.getService(DBServiceConnections.class);
+                if (connectionService == null) {
+                    dataSourceContainer.connect(monitor, true, true);
+                } else {
+                    connectionService.initConnection(monitor, dataSourceContainer, null);
+                }
             } catch (DBException e) {
                 throw new DBException("Error connecting to datasource '" + dataSourceContainer.getName() + "'", e);
             }

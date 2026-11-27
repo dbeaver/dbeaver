@@ -46,6 +46,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
+import org.jkiss.dbeaver.runtime.DBServiceConnections;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.utils.IOUtils;
@@ -137,7 +139,11 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler, DBTTaskImportTra
                 for (DBPDataSourceContainer dataSourceContainer : dataSources) {
                     var sqlScriptContent = readScriptContents(monitor, task.getProject(), filePath);
                     if (!dataSourceContainer.isConnected()) {
-                        dataSourceContainer.connect(monitor, true, true);
+                        if (DBWorkbench.getService(DBServiceConnections.class) == null) {
+                            dataSourceContainer.connect(monitor, true, true);
+                        } else {
+                            DBUtils.initDataSource(monitor, dataSourceContainer, null);
+                        }
                     }
                     DBPDataSource dataSource = dataSourceContainer.getDataSource();
                     if (dataSource == null) {

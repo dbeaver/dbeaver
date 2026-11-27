@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -283,7 +284,11 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         long connectionStart = System.currentTimeMillis();
         while (!dataSourceContainer.isConnected()) {
             try {
-                dataSourceContainer.connect(monitor, true, true);
+                if (DBWorkbench.getService(DBServiceConnections.class) == null) {
+                    dataSourceContainer.connect(monitor, true, true);
+                } else if (!DBUtils.initDataSource(monitor, dataSourceContainer, null)) {
+                    return unloadInput();
+                }
             } catch (final DBException e) {
                 // Connection error
                 final Integer result = new UITask<Integer>() {
