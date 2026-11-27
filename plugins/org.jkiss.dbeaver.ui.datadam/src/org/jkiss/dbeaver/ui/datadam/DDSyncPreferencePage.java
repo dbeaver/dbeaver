@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
-import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
@@ -283,12 +282,18 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             DDTrackingUIMessages.sync_preference_page_project_deletion_confirm_message)) {
             return;
         }
-        UIExecutionQueue.blockQueue();
         try {
-            runOperation(DDTrackingUIMessages.sync_preference_page_logout_failed,
-                monitor -> DDProjectKeyUIManager.getInstance().signOut());
+            DDUIUtils.runWithProgressBlocking(DDTrackingUIMessages.sync_preference_page_desktop_sign_out, monitor -> {
+                try {
+                    DDProjectKeyUIManager.getInstance().signOut();
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DDUIUtils.showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_logout_failed, e.getTargetException());
         } finally {
-            UIExecutionQueue.unblockQueue();
+            refresh();
         }
     }
 

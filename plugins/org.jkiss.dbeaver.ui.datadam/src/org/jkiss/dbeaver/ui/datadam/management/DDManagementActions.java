@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
@@ -85,9 +84,8 @@ public final class DDManagementActions {
         }
         if (signedIn) {
             if (DDProductConfig.isIntegrationEnabled()) {
-                UIExecutionQueue.blockQueue();
                 try {
-                    UIUtils.runInProgressDialog(monitor -> {
+                    DDUIUtils.runWithProgressBlocking(DDTrackingUIMessages.sync_preference_page_desktop_sign_out, monitor -> {
                         try {
                             DDProjectKeyUIManager.getInstance().signOut();
                         } catch (DBException e) {
@@ -97,8 +95,6 @@ public final class DDManagementActions {
                 } catch (InvocationTargetException e) {
                     DDUIUtils.showError(DDTrackingUIMessages.sync_preference_page_title,
                         DDTrackingUIMessages.sync_preference_page_logout_failed, e.getTargetException());
-                } finally {
-                    UIExecutionQueue.unblockQueue();
                 }
             }
             return;

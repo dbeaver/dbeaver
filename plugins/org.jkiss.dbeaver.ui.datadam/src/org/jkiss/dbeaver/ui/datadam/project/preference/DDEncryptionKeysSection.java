@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamEncryptionKeyService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DBDamService;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
@@ -330,9 +329,8 @@ final class DDEncryptionKeysSection {
     }
 
     private void importKeys(@NotNull String phrase) {
-        UIExecutionQueue.blockQueue();
         try {
-            UIUtils.runInProgressDialog(monitor -> {
+            DDUIUtils.runWithProgressBlocking(DDTrackingUIMessages.import_key_dialog_title, monitor -> {
                 monitor.beginTask(DDTrackingUIMessages.import_key_dialog_title, IProgressMonitor.UNKNOWN);
                 try {
                     keyManager.importKeys(phrase, monitor);
@@ -347,7 +345,6 @@ final class DDEncryptionKeysSection {
         } catch (InvocationTargetException e) {
             onError.accept(DDTrackingUIMessages.sync_preference_page_import_keys_failed, e.getTargetException());
         } finally {
-            UIExecutionQueue.unblockQueue();
             notifyKeysChanged();
         }
     }
@@ -363,9 +360,8 @@ final class DDEncryptionKeysSection {
     }
 
     private void runKeyOperation(@NotNull String errorMessage, @NotNull KeyOperation operation) {
-        UIExecutionQueue.blockQueue();
         try {
-            UIUtils.runInProgressDialog(monitor -> {
+            DDUIUtils.runWithProgressBlocking(DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_title, monitor -> {
                 try {
                     operation.run();
                 } catch (DBException e) {
@@ -375,7 +371,6 @@ final class DDEncryptionKeysSection {
         } catch (InvocationTargetException e) {
             onError.accept(errorMessage, e.getTargetException());
         } finally {
-            UIExecutionQueue.unblockQueue();
             onKeysChanged.run();
         }
     }
