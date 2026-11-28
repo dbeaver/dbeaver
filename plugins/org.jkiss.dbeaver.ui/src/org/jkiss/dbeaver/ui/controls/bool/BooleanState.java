@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,13 @@ public enum BooleanState {
         "checked",
         UIMessages.control_boolean_state_checked,
         UIIcon.CHECK_ON,
-        new String[]{"☑", "[v]", "yes", String.valueOf(true)}
+        new String[]{"☑", TextDefaults.CHECKED, "yes", String.valueOf(true)}
     ),
     UNCHECKED(
         "unchecked",
         UIMessages.control_boolean_state_unchecked,
         UIIcon.CHECK_OFF,
-        new String[]{"☐", "[ ]", "no", String.valueOf(false)}
+        new String[]{"☐", TextDefaults.UNCHECKED, "no", String.valueOf(false)}
     ),
     NULL(
         "null",
@@ -75,7 +75,18 @@ public enum BooleanState {
     }
 
     @NotNull
+    public String getDefaultText() {
+        return choose(TextDefaults.CHECKED, TextDefaults.UNCHECKED, DBConstants.NULL_VALUE_LABEL);
+    }
+
+    @NotNull
     public <T> T choose(@NotNull T checked, @NotNull T unchecked, @NotNull T none) {
         return this == CHECKED ? checked : this == UNCHECKED ? unchecked : none;
+    }
+
+    // Nested so the constants are available during enum initialization.
+    private static final class TextDefaults {
+        private static final String CHECKED = "[v]";
+        private static final String UNCHECKED = "[ ]";
     }
 }

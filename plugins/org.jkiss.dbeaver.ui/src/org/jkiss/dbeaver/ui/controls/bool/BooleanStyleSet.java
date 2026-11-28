@@ -111,6 +111,7 @@ public class BooleanStyleSet {
         return defaultColor;
     }
 
+    @NotNull
     public static BooleanStyleSet getDefaultStyles(@NotNull DBPPreferenceStore store) {
         final BooleanMode mode = CommonUtils.valueOf(BooleanMode.class, store.getString(PREF_BOOLEAN_STYLE + ".mode"));
         return getDefaultStyles(store, mode);
@@ -147,9 +148,9 @@ public class BooleanStyleSet {
         final RGB defaultColor = UIStyles.getDefaultTextForeground().getRGB();
 
         return new BooleanStyleSet(
-            getDefaultStyle(BooleanState.CHECKED, defaultColor),
-            getDefaultStyle(BooleanState.UNCHECKED, defaultColor),
-            getDefaultStyle(BooleanState.NULL, defaultColor),
+            getDefaultStyle(BooleanState.CHECKED),
+            getDefaultStyle(BooleanState.UNCHECKED),
+            getDefaultStyle(BooleanState.NULL),
             defaultColor
         );
     }
@@ -223,7 +224,12 @@ public class BooleanStyleSet {
                 UIElementFontStyle.NORMAL
             );
             final RGB color = convertStringToColor(store.getString(namespace + PROP_COLOR), defaultColor);
-            return BooleanStyle.usingText(text.trim(), alignment, color, font);
+            return BooleanStyle.usingText(
+                CommonUtils.isEmpty(text) ? state.getDefaultText() : text.trim(),
+                alignment,
+                color,
+                font
+            );
         } else {
             final UIElementAlignment alignment = CommonUtils.valueOf(
                 UIElementAlignment.class,
@@ -234,20 +240,15 @@ public class BooleanStyleSet {
         }
     }
 
-    private static BooleanStyle getDefaultStyle(@NotNull BooleanState state, @NotNull RGB color) {
-        return BooleanStyle.usingText(state.choose(
-            "[v]",
-            "[ ]",
-            DBConstants.NULL_VALUE_LABEL),
-            UIElementAlignment.CENTER,
-            color,
-            UIElementFontStyle.NORMAL);
+    @NotNull
+    private static BooleanStyle getDefaultStyle(@NotNull BooleanState state) {
+        return BooleanStyle.usingIcon(state.getIcon(), UIElementAlignment.CENTER);
     }
 
     @NotNull
     private static BooleanStyle getDefaultStyleLegacy(@NotNull DBPPreferenceStore store, @NotNull BooleanState state, @NotNull RGB color) {
-        return switch (CommonUtils.toString(store.getString(PREF_BOOLEAN_STYLE), PROP_LEGACY_STYLE_TRUE_FALSE)) {
-            case PROP_LEGACY_STYLE_ICON -> BooleanStyle.usingIcon(
+        return switch (CommonUtils.toString(store.getString(PREF_BOOLEAN_STYLE), PROP_LEGACY_STYLE_ICON)) {
+            case "", PROP_LEGACY_STYLE_ICON -> BooleanStyle.usingIcon(
                 state.choose(UIIcon.CHECK_ON, UIIcon.CHECK_OFF, UIIcon.CHECK_QUEST),
                 UIElementAlignment.CENTER
             );
@@ -270,7 +271,7 @@ public class BooleanStyleSet {
                 UIElementFontStyle.NORMAL
             );
             default -> BooleanStyle.usingText(
-                state.choose("[v]", "[ ]", DBConstants.NULL_VALUE_LABEL),
+                state.getDefaultText(),
                 UIElementAlignment.CENTER,
                 color,
                 UIElementFontStyle.NORMAL
