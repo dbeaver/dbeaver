@@ -516,7 +516,8 @@ public class GeneralUtils {
     }
 
     public static boolean isWhitespaceExt(char c) {
-        return c <= ' ' || c == 0x160;
+        // 0xA0 is a non-breaking space (decimal 160)
+        return c <= ' ' || c == 0xA0;
     }
 
     public static boolean isValidEmail(@NotNull String email) {

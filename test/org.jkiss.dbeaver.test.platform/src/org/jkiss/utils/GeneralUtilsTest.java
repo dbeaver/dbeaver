@@ -114,6 +114,20 @@ public class GeneralUtilsTest extends DBeaverUnitTest {
         Assertions.assertFalse(GeneralUtils.isValidEmail("user@" + "a".repeat(64) + ".com"));
     }
 
+    @Test
+    public void trimsNonBreakingSpaces() {
+        Assertions.assertEquals("secret", GeneralUtils.trimAllWhitespaces("\u00A0 secret\t\u00A0"));
+        Assertions.assertEquals("", GeneralUtils.trimAllWhitespaces(" \u00A0 "));
+        Assertions.assertEquals("secret", GeneralUtils.trimAllWhitespaces("secret"));
+    }
+
+    @Test
+    public void keepsLetterWithCode0x160() {
+        Assertions.assertFalse(GeneralUtils.isWhitespaceExt('\u0160')); // U+0160 is 'Š'
+        Assertions.assertTrue(GeneralUtils.isWhitespaceExt('\u00A0'));
+        Assertions.assertEquals("\u0160ef\u0160", GeneralUtils.trimAllWhitespaces(" \u0160ef\u0160 ")); // U+0160 is 'Š'
+    }
+
     @NotNull
     private static String getVariableValue(@NotNull String name, @NotNull Date ts) {
         switch (name) {
