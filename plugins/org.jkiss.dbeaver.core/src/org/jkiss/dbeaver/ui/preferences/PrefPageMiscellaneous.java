@@ -89,6 +89,9 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
             UIUtils.createControlLabel(groupEditors, CoreMessages.pref_page_ui_general_boolean_label_mode);
 
             final SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
+                if (!((Button) e.widget).getSelection()) {
+                    return;
+                }
                 final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
                 final BooleanMode mode = (BooleanMode) e.widget.getData();
                 notifyBooleanStylesChanged(BooleanStyleSet.getDefaultStyles(preferenceStore, mode));
@@ -112,6 +115,10 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
             final Composite group = new Composite(groupEditors, SWT.NONE);
             group.setLayout(GridLayoutFactory.swtDefaults().numColumns(7).create());
             group.setLayoutData(GridDataFactory.swtDefaults().span(3, 1).create());
+            booleanStylesChangeListeners.add(value -> {
+                UIUtils.setControlVisible(group, value.getMode() == BooleanMode.TEXT);
+                composite.layout(true, true);
+            });
 
             UIUtils.createLabel(group, CoreMessages.pref_page_ui_general_boolean_label_state);
             UIUtils.createPlaceholder(group, 1);
@@ -122,7 +129,7 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
             UIUtils.createControlLabel(group, CoreMessages.pref_page_ui_general_boolean_label_color);
 
             BooleanStyleSet savedStyles = BooleanStyleSet.getDefaultStyles(DBWorkbench.getPlatform().getPreferenceStore());
-            BooleanStyleSet defaultStyles = BooleanStyleSet.getDefaultStyleSet();
+            BooleanStyleSet defaultStyles = BooleanStyleSet.getDefaultStyles(store, BooleanMode.TEXT);
 
             booleanCheckedPanel = new BooleanPanel(
                     group,
