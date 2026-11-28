@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DBDamAccessService;
+import org.jkiss.dbeaver.model.datadam.transport.DDConnectionMonitor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.IPluginService;
@@ -103,7 +104,7 @@ public class DBDamNameService implements IPluginService {
                 }
                 try {
                     var connectedSession = session.getChannel().getStatus().session();
-                    var dam = getOrInitializeName(account, session.getClientDamId());
+                    var dam = getOrInitializeName(account, session.getClientDamId(), session.getMonitor());
                     if (dam != null) {
                         session.cacheDam(connectedSession, dam);
                         return Status.OK_STATUS;
@@ -147,12 +148,31 @@ public class DBDamNameService implements IPluginService {
     }
 
     @Nullable
+    public static DDConnectedRemoteDam getOrInitializeName(
+        @NotNull DDAccountClient account, @NotNull String clientDamId, @NotNull DDConnectionMonitor monitor
+    ) throws DBException {
+        return getOrInitializeName(account, clientDamId, DBDamNameService::suggestDamName, monitor);
+    }
+
+    @Nullable
     static synchronized DDConnectedRemoteDam getOrInitializeName(
         @NotNull DDAccountClient account, @NotNull String clientDamId, @NotNull Supplier<String> suggestedName
     ) throws DBException {
+        return getOrInitializeName(account, clientDamId, suggestedName, null);
+    }
+
+    @Nullable
+    static synchronized DDConnectedRemoteDam getOrInitializeName(
+        @NotNull DDAccountClient account, @NotNull String clientDamId, @NotNull Supplier<String> suggestedName,
+        @Nullable DDConnectionMonitor monitor
+    ) throws DBException {
         DDConnectedRemoteDam dam = account.getDam(clientDamId);
         if (dam != null && dam.damName() == null && account.canRenameDam()) {
-            return account.renameDam(clientDamId, suggestedName.get());
+            var renamed = account.renameDam(clientDamId, suggestedName.get());
+            if (monitor != null) {
+                monitor.damNameChanged(renamed.damName());
+            }
+            return renamed;
         }
         return dam;
     }

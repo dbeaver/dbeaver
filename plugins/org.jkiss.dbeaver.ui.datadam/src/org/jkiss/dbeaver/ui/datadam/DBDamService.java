@@ -73,11 +73,11 @@ public class DBDamService {
         }
         String clientDamId = session.getClientDamId();
         var connectedSession = session.getChannel().getStatus().session();
-        DDConnectedRemoteDam dam = DBDamNameService.getOrInitializeName(account, clientDamId);
+        DDConnectedRemoteDam dam = DBDamNameService.getOrInitializeName(account, clientDamId, session.getMonitor());
         if (dam == null) {
             awaitConnection(session, monitor);
             connectedSession = session.getChannel().getStatus().session();
-            dam = DBDamNameService.getOrInitializeName(account, clientDamId);
+            dam = DBDamNameService.getOrInitializeName(account, clientDamId, session.getMonitor());
         }
         session.cacheDam(connectedSession, dam);
         return dam;

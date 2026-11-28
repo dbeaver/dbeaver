@@ -134,6 +134,7 @@ public final class DDConnectionMonitor {
     private String error;
     @Nullable
     private String damName;
+    private boolean damNameKnown;
     private long startedNanos;
     private long durationNanos;
     private boolean open;
@@ -181,11 +182,22 @@ public final class DDConnectionMonitor {
         }
     }
 
+    public synchronized void damNameLoaded(@Nullable String name) {
+        // The first Account response establishes a baseline, not a rename.
+        if (damNameKnown) {
+            damNameChanged(name);
+        } else {
+            damName = name;
+            damNameKnown = true;
+        }
+    }
+
     public synchronized void damNameChanged(@Nullable String name) {
         if (!Objects.equals(damName, name)) {
             damName = name;
             record(EventType.NAME_CHANGED, name == null ? "" : name);
         }
+        damNameKnown = true;
     }
 
     synchronized void sent(long bytes) {

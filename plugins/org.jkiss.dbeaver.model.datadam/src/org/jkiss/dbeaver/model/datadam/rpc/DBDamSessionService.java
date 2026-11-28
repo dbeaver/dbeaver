@@ -88,6 +88,7 @@ public final class DBDamSessionService implements AutoCloseable {
 
         @Override
         public void accessChanging() {
+            accessStatus = access.getStatus();
             rpc.suspend(false);
             rpcInitializationRetry.cancel();
             channel.pause();
@@ -98,12 +99,14 @@ public final class DBDamSessionService implements AutoCloseable {
             var next = access.getStatus();
             String identity = next == DBDamAccessService.Status.SIGNED_IN ? getUserIdentity() : "";
             if (accessStatus != next || !accessIdentity.equals(identity)) {
+                var previous = accessStatus;
                 accessStatus = next;
                 accessIdentity = identity;
                 DDConnectionMonitor monitor = channel.getMonitor();
                 var type = switch (next) {
                     case SIGNED_IN -> DDConnectionMonitor.EventType.SIGNED_IN;
-                    case SIGNED_OUT -> DDConnectionMonitor.EventType.SIGNED_OUT;
+                    case SIGNED_OUT -> previous == DBDamAccessService.Status.UNLOADED
+                        ? null : DDConnectionMonitor.EventType.SIGNED_OUT;
                     case INVALID_TOKEN -> DDConnectionMonitor.EventType.INVALID_TOKEN;
                     case UNLOADED -> null;
                 };
@@ -237,7 +240,7 @@ public final class DBDamSessionService implements AutoCloseable {
             var status = channel.getStatus();
             if (!closed.get() && status.isReady() && session == status.session()) {
                 cachedDam.set(new CachedDam(session, dam));
-                channel.getMonitor().damNameChanged(dam.damName());
+                channel.getMonitor().damNameLoaded(dam.damName());
             }
         }
     }

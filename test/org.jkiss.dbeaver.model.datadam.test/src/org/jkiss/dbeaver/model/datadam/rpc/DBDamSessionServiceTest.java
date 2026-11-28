@@ -82,6 +82,7 @@ class DBDamSessionServiceTest {
         var dam = namedDam("Desktop");
         service.cacheDam(first, dam);
         Assertions.assertSame(dam, service.getCachedDam());
+        Assertions.assertTrue(channel.getMonitor().getEvents().isEmpty());
 
         status.set(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
         Assertions.assertNull(service.getCachedDam());
@@ -105,7 +106,7 @@ class DBDamSessionServiceTest {
         service.cacheDam(session, renamed);
         service.cacheDam(session, null);
         Assertions.assertSame(renamed, service.getCachedDam());
-        Assertions.assertEquals(List.of("Desktop", "Renamed desktop"),
+        Assertions.assertEquals(List.of("Renamed desktop"),
             channel.getMonitor().getEvents().stream()
                 .filter(event -> event.type() == DDConnectionMonitor.EventType.NAME_CHANGED)
                 .map(DDConnectionMonitor.Event::details).toList());
@@ -118,6 +119,27 @@ class DBDamSessionServiceTest {
         var now = OffsetDateTime.now();
         return new DDConnectedRemoteDam("dam", "deployment", "instance", "workspace", null, true, 1,
             List.of(new DDConnectedRemoteDam.Application("DBeaver Test", "1.0")), now, now, null, "client", List.of(), name);
+    }
+
+    @Test
+    void initialSignedOutStateIsSilentButSigningOutAfterLoginIsRecorded() {
+        Mockito.when(access.getStatus()).thenReturn(DBDamAccessService.Status.UNLOADED);
+        service.start();
+        var listener = listener();
+        listener.accessChanging();
+        Mockito.when(access.getStatus()).thenReturn(DBDamAccessService.Status.SIGNED_OUT);
+        listener.accessChanged();
+        listener.accessChanged();
+        Assertions.assertTrue(channel.getMonitor().getEvents().isEmpty());
+
+        Mockito.when(access.getStatus()).thenReturn(DBDamAccessService.Status.SIGNED_IN);
+        listener.accessChanged();
+        Mockito.when(access.getStatus()).thenReturn(DBDamAccessService.Status.SIGNED_OUT);
+        listener.accessChanged();
+        listener.accessChanged();
+        Assertions.assertEquals(
+            List.of(DDConnectionMonitor.EventType.SIGNED_IN, DDConnectionMonitor.EventType.SIGNED_OUT),
+            channel.getMonitor().getEvents().stream().map(DDConnectionMonitor.Event::type).toList());
     }
 
     @Test
@@ -358,6 +380,9 @@ class DBDamSessionServiceTest {
         listener.accessChanged();
 
         Mockito.verify(channel, Mockito.times(2)).start();
+        Assertions.assertEquals(
+            List.of(DDConnectionMonitor.EventType.SIGNED_OUT, DDConnectionMonitor.EventType.SIGNED_IN),
+            channel.getMonitor().getEvents().stream().map(DDConnectionMonitor.Event::type).toList());
     }
 
     @Test

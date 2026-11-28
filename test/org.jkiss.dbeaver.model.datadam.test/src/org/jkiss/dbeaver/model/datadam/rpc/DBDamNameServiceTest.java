@@ -123,11 +123,16 @@ class DBDamNameServiceTest {
     @Test
     void persistsTheGeneratedNameAndReturnsTheServerResult() throws Exception {
         var saved = dam(DEFAULT_NAME);
+        var monitor = new DDConnectionMonitor();
         Mockito.when(account.getDam(CLIENT_ID)).thenReturn(dam(null));
         Mockito.when(account.canRenameDam()).thenReturn(true);
         Mockito.when(account.renameDam(CLIENT_ID, DEFAULT_NAME)).thenReturn(saved);
 
-        Assertions.assertSame(saved, DBDamNameService.getOrInitializeName(account, CLIENT_ID, () -> DEFAULT_NAME));
+        Assertions.assertSame(saved, DBDamNameService.getOrInitializeName(account, CLIENT_ID, () -> DEFAULT_NAME, monitor));
+        monitor.damNameLoaded(saved.damName());
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertEquals(DDConnectionMonitor.EventType.NAME_CHANGED, monitor.getEvents().getFirst().type());
+        Assertions.assertEquals(DEFAULT_NAME, monitor.getEvents().getFirst().details());
 
         var order = Mockito.inOrder(account);
         order.verify(account).getDam(CLIENT_ID);
@@ -138,10 +143,13 @@ class DBDamNameServiceTest {
     @Test
     void preservesAnExistingServerNameWithoutGeneratingAnotherName() throws Exception {
         var existing = dam("My database workstation");
+        var monitor = new DDConnectionMonitor();
         Mockito.when(account.getDam(CLIENT_ID)).thenReturn(existing);
 
         Assertions.assertSame(existing, DBDamNameService.getOrInitializeName(account, CLIENT_ID,
-            () -> Assertions.fail("An already named Dam must not generate a name")));
+            () -> Assertions.fail("An already named Dam must not generate a name"), monitor));
+        monitor.damNameLoaded(existing.damName());
+        Assertions.assertTrue(monitor.getEvents().isEmpty());
 
         Mockito.verify(account).getDam(CLIENT_ID);
         Mockito.verifyNoMoreInteractions(account);
@@ -187,13 +195,16 @@ class DBDamNameServiceTest {
     @Test
     void reconnectDoesNotRenameAnAlreadyInitializedDam() throws Exception {
         var saved = dam(DEFAULT_NAME);
+        var monitor = new DDConnectionMonitor();
         Mockito.when(account.getDam(CLIENT_ID)).thenReturn(dam(null), saved);
         Mockito.when(account.canRenameDam()).thenReturn(true);
         Mockito.when(account.renameDam(CLIENT_ID, DEFAULT_NAME)).thenReturn(saved);
 
-        DBDamNameService.getOrInitializeName(account, CLIENT_ID, () -> DEFAULT_NAME);
+        DBDamNameService.getOrInitializeName(account, CLIENT_ID, () -> DEFAULT_NAME, monitor);
         Assertions.assertSame(saved, DBDamNameService.getOrInitializeName(account, CLIENT_ID,
-            () -> Assertions.fail("Reconnect must preserve the saved name")));
+            () -> Assertions.fail("Reconnect must preserve the saved name"), monitor));
+        monitor.damNameLoaded(saved.damName());
+        Assertions.assertEquals(1, monitor.getEvents().size());
 
         Mockito.verify(account).renameDam(CLIENT_ID, DEFAULT_NAME);
     }
@@ -201,13 +212,16 @@ class DBDamNameServiceTest {
     @Test
     void retriesAnUnpersistedNameAfterARequestFailure() throws Exception {
         var saved = dam(DEFAULT_NAME);
+        var monitor = new DDConnectionMonitor();
         Mockito.when(account.getDam(CLIENT_ID)).thenReturn(dam(null));
         Mockito.when(account.canRenameDam()).thenReturn(true);
         Mockito.when(account.renameDam(CLIENT_ID, DEFAULT_NAME)).thenThrow(new DBException("Unavailable")).thenReturn(saved);
 
         Assertions.assertThrows(DBException.class,
-            () -> DBDamNameService.getOrInitializeName(account, CLIENT_ID, () -> DEFAULT_NAME));
-        Assertions.assertSame(saved, DBDamNameService.getOrInitializeName(account, CLIENT_ID, () -> DEFAULT_NAME));
+            () -> DBDamNameService.getOrInitializeName(account, CLIENT_ID, () -> DEFAULT_NAME, monitor));
+        Assertions.assertTrue(monitor.getEvents().isEmpty());
+        Assertions.assertSame(saved, DBDamNameService.getOrInitializeName(account, CLIENT_ID, () -> DEFAULT_NAME, monitor));
+        Assertions.assertEquals(1, monitor.getEvents().size());
     }
 
     @NotNull
