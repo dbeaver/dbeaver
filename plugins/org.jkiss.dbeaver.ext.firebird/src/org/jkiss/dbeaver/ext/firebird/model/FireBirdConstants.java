@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,4 +24,10 @@ public class FireBirdConstants  {
 
     public static final String CHARSET_OCTETS = "OCTETS";
     public static final String CHARSET_BINARY = "BINARY";
+
+    // Values Firebird 4+ uses when CREATE SEQUENCE has no START WITH or INCREMENT BY clause
+    public static final long SEQUENCE_DEFAULT_START_VALUE = 1;
+    public static final long SEQUENCE_DEFAULT_INCREMENT = 1;
+    // Current value Firebird 3 uses when CREATE SEQUENCE has no START WITH clause
+    public static final long SEQUENCE_LEGACY_DEFAULT_CURRENT_VALUE = 0;
 }

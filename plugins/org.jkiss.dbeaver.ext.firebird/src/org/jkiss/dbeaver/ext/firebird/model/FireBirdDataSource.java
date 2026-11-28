@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,6 +170,16 @@ public class FireBirdDataSource extends GenericDataSource
     @Override
     public List<FireBirdProcedure> getProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdProcedure>) super.getProcedures(monitor);
+    }
+
+    /**
+     * The precise element type lets the navigator find {@code FireBirdSequenceManager} to create sequences.
+     */
+    @Nullable
+    @Override
+    @SuppressWarnings("unchecked")
+    public Collection<FireBirdSequence> getSequences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return (Collection<FireBirdSequence>) super.getSequences(monitor);
     }
 
     @NotNull
