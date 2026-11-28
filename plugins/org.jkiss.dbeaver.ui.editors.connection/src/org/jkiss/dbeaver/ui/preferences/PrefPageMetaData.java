@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -28,10 +27,9 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.util.List;
@@ -95,7 +93,7 @@ public class PrefPageMetaData extends TargetPrefPage
             separateMetaConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(metadataGroup, 3),
                 UIConnectionMessages.pref_page_database_general_separate_meta_connection,
-                NLS.bind(UIConnectionMessages.pref_page_database_general_separate_meta_connection_tip, DriverUtils.collectSingleConnectionDrivers()),
+                UIConnectionMessages.pref_page_database_general_separate_meta_connection_tip,
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
             if (this.getDataSourceContainer() != null && this.getDataSourceContainer().getDriver().isEmbedded()) {
@@ -105,7 +103,7 @@ public class PrefPageMetaData extends TargetPrefPage
                     .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             }
             separateMetaConnectionCombo.setToolTipText(
-                NLS.bind(UIConnectionMessages.pref_page_database_general_separate_meta_connection_tip, DriverUtils.collectSingleConnectionDrivers())
+                UIConnectionMessages.pref_page_database_general_separate_meta_connection_tip
             );
             ((GridData) separateMetaConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
             caseSensitiveNamesCheck = UIUtils.createCheckbox(
