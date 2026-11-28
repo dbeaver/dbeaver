@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import com.google.gson.JsonParseException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
@@ -153,6 +154,8 @@ public class DataSourceDescriptor
     private final Map<String, String> tags;
     @NotNull
     private final Map<String, Object> extensions;
+    @NotNull
+    private final Map<String, Map<Class<?>, Object>> extensionModels = new HashMap<>();
     @Nullable
     private DBPDataSource dataSource;
     @Nullable
@@ -1752,15 +1755,50 @@ public class DataSourceDescriptor
     @Nullable
     @Override
     public <T> T getExtension(@NotNull String name) {
-        return (T) extensions.get(name);
+        synchronized (extensions) {
+            return (T) extensions.get(name);
+        }
+    }
+
+    @Nullable
+    @Override
+    public <T> T getExtensionModel(@NotNull String extId, @NotNull Class<T> modelType) {
+        synchronized (extensions) {
+            Map<Class<?>, Object> models = extensionModels.computeIfAbsent(extId, key -> new HashMap<>());
+            if (!models.containsKey(modelType)) {
+                T model = null;
+                try {
+                    Object extension = extensions.get(extId);
+                    if (extension instanceof String string) {
+                        // Older datasource serializers flattened extension maps to strings.
+                        extension = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(string));
+                    }
+                    if (extension instanceof Map<?, ?> map) {
+                        model = JSONUtils.convertMapToObject((Map<String, Object>) map, modelType);
+                    }
+                } catch (JsonParseException e) {
+                    log.error("Error loading datasource extension " + extId, e);
+                }
+                models.put(modelType, model);
+            }
+            return modelType.cast(models.get(modelType));
+        }
+    }
+
+    @Override
+    public <T> void setExtensionModel(@NotNull String extId, @Nullable T model) {
+        setExtension(extId, model == null ? null : JSONUtils.convertObjectToMap(model));
     }
 
     @Override
     public void setExtension(@NotNull String name, @Nullable Object value) {
-        if (value == null) {
-            this.extensions.remove(name);
-        } else {
-            this.extensions.put(name, value);
+        synchronized (extensions) {
+            extensionModels.remove(name);
+            if (value == null) {
+                this.extensions.remove(name);
+            } else {
+                this.extensions.put(name, value);
+            }
         }
     }
 
@@ -1769,9 +1807,12 @@ public class DataSourceDescriptor
         return extensions;
     }
 
-    public void setExtensions(Map<String, Object> extensions) {
-        this.extensions.clear();
-        this.extensions.putAll(extensions);
+    public void setExtensions(@NotNull Map<String, Object> extensions) {
+        synchronized (this.extensions) {
+            extensionModels.clear();
+            this.extensions.clear();
+            this.extensions.putAll(extensions);
+        }
     }
 
     @NotNull
@@ -1980,7 +2021,10 @@ public class DataSourceDescriptor
 
         this.description = descriptor.description;
         this.tags.putAll(descriptor.tags);
-        this.extensions.putAll(descriptor.extensions);
+        synchronized (extensions) {
+            this.extensions.putAll(descriptor.extensions);
+            this.extensionModels.clear();
+        }
         this.savePassword = descriptor.savePassword;
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;

@@ -370,6 +370,17 @@ public interface DBPDataSourceContainer extends
 
     void setExtension(@NotNull String name, @Nullable Object value);
 
+    /**
+     * Reads extension settings as a typed model. The returned model may be cached and must not be modified.
+     */
+    @Nullable
+    <T> T getExtensionModel(@NotNull String extId, @NotNull Class<T> modelType);
+
+    /**
+     * Stores a snapshot of a typed model using the existing extension map format.
+     */
+    <T> void setExtensionModel(@NotNull String extId, @Nullable T model);
+
     void dispose();
 
 }

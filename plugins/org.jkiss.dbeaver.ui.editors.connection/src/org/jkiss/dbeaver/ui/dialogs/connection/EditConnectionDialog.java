@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
@@ -70,26 +71,32 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         return UIUtils.getDialogSettings("DBeaver.EditConnectionDialog");
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createContents(@NotNull Composite parent) {
         Control contents = super.createContents(parent);
+        ConnectionPageSettings settings = getWizard().getPageSettings();
+        if (settings != null) {
+            // Keep the database logo even when the selected page supplies a generic wizard image.
+            setTitleImage(settings.getImage());
+        }
+        return contents;
+    }
+
+    @NotNull
+    @Override
+    protected IWizardPage getStartingPage() {
         String activePage = defaultPageName;
         if (CommonUtils.isEmpty(activePage)) {
             activePage = lastActivePage;
         }
         if (!CommonUtils.isEmpty(activePage)) {
-            String finalActivePage = activePage;
-            UIUtils.asyncExec(() -> getWizard().openSettingsPage(finalActivePage));
-        }
-        if (false) {
-            // Expand first page
-            Tree pagesTree = getPagesTree();
-            TreeItem[] items = pagesTree.getItems();
-            if (items.length > 0) {
-                items[0].setExpanded(true);
+            IWizardPage page = getWizard().getPage(activePage);
+            if (page != null) {
+                return page;
             }
         }
-        return contents;
+        return super.getStartingPage();
     }
 
     @Override
@@ -152,7 +159,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         EditConnectionDialog dialog = openDialogs.get(dataSource);
         if (dialog != null && dialog.getShell() != null && !dialog.getShell().isDisposed()) {
             if (defaultPageName != null) {
-                dialog.showPage(defaultPageName);
+                dialog.getWizard().openSettingsPage(defaultPageName);
             }
             dialog.getShell().forceActive();
             return true;

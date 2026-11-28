@@ -61,6 +61,10 @@ public class AIUIUtils {
     }
 
     public static void showPreferences(@NotNull Shell shell) {
+        showPreferences(shell, AIPreferencePageEngines.PAGE_ID);
+    }
+
+    public static void showPreferences(@NotNull Shell shell, @NotNull String pageId) {
         if (!DBWorkbench.isDistributed()
             && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             return;
@@ -68,7 +72,7 @@ public class AIUIUtils {
         UIUtils.showPreferencesFor(
             shell,
             AISettingsManager.getInstance().getSettings(),
-            AIPreferencePageEngines.PAGE_ID
+            pageId
         );
     }
 }

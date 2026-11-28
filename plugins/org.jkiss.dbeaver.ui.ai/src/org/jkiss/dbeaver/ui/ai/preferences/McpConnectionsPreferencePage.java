@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.MenuManager;
@@ -32,6 +33,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
@@ -44,6 +46,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -67,7 +70,7 @@ import java.util.List;
 import java.util.function.Function;
 
 /** Shared AI access page. MCP providers contribute their own permission columns. */
-public class McpConnectionsPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
+public class McpConnectionsPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai.mcpConnections";
     private static final String UNGROUPED_PREFERENCE = "org.jkiss.dbeaver.ui.ai.mcpConnections.ungrouped";
     private static final Log log = Log.getLog(McpConnectionsPreferencePage.class);
@@ -91,6 +94,16 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
 
     @Override
     public void init(@NotNull IWorkbench workbench) {
+    }
+
+    @NotNull
+    @Override
+    public IAdaptable getElement() {
+        return AISettingsManager.getInstance().getSettings();
+    }
+
+    @Override
+    public void setElement(@Nullable IAdaptable element) {
     }
 
     @NotNull

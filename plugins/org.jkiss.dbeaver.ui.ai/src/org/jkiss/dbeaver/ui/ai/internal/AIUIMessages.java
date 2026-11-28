@@ -41,6 +41,11 @@ public class AIUIMessages extends NLS {
     public static String ai_connection_settings_scope_tip;
     public static String ai_connection_settings_custom_scope_label;
     public static String ai_connection_settings_custom_scope_tip;
+    public static String ai_navigator_settings_tooltip;
+    public static String ai_navigator_settings_mcp;
+    public static String ai_navigator_settings_datadam_mcp;
+    public static String ai_navigator_settings_enabled;
+    public static String ai_navigator_settings_disabled;
     public static String ollama_preference_page_hostname;
     public static String ollama_preference_page_hostname_required;
     public static String ollama_preference_page_temperature;

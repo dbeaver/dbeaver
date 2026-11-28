@@ -325,6 +325,17 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     }
 
+    @Nullable
+    @Override
+    public <T> T getExtensionModel(@NotNull String extId, @NotNull Class<T> modelType) {
+        throw new IllegalStateException("Stream datasource doesn't support extension models");
+    }
+
+    @Override
+    public <T> void setExtensionModel(@NotNull String extId, @Nullable T model) {
+        throw new IllegalStateException("Stream datasource doesn't support extension models");
+    }
+
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {

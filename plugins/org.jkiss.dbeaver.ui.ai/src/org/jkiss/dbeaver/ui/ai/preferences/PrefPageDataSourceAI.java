@@ -242,7 +242,7 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
         }
         DBPDataSourceContainer connection = getConnection();
         if (connection != null) {
-            connection.setExtension(AIContextSettingsDataSource.AI_DS_EXTENSION, settings.saveSettingsToMap());
+            settings.saveSettingsToDataSource(connection);
         }
     }
 
