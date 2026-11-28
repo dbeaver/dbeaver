@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -26,9 +27,11 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
@@ -176,30 +179,42 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
     }
 
     @Override
-    public void exportHeader(DBCSession session) {
+    public void exportHeader(@NotNull DBCSession session) {
         if (useNativeDataFormat) {
             if (session instanceof DBDFormatSettingsExt) {
                 ((DBDFormatSettingsExt) session).setUseNativeDateTimeFormat(true);
             }
         }
         columns = getSite().getAttributes();
-        DBPNamedObject source = getSite().getSource();
-        if (CommonUtils.isNotEmpty(userTableName)) {
-            // We will use custom table name in this case. As is.
-            tableName = userTableName;
-        } else if (source instanceof SQLQueryContainer) {
-            tableName = DTUtils.getTableNameFromQueryContainer(session.getDataSource(), (SQLQueryContainer) source);
-            if (CommonUtils.isEmpty(tableName)) {
-                tableName = DTUtils.getTargetContainersNameFromQuery((SQLQueryContainer) source);
-            }
-        } else {
-            tableName = DTUtils.getTableName(session.getDataSource(), source, omitSchema);
-        }
+        tableName = CommonUtils.isEmpty(userTableName) ? getSourceTableName(session, getSite().getSource()) : userTableName;
         if (CommonUtils.isEmpty(tableName)) {
             tableName = DTConstants.DEFAULT_TABLE_NAME_EXPORT;
         }
 
         rowCount = 0;
+    }
+
+    @Nullable
+    private String getSourceTableName(@NotNull DBCSession session, @NotNull DBPNamedObject source) {
+        DBPDataSource dataSource = session.getDataSource();
+        SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, source);
+        if (queryContainer != null) {
+            int resultIndex = queryContainer.getQueryResultIndex();
+            if (resultIndex > 0 || isMultiStatementQuery(dataSource, queryContainer)) {
+                return DTUtils.getResultTableName(session, columns, resultIndex == 0 ? queryContainer : null, omitSchema);
+            }
+        }
+        if (source instanceof SQLQueryContainer directQueryContainer) {
+            String name = DTUtils.getTableNameFromQueryContainer(dataSource, directQueryContainer);
+            return CommonUtils.isEmpty(name) ? DTUtils.getTargetContainersNameFromQuery(directQueryContainer) : name;
+        }
+        return DTUtils.getTableName(dataSource, source, omitSchema);
+    }
+
+    private static boolean isMultiStatementQuery(@NotNull DBPDataSource dataSource, @NotNull SQLQueryContainer queryContainer) {
+        return queryContainer.getQuery() instanceof SQLQuery query
+            && !query.representsOneStatement()
+            && SQLScriptParser.parseScript(dataSource, query.getOriginalText()).size() > 1;
     }
 
     private String transformTableNameCase(DBPDataSource dataSource, String tableIdentifier) {

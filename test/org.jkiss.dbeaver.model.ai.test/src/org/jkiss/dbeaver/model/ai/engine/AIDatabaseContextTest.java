@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
@@ -141,11 +142,12 @@ public class AIDatabaseContextTest extends DBeaverUnitTest {
     public void limitsObjectsToDataSourceCustomScope() throws DBException {
         DBPDataSourceContainer dataSource = Mockito.mock(DBPDataSourceContainer.class);
         Mockito.when(dataSource.getId()).thenReturn("data-source");
-        Mockito.when(dataSource.getExtension(AIContextSettingsDataSource.AI_DS_EXTENSION))
-            .thenReturn(Map.of(
-                "scope", AIDatabaseScope.CUSTOM.name(),
-                "objects", List.of("data-source/allowed")
-            ));
+        Map<String, Object> settings = Map.of(
+            "scope", AIDatabaseScope.CUSTOM.name(),
+            "objects", List.of("data-source/allowed")
+        );
+        Mockito.when(dataSource.getExtensionModel(Mockito.eq(AIContextSettingsDataSource.AI_DS_EXTENSION), Mockito.any()))
+            .thenAnswer(invocation -> JSONUtils.convertMapToObject(settings, invocation.getArgument(1)));
 
         DBSObjectContainer allowedSchema = Mockito.mock(DBSObjectContainer.class);
         Mockito.when(allowedSchema.getName()).thenReturn("allowed");

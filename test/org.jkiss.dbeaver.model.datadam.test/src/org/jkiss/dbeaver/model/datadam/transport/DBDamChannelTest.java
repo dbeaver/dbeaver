@@ -26,7 +26,9 @@ import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSessionListener;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -66,6 +68,50 @@ class DBDamChannelTest extends DBeaverUnitTest {
     private static final DDRemoteDamHandshakeRequest HELLO = new DDRemoteDamHandshakeRequest(
         "deployment", "app-instance", "workspace", "d29ya3NwYWNlOjAwMDEyMzQ1NjdhYg", "DBeaver", GeneralUtils.getProductVersion().toString());
     private static final DDRemoteDamMessage MESSAGE = message("topic", "value");
+
+    @Test
+    void retriesEveryFiveSecondsWithoutRepeatingFailureEventsAndResetsAfterRecovery() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        var retries = new LinkedBlockingQueue<IJobChangeEvent>();
+        var jobs = new JobChangeAdapter() {
+            @Override
+            public void scheduled(@NotNull IJobChangeEvent event) {
+                if (event.getJob().getName().equals("Connect Desktop message channel") && event.getDelay() > 0) {
+                    retries.add(event);
+                }
+            }
+        };
+        Job.getJobManager().addJobChangeListener(jobs);
+        try (var channel = new DBDamChannel(ENDPOINT, HELLO, resource -> "token", clients)) {
+            channel.addSessionListener(events);
+            channel.start();
+            var first = clients.next();
+            first.handshake.completeExceptionally(new IOException("Offline"));
+            Mockito.verify(first.client, Mockito.timeout(1_000)).close();
+            var initialEvents = channel.getMonitor().getEvents();
+            Assertions.assertEquals(1, initialEvents.stream().filter(event -> event.type() == DDConnectionMonitor.EventType.ERROR).count());
+            for (int i = 0; i < 2; i++) {
+                var retry = take(retries);
+                Assertions.assertEquals(5_000, retry.getDelay());
+                retry.getJob().wakeUp();
+                var failed = clients.next();
+                failed.handshake.completeExceptionally(new IOException("Still offline"));
+                Mockito.verify(failed.client, Mockito.timeout(1_000)).close();
+                Assertions.assertEquals(initialEvents, channel.getMonitor().getEvents());
+                Assertions.assertNotNull(channel.getMonitor().snapshot().error());
+            }
+            take(retries).getJob().wakeUp();
+            var recovered = ready(clients, events, "recovered");
+            Assertions.assertNull(channel.getMonitor().snapshot().error());
+            Assertions.assertEquals(DDConnectionMonitor.EventType.CONNECTED, channel.getMonitor().getEvents().getLast().type());
+            recovered.listener.onClose(recovered.socket, 1008, "Disconnected again");
+            Assertions.assertEquals(2, channel.getMonitor().getEvents().stream()
+                .filter(event -> event.type() == DDConnectionMonitor.EventType.ERROR).count());
+        } finally {
+            Job.getJobManager().removeJobChangeListener(jobs);
+        }
+    }
 
     @Test
     void heartbeatsKeepQuietConnectionAliveButSilentTransportFailureIsDetected() throws Exception {
@@ -617,7 +663,7 @@ class DBDamChannelTest extends DBeaverUnitTest {
     void pauseCancelsDelayedRetryAndStartResumesImmediately() throws Exception {
         Clients clients = new Clients();
         Events events = new Events();
-        try (var channel = channel(clients, resource -> "token")) {
+        try (var channel = new DBDamChannel(ENDPOINT, HELLO, resource -> "token", clients)) {
             channel.addSessionListener(events);
             channel.start();
             Peer failed = clients.next();
@@ -998,7 +1044,7 @@ class DBDamChannelTest extends DBeaverUnitTest {
         @NotNull Clients clients,
         @NotNull DBDamChannel.TokenProvider tokens
     ) throws DBException {
-        return new DBDamChannel(ENDPOINT, HELLO, tokens, clients);
+        return new DBDamChannel(ENDPOINT, HELLO, tokens, clients, Duration.ofSeconds(90), Duration.ofMillis(10));
     }
 
     @NotNull

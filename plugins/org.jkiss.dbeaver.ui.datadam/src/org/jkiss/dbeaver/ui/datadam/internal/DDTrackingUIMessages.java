@@ -54,6 +54,12 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_mcp_settings_link;
     public static String sync_preference_page_mcp_update_failed;
     public static String sync_preference_page_import_keys_button;
+    public static String sync_preference_page_generate_keys_button;
+    public static String sync_preference_page_generate_keys_failed;
+    public static String sync_preference_page_key_status_loading;
+    public static String sync_preference_page_key_status_unavailable;
+    public static String sync_preference_page_key_status_retry;
+    public static String sync_preference_page_key_manage_unavailable;
     public static String sync_preference_page_forget_keys_button;
     public static String sync_preference_page_forget_keys_confirm_title;
     public static String sync_preference_page_forget_keys_confirm_message;
@@ -61,6 +67,15 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_login_failed;
     public static String sync_preference_page_logout_failed;
     public static String sync_preference_page_cannot_forget_keys;
+
+    public static String generate_key_dialog_title;
+    public static String generate_key_dialog_description;
+    public static String generate_key_dialog_copy;
+    public static String generate_key_dialog_saved;
+    public static String generate_key_dialog_discard_title;
+    public static String generate_key_dialog_discard_message;
+    public static String generate_key_dialog_go_back;
+    public static String generate_key_dialog_close_anyway;
 
     public static String desktop_relogin_title;
     public static String desktop_relogin_message;
@@ -195,6 +210,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String signed_in;
     public static String signed_out;
     public static String invalid_token;
+    public static String name_changed;
     public static String error;
     public static String mcp_request;
     public static String connected_at;

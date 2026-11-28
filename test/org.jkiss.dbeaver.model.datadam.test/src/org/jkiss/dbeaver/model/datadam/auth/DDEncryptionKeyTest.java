@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class DDRecoveryPhraseTest {
+class DDEncryptionKeyTest {
     private static final String RECOVERY_PHRASE =
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 
@@ -28,7 +28,7 @@ class DDRecoveryPhraseTest {
     void normalizesAndValidatesPhrase() throws Exception {
         Assertions.assertEquals(
             RECOVERY_PHRASE,
-            DDRecoveryPhrase.normalizeAndValidate("  abandon\tabandon abandon abandon abandon abandon "
+            DDEncryptionKey.normalizeAndValidate("  abandon\tabandon abandon abandon abandon abandon "
                 + "abandon abandon abandon abandon abandon\nabout  ")
         );
     }
@@ -37,7 +37,7 @@ class DDRecoveryPhraseTest {
     void rejectsWrongWordCount() {
         Assertions.assertThrows(
             DBException.class,
-            () -> DDRecoveryPhrase.normalizeAndValidate("abandon abandon abandon")
+            () -> DDEncryptionKey.normalizeAndValidate("abandon abandon abandon")
         );
     }
 
@@ -45,7 +45,7 @@ class DDRecoveryPhraseTest {
     void rejectsUnknownWord() {
         var error = Assertions.assertThrows(
             DBException.class,
-            () -> DDRecoveryPhrase.normalizeAndValidate(RECOVERY_PHRASE.replace("about", "notaword"))
+            () -> DDEncryptionKey.normalizeAndValidate(RECOVERY_PHRASE.replace("about", "notaword"))
         );
         Assertions.assertEquals(
             "The encryption key contains an unknown word. Check the words and try again.",
@@ -57,7 +57,7 @@ class DDRecoveryPhraseTest {
     void rejectsInvalidChecksum() {
         Assertions.assertThrows(
             DBException.class,
-            () -> DDRecoveryPhrase.normalizeAndValidate("abandon ".repeat(12).trim())
+            () -> DDEncryptionKey.normalizeAndValidate("abandon ".repeat(12).trim())
         );
     }
 }

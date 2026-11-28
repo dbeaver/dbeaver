@@ -178,6 +178,10 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     }
 
     public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
+        openNewDataEditor(targetNode, newFilter, true);
+    }
+
+    public static void openNewDataEditor(@NotNull DBNDatabaseNode targetNode, @Nullable DBDDataFilter newFilter, boolean reuseEditor) {
         UIUtils.asyncExec(() -> {
             IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
                 targetNode,
@@ -185,7 +189,9 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
                 null,
                 Collections.singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
                 UIUtils.getActiveWorkbenchWindow(),
-                true);
+                true,
+                false,
+                reuseEditor);
 
             if (newFilter != null && entityEditor instanceof MultiPageEditorPart) {
                 Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();

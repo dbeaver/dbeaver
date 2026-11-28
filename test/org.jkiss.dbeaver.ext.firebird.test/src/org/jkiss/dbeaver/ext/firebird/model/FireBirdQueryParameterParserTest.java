@@ -72,8 +72,8 @@ public class FireBirdQueryParameterParserTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void preservesExecuteProcedureParameterHandling() {
-        Assertions.assertNull(parse("EXECUTE PROCEDURE demo(:arg, ?)", true));
+    public void parsesOnlyNamedParametersInExecuteProcedure() {
+        assertNamedProcedureParameters("EXECUTE PROCEDURE demo(:arg, ?)");
     }
 
     @Test
@@ -137,9 +137,9 @@ public class FireBirdQueryParameterParserTest extends DBeaverUnitTest {
         }
 
         @Test
-        void doesNotTreatProcedureWithCommentAsBlockOrOrdinaryNamedParameters() {
-            Assertions.assertNull(parse("EXECUTE/* comment */PROCEDURE demo(:arg, ?)", true));
-            Assertions.assertNull(parse("EXECUTE -- comment\nPROCEDURE demo(:arg, ?)", true));
+        void recognizesProcedureParametersWithCommentsBetweenKeywords() {
+            assertNamedProcedureParameters("EXECUTE/* comment */PROCEDURE demo(:arg, ?)");
+            assertNamedProcedureParameters("EXECUTE -- comment\nPROCEDURE demo(:arg, ?)");
         }
 
         private void assertRecognized(@NotNull String header) {
@@ -148,6 +148,13 @@ public class FireBirdQueryParameterParserTest extends DBeaverUnitTest {
             Assertions.assertEquals(1, parameters.size(), header);
             Assertions.assertTrue(parameters.getFirst().isNativeBinding(), header);
         }
+    }
+
+    private void assertNamedProcedureParameters(@NotNull String sql) {
+        List<SQLQueryParameter> parameters = parse(sql, true);
+        Assertions.assertNotNull(parameters);
+        Assertions.assertEquals(List.of("arg"), parameters.stream().map(SQLQueryParameter::getName).toList());
+        Assertions.assertFalse(parameters.getFirst().isNativeBinding());
     }
 
     @Nullable

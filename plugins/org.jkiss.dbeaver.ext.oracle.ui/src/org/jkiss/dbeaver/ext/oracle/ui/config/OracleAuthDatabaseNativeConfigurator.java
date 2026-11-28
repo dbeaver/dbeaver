@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -30,9 +30,7 @@ import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.Locale;
 
 /**
@@ -70,30 +68,16 @@ public class OracleAuthDatabaseNativeConfigurator extends DatabaseNativeAuthMode
     public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.loadSettings(dataSource);
 
-        String roleName = dataSource.getConnectionConfiguration().getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS);
-        if (CommonUtils.isEmpty(roleName)) {
-            roleName = dataSource.getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
-        }
-        if (roleName != null) {
-            userRoleCombo.setText(roleName.toUpperCase(Locale.ENGLISH));
-        }
+        String roleName = OracleAuthModelDatabaseNative.getConnectionRole(dataSource.getConnectionConfiguration());
+        userRoleCombo.setText(OracleConnectionRole.NORMAL.getTitle().equalsIgnoreCase(roleName)
+            ? OracleConnectionRole.NORMAL.getTitle() : roleName.toUpperCase(Locale.ENGLISH));
     }
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.saveSettings(dataSource);
 
-        if (userRoleCombo.getSelectionIndex() > 0) {
-            dataSource.getConnectionConfiguration().setAuthProperties(
-                Collections.singletonMap(
-                    OracleConstants.PROP_AUTH_LOGON_AS,
-                    userRoleCombo.getText().toLowerCase(Locale.ENGLISH)));
-        } else {
-            dataSource.getConnectionConfiguration().setAuthProperties(Collections.emptyMap());
-        }
-
-        // Remove legacy properties
-        dataSource.getConnectionConfiguration().removeProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
+        OracleAuthModelDatabaseNative.setConnectionRole(dataSource.getConnectionConfiguration(), userRoleCombo.getText());
     }
 
     @Override

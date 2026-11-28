@@ -134,7 +134,10 @@ public final class SWTThemeUtils {
             updateTextBorder(text);
         }
         // TODO: do not style custom wigets and empty composites
-        OS.AllowDarkModeForWindow(control.handle, dark);
+        // Native dark List selection can paint white on white (including CCombo popups).
+        // Keep its SWT colors, but use the standard native selection theme.
+        boolean nativeDark = dark && !(control instanceof List);
+        OS.AllowDarkModeForWindow(control.handle, nativeDark);
         // For Tree and Table we shouldn't set any theme but EXPLORER.
         // Setting to NULL makes Tree legacy-styled widget.
         boolean isBrokenCtrl = control instanceof Table || control instanceof Tree;
@@ -142,7 +145,7 @@ public final class SWTThemeUtils {
         if (!(control instanceof ToolBar)) {
             OS.SetWindowTheme(
                 control.handle,
-                dark || isBrokenCtrl ? getDarkThemeIdByWidgetType(control) : null,
+                nativeDark || isBrokenCtrl ? getDarkThemeIdByWidgetType(control) : null,
                 null
             );
         }
@@ -215,6 +218,11 @@ public final class SWTThemeUtils {
             }
             try {
                 RECT row = new RECT();
+                // EraseItem bounds have already been rounded to logical coordinates. Scaling them back
+                // can shift row edges at fractional zoom, clipping the selection border on some rows.
+                if (!OS.TreeView_GetItemRect(tree.handle, ((TreeItem) event.item).handle, row, false)) {
+                    return;
+                }
                 Rectangle bounds = tree.getClientArea();
                 row.left = DPIUtil.pointToPixel(bounds.x, zoom);
                 row.right = DPIUtil.pointToPixel(bounds.x + bounds.width, zoom);
@@ -226,9 +234,6 @@ public final class SWTThemeUtils {
                     row.left = 0;
                     row.right = DPIUtil.pointToPixel(totalWidth, zoom);
                 }
-                row.top = DPIUtil.pointToPixel(event.y, zoom);
-                row.bottom = DPIUtil.pointToPixel(event.y + event.height, zoom);
-
                 RECT cell = new RECT();
                 cell.left = DPIUtil.pointToPixel(event.x, zoom);
                 cell.right = DPIUtil.pointToPixel(event.x + event.width, zoom);

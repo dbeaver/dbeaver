@@ -113,11 +113,11 @@
                     contentType="text/json">
                 <propertyGroup label="%dataTransfer.processor.json.propertyGroup.general.label">
                     <property id="printTableName" label="%dataTransfer.processor.json.property.printTableName.label"
-                              type="boolean" defaultValue="true" validValues="true,false"/>
+                              type="boolean" defaultValue="true"/>
                     <property id="formatDateISO" label="%dataTransfer.processor.json.property.formatDateISO.label"
-                              type="boolean" defaultValue="true" validValues="true,false"/>
+                              type="boolean" defaultValue="true"/>
                     <property id="exportJsonValues" label="%dataTransfer.processor.json.property.exportJsonValues.label"
-                              type="string" defaultValue="string" validValues="string,json"/>
+                              type="string" defaultValue="string" validValues="string,json" required="true"/>
                     <property id="extension" label="%dataTransfer.processor.json.property.extension.label" defaultValue="json"/>
                 </propertyGroup>
             </processor>

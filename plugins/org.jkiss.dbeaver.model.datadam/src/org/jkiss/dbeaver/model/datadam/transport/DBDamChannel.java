@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -62,8 +61,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
     private static final long READY_TIMEOUT_MILLIS = 10_000;
     private static final long SEND_TIMEOUT_MILLIS = 10_000;
     private static final Duration HEARTBEAT_TIMEOUT = Duration.ofSeconds(90);
-    private static final long MIN_RETRY_MILLIS = 1_000;
-    private static final long MAX_RETRY_MILLIS = 60_000;
+    private static final long RETRY_MILLIS = 5_000;
 
     private final Object lock = new Object();
     private final DDConnectionMonitor monitor = new DDConnectionMonitor();
@@ -73,6 +71,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
     private final TokenProvider tokens;
     private final Supplier<BaseWebSocketClient> clients;
     private final Duration heartbeatTimeout;
+    private final long retryDelayMillis;
     private final List<Registration<DDRemoteDamMessageListener>> messageListeners = new ArrayList<>();
     private final List<Registration<DDRemoteDamSessionListener>> sessionListeners = new ArrayList<>();
     private final List<StateObservation> stateObservers = new ArrayList<>();
@@ -83,7 +82,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
     private boolean running;
     private boolean closed;
     private boolean deliveryScheduled;
-    private long retryMillis = MIN_RETRY_MILLIS;
+    private boolean recovering;
 
     private Attempt current;
 
@@ -114,6 +113,17 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         @NotNull Supplier<BaseWebSocketClient> clients,
         @NotNull Duration heartbeatTimeout
     ) throws DBException {
+        this(endpoint, hello, tokens, clients, heartbeatTimeout, Duration.ofMillis(RETRY_MILLIS));
+    }
+
+    DBDamChannel(
+        @NotNull URI endpoint,
+        @NotNull DDRemoteDamHandshakeRequest hello,
+        @NotNull TokenProvider tokens,
+        @NotNull Supplier<BaseWebSocketClient> clients,
+        @NotNull Duration heartbeatTimeout,
+        @NotNull Duration retryDelay
+    ) throws DBException {
         DDEndpoints.requireSecureWebSocketTransport(endpoint);
         this.endpoint = endpoint;
         this.hello = hello;
@@ -121,6 +131,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         this.tokens = tokens;
         this.clients = clients;
         this.heartbeatTimeout = heartbeatTimeout;
+        this.retryDelayMillis = retryDelay.toMillis();
         if (helloMessage.getBytes(StandardCharsets.UTF_8).length > MAX_MESSAGE_BYTES) {
             throw new DBException("Desktop hello exceeds the message size limit");
         }
@@ -132,6 +143,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
                 return;
             }
             running = true;
+            recovering = false;
             scheduleAttempt(0);
         }
         notifyStateObservers();
@@ -238,7 +250,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
     private void updateStatus(@NotNull DDRemoteDamChannelStatus next) {
         if (status.state() != DDRemoteDamChannelState.CLOSED && !status.equals(next)) {
             status = next;
-            monitor.stateChanged(next);
+            monitor.stateChanged(next, !recovering || next.isReady() || !running);
             for (StateObservation observation : stateObservers) {
                 observation.pending.add(next);
             }
@@ -330,7 +342,6 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         try {
             String token = tokens.getAccessToken(endpoint);
             if (token == null || token.isBlank()) {
-                log.debug("DataDam desktop channel has no access token");
                 finish(attempt, false, DDConnectionMessages.token_unavailable);
                 return;
             }
@@ -355,14 +366,12 @@ public final class DBDamChannel implements DDRemoteDamChannel {
                 socket.abort();
             }
         } catch (DBException e) {
-            log.warn("Cannot obtain DataDam desktop channel access token", e);
-            finish(attempt, true, DDConnectionMessages.token_failed);
+            finish(attempt, true, DDConnectionMessages.token_failed, e);
         } catch (InterruptedException e) {
             finish(attempt, true);
             Thread.currentThread().interrupt();
         } catch (Exception e) {
-            log.warn("Cannot connect DataDam desktop channel", e);
-            finish(attempt, !isAuthorizationFailure(e), NLS.bind(DDConnectionMessages.connect_failed, e.getClass().getSimpleName()));
+            finish(attempt, !isAuthorizationFailure(e), NLS.bind(DDConnectionMessages.connect_failed, e.getClass().getSimpleName()), e);
         }
     }
 
@@ -520,8 +529,8 @@ public final class DBDamChannel implements DDRemoteDamChannel {
                 if (attempt.authenticationRequested && attempt.authenticationRefresh) {
                     attempt.authentication.schedule();
                 }
+                recovering = false;
                 updateStatus(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.CONNECTED, ready));
-                retryMillis = MIN_RETRY_MILLIS;
                 listeners = List.copyOf(sessionListeners);
             }
             attempt.connectDeadline.cancel();
@@ -566,11 +575,9 @@ public final class DBDamChannel implements DDRemoteDamChannel {
             if (current != attempt || attempt.session != null || !waitingForReady && attempt.socket != null) {
                 return;
             }
-            monitor.failed(waitingForReady ? DDConnectionMessages.handshake_timeout : DDConnectionMessages.connect_timeout);
+            recordFailure(waitingForReady ? DDConnectionMessages.handshake_timeout : DDConnectionMessages.connect_timeout, null);
             detach(attempt, true);
         }
-        log.warn("DataDam desktop channel timed out waiting for "
-            + (waitingForReady ? "session handshake" : "WebSocket connection"));
         cleanup(attempt);
         notifyStateObservers();
     }
@@ -580,15 +587,30 @@ public final class DBDamChannel implements DDRemoteDamChannel {
     }
 
     private void finish(@NotNull Attempt attempt, boolean retry, @NotNull String failure) {
+        finish(attempt, retry, failure, null);
+    }
+
+    private void finish(@NotNull Attempt attempt, boolean retry, @NotNull String failure, @Nullable Throwable cause) {
         synchronized (lock) {
             if (current != attempt) {
                 return;
             }
-            monitor.failed(failure);
+            if (!retry) {
+                // Missing or rejected credentials end recovery and must remain visible to the user.
+                recovering = false;
+            }
+            recordFailure(failure, cause);
             detach(attempt, retry);
         }
         cleanup(attempt);
         notifyStateObservers();
+    }
+
+    private void recordFailure(@NotNull String failure, @Nullable Throwable cause) {
+        if (!recovering) {
+            monitor.failed(failure);
+            log.warn("DataDam desktop channel failed: " + failure, cause);
+        }
     }
 
     private void detach(@NotNull Attempt attempt, boolean retry) {
@@ -609,9 +631,9 @@ public final class DBDamChannel implements DDRemoteDamChannel {
             wakeDelivery();
         }
         if (retry && running && !closed) {
-            long delay = Math.min(MAX_RETRY_MILLIS, retryMillis + ThreadLocalRandom.current().nextLong(retryMillis / 4 + 1));
-            retryMillis = Math.min(MAX_RETRY_MILLIS, retryMillis * 2);
-            scheduleAttempt(delay);
+            // Keep the first failure visible, but do not add events or log entries for background retries.
+            recovering = true;
+            scheduleAttempt(retryDelayMillis);
         } else {
             running = false;
         }
@@ -754,18 +776,13 @@ public final class DBDamChannel implements DDRemoteDamChannel {
 
         @Override
         protected void closed(int statusCode, @NotNull String reason) {
-            if (isCurrent(attempt)) {
-                log.warn("DataDam desktop channel closed by remote server (code " + statusCode + ")");
-            }
             finish(attempt, true, NLS.bind(DDConnectionMessages.remote_closed, Integer.toString(statusCode)));
         }
 
         @Override
         protected void error(@NotNull Throwable cause) {
-            if (isCurrent(attempt)) {
-                log.warn("DataDam desktop channel error", cause);
-            }
-            finish(attempt, !isAuthorizationFailure(cause), NLS.bind(DDConnectionMessages.websocket_error, cause.getClass().getSimpleName()));
+            finish(attempt, !isAuthorizationFailure(cause),
+                NLS.bind(DDConnectionMessages.websocket_error, cause.getClass().getSimpleName()), cause);
         }
 
         private void dispose(@NotNull WebSocket socket, boolean graceful) {

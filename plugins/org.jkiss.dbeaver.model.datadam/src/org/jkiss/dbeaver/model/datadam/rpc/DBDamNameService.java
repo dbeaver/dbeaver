@@ -36,17 +36,28 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 /** Persists the initial desktop name after the server registers the Dam. */
 public class DBDamNameService implements IPluginService {
     private static final Log log = Log.getLog(DBDamNameService.class);
+    private static final long NAME_RETRY_DELAY = 5_000;
 
+    private final BooleanSupplier integrationEnabled;
     @Nullable
     private DDRemoteDamSubscription subscription;
     @Nullable
     private AbstractJob job;
     private boolean stopped;
+
+    public DBDamNameService() {
+        this(DDProductConfig::isIntegrationEnabled);
+    }
+
+    DBDamNameService(@NotNull BooleanSupplier integrationEnabled) {
+        this.integrationEnabled = integrationEnabled;
+    }
 
     @Override
     public synchronized void activateService() {
@@ -56,9 +67,15 @@ public class DBDamNameService implements IPluginService {
         try {
             var session = DBDamSessionService.getInstance();
             var account = new DDAccountClient(URI.create(DDEndpoints.getAccountBaseUrl()), DBDamAccessService.getInstance());
-            subscription = session.getChannel().observeState(status -> updateName(session, account, status.isReady()));
+            activateService(session, account);
         } catch (DBException e) {
             log.debug("Cannot initialize DataDam desktop naming", e);
+        }
+    }
+
+    synchronized void activateService(@NotNull DBDamSessionService session, @NotNull DDAccountClient account) {
+        if (!stopped && subscription == null) {
+            subscription = session.getChannel().observeState(status -> updateName(session, account, status.isReady()));
         }
     }
 
@@ -75,10 +92,12 @@ public class DBDamNameService implements IPluginService {
             return;
         }
         job = new AbstractJob("Initialize DataDam desktop name") {
+            private boolean failureReported;
+
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                if (monitor.isCanceled() || !DDProductConfig.isIntegrationEnabled()
+                if (monitor.isCanceled() || !integrationEnabled.getAsBoolean()
                     || !session.getChannel().getStatus().isReady()) {
                     return Status.CANCEL_STATUS;
                 }
@@ -87,9 +106,20 @@ public class DBDamNameService implements IPluginService {
                     var dam = getOrInitializeName(account, session.getClientDamId());
                     if (dam != null) {
                         session.cacheDam(connectedSession, dam);
+                        return Status.OK_STATUS;
                     }
                 } catch (DBException e) {
-                    log.debug("Cannot save initial DataDam desktop name", e);
+                    if (!failureReported) {
+                        log.debug("Cannot save initial DataDam desktop name", e);
+                        failureReported = true;
+                    }
+                }
+                // Registration may not be visible yet, and transient Account failures must not require a reconnect.
+                synchronized (DBDamNameService.this) {
+                    if (!stopped && job == this && !monitor.isCanceled()
+                        && integrationEnabled.getAsBoolean() && session.getChannel().getStatus().isReady()) {
+                        schedule(NAME_RETRY_DELAY);
+                    }
                 }
                 return Status.OK_STATUS;
             }
