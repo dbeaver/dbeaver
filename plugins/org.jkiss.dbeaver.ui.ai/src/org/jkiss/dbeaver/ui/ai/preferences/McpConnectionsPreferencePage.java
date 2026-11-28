@@ -150,16 +150,8 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         listRow.setLayoutData(listLayout);
         createConnectionTree(listRow);
         createConnectionColumns();
-        columnController.createColumns(false);
+        columnController.createColumns();
         Tree tree = viewer.getTree();
-        for (int index = 0; index < tree.getColumnCount(); index++) {
-            TreeColumn column = tree.getColumn(index);
-            if (column.getWidth() == 0) {
-                String name = columnController.getColumnName(index);
-                column.setWidth(AIUIMessages.ai_mcp_connections_connection.equals(name) ? 350
-                    : AIUIMessages.ai_mcp_connections_scope.equals(name) ? 160 : 100);
-            }
-        }
         createConnectionActions(listRow);
         for (McpConnectionsPageRegistry.McpConnectionsPageContribution contribution : contributions) {
             Runnable onChange = () -> UIUtils.asyncExec(() -> {
@@ -191,6 +183,8 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         };
         filteredTree.setInitialText(AIUIMessages.ai_mcp_connections_filter);
         viewer = filteredTree.getViewer();
+        TreeViewerEditor.create(viewer, new ColumnViewerEditorActivationStrategy(viewer),
+            ColumnViewerEditor.DEFAULT | ColumnViewerEditor.KEEP_EDITOR_ON_DOUBLE_CLICK);
         Text filterControl = filteredTree.getFilterControl();
         if (filterControl != null) {
             UIUtils.installAndUpdateMainFont(filterControl);
@@ -202,6 +196,13 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
         treeData.heightHint = tree.getItemHeight() * 12;
         filteredTree.setLayoutData(treeData);
         columnController = new ViewerColumnController<>(PAGE_ID, viewer) {
+            @Override
+            protected void repackColumns(boolean forceRepack) {
+                super.repackColumns(forceRepack);
+                // Packing also gives hidden contribution columns a non-zero width.
+                updateContributionVisibility();
+            }
+
             @Override
             public boolean configureColumns() {
                 boolean changed = super.configureColumns();
@@ -440,6 +441,8 @@ public class McpConnectionsPreferencePage extends AbstractPrefPage implements IW
             private DBPDataSourceContainer editingConnection;
 
             {
+                editor.setActivationStyle(ComboBoxCellEditor.DROP_DOWN_ON_MOUSE_ACTIVATION
+                    | ComboBoxCellEditor.DROP_DOWN_ON_KEY_ACTIVATION);
                 ((CCombo) editor.getControl()).addSelectionListener(
                     SelectionListener.widgetSelectedAdapter(event -> {
                         boolean customSelected = ((CCombo) editor.getControl()).getSelectionIndex() == AIDatabaseScope.CUSTOM.ordinal();

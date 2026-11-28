@@ -346,7 +346,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         repackColumns(false);
     }
 
-    private void repackColumns(boolean forceRepack) {
+    protected void repackColumns(boolean forceRepack) {
         if (!forceRepack && isAllSized()) {
             return;
         }
