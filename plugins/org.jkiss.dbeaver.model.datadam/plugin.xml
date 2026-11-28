@@ -39,7 +39,6 @@
 
     <extension point="org.jkiss.dbeaver.pluginService">
         <service class="org.jkiss.dbeaver.model.datadam.rpc.DBDamSessionPluginService"/>
-        <service class="org.jkiss.dbeaver.model.datadam.rpc.DBDamNameService"/>
     </extension>
 
     <extension point="com.dbeaver.ai.engine">

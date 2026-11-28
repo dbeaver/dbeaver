@@ -103,6 +103,9 @@ public final class DBDamSessionService implements AutoCloseable {
                 accessStatus = next;
                 accessIdentity = identity;
                 DDConnectionMonitor monitor = channel.getMonitor();
+                if (next != DBDamAccessService.Status.SIGNED_IN) {
+                    monitor.damNameLoaded(null);
+                }
                 var type = switch (next) {
                     case SIGNED_IN -> DDConnectionMonitor.EventType.SIGNED_IN;
                     case SIGNED_OUT -> previous == DBDamAccessService.Status.UNLOADED
@@ -141,7 +144,7 @@ public final class DBDamSessionService implements AutoCloseable {
             DDRemoteDamHandshakeRequest hello = new DDRemoteDamHandshakeRequest(
                 DBWorkbench.getPlatform().getDeploymentId(), APP_INSTANCE_ID,
                 workspaceId, clientDamId,
-                GeneralUtils.getProductName(), GeneralUtils.getProductVersion().toString());
+                GeneralUtils.getProductName(), GeneralUtils.getProductVersion().toString(), DBDamNameService.suggestDamName());
             DBDamChannel channel = new DBDamChannel(
                 URI.create(DDEndpoints.getRemoteDamWebSocketUrl()), hello,
                 resource -> access.getStatus() == DBDamAccessService.Status.SIGNED_IN
@@ -236,11 +239,23 @@ public final class DBDamSessionService implements AutoCloseable {
 
     /** Associates Account data with the session that requested it, so a reconnect cannot reuse stale data. */
     public synchronized void cacheDam(@Nullable DDRemoteDamSessionInfo session, @Nullable DDConnectedRemoteDam dam) {
+        cacheDam(session, dam, false);
+    }
+
+    public synchronized void cacheRenamedDam(@Nullable DDRemoteDamSessionInfo session, @Nullable DDConnectedRemoteDam dam) {
+        cacheDam(session, dam, true);
+    }
+
+    private void cacheDam(@Nullable DDRemoteDamSessionInfo session, @Nullable DDConnectedRemoteDam dam, boolean renamed) {
         if (session != null && dam != null) {
             var status = channel.getStatus();
             if (!closed.get() && status.isReady() && session == status.session()) {
                 cachedDam.set(new CachedDam(session, dam));
-                channel.getMonitor().damNameLoaded(dam.damName());
+                if (renamed) {
+                    channel.getMonitor().damNameChanged(dam.damName());
+                } else {
+                    channel.getMonitor().damNameLoaded(dam.damName());
+                }
             }
         }
     }

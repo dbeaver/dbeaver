@@ -93,7 +93,8 @@ class DBDamSessionServiceTest {
         service.cacheDam(status.get().session(), renamed);
         service.cacheDam(first, dam);
         Assertions.assertSame(renamed, service.getCachedDam(), "A late response must not overwrite the current session");
-        Assertions.assertEquals("Renamed desktop", channel.getMonitor().getEvents().getLast().details());
+        service.cacheRenamedDam(first, dam);
+        Assertions.assertTrue(channel.getMonitor().getEvents().isEmpty());
     }
 
     @Test
@@ -102,8 +103,8 @@ class DBDamSessionServiceTest {
         var session = status.get().session();
         service.cacheDam(session, namedDam("Desktop"));
         var renamed = namedDam("Renamed desktop");
-        service.cacheDam(session, renamed);
-        service.cacheDam(session, renamed);
+        service.cacheRenamedDam(session, renamed);
+        service.cacheRenamedDam(session, renamed);
         service.cacheDam(session, null);
         Assertions.assertSame(renamed, service.getCachedDam());
         Assertions.assertEquals(List.of("Renamed desktop"),

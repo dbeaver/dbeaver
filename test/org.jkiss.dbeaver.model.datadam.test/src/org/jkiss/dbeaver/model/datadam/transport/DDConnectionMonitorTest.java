@@ -46,6 +46,29 @@ class DDConnectionMonitorTest {
     }
 
     @Test
+    void loadingAnotherAccountsNameIsSilentButRenamingItIsRecorded() {
+        var monitor = new DDConnectionMonitor();
+        monitor.damNameLoaded("First account desktop");
+        monitor.damNameLoaded("Second account desktop");
+        Assertions.assertTrue(monitor.getEvents().isEmpty());
+
+        monitor.damNameChanged("Renamed desktop");
+        monitor.damNameLoaded("Renamed desktop");
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertEquals(DDConnectionMonitor.EventType.NAME_CHANGED, monitor.getEvents().getFirst().type());
+        Assertions.assertEquals("Renamed desktop", monitor.getEvents().getFirst().details());
+    }
+
+    @Test
+    void aNewAccountCanConfirmAssignmentOfTheSameEnvironmentName() {
+        var monitor = new DDConnectionMonitor();
+        monitor.damNameChanged("DBeaver: workstation");
+        monitor.damNameLoaded(null);
+        monitor.damNameChanged("DBeaver: workstation");
+        Assertions.assertEquals(2, monitor.getEvents().size());
+    }
+
+    @Test
     void assigningTheFirstNameToAnUnnamedDamReportsARename() {
         var monitor = new DDConnectionMonitor();
         monitor.damNameChanged("Desktop");
