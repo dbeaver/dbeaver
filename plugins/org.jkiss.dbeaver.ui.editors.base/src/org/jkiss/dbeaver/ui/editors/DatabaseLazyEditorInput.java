@@ -283,7 +283,15 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         long connectionStart = System.currentTimeMillis();
         while (!dataSourceContainer.isConnected()) {
             try {
-                dataSourceContainer.connect(monitor, true, true);
+                DBUtils.ConnectionAttempt connection = DBUtils.connectDataSourceIfNeeded(monitor, dataSourceContainer);
+                if (!connection.connected()) {
+                    if (connection.canceled()) {
+                        return unloadInput();
+                    }
+                    if (connection.error() != null) {
+                        throw connection.error();
+                    }
+                }
             } catch (final DBException e) {
                 // Connection error
                 final Integer result = new UITask<Integer>() {

@@ -137,7 +137,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler, DBTTaskImportTra
                 for (DBPDataSourceContainer dataSourceContainer : dataSources) {
                     var sqlScriptContent = readScriptContents(monitor, task.getProject(), filePath);
                     if (!dataSourceContainer.isConnected()) {
-                        dataSourceContainer.connect(monitor, true, true);
+                        DBUtils.connectDataSourceIfNeeded(monitor, dataSourceContainer);
                     }
                     DBPDataSource dataSource = dataSourceContainer.getDataSource();
                     if (dataSource == null) {

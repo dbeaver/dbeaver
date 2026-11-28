@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
@@ -62,6 +63,7 @@ import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * DBUtils
@@ -701,7 +703,7 @@ public final class DBUtils {
         }
         if (!dataSourceContainer.isConnected()) {
             try {
-                dataSourceContainer.connect(monitor, true, true);
+                connectDataSourceIfNeeded(monitor, dataSourceContainer);
             } catch (DBException e) {
                 throw new DBException("Error connecting to datasource '" + dataSourceContainer.getName() + "'", e);
             }
@@ -2849,6 +2851,44 @@ public final class DBUtils {
             }
         }
         return result;
+    }
+
+    /**
+     * Connects through the UI service when available, or directly otherwise.
+     * Service connection errors are thrown; the result distinguishes cancellation
+     * from a direct connection that did not complete and provides an error for
+     * a service connection that did not report a failure.
+     */
+    @NotNull
+    public static ConnectionAttempt connectDataSourceIfNeeded(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer dataSource
+    ) throws DBException {
+        if (dataSource.isConnected()) {
+            return new ConnectionAttempt(true, false, null);
+        }
+        DBServiceConnections serviceConnections = DBWorkbench.getService(DBServiceConnections.class);
+        if (serviceConnections == null) {
+            return new ConnectionAttempt(dataSource.connect(monitor, true, true), false, null);
+        }
+        AtomicReference<IStatus> connectionStatus = new AtomicReference<>();
+        serviceConnections.initConnection(monitor, dataSource, connectionStatus::set);
+        IStatus status = connectionStatus.get();
+        if (status != null && !status.isOK() && status.getSeverity() != IStatus.CANCEL) {
+            throw new DBException(status.getMessage(), status.getException());
+        }
+        if (dataSource.isConnected()) {
+            return new ConnectionAttempt(true, false, null);
+        }
+        if (status != null && status.getSeverity() == IStatus.CANCEL) {
+            return new ConnectionAttempt(false, true, null);
+        }
+        return new ConnectionAttempt(false, false, new DBException(
+            status == null ? "Connection to '" + dataSource.getName() + "' failed" : status.getMessage(),
+            status == null ? null : status.getException()));
+    }
+
+    public record ConnectionAttempt(boolean connected, boolean canceled, @Nullable DBException error) {
     }
 
     public static boolean initDataSource(
