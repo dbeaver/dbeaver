@@ -38,9 +38,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.parser.SQLQueryParameterParser;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,8 @@ public class FireBirdDataSource extends GenericDataSource
     }
 
     private Map<String, IntKeyMap<MetaFieldInfo>> metaFields = new HashMap<>();
+    private final FireBirdCharacterSetCache characterSetCache = new FireBirdCharacterSetCache();
+    private final FireBirdCollationCache collationCache = new FireBirdCollationCache();
 
     public FireBirdDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -142,6 +146,14 @@ public class FireBirdDataSource extends GenericDataSource
         super.initialize(monitor);
     }
 
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        characterSetCache.clearCache();
+        collationCache.clearCache();
+        return super.refreshObject(monitor);
+    }
+
 	@NotNull
     @Override
 	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
@@ -161,6 +173,35 @@ public class FireBirdDataSource extends GenericDataSource
         return (List<FireBirdTable>) super.getPhysicalTables(monitor);
     }
 
+    /**
+     * Tables without system tables, shown in the navigator "Tables" folder.
+     */
+    @NotNull
+    public List<FireBirdTable> getUserTables(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return CommonUtils.safeList(getPhysicalTables(monitor)).stream()
+            .filter(table -> !table.isSystem())
+            .toList();
+    }
+
+    /**
+     * The navigator hides system objects unless they are shown in the connection settings,
+     * so the "System Tables" folder is only shown together with them.
+     */
+    public boolean showSystemTables() {
+        return getContainer().getNavigatorSettings().isShowSystemObjects();
+    }
+
+    /**
+     * System tables (RDB$, MON$, SEC$), shown in the navigator "System Info" folder.
+     * They are only loaded if system objects are shown in the navigator.
+     */
+    @NotNull
+    public List<FireBirdTable> getSystemTables(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return CommonUtils.safeList(getPhysicalTables(monitor)).stream()
+            .filter(FireBirdTable::isSystem)
+            .toList();
+    }
+
     @Override
     public List<FireBirdTable> getTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdTable>) super.getTables(monitor);
@@ -169,6 +210,26 @@ public class FireBirdDataSource extends GenericDataSource
     @Override
     public List<FireBirdProcedure> getProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdProcedure>) super.getProcedures(monitor);
+    }
+
+    @NotNull
+    public Collection<FireBirdCharacterSet> getCharacterSets(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return characterSetCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    public FireBirdCharacterSet getCharacterSet(@NotNull DBRProgressMonitor monitor, int id) throws DBException {
+        for (FireBirdCharacterSet characterSet : getCharacterSets(monitor)) {
+            if (characterSet.getId() == id) {
+                return characterSet;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    public Collection<FireBirdCollation> getCollations(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return collationCache.getAllObjects(monitor, this);
     }
 
     @NotNull

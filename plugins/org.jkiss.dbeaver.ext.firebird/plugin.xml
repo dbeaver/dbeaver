@@ -28,6 +28,28 @@
                 label="Firebird"
                 icon="icons/firebird_icon.png"
                 dialect="firebird">
+            <!-- System tables are listed in "System Info" instead of "Tables" -->
+            <treeInjection path="generic/catalog/schema/table" changeProperty="userTables"/>
+            <!-- Read-only system information, like the "System Info" folder of PostgreSQL. Added after all other folders. -->
+            <treeInjection path="generic/catalog/schema">
+                <folder id="information" label="%tree.information.node.name" icon="#folder_info" description="%tree.information.node.tip" adminFolder="true">
+                    <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdCharacterSet" label="%tree.charsets.node.name" icon="#folder" description="%tree.charsets.node.tip">
+                        <items label="%tree.charset.node.name" path="characterSet" property="characterSets" icon="#info">
+                            <items label="%tree.collation.node.name" path="collation" property="collations" icon="#info" navigable="false"/>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdCollation" label="%tree.collations.node.name" icon="#folder" description="%tree.collations.node.tip">
+                        <items label="%tree.collation.node.name" path="collation" property="collations" icon="#info"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable" label="%tree.systemTables.node.name" icon="#folder_table" description="%tree.systemTables.node.tip" visibleIf="object.dataSource.showSystemTables()">
+                        <items label="%tree.systemTable.node.name" path="systemTable" property="systemTables" icon="#table">
+                            <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
+                                <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"/>
+                            </folder>
+                        </items>
+                    </folder>
+                </folder>
+            </treeInjection>
             <drivers managable="true">
 
                 <driver
