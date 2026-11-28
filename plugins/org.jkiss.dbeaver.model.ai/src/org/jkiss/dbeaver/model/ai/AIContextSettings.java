@@ -54,6 +54,18 @@ public abstract class AIContextSettings {
         public boolean datadamMcpEnabled;
         public AIDatabaseScope scope;
         public String[] objects;
+
+        public PersistentSettings() {
+        }
+
+        public PersistentSettings(@NotNull PersistentSettings source) {
+            confirmed = source.confirmed;
+            mcpEnabled = source.mcpEnabled;
+            datadamMcpEnabled = source.datadamMcpEnabled;
+            scope = source.scope;
+            objects = source.objects == null ? null : Arrays.stream(source.objects)
+                .filter(o -> !CommonUtils.isEmpty(o)).toArray(String[]::new);
+        }
     }
 
     @Nullable

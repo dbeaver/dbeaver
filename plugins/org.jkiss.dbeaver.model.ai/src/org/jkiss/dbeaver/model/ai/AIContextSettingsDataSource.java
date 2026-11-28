@@ -26,8 +26,6 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
-
 /**
  * AI context settings.
  * Datasource-specific settings. Used in prompt generators to generate context info message.
@@ -68,27 +66,26 @@ public class AIContextSettingsDataSource extends AIContextSettings {
     }
 
     protected void loadSettings() {
-        Object dsConfig = dataSourceContainer.getExtension(AI_DS_EXTENSION);
-        if (dsConfig == null) {
-            loadLegacySettings();
-        } else if (dsConfig instanceof Map map) {
-            // Load settings from map
-            loadSettingsFromMap(map);
-        } else if (dsConfig instanceof String string) {
-            // Older datasource serializers flattened extension maps to strings.
-            try {
-                loadSettingsFromString(string);
-            } catch (JsonParseException e) {
-                log.error("Error loading AI settings: " + dsConfig, e);
+        try {
+            PersistentSettings model = dataSourceContainer.getExtensionModel(AI_DS_EXTENSION, PersistentSettings.class);
+            if (model != null) {
+                // Settings editors must not modify the cached model before Apply/OK.
+                settings = new PersistentSettings(model);
+            } else if (dataSourceContainer.getExtension(AI_DS_EXTENSION) == null) {
+                loadLegacySettings();
             }
-        } else {
-            log.error("Unknown AI settings format: " + dsConfig);
+        } catch (JsonParseException e) {
+            log.error("Error loading AI settings", e);
         }
     }
 
+    public void saveSettingsToDataSource() {
+        dataSourceContainer.setExtensionModel(AI_DS_EXTENSION, settings);
+    }
+
+    @Override
     public void saveSettings() {
-        // Save settings as map
-        dataSourceContainer.setExtension(AI_DS_EXTENSION, saveSettingsToMap());
+        saveSettingsToDataSource();
         dataSourceContainer.persistConfiguration();
     }
 

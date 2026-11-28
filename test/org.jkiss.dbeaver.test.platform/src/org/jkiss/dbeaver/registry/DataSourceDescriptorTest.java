@@ -29,8 +29,113 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class DataSourceDescriptorTest extends DBeaverUnitTest {
+    private static final String TEST_EXTENSION = "test.settings";
+
+    @Test
+    public void testExtensionModelDoesNotWaitForDatasourceMonitor() throws Exception {
+        DataSourceDescriptor dataSource = createDataSource(new DBPConnectionConfiguration());
+        dataSource.setExtension(TEST_EXTENSION, Map.of("enabled", true));
+
+        try (var executor = Executors.newSingleThreadExecutor()) {
+            synchronized (dataSource) {
+                ExtensionSettings model = executor.submit(() ->
+                    dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class)).get(1, TimeUnit.SECONDS);
+                Assertions.assertNotNull(model);
+                Assertions.assertTrue(model.enabled);
+            }
+        }
+    }
+
+    @Test
+    public void testExtensionModelIsCachedAndInvalidatedOnReplacement() {
+        DataSourceDescriptor dataSource = createDataSource(new DBPConnectionConfiguration());
+        dataSource.setExtension(TEST_EXTENSION, Map.of("enabled", true));
+
+        ExtensionSettings model = dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class);
+        Assertions.assertNotNull(model);
+        Assertions.assertTrue(model.enabled);
+        Assertions.assertSame(model, dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class));
+
+        dataSource.setExtension(TEST_EXTENSION, Map.of("enabled", false));
+        ExtensionSettings replacement = dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class);
+        Assertions.assertNotNull(replacement);
+        Assertions.assertNotSame(model, replacement);
+        Assertions.assertFalse(replacement.enabled);
+
+        dataSource.setExtension(TEST_EXTENSION, null);
+        Assertions.assertNull(dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class));
+    }
+
+    @Test
+    public void testSetExtensionModelStoresSnapshotInMapFormat() {
+        DataSourceDescriptor dataSource = createDataSource(new DBPConnectionConfiguration());
+        ExtensionSettings settings = new ExtensionSettings();
+        settings.enabled = true;
+        dataSource.setExtensionModel(TEST_EXTENSION, settings);
+        settings.enabled = false;
+
+        Assertions.assertEquals(Map.of("enabled", true), dataSource.getExtension(TEST_EXTENSION));
+        ExtensionSettings model = dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class);
+        Assertions.assertNotNull(model);
+        Assertions.assertTrue(model.enabled);
+
+        dataSource.setExtensionModel(TEST_EXTENSION, settings);
+        Assertions.assertFalse(dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class).enabled);
+        dataSource.setExtensionModel(TEST_EXTENSION, null);
+        Assertions.assertNull(dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class));
+        Assertions.assertFalse(dataSource.hasExtension(TEST_EXTENSION));
+    }
+
+    @Test
+    public void testExtensionModelSupportsLegacyStrings() {
+        DataSourceDescriptor dataSource = createDataSource(new DBPConnectionConfiguration());
+        for (String config : new String[] {"{\"enabled\":true}", "{enabled=true}"}) {
+            dataSource.setExtension(TEST_EXTENSION, config);
+            ExtensionSettings model = dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class);
+            Assertions.assertNotNull(model);
+            Assertions.assertTrue(model.enabled);
+            Assertions.assertSame(model, dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class));
+            Assertions.assertEquals(config, dataSource.getExtension(TEST_EXTENSION));
+        }
+    }
+
+    @Test
+    public void testExtensionModelsAreInvalidatedOnBulkReplacementAndCopy() {
+        DataSourceDescriptor dataSource = createDataSource(new DBPConnectionConfiguration());
+        Assertions.assertNull(dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class));
+        dataSource.setExtensions(Map.of(TEST_EXTENSION, Map.of("enabled", true)));
+        ExtensionSettings original = dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class);
+        Assertions.assertNotNull(original);
+        Assertions.assertTrue(original.enabled);
+
+        DataSourceDescriptor copy = new DataSourceDescriptor(dataSource, dataSource.getRegistry(), false);
+        Assertions.assertNotSame(original, copy.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class));
+        copy.setExtension(TEST_EXTENSION, Map.of("enabled", false));
+        dataSource.copyFrom(copy);
+        Assertions.assertFalse(dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class).enabled);
+
+        dataSource.setExtensions(Map.of());
+        Assertions.assertNull(dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class));
+    }
+
+    @Test
+    public void testInvalidExtensionModelDoesNotPreventReplacement() {
+        DataSourceDescriptor dataSource = createDataSource(new DBPConnectionConfiguration());
+        dataSource.setExtension(TEST_EXTENSION, "{\"enabled\":");
+        Assertions.assertNull(dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class));
+        Assertions.assertNull(dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class));
+        dataSource.setExtension(TEST_EXTENSION, Map.of("enabled", true));
+        Assertions.assertTrue(dataSource.getExtensionModel(TEST_EXTENSION, ExtensionSettings.class).enabled);
+    }
+
+    public static class ExtensionSettings {
+        public boolean enabled;
+    }
+
     @Test
     public void testResetRevokedSharedCredentials() {
         DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();

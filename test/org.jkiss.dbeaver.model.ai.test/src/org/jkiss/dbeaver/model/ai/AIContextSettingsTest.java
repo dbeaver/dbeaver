@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -50,6 +51,48 @@ public class AIContextSettingsTest extends DBeaverUnitTest {
         Assertions.assertFalse(settings.isMcpEnabled());
         Mockito.verify(settings.getDataSourceContainer(), Mockito.never()).getDataSource();
         Assertions.assertNull(settings.saveSettingsToMap().get("scope"));
+    }
+
+    @Test
+    public void datasourceEditsDoNotModifyCachedSettings() {
+        AIContextSettings.PersistentSettings cached = new AIContextSettings.PersistentSettings();
+        cached.confirmed = true;
+        cached.mcpEnabled = true;
+        cached.datadamMcpEnabled = true;
+        cached.scope = AIDatabaseScope.CUSTOM;
+        cached.objects = new String[] {"schema/table", ""};
+        DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
+        Mockito.when(container.getExtensionModel(
+            AIContextSettingsDataSource.AI_DS_EXTENSION, AIContextSettings.PersistentSettings.class)).thenReturn(cached);
+        AIContextSettingsDataSource settings = new AIContextSettingsDataSource(container);
+        Assertions.assertArrayEquals(new String[] {"schema/table"}, settings.getCustomObjectIds());
+
+        settings.setMetaTransferConfirmed(false);
+        settings.setMcpEnabled(false);
+        settings.setDatadamMcpEnabled(false);
+        settings.setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        settings.getCustomObjectIds()[0] = "other/table";
+
+        AIContextSettingsDataSource reloaded = new AIContextSettingsDataSource(container);
+        Assertions.assertTrue(reloaded.isMetaTransferConfirmed());
+        Assertions.assertTrue(reloaded.isMcpEnabled());
+        Assertions.assertTrue(reloaded.isDatadamMcpEnabled());
+        Assertions.assertEquals(AIDatabaseScope.CUSTOM, reloaded.getScope());
+        Assertions.assertArrayEquals(new String[] {"schema/table"}, reloaded.getCustomObjectIds());
+        Mockito.verify(container, Mockito.never()).setExtensionModel(Mockito.anyString(), Mockito.any());
+    }
+
+    @Test
+    public void datasourceSavesTypedSettingsWithoutPersistingUntilRequested() {
+        AIContextSettingsDataSource settings = createDataSourceSettings(Map.of("confirmed", true));
+        DBPDataSourceContainer container = settings.getDataSourceContainer();
+
+        settings.saveSettingsToDataSource();
+
+        Mockito.verify(container).setExtensionModel(AIContextSettingsDataSource.AI_DS_EXTENSION, settings.settings);
+        Mockito.verify(container, Mockito.never()).persistConfiguration();
+        settings.saveSettings();
+        Mockito.verify(container).persistConfiguration();
     }
 
     @Test
@@ -132,6 +175,9 @@ public class AIContextSettingsTest extends DBeaverUnitTest {
     private AIContextSettingsDataSource createDataSourceSettings(@NotNull Map<String, Object> config) {
         DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
         Mockito.when(container.getExtension(AIContextSettingsDataSource.AI_DS_EXTENSION)).thenReturn(config);
+        Mockito.when(container.getExtensionModel(
+            AIContextSettingsDataSource.AI_DS_EXTENSION, AIContextSettings.PersistentSettings.class))
+            .thenReturn(JSONUtils.convertMapToObject(config, AIContextSettings.PersistentSettings.class));
         return new AIContextSettingsDataSource(container);
     }
 
