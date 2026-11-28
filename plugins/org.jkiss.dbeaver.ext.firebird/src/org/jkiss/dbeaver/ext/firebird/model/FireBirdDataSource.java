@@ -156,6 +156,15 @@ public class FireBirdDataSource extends GenericDataSource
 		return DBCPlanStyle.PLAN;
 	}
 
+    /**
+     * Firebird has stored procedures and functions (PSQL functions since Firebird 3, UDFs before), which are shown
+     * in separate folders. Not read from the driver parameter: saved driver settings keep its default (false).
+     */
+    @Override
+    public boolean splitProceduresAndFunctions() {
+        return true;
+    }
+
     @Override
     public List<FireBirdTable> getPhysicalTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdTable>) super.getPhysicalTables(monitor);

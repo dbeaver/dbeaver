@@ -28,6 +28,8 @@
                 label="Firebird"
                 icon="icons/firebird_icon.png"
                 dialect="firebird">
+            <!-- Firebird has database triggers (ON CONNECT, ON TRANSACTION, DDL) next to the table triggers -->
+            <treeInjection path="generic/catalog/schema/trigger" changeFolderType="org.jkiss.dbeaver.ext.generic.model.GenericContainerTrigger" changeFolderLabel="%tree.databaseTriggers.node.name"/>
             <drivers managable="true">
 
                 <driver
