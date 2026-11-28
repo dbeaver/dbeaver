@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -28,14 +29,26 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FireBirdProcedure extends GenericProcedure implements DBSObjectWithScript {
+
+    private static final int LEGACY_PROCEDURE_TYPE = 0;
+    private static final int EXECUTABLE_PROCEDURE_TYPE = 2;
+
+    private volatile AtomicReference<ProcedureParameters> parameterCache = new AtomicReference<>();
 
     @Override
     public GenericCatalog getCatalog() {
@@ -63,8 +76,36 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
         return super.getObjectDefinitionText(monitor, options);
     }
 
+    @NotNull
     @Override
-    public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException {
+    public Collection<GenericProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
+        AtomicReference<ProcedureParameters> cache = parameterCache;
+        ProcedureParameters cached = cache.get();
+        if (cached != null) {
+            return cached;
+        }
+        ProcedureParameters loaded = readParameters(monitor);
+        return CommonUtils.notNull(cache.compareAndExchange(null, loaded), loaded);
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        // in-flight loads can only populate the previous cache
+        parameterCache = new AtomicReference<>();
+        return super.refreshObject(monitor);
+    }
+
+    @Override
+    public void loadProcedureColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
+        AtomicReference<ProcedureParameters> cache = parameterCache;
+        cache.set(readParameters(monitor));
+    }
+
+    @NotNull
+    ProcedureParameters readParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<GenericProcedureParameter> parameters = new ArrayList<>();
+        boolean executableProcedure = false;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
             String sql;
             boolean isProcedure = getProcedureType() == DBSProcedureType.PROCEDURE;
@@ -115,22 +156,38 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         "F.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
                         "PP.RDB$PARAMETER_NUMBER + 1 AS ORDINAL_POSITION,\n" +
                         "F.RDB$CHARACTER_SET_ID,\n" +
+                        "P.RDB$PROCEDURE_TYPE,\n" +
+                        "P.RDB$PROCEDURE_OUTPUTS,\n" +
                         "COALESCE(PP.RDB$DEFAULT_SOURCE, F.RDB$DEFAULT_SOURCE) AS DEFAULT_VALUE\n" +
                         (versionAtLeast3 ? ",PP.RDB$FIELD_NAME AS FIELD_NAME,\nPP.RDB$RELATION_NAME AS RELATION_NAME\n" : "") +
                         "FROM\n" +
-                        "   RDB$PROCEDURE_PARAMETERS PP,\n" +
-                        "   RDB$FIELDS F\n" +
-                        "WHERE\n" +
-                        "   PP.RDB$FIELD_SOURCE = F.RDB$FIELD_NAME\n" +
-                        "   AND PP.RDB$PROCEDURE_NAME=?\n" +
+                        "   RDB$PROCEDURES P\n" +
+                        "LEFT JOIN RDB$PROCEDURE_PARAMETERS PP ON PP.RDB$PROCEDURE_NAME = P.RDB$PROCEDURE_NAME\n" +
+                        (versionAtLeast3 ? "   AND PP.RDB$PACKAGE_NAME IS NOT DISTINCT FROM P.RDB$PACKAGE_NAME\n" : "") +
+                        "LEFT JOIN RDB$FIELDS F ON F.RDB$FIELD_NAME = PP.RDB$FIELD_SOURCE\n" +
+                        "WHERE P.RDB$PROCEDURE_NAME = ?\n" +
+                        (versionAtLeast3 ? "   AND P.RDB$PACKAGE_NAME IS NOT DISTINCT FROM ?\n" : "") +
                         "ORDER BY\n" +
                         "   PP.RDB$PARAMETER_NUMBER";
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 dbStat.setString(1, getName());
+                if (isProcedure && versionAtLeast3) {
+                    GenericPackage procedurePackage = getPackage();
+                    dbStat.setString(2, procedurePackage == null ? null : procedurePackage.getName());
+                }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
+                        if (isProcedure) {
+                            // JDBC maps a null type to zero, which also denotes a legacy procedure
+                            int procedureType = dbResult.getInt("RDB$PROCEDURE_TYPE");
+                            executableProcedure = procedureType == EXECUTABLE_PROCEDURE_TYPE
+                                || (procedureType == LEGACY_PROCEDURE_TYPE && dbResult.getInt("RDB$PROCEDURE_OUTPUTS") == 0);
+                        }
                         String parameterName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
+                        if (parameterName == null) {
+                            continue;
+                        }
                         int dataType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
                         int subType = JDBCUtils.safeGetInt(dbResult, "FIELD_SUB_TYPE");
                         FireBirdFieldType fieldDT = FireBirdFieldType.getById(dataType, subType);
@@ -197,17 +254,43 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                                 defaultValue,
                                 fieldName,
                                 relationName);
-                        addColumn(parameter);
+                        parameters.add(parameter);
                     }
                 }
             }
         } catch (SQLException e) {
             throw new DBDatabaseException(e, getDataSource());
         }
+        return new ProcedureParameters(parameters, executableProcedure);
     }
 
     @Override
     public void setObjectDefinitionText(String source) {
         setSource(source);
+    }
+
+    static final class ProcedureParameters extends AbstractList<GenericProcedureParameter> {
+        private final List<GenericProcedureParameter> parameters;
+        private final boolean executable;
+
+        ProcedureParameters(@NotNull List<GenericProcedureParameter> parameters, boolean executable) {
+            this.parameters = List.copyOf(parameters);
+            this.executable = executable;
+        }
+
+        boolean isExecutable() {
+            return executable;
+        }
+
+        @NotNull
+        @Override
+        public GenericProcedureParameter get(int index) {
+            return parameters.get(index);
+        }
+
+        @Override
+        public int size() {
+            return parameters.size();
+        }
     }
 }

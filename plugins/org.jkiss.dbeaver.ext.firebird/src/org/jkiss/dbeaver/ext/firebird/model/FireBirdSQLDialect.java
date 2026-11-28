@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPKeywordType;
@@ -25,10 +26,16 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public class FireBirdSQLDialect extends GenericSQLDialect {
@@ -337,9 +344,34 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
         return super.validIdentifierPart(c, quoted) || c == '$';
     }
 
+    @NotNull
     @Override
-    protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
+    protected String getStoredProcedureCallInitialClause(@NotNull DBSProcedure proc) {
         return "select * from " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+    }
+
+    @Override
+    public void generateStoredProcedureCall(
+        @NotNull StringBuilder sql,
+        @NotNull DBSProcedure proc,
+        @Nullable Collection<? extends DBSProcedureParameter> parameters,
+        boolean castParams
+    ) {
+        if (proc.getProcedureType() != DBSProcedureType.PROCEDURE) {
+            super.generateStoredProcedureCall(sql, proc, parameters, castParams);
+            return;
+        }
+        List<? extends DBSProcedureParameter> inputParameters = CommonUtils.safeCollection(parameters).stream()
+            .filter(parameter -> parameter.getParameterKind() == DBSProcedureParameterKind.IN)
+            .toList();
+        String initialClause = parameters instanceof FireBirdProcedure.ProcedureParameters snapshot && snapshot.isExecutable()
+            ? "execute procedure " + proc.getFullyQualifiedName(DBPEvaluationContext.DML)
+            : getStoredProcedureCallInitialClause(proc);
+        if (inputParameters.isEmpty()) {
+            sql.append(initialClause).append(";\n\n");
+        } else {
+            super.generateStoredProcedureCall(sql, proc, inputParameters, castParams, initialClause);
+        }
     }
 
     @Override
