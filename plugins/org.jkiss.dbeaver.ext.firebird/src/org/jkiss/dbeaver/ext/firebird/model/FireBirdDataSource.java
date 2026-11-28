@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ public class FireBirdDataSource extends GenericDataSource
     }
 
     private Map<String, IntKeyMap<MetaFieldInfo>> metaFields = new HashMap<>();
+    private final FireBirdUserCache userCache = new FireBirdUserCache();
 
     public FireBirdDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -142,6 +144,13 @@ public class FireBirdDataSource extends GenericDataSource
         super.initialize(monitor);
     }
 
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        userCache.clearCache();
+        return super.refreshObject(monitor);
+    }
+
 	@NotNull
     @Override
 	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
@@ -169,6 +178,18 @@ public class FireBirdDataSource extends GenericDataSource
     @Override
     public List<FireBirdProcedure> getProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdProcedure>) super.getProcedures(monitor);
+    }
+
+    /**
+     * Users can be read with SQL (SEC$USERS) since Firebird 3.
+     */
+    public boolean supportsUsers() {
+        return isServerVersionAtLeast(3, 0);
+    }
+
+    @NotNull
+    public Collection<FireBirdUser> getUsers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return userCache.getAllObjects(monitor, this);
     }
 
     @NotNull
