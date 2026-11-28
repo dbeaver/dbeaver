@@ -137,7 +137,6 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                     final PostgreRole dba = supportsRoles ? database.getDBA(monitor) : null;
                     final String defUserName = dba == null ? "" : dba.getName();
                     final PostgreCharset defCharset = supportsEncodings ? database.getDefaultEncoding(monitor) : null;
-                    final PostgreTablespace defTablespace = supportsTablespaces ? database.getDefaultTablespace(monitor) : null;
 
                     UIUtils.syncExec(() -> {
                         if (userCombo != null) {
@@ -174,11 +173,8 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                             tablespaceCombo.add(PostgreMessages.dialog_create_db_tablespace_default);
                             for (PostgreTablespace ts : allTablespaces) {
                                 tablespaceCombo.add(ts.getName());
-                                if (ts == defTablespace) {
-                                    tablespace = ts;
-                                }
                             }
-                            tablespaceCombo.setText(defTablespace.getName());
+                            tablespaceCombo.select(0);
                         }
                     });
                 } catch (DBException e) {
