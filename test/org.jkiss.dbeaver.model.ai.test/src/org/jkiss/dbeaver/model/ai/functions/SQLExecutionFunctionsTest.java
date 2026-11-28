@@ -27,8 +27,14 @@ import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
@@ -78,6 +84,9 @@ class SQLExecutionFunctionsTest {
         RecordingFunction function = new RecordingFunction();
         AIFunctionContext context = Mockito.mock(AIFunctionContext.class);
         DBCExecutionContext executionContext = Mockito.mock(DBCExecutionContext.class);
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(BasicSQLDialect.INSTANCE);
+        Mockito.when(executionContext.getDataSource()).thenReturn(dataSource);
         function.verifyQuery(context, executionContext, new SQLQuery(null, "SELECT 1"));
         SQLQuery unparsed = Mockito.mock(SQLQuery.class);
         Mockito.when(unparsed.getText()).thenReturn("SELECT unsupported syntax");
@@ -358,12 +367,144 @@ class SQLExecutionFunctionsTest {
     }
 
     @Test
+    void executableCommentsUseSemanticScopeAndStatementTypeChecks() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        fixture.enableExecutableComments();
+        ExecuteDQLFunction dql = new ExecuteDQLFunction();
+        for (String sql : List.of(
+            "SELECT 1 /*! UNION SELECT id FROM public.orders */",
+            "SELECT 1 /*!50000 UNION SELECT id FROM public.orders */",
+            "SELECT 1 /*M!100100 UNION SELECT id FROM public.orders */",
+            "/*! SELECT id FROM public.orders */",
+            "SELECT /*!1+1*/",
+            "SELECT /*! '*/' AS value FROM public.orders */",
+            "SELECT '/*! UNION SELECT id FROM private.orders */'"
+        )) {
+            Assertions.assertDoesNotThrow(() -> fixture.verify(dql, sql), sql);
+        }
+        for (String sql : List.of(
+            "SELECT 1 /*! UNION SELECT id FROM private.orders */",
+            "SELECT 1 /*!50000 UNION SELECT id FROM private.orders */",
+            "SELECT 1 /*M!100100 UNION SELECT id FROM private.orders */",
+            "SELECT /*!1+1 FROM private.orders */",
+            "SELECT /*! '*/' AS value FROM private.orders */",
+            "SELECT id FROM public.orders /*! INTO public.copy */"
+        )) {
+            fixture.assertRestricted(dql, sql);
+        }
+        Assertions.assertDoesNotThrow(() -> fixture.verify(dql, "SELECT 1 /*!999999 UNION SELECT id FROM private.orders */"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDMLFunction(), "/*! UPDATE public.orders SET id=2 */"));
+        fixture.assertRestricted(new ExecuteDMLFunction(), "/*! UPDATE private.orders SET id=2 */");
+    }
+
+    @Test
+    void dollarQuotedCommentMarkersCannotHideRestrictedTables() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        ExecuteDQLFunction function = new ExecuteDQLFunction();
+        for (String literal : List.of("$$--$$", "$$/* hidden */$$")) {
+            Assertions.assertDoesNotThrow(() -> fixture.verify(function,
+                "SELECT " + literal + " AS value, id FROM public.orders"));
+            fixture.assertRestricted(function, "SELECT " + literal + " AS value, id FROM private.orders");
+            fixture.assertTextRestricted(function, "SELECT " + literal + " AS value, id FROM private.orders");
+        }
+    }
+
+    @Test
+    void textTokenizationSeesExecutableReferencesAndDialectLineComments() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        fixture.enableExecutableComments();
+        List<String> tokens = ExecuteSQLFunction.tokenize(fixture.dataSource.getSQLDialect(),
+            "SELECT * FROM public.orders /*! JOIN private.orders ON true */ # ignored FROM other.orders");
+        Assertions.assertEquals(Set.of("public.orders", "private.orders"),
+            ExecuteSQLFunction.findTextObjects(tokens, Set.of("FROM", "JOIN")));
+    }
+
+    @Test
     void executableCommentsAndUnterminatedStringsCannotBypassTextChecks() throws Exception {
         ScopeFixture fixture = new ScopeFixture();
+        fixture.enableExecutableComments();
+        fixture.setSqlMode("");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 'it\\'s' FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 'it\\\"s' FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT \"it\\\"s\" FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT \"it\\\"s /*! UNION SELECT id FROM private.orders */\" FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT \"it\\\"s /*! nested /*! hidden */ */\" FROM public.orders"));
+        fixture.assertRestricted(new ExecuteDQLFunction(),
+            "SELECT \"it\\\"s\" FROM private.orders");
+        fixture.assertRestricted(new ExecuteDQLFunction(),
+            "SELECT \"it\\\"s\" FROM public.orders /*! UNION SELECT id FROM private.orders */");
+        fixture.setSqlMode("NO_BACKSLASH_ESCAPES");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 'a\\\"b' FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT id FROM public.orders # \\'"));
+        DBException modeError = Assertions.assertThrows(DBException.class, () -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 'x\\' /*! UNION SELECT id FROM private.orders */ -- '"));
+        Assertions.assertTrue(modeError.getMessage().contains("SQL mode"));
+        fixture.setSqlMode("ANSI_QUOTES");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 'it\\\"s' FROM public.orders"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(),
+            "SELECT 1 /* \\\" */ FROM public.orders"));
+        modeError = Assertions.assertThrows(DBException.class,
+            () -> fixture.verify(new ExecuteDQLFunction(), "SELECT \"x\\\" FROM public.orders"));
+        Assertions.assertTrue(modeError.getMessage().contains("escaped double quote"));
+        fixture.setSqlMode("");
+        Assertions.assertDoesNotThrow(() -> new ExecuteDQLFunction().verifyQueries(
+            fixture.context, fixture.executionContext,
+            List.of(new SQLQuery(fixture.dataSource, "SELECT 'it\\'s' FROM public.orders"),
+                new SQLQuery(fixture.dataSource, "SELECT 1 FROM public.orders")), null));
+        DBException scriptError = Assertions.assertThrows(DBException.class, () -> new ExecuteDQLFunction().verifyQueries(
+            fixture.context, fixture.executionContext,
+            List.of(new SQLQuery(fixture.dataSource, "SET SESSION sql_mode='NO_BACKSLASH_ESCAPES'"),
+                new SQLQuery(fixture.dataSource, "SELECT 'x\\' FROM public.orders")), null));
+        Assertions.assertTrue(scriptError.getMessage().contains("may change"));
+        scriptError = Assertions.assertThrows(DBException.class, () -> new ExecuteDQLFunction().verifyQueries(
+            fixture.context, fixture.executionContext,
+            List.of(new SQLQuery(fixture.dataSource, "SELECT public.read_payroll()"),
+                new SQLQuery(fixture.dataSource, "SELECT 'it\\'s' FROM public.orders")), null));
+        Assertions.assertTrue(scriptError.getMessage().contains("may change"));
+        scriptError = Assertions.assertThrows(DBException.class, () -> new ExecuteDQLFunction().verifyQueries(
+            fixture.context, fixture.executionContext,
+            List.of(new SQLQuery(fixture.dataSource, "/*! SET SESSION sql_mode='NO_BACKSLASH_ESCAPES' */"),
+                new SQLQuery(fixture.dataSource, "SELECT 'it\\'s' FROM public.orders")), null));
+        Assertions.assertTrue(scriptError.getMessage().contains("may change"));
         Assertions.assertThrows(DBException.class,
             () -> fixture.verify(new ExecuteDQLFunction(), "SELECT * FROM public.orders /*! UNION SELECT * FROM private.orders */"));
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT 'unterminated FROM public.orders");
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT * INTO public.copy FROM public.orders");
+    }
+
+    @Test
+    void inertExecutableMarkersDoNotBlockTextFallback() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        fixture.enableExecutableComments();
+        ExecuteDQLFunction function = new ExecuteDQLFunction();
+        for (String sql : List.of(
+            "SELECT '/*!' FROM public.orders WHERE id SOUNDS LIKE 'x'",
+            "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /* ordinary /*! */",
+            "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' # /*! inert */",
+            "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /*!999999 ignored */"
+        )) {
+            Assertions.assertDoesNotThrow(() -> fixture.verify(function, sql), sql);
+            fixture.assertRestricted(function, sql.replace("public.orders", "private.orders"));
+        }
+        fixture.assertRestricted(function,
+            "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /*! AND id > 0 */");
+        fixture.assertRestricted(function,
+            "SELECT id FROM public.orders WHERE id SOUNDS LIKE 'x' /*M! AND id > 0 */");
+        fixture.setSqlMode("");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function,
+            "SELECT \"it\\\"s\" FROM public.orders WHERE id SOUNDS LIKE 'x'"));
+        fixture.assertRestricted(function,
+            "SELECT \"it\\\"s\" FROM private.orders WHERE id SOUNDS LIKE 'x'");
+        fixture.assertRestricted(function,
+            "SELECT \"it\\\"s\" FROM public.orders WHERE id SOUNDS LIKE 'x' /*! UNION SELECT id FROM private.orders */");
     }
 
     @Test
@@ -604,8 +745,56 @@ class SQLExecutionFunctionsTest {
             return entity;
         }
 
+        private void enableExecutableComments() {
+            Mockito.when(dataSource.getSQLDialect()).thenReturn(new BasicSQLDialect() {
+                @Override
+                public char getStringEscapeCharacter() {
+                    return '\\';
+                }
+
+                @NotNull
+                @Override
+                public DBPIdentifierCase storesUnquotedCase() {
+                    return DBPIdentifierCase.LOWER;
+                }
+
+                @NotNull
+                @Override
+                public List<String> getExecutableCommentPrefixes() {
+                    return List.of("/*!", "/*M!");
+                }
+
+                @NotNull
+                @Override
+                public Boolean isExecutableCommentActive(@NotNull String prefix, int version) {
+                    return version <= 100100;
+                }
+
+                @NotNull
+                @Override
+                public String[] getSingleLineComments() {
+                    return new String[]{"-- ", "--\t", "#"};
+                }
+            });
+        }
+
+        private void setSqlMode(@NotNull String mode) throws DBException {
+            DBCSession session = Mockito.mock(DBCSession.class);
+            DBCStatement statement = Mockito.mock(DBCStatement.class);
+            DBCResultSet resultSet = Mockito.mock(DBCResultSet.class);
+            Mockito.when(context.getMonitor()).thenReturn(Mockito.mock(DBRProgressMonitor.class));
+            Mockito.when(executionContext.openSession(Mockito.any(), Mockito.eq(DBCExecutionPurpose.UTIL), Mockito.anyString()))
+                .thenReturn(session);
+            Mockito.when(session.prepareStatement(Mockito.eq(DBCStatementType.QUERY), Mockito.anyString(),
+                Mockito.eq(false), Mockito.eq(false), Mockito.eq(false))).thenReturn(statement);
+            Mockito.when(statement.executeStatement()).thenReturn(true);
+            Mockito.when(statement.openResultSet()).thenReturn(resultSet);
+            Mockito.when(resultSet.nextRow()).thenReturn(true);
+            Mockito.when(resultSet.getAttributeValue(0)).thenReturn(mode);
+        }
+
         private void verify(@NotNull ExecuteSQLFunction function, @NotNull String sql) throws DBException {
-            function.verifyQuery(context, executionContext, new SQLQuery(null, sql));
+            function.verifyQuery(context, executionContext, new SQLQuery(dataSource, sql));
         }
 
         private void verifyText(@NotNull ExecuteSQLFunction function, @NotNull String sql) throws DBException {

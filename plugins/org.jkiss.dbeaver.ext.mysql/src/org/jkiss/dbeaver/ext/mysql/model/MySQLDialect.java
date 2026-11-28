@@ -33,11 +33,13 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -236,6 +238,10 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     private static final String[] EXEC_KEYWORDS =  { "CALL" };
     private int lowerCaseTableNames;
+    @Nullable
+    private Version serverVersion;
+    @Nullable
+    private Boolean mariaDb;
 
     public MySQLDialect() {
         super("MySQL", "mysql");
@@ -272,7 +278,15 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @Override
     public void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
-        this.lowerCaseTableNames = ((MySQLDataSource) dataSource).getLowerCaseTableNames();
+        MySQLDataSource mysqlDataSource = (MySQLDataSource) dataSource;
+        this.serverVersion = mysqlDataSource.getVersion();
+        String productVersion = CommonUtils.notEmpty(mysqlDataSource.getInfo().getDatabaseProductVersion()).toLowerCase(Locale.ROOT);
+        String productName = CommonUtils.notEmpty(mysqlDataSource.getInfo().getDatabaseProductName()).toLowerCase(Locale.ROOT);
+        this.mariaDb = productVersion.contains("mariadb") || productName.contains("mariadb")
+            ? Boolean.TRUE : productName.contains("mysql") && serverVersion != null
+                && (serverVersion.getMajor() < 10 || serverVersion.getMajor() >= 26)
+                ? Boolean.FALSE : null;
+        this.lowerCaseTableNames = mysqlDataSource.getLowerCaseTableNames();
         this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
     }
 
@@ -384,6 +398,43 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @Override
     public String[] getSingleLineComments() {
         return new String[] { "-- ", "--\t", "#" };
+    }
+
+    @NotNull
+    @Override
+    public List<String> getExecutableCommentPrefixes() {
+        // mysql and mariadb share this dialect
+        return List.of("/*!", "/*M!");
+    }
+
+    @Nullable
+    @Override
+    public Boolean isExecutableCommentActive(@NotNull String prefix, int version) {
+        if (mariaDb == null) {
+            return version == 0 && "/*!".equals(prefix) ? Boolean.TRUE : null;
+        }
+        if ("/*M!".equals(prefix) && !mariaDb) {
+            return false;
+        }
+        // mariadb skips mysql 5.7+ extensions, but executes its own versioned comments
+        if ("/*!".equals(prefix) && mariaDb && version >= 50700 && version <= 99999) {
+            return false;
+        }
+        if (version == 0) {
+            return true;
+        }
+        return serverVersion == null ? null
+            : serverVersion.compareTo(new Version(version / 10000, version / 100 % 100, version % 100)) >= 0;
+    }
+
+    @Override
+    public int getExecutableCommentVersionLength(int digits, char following) {
+        if (digits == 6 && !Boolean.TRUE.equals(mariaDb)
+            && (serverVersion == null || serverVersion.compareTo(new Version(8, 1, 0)) < 0
+                || (following != 0 && !Character.isWhitespace(following)))) {
+            return 5;
+        }
+        return digits;
     }
 
     @Override

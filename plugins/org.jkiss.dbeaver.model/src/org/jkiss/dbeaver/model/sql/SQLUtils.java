@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRFinder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -173,45 +174,178 @@ public final class SQLUtils {
         );
     }
 
-    /**
-     * Blanks out dialect-specific single-line comments (e.g. MySQL #) that JSQLParser doesn't recognize.
-     * Comment prefixes found inside string or identifier literals are left untouched.
-     */
     @NotNull
-    public static String maskDialectLineComments(@NotNull SQLDialect dialect, @NotNull String sql) {
-        List<String> extraCommentPrefixes = ArrayUtils.safeArray(dialect.getSingleLineComments()).stream()
-            .filter(prefix -> !CommonUtils.isEmpty(prefix) && !prefix.startsWith(SQLConstants.SL_COMMENT))
-            .toList();
-        if (extraCommentPrefixes.isEmpty()) {
-            return sql;
+    public static String prepareQueryForParsing(@NotNull SQLDialect dialect, @NotNull String sql) throws DBCException {
+        return prepareQueryForParsing(dialect, sql, false, false, false).sql();
+    }
+
+    public record PreparedQuery(@NotNull String sql, boolean activeExecutableComment) {
+    }
+
+    @NotNull
+    public static PreparedQuery prepareQueryForParsing(
+        @NotNull SQLDialect dialect, @NotNull String sql, boolean doubleQuotedStrings,
+        boolean rejectDoubleQuoteEscapes, boolean noBackslashEscapes
+    ) throws DBCException {
+        List<String> lineComments = ArrayUtils.safeArray(dialect.getSingleLineComments());
+        List<String> executablePrefixes = dialect.getExecutableCommentPrefixes();
+        if (!doubleQuotedStrings && !rejectDoubleQuoteEscapes && executablePrefixes.isEmpty()
+            && lineComments.stream().allMatch(prefix -> prefix.startsWith(SQLConstants.SL_COMMENT))) {
+            // let jsqlparser handle standard comments and dialect literals, including dollar-quoted strings
+            return new PreparedQuery(sql, false);
         }
+        Pair<String, String> blockComment = dialect.getMultiLineComments();
+        String[][] stringQuotes = dialect.getStringQuoteStrings();
         String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
-        String[][] quotes = identifierQuotes == null
-            ? dialect.getStringQuoteStrings()
-            : ArrayUtils.concatArrays(dialect.getStringQuoteStrings(), identifierQuotes);
-        char escapeChar = dialect.getStringEscapeCharacter();
+        char escapeChar = noBackslashEscapes ? 0 : dialect.getStringEscapeCharacter();
         StringBuilder result = new StringBuilder(sql);
+        List<Integer> subtractionSeparators = new ArrayList<>();
+        boolean executableComment = false;
+        boolean activeComment = false;
         int pos = 0;
-        while (pos < sql.length()) {
-            String[] quote = quoteStartingAt(sql, pos, quotes);
-            if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
-                pos += 2; // skip an escaped char, so a stray "\'" can't open a phantom string
-            } else if (quote != null) {
-                pos = skipQuoted(sql, pos, quote, escapeChar);
-            } else if (sql.startsWith(SQLConstants.SL_COMMENT, pos)) {
-                pos = getLineEnd(sql, pos);
-            } else if (sql.startsWith(SQLConstants.ML_COMMENT_START, pos)) {
-                int end = sql.indexOf(SQLConstants.ML_COMMENT_END, pos + 2);
-                pos = end < 0 ? sql.length() : end + 2;
-            } else if (startsWithAny(sql, pos, extraCommentPrefixes)) {
-                int lineEnd = getLineEnd(sql, pos);
-                result.replace(pos, lineEnd, " ".repeat(lineEnd - pos));
+        while (pos < result.length()) {
+            String[] stringQuote = quoteStartingAt(result, pos, stringQuotes);
+            String[] identifierQuote = identifierQuotes == null ? null : quoteStartingAt(result, pos, identifierQuotes);
+            if (doubleQuotedStrings && result.charAt(pos) == '"') {
+                int end = findQuotedEnd(result, pos, new String[]{"\"", "\""}, escapeChar);
+                if (end < 0) {
+                    throw new DBCException("Unterminated double-quoted SQL string");
+                }
+                if (noBackslashEscapes && result.substring(pos, end).contains("\\\"")) {
+                    throw new DBCException("Cannot verify SQL string escapes in the current session SQL mode");
+                }
+                maskCommentRange(result, pos, end);
+                result.setCharAt(pos, '\'');
+                result.setCharAt(end - 1, '\'');
+                pos = end;
+            } else if (stringQuote != null) {
+                int end = skipQuoted(result, pos, stringQuote, escapeChar);
+                if (noBackslashEscapes && result.substring(pos, end).contains("\\" + stringQuote[1])) {
+                    throw new DBCException("Cannot verify SQL string escapes in the current session SQL mode");
+                }
+                pos = end;
+            } else if (identifierQuote != null) {
+                int end = skipQuoted(result, pos, identifierQuote, (char) 0);
+                if (rejectDoubleQuoteEscapes && identifierQuote[0].equals("\"")
+                    && result.substring(pos, end).contains("\\\"")) {
+                    throw new DBCException("Cannot verify escaped double quote in SQL identifier");
+                }
+                pos = end;
+            } else if (executableComment && startsWith(result, blockComment.getSecond(), pos)) {
+                maskCommentRange(result, pos, pos + blockComment.getSecond().length());
+                pos += blockComment.getSecond().length();
+                executableComment = false;
+            } else if (isLineCommentStart(result, pos, lineComments)) {
+                int lineEnd = getLineEnd(result, pos);
+                maskCommentRange(result, pos, lineEnd);
                 pos = lineEnd;
+            } else if (blockComment != null && startsWith(result, blockComment.getFirst(), pos)) {
+                if (executableComment) {
+                    throw new DBCException("Nested executable comment cannot be verified");
+                }
+                String executablePrefix = prefixStartingAt(result, pos, executablePrefixes);
+                if (executablePrefix != null) {
+                    int bodyStart = pos + executablePrefix.length();
+                    int versionEnd = bodyStart;
+                    while (versionEnd < result.length() && result.charAt(versionEnd) >= '0' && result.charAt(versionEnd) <= '9') {
+                        versionEnd++;
+                    }
+                    int versionLength = versionEnd - bodyStart;
+                    if (versionLength > 6) {
+                        throw new DBCException("Cannot determine executable comment version");
+                    }
+                    if (versionLength < 5) {
+                        versionEnd = bodyStart;
+                        versionLength = 0;
+                    } else if (versionLength == 6) {
+                        char following = startsWith(result, blockComment.getSecond(), versionEnd)
+                            ? 0 : versionEnd < result.length() ? result.charAt(versionEnd) : 0;
+                        versionEnd = bodyStart + dialect.getExecutableCommentVersionLength(versionLength, following);
+                    }
+                    int version = versionLength == 0 ? 0 : Integer.parseInt(result.substring(bodyStart, versionEnd));
+                    Boolean active = dialect.isExecutableCommentActive(executablePrefix, version);
+                    if (active == null) {
+                        throw new DBCException("Cannot determine whether an executable comment applies to this server");
+                    }
+                    if (active) {
+                        activeComment = true;
+                        maskCommentRange(result, pos, versionEnd);
+                        pos = versionEnd;
+                        executableComment = true;
+                    } else {
+                        int end = result.indexOf(blockComment.getSecond(), versionEnd);
+                        if (end < 0) {
+                            throw new DBCException("Unterminated executable comment");
+                        }
+                        int nestedStart = result.indexOf(blockComment.getFirst(), versionEnd);
+                        if (nestedStart >= 0 && nestedStart < end) {
+                            throw new DBCException("Nested executable comment cannot be verified");
+                        }
+                        end += blockComment.getSecond().length();
+                        maskCommentRange(result, pos, end);
+                        pos = end;
+                    }
+                } else {
+                    int end = pos + blockComment.getFirst().length();
+                    int depth = 1;
+                    while (end < result.length() && depth > 0) {
+                        if (startsWith(result, blockComment.getSecond(), end)) {
+                            depth--;
+                            end += blockComment.getSecond().length();
+                        } else if (dialect.supportsNestedComments() && startsWith(result, blockComment.getFirst(), end)) {
+                            depth++;
+                            end += blockComment.getFirst().length();
+                        } else {
+                            end++;
+                        }
+                    }
+                    maskCommentRange(result, pos, end);
+                    pos = end;
+                }
+            } else if (startsWith(result, SQLConstants.SL_COMMENT, pos)) {
+                // jsqlparser always treats -- as a comment, but mysql requires a separator after it
+                subtractionSeparators.add(pos + 1);
+                pos += 2;
+            } else if (result.charAt(pos) == '\\' && pos + 1 < result.length()
+                && (rejectDoubleQuoteEscapes && result.charAt(pos + 1) == '"'
+                    || noBackslashEscapes && (result.charAt(pos + 1) == '\'' || result.charAt(pos + 1) == '"'))) {
+                throw new DBCException("Cannot verify SQL string escapes outside a quoted string");
             } else {
                 pos++;
             }
         }
-        return result.toString();
+        if (executableComment) {
+            throw new DBCException("Unterminated executable comment");
+        }
+        for (int index = subtractionSeparators.size() - 1; index >= 0; index--) {
+            result.insert(subtractionSeparators.get(index).intValue(), ' ');
+        }
+        return new PreparedQuery(result.toString(), activeComment);
+    }
+
+    private static void maskCommentRange(@NotNull StringBuilder sql, int start, int end) {
+        for (int pos = start; pos < end; pos++) {
+            if (sql.charAt(pos) != '\n' && sql.charAt(pos) != '\r') {
+                sql.setCharAt(pos, ' ');
+            }
+        }
+    }
+
+    private static boolean isLineCommentStart(@NotNull CharSequence sql, int pos, @NotNull List<String> prefixes) {
+        for (String prefix : prefixes) {
+            if (startsWith(sql, prefix, pos)) {
+                return true;
+            }
+            // mysql accepts whitespace and control characters after the double dash
+            if (prefix.endsWith(" ") || prefix.endsWith("\t")) {
+                int separator = pos + prefix.length() - 1;
+                if (separator < sql.length() && startsWith(sql, prefix.substring(0, prefix.length() - 1), pos)
+                    && (sql.charAt(separator) <= ' ' || sql.charAt(separator) == 127)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -266,6 +400,11 @@ public final class SQLUtils {
     }
 
     private static int skipQuoted(@NotNull CharSequence sql, int openPos, @NotNull String[] quote, char escapeChar) {
+        int end = findQuotedEnd(sql, openPos, quote, escapeChar);
+        return end < 0 ? sql.length() : end;
+    }
+
+    private static int findQuotedEnd(@NotNull CharSequence sql, int openPos, @NotNull String[] quote, char escapeChar) {
         String close = quote[1];
         int pos = openPos + quote[0].length();
         while (pos < sql.length()) {
@@ -277,16 +416,17 @@ public final class SQLUtils {
                 pos++;
             }
         }
-        return sql.length();
+        return -1;
     }
 
-    private static boolean startsWithAny(@NotNull String sql, int pos, @NotNull List<String> prefixes) {
+    @Nullable
+    private static String prefixStartingAt(@NotNull CharSequence sql, int pos, @NotNull List<String> prefixes) {
         for (String prefix : prefixes) {
-            if (sql.startsWith(prefix, pos)) {
-                return true;
+            if (startsWith(sql, prefix, pos)) {
+                return prefix;
             }
         }
-        return false;
+        return null;
     }
 
     private static boolean startsWith(@NotNull CharSequence sql, @NotNull String prefix, int offset) {
@@ -301,7 +441,7 @@ public final class SQLUtils {
         return true;
     }
 
-    private static int getLineEnd(@NotNull String sql, int pos) {
+    private static int getLineEnd(@NotNull CharSequence sql, int pos) {
         while (pos < sql.length() && sql.charAt(pos) != '\n' && sql.charAt(pos) != '\r') {
             pos++;
         }
