@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -26,12 +27,14 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
 
     private final FireBirdFieldType fieldType;
     private final int subType;
+    private final boolean domain;
     private int fieldLength;
     private int charLength;
     private String computedSource;
     private String validationSource;
     private String defaultSource;
     private String charsetName;
+    private String collationName;
     private boolean notNull;
 
     public FireBirdDataType(FireBirdDataSource genericDataSource, FireBirdFieldType fieldType, int subType, String name, String remarks,
@@ -43,6 +46,7 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
 
         this.fieldType = fieldType;
         this.subType = subType;
+        this.domain = true;
         this.fieldLength = fieldLength;
         this.charLength = charLength;
         this.computedSource = computedSource;
@@ -57,6 +61,7 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
 
         this.fieldType = fieldType;
         this.subType = 0;
+        this.domain = false;
     }
 
     @NotNull
@@ -95,6 +100,19 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
         return charsetName;
     }
 
+    /**
+     * Collation of a character domain, read from RDB$COLLATIONS.
+     */
+    @Nullable
+    @Property(order = 61)
+    public String getCollationName() {
+        return collationName;
+    }
+
+    public void setCollationName(@Nullable String collationName) {
+        this.collationName = collationName;
+    }
+
     @Property(order = 16)
     public String getFieldType() {
         return fieldType.getName();
@@ -113,6 +131,14 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
     @Property(order = 19)
     public boolean isNotNull() {
         return notNull;
+    }
+
+    /**
+     * Returns true if this type is a domain read from RDB$FIELDS (including system and implicit domains),
+     * false for built-in types.
+     */
+    public boolean isDomain() {
+        return domain;
     }
 
     @Override

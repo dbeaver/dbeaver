@@ -31,8 +31,14 @@ public interface FireBirdTableBase {
     List<FireBirdTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     @Nullable
-    String getColumnDomainType(@NotNull DBRProgressMonitor monitor, @NotNull FireBirdTableColumn column) throws DBException;
+    FireBirdColumnDomain getColumnDomain(@NotNull DBRProgressMonitor monitor, @NotNull FireBirdTableColumn column) throws DBException;
 
-    void setColumnDomainTypes(@NotNull Map<String, String> columnDomainTypes);
+    @Nullable
+    default String getColumnDomainType(@NotNull DBRProgressMonitor monitor, @NotNull FireBirdTableColumn column) throws DBException {
+        FireBirdColumnDomain columnDomain = getColumnDomain(monitor, column);
+        return columnDomain == null ? null : columnDomain.domainName();
+    }
+
+    void setColumnDomains(@NotNull Map<String, FireBirdColumnDomain> columnDomains);
 
 }
