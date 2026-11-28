@@ -96,6 +96,27 @@ public class AIContextSettingsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void datasourceSavesToCurrentWizardTargetInsteadOfWorkingCopy() {
+        AIContextSettingsDataSource settings = createDataSourceSettings(Map.of());
+        DBPDataSourceContainer workingCopy = settings.getDataSourceContainer();
+        DBPDataSourceContainer comparisonCopy = Mockito.mock(DBPDataSourceContainer.class);
+        DBPDataSourceContainer original = Mockito.mock(DBPDataSourceContainer.class);
+        settings.setMetaTransferConfirmed(true);
+        settings.setMcpEnabled(true);
+        settings.setScope(AIDatabaseScope.CUSTOM);
+        settings.setCustomObjectIds(new String[] {"schema/table"});
+
+        for (DBPDataSourceContainer target : List.of(comparisonCopy, original)) {
+            settings.saveSettingsToDataSource(target);
+            Mockito.verify(target).setExtensionModel(AIContextSettingsDataSource.AI_DS_EXTENSION, settings.settings);
+            Mockito.verify(target, Mockito.never()).persistConfiguration();
+        }
+
+        Mockito.verify(workingCopy, Mockito.never()).setExtensionModel(Mockito.anyString(), Mockito.any());
+        Mockito.verify(workingCopy, Mockito.never()).persistConfiguration();
+    }
+
+    @Test
     public void datasourceDefaultsAfterResetAndExplicitNullScope() {
         AIContextSettingsDataSource settings = createDataSourceSettings(Map.of("scope", "CURRENT_SCHEMA"));
 

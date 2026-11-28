@@ -80,7 +80,11 @@ public class AIContextSettingsDataSource extends AIContextSettings {
     }
 
     public void saveSettingsToDataSource() {
-        dataSourceContainer.setExtensionModel(AI_DS_EXTENSION, settings);
+        saveSettingsToDataSource(dataSourceContainer);
+    }
+
+    public void saveSettingsToDataSource(@NotNull DBPDataSourceContainer target) {
+        target.setExtensionModel(AI_DS_EXTENSION, settings);
     }
 
     @Override
