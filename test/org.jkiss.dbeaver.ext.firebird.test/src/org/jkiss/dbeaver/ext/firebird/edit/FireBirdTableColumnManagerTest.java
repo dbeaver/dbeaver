@@ -180,7 +180,7 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
         // Firebird can't shorten the column to the domain, and nothing else would take over the collation
         DBException error = Assertions.assertThrows(DBException.class, () -> getModifyScripts(
             column, Map.of(DBConstants.PROP_ID_TYPE_NAME, "DOM_CODE", DBConstants.PROP_ID_MAX_LENGTH, 200L)));
-        Assertions.assertTrue(error.getMessage().contains("at least 100 characters"), error.getMessage());
+        Assertions.assertTrue(error.getMessage().contains("between 100 and 200 characters"), error.getMessage());
     }
 
     @Test
@@ -194,6 +194,45 @@ public class FireBirdTableColumnManagerTest extends DBeaverUnitTest {
         Assertions.assertEquals(
             List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE CHAR(200)"),
             getModifyScripts(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, "DOM_CODE", DBConstants.PROP_ID_MAX_LENGTH, 200L)));
+    }
+
+    @Test
+    public void alterSizeAfterSwitchingToWiderDomainWithSameCollationOnlyResizes() throws DBException {
+        registerDomain(charDomain("DOM_TEXT", 100, "OCTETS"));
+        FireBirdTableColumn column = loadColumn(IMPLICIT_DOMAIN_NAME, 10);
+        column.setTypeName("DOM_TEXT");
+        column.setMaxLength(20);
+
+        // Switching to the domain first would grow the column to 100, and Firebird can't shorten it to 20 then
+        Assertions.assertEquals(
+            List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE CHAR(20)"),
+            getModifyScripts(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, "DOM_TEXT", DBConstants.PROP_ID_MAX_LENGTH, 20L)));
+    }
+
+    @Test
+    public void alterSizeAfterSwitchingToWiderDomainWithOtherCollationIsRejected() throws DBException {
+        FireBirdDataType domain = registerDomain(charDomain("DOM_TEXT", 100, "OCTETS"));
+        domain.setCollationName("CUSTOM_COLLATION");
+        FireBirdTableColumn column = loadColumn(IMPLICIT_DOMAIN_NAME, 10);
+        column.setTypeName("DOM_TEXT");
+        column.setMaxLength(20);
+
+        DBException error = Assertions.assertThrows(DBException.class, () -> getModifyScripts(
+            column, Map.of(DBConstants.PROP_ID_TYPE_NAME, "DOM_TEXT", DBConstants.PROP_ID_MAX_LENGTH, 20L)));
+        Assertions.assertTrue(error.getMessage().contains("between 10 and 20 characters"), error.getMessage());
+    }
+
+    @Test
+    public void alterLengthOfNumericDomainColumnChangesPrecision() throws DBException {
+        registerDomain(numericDomain("DOM_MONEY", FireBirdFieldType.BIGINT.getTypeID(), 18, 2));
+        FireBirdTableColumn column = loadColumn(IMPLICIT_DOMAIN_NAME);
+        column.setTypeName("DOM_MONEY");
+        column.setMaxLength(20);
+
+        // The length field of NUMERIC is its precision
+        Assertions.assertEquals(
+            List.of("ALTER TABLE TEST_TABLE ALTER COLUMN TEST_NAME TYPE NUMERIC(20,2)"),
+            getModifyScripts(column, Map.of(DBConstants.PROP_ID_TYPE_NAME, "DOM_MONEY", DBConstants.PROP_ID_MAX_LENGTH, 20L)));
     }
 
     @Test

@@ -255,13 +255,18 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
 
     /**
      * Checks whether an existing column must be switched to its new domain before it is resized (see above).
-     * Firebird never shortens a column, so a domain shorter than the column can't be used as an intermediate type.
-     * This is only a problem if the domain has another character set or collation: ALTER COLUMN ... TYPE can't
-     * change them in any other way. Otherwise the resize alone gives the same result.
+     * Firebird never shortens a column, so the domain can be used as an intermediate type only if its length is
+     * between the current and the requested length. Otherwise this is only a problem if the domain has another
+     * character set or collation: ALTER COLUMN ... TYPE can't change them in any other way.
+     * With the same character set and collation the resize alone gives the same result.
      */
     private static boolean needsDomainSwitch(@NotNull FireBirdTableColumn column) throws DBException {
         FireBirdDataType domain = column.getFireBirdDataType();
-        if (domain == null || domain.getCharLength() <= 0 || domain.getCharLength() >= column.getPersistedLength()) {
+        if (domain == null || domain.getCharLength() <= 0) {
+            return true;
+        }
+        long domainLength = domain.getCharLength();
+        if (domainLength >= column.getPersistedLength() && domainLength <= column.getMaxLength()) {
             return true;
         }
         String charset = column.getPersistedCharset();
@@ -271,10 +276,10 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
             return false;
         }
         throw new DBException("Can't switch column " + column.getName() + " to domain " + column.getDomainName()
-            + ": the domain (" + domain.getCharLength() + " characters) is shorter than the column ("
-            + column.getPersistedLength() + " characters). Firebird can't shorten a column, and ALTER COLUMN TYPE"
-            + " can't change its character set or collation otherwise. Choose a domain with at least "
-            + column.getPersistedLength() + " characters.");
+            + " and resize it to " + column.getMaxLength() + " characters: Firebird can't shorten a column, so the"
+            + " domain (" + domainLength + " characters) must have between " + column.getPersistedLength() + " and "
+            + column.getMaxLength() + " characters to take over its character set and collation."
+            + " ALTER COLUMN TYPE can't change them otherwise.");
     }
 
     /**
@@ -353,9 +358,14 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
             @Nullable
             @Override
             public Integer getPrecision() {
-                return domain == null || command.getProperty("precision") != null
-                    ? column.getPrecision()
-                    : domain.getPrecision();
+                if (domain == null || command.getProperty("precision") != null) {
+                    return column.getPrecision();
+                }
+                if (command.getProperty(DBConstants.PROP_ID_MAX_LENGTH) != null && !isCharacterType(baseTypeName)) {
+                    // The length field of NUMERIC and DECIMAL is their precision
+                    return (int) column.getMaxLength();
+                }
+                return domain.getPrecision();
             }
 
             @Override
