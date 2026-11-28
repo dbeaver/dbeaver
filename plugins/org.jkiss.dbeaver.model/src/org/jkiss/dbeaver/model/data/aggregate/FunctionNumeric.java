@@ -16,12 +16,18 @@
  */
 package org.jkiss.dbeaver.model.data.aggregate;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import org.jkiss.code.Nullable;
+
 /**
  * FunctionSum
  */
 public abstract class FunctionNumeric implements IAggregateFunction {
 
-    protected static Number getNumeric(Object value) {
+    @Nullable
+    protected static Number getNumeric(@Nullable Object value) {
         if (value == null) {
             return null;
         }
@@ -42,7 +48,8 @@ public abstract class FunctionNumeric implements IAggregateFunction {
         return null;
     }
 
-    protected static Comparable<?> getComparable(Object value, boolean aggregateAsStrings) {
+    @Nullable
+    protected static Comparable<?> getComparable(@Nullable Object value, boolean aggregateAsStrings) {
         if (!aggregateAsStrings) {
             Number num = FunctionNumeric.getNumeric(value);
             if (num != null) {
@@ -53,5 +60,44 @@ public abstract class FunctionNumeric implements IAggregateFunction {
             return (Comparable<?>)value;
         }
         return null;
+    }
+
+    @Nullable
+    protected static BigDecimal getBigDecimal(@Nullable Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        try {
+            if (value instanceof BigDecimal) {
+                return (BigDecimal) value;
+            }
+            if (value instanceof BigInteger) {
+                return new BigDecimal((BigInteger) value);
+            }
+            if (value instanceof Byte || value instanceof Short
+                || value instanceof Integer || value instanceof Long) {
+                return BigDecimal.valueOf(((Number) value).longValue());
+            }
+
+            return new BigDecimal(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    @Nullable
+    protected static Number getNumericForAggregation(@Nullable Object value) {
+        if (value instanceof Number) {
+            return (Number) value;
+        }
+
+        BigDecimal decimal = getBigDecimal(value);
+        if (decimal != null) {
+            return decimal;
+        }
+
+        // Preserve support for special numeric strings such as NaN and Infinity.
+        return getNumeric(value);
     }
 }
