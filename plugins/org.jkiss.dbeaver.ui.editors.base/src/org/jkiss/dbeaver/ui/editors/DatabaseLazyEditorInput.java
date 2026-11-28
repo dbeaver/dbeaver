@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.StringConverter;
@@ -44,7 +43,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -59,7 +57,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Lazy input. Use by entity editors which are created during DBeaver startup (from memo by factory).
@@ -286,18 +283,13 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         long connectionStart = System.currentTimeMillis();
         while (!dataSourceContainer.isConnected()) {
             try {
-                if (DBWorkbench.getService(DBServiceConnections.class) == null) {
-                    dataSourceContainer.connect(monitor, true, true);
-                } else {
-                    AtomicReference<IStatus> connectionStatus = new AtomicReference<>();
-                    if (!DBUtils.initDataSource(monitor, dataSourceContainer, connectionStatus::set)) {
-                        IStatus status = connectionStatus.get();
-                        if (status != null && status.getSeverity() == IStatus.CANCEL) {
-                            return unloadInput();
-                        }
-                        throw new DBException(
-                            status == null ? "Connection to '" + dataSourceContainer.getName() + "' failed" : status.getMessage(),
-                            status == null ? null : status.getException());
+                DBUtils.ConnectionAttempt connection = DBUtils.connectDataSourceIfNeeded(monitor, dataSourceContainer);
+                if (!connection.connected()) {
+                    if (connection.canceled()) {
+                        return unloadInput();
+                    }
+                    if (connection.error() != null) {
+                        throw connection.error();
                     }
                 }
             } catch (final DBException e) {

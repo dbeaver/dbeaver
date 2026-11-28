@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.sql.task;
 
-import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -47,8 +46,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
-import org.jkiss.dbeaver.runtime.DBServiceConnections;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.utils.IOUtils;
@@ -61,7 +58,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * SQLScriptExecuteHandler
@@ -141,16 +137,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler, DBTTaskImportTra
                 for (DBPDataSourceContainer dataSourceContainer : dataSources) {
                     var sqlScriptContent = readScriptContents(monitor, task.getProject(), filePath);
                     if (!dataSourceContainer.isConnected()) {
-                        if (DBWorkbench.getService(DBServiceConnections.class) == null) {
-                            dataSourceContainer.connect(monitor, true, true);
-                        } else {
-                            AtomicReference<IStatus> connectionStatus = new AtomicReference<>();
-                            DBUtils.initDataSource(monitor, dataSourceContainer, connectionStatus::set);
-                            IStatus status = connectionStatus.get();
-                            if (status != null && !status.isOK() && status.getSeverity() != IStatus.CANCEL) {
-                                throw new DBException(status.getMessage(), status.getException());
-                            }
-                        }
+                        DBUtils.connectDataSourceIfNeeded(monitor, dataSourceContainer);
                     }
                     DBPDataSource dataSource = dataSourceContainer.getDataSource();
                     if (dataSource == null) {
