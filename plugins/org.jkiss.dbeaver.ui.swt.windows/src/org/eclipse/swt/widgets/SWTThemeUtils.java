@@ -215,6 +215,11 @@ public final class SWTThemeUtils {
             }
             try {
                 RECT row = new RECT();
+                // EraseItem bounds have already been rounded to logical coordinates. Scaling them back
+                // can shift row edges at fractional zoom, clipping the selection border on some rows.
+                if (!OS.TreeView_GetItemRect(tree.handle, ((TreeItem) event.item).handle, row, false)) {
+                    return;
+                }
                 Rectangle bounds = tree.getClientArea();
                 row.left = DPIUtil.pointToPixel(bounds.x, zoom);
                 row.right = DPIUtil.pointToPixel(bounds.x + bounds.width, zoom);
@@ -226,9 +231,6 @@ public final class SWTThemeUtils {
                     row.left = 0;
                     row.right = DPIUtil.pointToPixel(totalWidth, zoom);
                 }
-                row.top = DPIUtil.pointToPixel(event.y, zoom);
-                row.bottom = DPIUtil.pointToPixel(event.y + event.height, zoom);
-
                 RECT cell = new RECT();
                 cell.left = DPIUtil.pointToPixel(event.x, zoom);
                 cell.right = DPIUtil.pointToPixel(event.x + event.width, zoom);
