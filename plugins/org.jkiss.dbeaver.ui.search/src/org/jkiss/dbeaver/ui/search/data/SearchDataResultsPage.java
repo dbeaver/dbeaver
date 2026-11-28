@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.search.data;
 
 import org.eclipse.search.ui.ISearchResult;
+import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -72,7 +73,7 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
                     return;
                 }
                 SearchDataObject object = (SearchDataObject) objectValue;
-                AbstractDataEditor.openNewDataEditor((DBNDatabaseNode) node, object.getFilter());
+                AbstractDataEditor.openNewDataEditor((DBNDatabaseNode) node, object.getFilter(), NewSearchUI.reuseEditor());
             });
         }
 

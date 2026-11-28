@@ -23,10 +23,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -140,6 +137,21 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         boolean activate,
         boolean connectionEditorAllowed
     ) {
+        return openEntityEditor(selectedNode, defaultPageId, defaultFolderId, attributes, workbenchWindow, activate,
+            connectionEditorAllowed, true);
+    }
+
+    @Nullable
+    public static IEditorPart openEntityEditor(
+        @NotNull DBNNode selectedNode,
+        @Nullable String defaultPageId,
+        @Nullable String defaultFolderId,
+        @Nullable Map<String, Object> attributes,
+        @NotNull IWorkbenchWindow workbenchWindow,
+        boolean activate,
+        boolean connectionEditorAllowed,
+        boolean reuseEditor
+    ) {
         if (connectionEditorAllowed && selectedNode instanceof DBNDataSource) {
             final DBPDataSourceContainer dataSourceContainer = ((DBNDataSource)selectedNode).getDataSourceContainer();
             if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
@@ -155,7 +167,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 selectedNode = selectedNode.getParentNode();
             }
 
-            IEditorPart editor = findEntityEditor(workbenchWindow, selectedNode);
+            IEditorPart editor = reuseEditor ? findEntityEditor(workbenchWindow, selectedNode) : null;
             if (editor != null) {
                 boolean settingsChanged = false;
                 IEditorInput editorInput = editor.getEditorInput();
@@ -204,18 +216,22 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         }
                         ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
                         setInputAttributes(objectInput, defaultPageId, defaultFolderId, attributes);
-                        return workbenchWindow.getActivePage().openEditor(
+                        return openEditor(
+                            workbenchWindow,
                             objectInput,
-                            objectNode.getMeta().getEditorId());
+                            objectNode.getMeta().getEditorId(),
+                            reuseEditor);
                     } else {
                         DatabaseNodeEditorInput editorInput = new DatabaseNodeEditorInput(dnNode);
                         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN)) {
                             refreshDatabaseNode(dnNode);
                         }
                         setInputAttributes(editorInput, defaultPageId, defaultFolderId, attributes);
-                        return workbenchWindow.getActivePage().openEditor(
+                        return openEditor(
+                            workbenchWindow,
                             editorInput,
-                            EntityEditor.class.getName());
+                            EntityEditor.class.getName(),
+                            reuseEditor);
                     }
                 } else {
                     DBWorkbench.getPlatformUI().showError(
@@ -235,6 +251,18 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     ex);
             return null;
         }
+    }
+
+    @Nullable
+    private static IEditorPart openEditor(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull IEditorInput input,
+        @NotNull String editorId,
+        boolean reuseEditor
+    ) throws PartInitException {
+        return reuseEditor
+            ? workbenchWindow.getActivePage().openEditor(input, editorId)
+            : workbenchWindow.getActivePage().openEditor(input, editorId, true, IWorkbenchPage.MATCH_NONE);
     }
 
     public static IEditorPart findEntityEditor(IWorkbenchWindow workbenchWindow, DBNNode node) {
