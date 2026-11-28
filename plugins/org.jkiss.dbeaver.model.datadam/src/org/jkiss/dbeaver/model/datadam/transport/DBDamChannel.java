@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.datadam.transport;
 import com.dbeaver.datadam.dam.remote.api.DDRemoteDamProtocol;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamMessage;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamNameChanged;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.*;
 import org.eclipse.core.runtime.IStatus;
@@ -540,6 +541,16 @@ public final class DBDamChannel implements DDRemoteDamChannel {
             notifyStateObservers();
         } else {
             DDRemoteDamMessage message = DDRemoteDamProtocol.decode(text);
+            if (DDRemoteDamNameChanged.isNameChanged(message)) {
+                var changed = DDRemoteDamNameChanged.fromMessage(message);
+                synchronized (lock) {
+                    if (current == attempt && !attempt.nameAssigned) {
+                        attempt.nameAssigned = true;
+                        monitor.damNameAssigned(changed.damName());
+                    }
+                }
+                return;
+            }
             List<Registration<DDRemoteDamMessageListener>> listeners;
             synchronized (lock) {
                 if (current != attempt) {
@@ -682,6 +693,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         private WebSocket socket;
         @Nullable
         private DDRemoteDamSessionInfo session;
+        private boolean nameAssigned;
         @Nullable
         private Outgoing sending;
         @Nullable

@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.app.standalone.update;
 
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimElement;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.code.NotNull;
@@ -57,10 +57,10 @@ public class WorkbenchInitializerUpdateCheck implements IWorkbenchWindowInitiali
                 hasSpacer = true;
             }
         }
-        // The workbench adds its right-alignment spacer after applying trim contributions.
-        if (hasSpacer && updateToolbar != null && topTrim.getChildren().getLast() != updateToolbar) {
-            EModelService modelService = window.getService(EModelService.class);
-            modelService.move(updateToolbar, topTrim);
+        // TrimBarLayout uses SWT child order; moving only the model leaves the toolbar before the spacer on first launch.
+        if (hasSpacer && updateToolbar != null && updateToolbar.getWidget() instanceof Control control) {
+            control.moveBelow(null);
+            control.getParent().layout(true, true);
         }
     }
 

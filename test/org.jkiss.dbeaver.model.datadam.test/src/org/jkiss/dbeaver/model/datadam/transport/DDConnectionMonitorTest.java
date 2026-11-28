@@ -29,6 +29,56 @@ import java.util.concurrent.atomic.AtomicLong;
 
 class DDConnectionMonitorTest {
     @Test
+    void loadingAnExistingNameDoesNotReportARename() {
+        var monitor = new DDConnectionMonitor();
+        monitor.damNameLoaded("Saved desktop");
+        monitor.damNameLoaded("Saved desktop");
+        monitor.stateChanged(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null), false);
+        monitor.stateChanged(new DDRemoteDamChannelStatus(
+            DDRemoteDamChannelState.CONNECTED, new DDRemoteDamSessionInfo("deployment", "instance", "session")), false);
+        monitor.damNameLoaded("Saved desktop");
+        Assertions.assertTrue(monitor.getEvents().isEmpty());
+
+        monitor.damNameChanged("Renamed desktop");
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertEquals(DDConnectionMonitor.EventType.NAME_CHANGED, monitor.getEvents().getFirst().type());
+        Assertions.assertEquals("Renamed desktop", monitor.getEvents().getFirst().details());
+    }
+
+    @Test
+    void loadingAnotherAccountsNameIsSilentButRenamingItIsRecorded() {
+        var monitor = new DDConnectionMonitor();
+        monitor.damNameLoaded("First account desktop");
+        monitor.damNameLoaded("Second account desktop");
+        Assertions.assertTrue(monitor.getEvents().isEmpty());
+
+        monitor.damNameChanged("Renamed desktop");
+        monitor.damNameLoaded("Renamed desktop");
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertEquals(DDConnectionMonitor.EventType.NAME_CHANGED, monitor.getEvents().getFirst().type());
+        Assertions.assertEquals("Renamed desktop", monitor.getEvents().getFirst().details());
+    }
+
+    @Test
+    void aNewAccountCanConfirmAssignmentOfTheSameEnvironmentName() {
+        var monitor = new DDConnectionMonitor();
+        monitor.damNameChanged("DBeaver: workstation");
+        monitor.damNameLoaded(null);
+        monitor.damNameChanged("DBeaver: workstation");
+        Assertions.assertEquals(2, monitor.getEvents().size());
+    }
+
+    @Test
+    void assigningTheFirstNameToAnUnnamedDamReportsARename() {
+        var monitor = new DDConnectionMonitor();
+        monitor.damNameChanged("Desktop");
+        monitor.damNameLoaded("Desktop");
+        Assertions.assertEquals(1, monitor.getEvents().size());
+        Assertions.assertEquals(DDConnectionMonitor.EventType.NAME_CHANGED, monitor.getEvents().getFirst().type());
+        Assertions.assertEquals("Desktop", monitor.getEvents().getFirst().details());
+    }
+
+    @Test
     void silentStateUpdatesKeepSnapshotAndOriginalFailureWithoutAddingEvents() {
         var monitor = new DDConnectionMonitor();
         monitor.failed("Offline");

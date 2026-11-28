@@ -181,6 +181,16 @@ public final class DDConnectionMonitor {
         }
     }
 
+    public synchronized void damNameLoaded(@Nullable String name) {
+        damName = name;
+    }
+
+    synchronized void damNameAssigned(@NotNull String name) {
+        // An Account read may already see the committed name before its registration notification arrives.
+        damName = name;
+        record(EventType.NAME_CHANGED, name);
+    }
+
     public synchronized void damNameChanged(@Nullable String name) {
         if (!Objects.equals(damName, name)) {
             damName = name;
