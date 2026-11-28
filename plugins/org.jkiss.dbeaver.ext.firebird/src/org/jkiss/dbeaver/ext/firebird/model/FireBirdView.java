@@ -84,4 +84,19 @@ public class FireBirdView extends GenericView implements FireBirdTableBase, DBSO
         this.columnDomainTypes = columnDomainTypes;
     }
 
+    /**
+     * Objects this view depends on, from RDB$DEPENDENCIES
+     */
+    @NotNull
+    public List<FireBirdDependency> getDependencies(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return FireBirdDependency.readDependencies(monitor, this, FireBirdDependency.RELATION_TYPES, false);
+    }
+
+    /**
+     * Objects that use this view, from RDB$DEPENDENCIES
+     */
+    @NotNull
+    public List<FireBirdDependency> getDependents(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return FireBirdDependency.readDependencies(monitor, this, FireBirdDependency.RELATION_TYPES, true);
+    }
 }

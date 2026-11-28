@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * FireBirdDataSource
@@ -88,5 +91,13 @@ public class FireBirdSequence extends GenericSequence implements DBPSystemObject
     @Override
     public boolean isSystem() {
         return isSystem;
+    }
+
+    /**
+     * Objects that use this sequence, from RDB$DEPENDENCIES
+     */
+    @NotNull
+    public List<FireBirdDependency> getDependents(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return FireBirdDependency.readDependencies(monitor, this, new int[] {FireBirdDependency.TYPE_GENERATOR}, true);
     }
 }

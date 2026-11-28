@@ -16,11 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.List;
 
 /**
  * FireBirdTrigger
@@ -58,5 +63,13 @@ public abstract class FireBirdTrigger<OWNER extends DBSObject> extends GenericTr
     @Override
     public boolean isSystem() {
         return isSystem;
+    }
+
+    /**
+     * Objects this trigger depends on, from RDB$DEPENDENCIES
+     */
+    @NotNull
+    public List<FireBirdDependency> getDependencies(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return FireBirdDependency.readDependencies(monitor, this, new int[] {FireBirdDependency.TYPE_TRIGGER}, false);
     }
 }

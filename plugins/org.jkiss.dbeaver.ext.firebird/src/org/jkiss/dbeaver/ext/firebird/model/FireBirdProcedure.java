@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 public class FireBirdProcedure extends GenericProcedure implements DBSObjectWithScript {
@@ -209,5 +210,28 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
     @Override
     public void setObjectDefinitionText(String source) {
         setSource(source);
+    }
+
+    /**
+     * Objects this procedure or function depends on, from RDB$DEPENDENCIES
+     */
+    @NotNull
+    public List<FireBirdDependency> getDependencies(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return FireBirdDependency.readDependencies(monitor, this, getRoutineDependencyTypes(), false);
+    }
+
+    /**
+     * Objects that use this procedure or function, from RDB$DEPENDENCIES
+     */
+    @NotNull
+    public List<FireBirdDependency> getDependents(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return FireBirdDependency.readDependencies(monitor, this, getRoutineDependencyTypes(), true);
+    }
+
+    @NotNull
+    private int[] getRoutineDependencyTypes() {
+        return new int[] {
+            getProcedureType() == DBSProcedureType.FUNCTION ? FireBirdDependency.TYPE_FUNCTION : FireBirdDependency.TYPE_PROCEDURE
+        };
     }
 }

@@ -28,6 +28,56 @@
                 label="Firebird"
                 icon="icons/firebird_icon.png"
                 dialect="firebird">
+            <!-- Dependencies between objects from RDB$DEPENDENCIES, like the "Dependencies" folder of PostgreSQL -->
+            <treeInjection path="generic/catalog/schema/table">
+                <folder label="%tree.dependents.node.name" icon="#references" description="%tree.dependents.node.tip" virtual="true">
+                    <items label="%tree.dependent.node.name" path="dependent" property="dependents" icon="#reference" virtual="true"/>
+                </folder>
+            </treeInjection>
+            <treeInjection path="generic/catalog/schema/view">
+                <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                </folder>
+                <folder label="%tree.dependents.node.name" icon="#references" description="%tree.dependents.node.tip" virtual="true">
+                    <items label="%tree.dependent.node.name" path="dependent" property="dependents" icon="#reference" virtual="true"/>
+                </folder>
+            </treeInjection>
+            <treeInjection path="generic/catalog/schema/procedure">
+                <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                </folder>
+                <folder label="%tree.dependents.node.name" icon="#references" description="%tree.dependents.node.tip" virtual="true">
+                    <items label="%tree.dependent.node.name" path="dependent" property="dependents" icon="#reference" virtual="true"/>
+                </folder>
+            </treeInjection>
+            <treeInjection path="generic/catalog/schema/function">
+                <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                </folder>
+                <folder label="%tree.dependents.node.name" icon="#references" description="%tree.dependents.node.tip" virtual="true">
+                    <items label="%tree.dependent.node.name" path="dependent" property="dependents" icon="#reference" virtual="true"/>
+                </folder>
+            </treeInjection>
+            <treeInjection path="generic/catalog/schema/table/trigger">
+                <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                </folder>
+            </treeInjection>
+            <treeInjection path="generic/catalog/schema/tableTrigger">
+                <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                </folder>
+            </treeInjection>
+            <treeInjection path="generic/catalog/schema/trigger">
+                <folder label="%tree.dependencies.node.name" icon="#references" description="%tree.dependencies.node.tip" virtual="true">
+                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                </folder>
+            </treeInjection>
+            <treeInjection path="generic/catalog/schema/sequence">
+                <folder label="%tree.dependents.node.name" icon="#references" description="%tree.dependents.node.tip" virtual="true">
+                    <items label="%tree.dependent.node.name" path="dependent" property="dependents" icon="#reference" virtual="true"/>
+                </folder>
+            </treeInjection>
             <drivers managable="true">
 
                 <driver

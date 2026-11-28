@@ -97,4 +97,11 @@ public class FireBirdTable extends GenericTable implements FireBirdTableBase, DB
         this.columnDomainTypes = columnDomainTypes;
     }
 
+    /**
+     * Objects that use this table, from RDB$DEPENDENCIES
+     */
+    @NotNull
+    public List<FireBirdDependency> getDependents(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return FireBirdDependency.readDependencies(monitor, this, FireBirdDependency.RELATION_TYPES, true);
+    }
 }
