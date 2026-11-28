@@ -43,6 +43,23 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
 
     private FireBirdDataType dataType;
     private String computedDefinition;
+    /**
+     * User-defined domain the column is declared with, or null if the column uses a built-in type
+     * (in which case Firebird assigns an implicit RDB$ domain).
+     */
+    @Nullable
+    private String domainName;
+    /**
+     * Collation declared on the column itself (DOMAIN_NAME COLLATE X), or null if the column uses the collation of its type
+     */
+    @Nullable
+    private String columnCollation;
+    // Character length, character set and collation of the column as loaded from the database
+    private long persistedLength;
+    @Nullable
+    private String persistedCharset;
+    @Nullable
+    private String persistedCollation;
 
     public FireBirdTableColumn(GenericTableBase table) {
         super(table);
@@ -53,9 +70,19 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
         String domainTypeName = getDomainTypeName(monitor);
         if (domainTypeName != null) {
             dataType = (FireBirdDataType) table.getDataSource().getLocalDataType(domainTypeName);
+            if (!FireBirdColumnTypeNameListProvider.isSystemDomainName(domainTypeName)) {
+                domainName = domainTypeName;
+            }
         } else {
             dataType = (FireBirdDataType) table.getDataSource().getLocalDataType(typeName);
         }
+        if (table instanceof FireBirdTableBase fbTable) {
+            FireBirdColumnDomain columnDomain = fbTable.getColumnDomain(monitor, this);
+            columnCollation = columnDomain == null ? null : columnDomain.collationName();
+        }
+        persistedLength = getMaxLength();
+        persistedCharset = getCharset();
+        persistedCollation = getCollation();
     }
 
     @NotNull
@@ -85,6 +112,56 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
             return dataType.getCharsetName();
         }
         return null;
+    }
+
+    /**
+     * Data type of the column. For a column declared with a domain, this is the domain.
+     */
+    @Nullable
+    public FireBirdDataType getFireBirdDataType() {
+        return dataType;
+    }
+
+    /**
+     * Collation of the column: the one declared on the column itself, otherwise the one of its data type.
+     * Null if unknown.
+     */
+    @Nullable
+    public String getCollation() {
+        if (columnCollation != null) {
+            return columnCollation;
+        }
+        return dataType == null ? null : dataType.getCollationName();
+    }
+
+    /**
+     * True if the column declares a collation other than the one of its data type (DOMAIN_NAME COLLATE X).
+     */
+    public boolean hasCollationOverride() {
+        return columnCollation != null && (dataType == null || !columnCollation.equalsIgnoreCase(dataType.getCollationName()));
+    }
+
+    /**
+     * Character length of the column as loaded from the database, 0 for a new column
+     */
+    public long getPersistedLength() {
+        return persistedLength;
+    }
+
+    /**
+     * Character set of the column as loaded from the database, null for a new column
+     */
+    @Nullable
+    public String getPersistedCharset() {
+        return persistedCharset;
+    }
+
+    /**
+     * Collation of the column as loaded from the database, null for a new column
+     */
+    @Nullable
+    public String getPersistedCollation() {
+        return persistedCollation;
     }
 
     @NotNull
@@ -165,9 +242,55 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     }
 
     @Override
+    public void setTypeName(@NotNull String typeName) throws DBException {
+        super.setTypeName(typeName);
+        // Keep the data type in sync even if the generic lookup didn't find it: sizes, charset and collation
+        // of a selected domain are read from it
+        if (getDataSource().getLocalDataType(typeName) instanceof FireBirdDataType fbDataType) {
+            this.dataType = fbDataType;
+        }
+        this.domainName = getUserDomainName(typeName);
+        // The collation declared on the column belonged to the previous type
+        this.columnCollation = null;
+    }
+
+    @Override
     public void setDataType(@NotNull FireBirdDataType dataType) {
         this.dataType = dataType;
         this.typeName = dataType.getTypeName();
+        this.domainName = dataType.isDomain() ? getUserDomainName(dataType.getTypeName()) : null;
+        this.columnCollation = null;
+    }
+
+    /**
+     * Returns the user-defined domain this column is declared with, or null if it uses a built-in type.
+     * The domain must be used in DDL instead of the underlying type, otherwise the domain reference is lost.
+     */
+    @Nullable
+    public String getDomainName() {
+        return domainName;
+    }
+
+    /**
+     * Returns the built-in type of the column. For a column whose type name is a domain,
+     * this is the domain's underlying type.
+     */
+    @NotNull
+    public String getBaseTypeName() {
+        if (getDataSource().getLocalDataType(getTypeName()) instanceof FireBirdDataType fbDataType && fbDataType.isDomain()) {
+            return fbDataType.getFieldType();
+        }
+        return getTypeName();
+    }
+
+    @Nullable
+    private String getUserDomainName(@NotNull String typeName) {
+        if (FireBirdColumnTypeNameListProvider.isSystemDomainName(typeName)) {
+            return null;
+        }
+        return getDataSource().getLocalDataType(typeName) instanceof FireBirdDataType fbDataType && fbDataType.isDomain()
+            ? fbDataType.getTypeName()
+            : null;
     }
 
     /**

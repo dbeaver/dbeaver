@@ -58,8 +58,14 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
             try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load Firebird domain types")) {
                 // Use CAST to improve performance, binaries are too slow
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT RDB$FIELD_NAME,RDB$FIELD_LENGTH,RDB$FIELD_SCALE,RDB$FIELD_PRECISION,RDB$FIELD_TYPE,RDB$FIELD_SUB_TYPE,RDB$CHARACTER_LENGTH,RDB$CHARACTER_SET_ID,\n" +
-                        "CAST(RDB$VALIDATION_SOURCE AS VARCHAR(512)) VALIDATION_SOURCE,SUBSTRING(RDB$COMPUTED_SOURCE FROM 1 FOR 512) COMPUTED_SOURCE,CAST(RDB$DEFAULT_SOURCE AS VARCHAR(512)) DEFAULT_SOURCE\n" +
+                    "SELECT RDB$FIELD_NAME,RDB$FIELD_LENGTH,RDB$FIELD_SCALE,RDB$FIELD_PRECISION,RDB$FIELD_TYPE,RDB$FIELD_SUB_TYPE,\n" +
+                        "RDB$CHARACTER_LENGTH,RDB$CHARACTER_SET_ID,\n" +
+                        "CAST(RDB$VALIDATION_SOURCE AS VARCHAR(512)) VALIDATION_SOURCE,\n" +
+                        "SUBSTRING(RDB$COMPUTED_SOURCE FROM 1 FOR 512) COMPUTED_SOURCE,\n" +
+                        "CAST(RDB$DEFAULT_SOURCE AS VARCHAR(512)) DEFAULT_SOURCE,\n" +
+                        "RDB$NULL_FLAG,RDB$DESCRIPTION,RDB$SYSTEM_FLAG,\n" +
+                        "(SELECT TRIM(CO.RDB$COLLATION_NAME) FROM RDB$COLLATIONS CO\n" +
+                        " WHERE CO.RDB$CHARACTER_SET_ID = F.RDB$CHARACTER_SET_ID AND CO.RDB$COLLATION_ID = F.RDB$COLLATION_ID) COLLATION_NAME\n" +
                         "FROM RDB$FIELDS F ORDER BY RDB$FIELD_NAME"))
                 {
                     monitor.subTask("Load Firebird domain types");
@@ -89,15 +95,17 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                                 log.error("Field type '" + fieldType + "' not found");
                                 continue;
                             }
-                            String charsetName = dataSource.getMetaFieldValue(FireBirdConstants.TYPE_CHARACTER_SET_NAME, charsetId);
-                            boolean notNull = JDBCUtils.safeGetInt(dbResult, "RDB$NULL_FLAG") == 1;
-
                             FireBirdDataType dataType = new FireBirdDataType(
-                                dataSource, fieldDT, fieldSubType, typeName.trim(), typeDescription, false, true, fieldPrecision, fieldScale, fieldScale,
-                                fieldLength, charLength,
-                                computedSource, validationSource, defaultSource,
-                                charsetName,
-                                notNull);
+                                dataSource, fieldDT, fieldSubType, typeName.trim(), typeDescription, fieldPrecision, fieldScale);
+                            dataType.setFieldLength(fieldLength);
+                            dataType.setCharLength(charLength);
+                            dataType.setComputedSource(computedSource);
+                            dataType.setValidationSource(validationSource);
+                            dataType.setDefaultSource(defaultSource);
+                            dataType.setCharsetName(dataSource.getMetaFieldValue(FireBirdConstants.TYPE_CHARACTER_SET_NAME, charsetId));
+                            dataType.setNotNull(JDBCUtils.safeGetInt(dbResult, "RDB$NULL_FLAG") == 1);
+                            dataType.setSystemDomain(JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG") != 0);
+                            dataType.setCollationName(JDBCUtils.safeGetString(dbResult, "COLLATION_NAME"));
                             tmpObjectList.add(dataType);
                         }
                     }

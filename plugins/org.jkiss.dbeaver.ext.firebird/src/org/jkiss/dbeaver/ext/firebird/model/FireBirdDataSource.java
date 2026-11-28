@@ -37,10 +37,12 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.parser.SQLQueryParameterParser;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,33 +144,81 @@ public class FireBirdDataSource extends GenericDataSource
         super.initialize(monitor);
     }
 
-	@NotNull
+    @Nullable
     @Override
-	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
-		FireBirdPlanAnalyser plan = new FireBirdPlanAnalyser((JDBCSession) session, query);
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        // Domains live in the data type cache, which the generic refresh keeps. Clear it so that
+        // initialize() reloads RDB$FIELDS and created or dropped domains become visible.
+        getDataTypeCache().clearCache();
+        return super.refreshObject(monitor);
+    }
+
+    @NotNull
+    @Override
+    public DBCPlan planQueryExecution(
+        @NotNull DBCSession session,
+        @NotNull String query,
+        @NotNull DBCQueryPlannerConfiguration configuration
+    ) throws DBException {
+        FireBirdPlanAnalyser plan = new FireBirdPlanAnalyser((JDBCSession) session, query);
         plan.explain();
         return plan;
-	}
+    }
 
-	@NotNull
+    @NotNull
     @Override
-	public DBCPlanStyle getPlanStyle() {
-		return DBCPlanStyle.PLAN;
-	}
+    public DBCPlanStyle getPlanStyle() {
+        return DBCPlanStyle.PLAN;
+    }
 
+    @Nullable
     @Override
     public List<FireBirdTable> getPhysicalTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdTable>) super.getPhysicalTables(monitor);
     }
 
+    @Nullable
     @Override
     public List<FireBirdTable> getTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdTable>) super.getTables(monitor);
     }
 
+    @Nullable
     @Override
     public List<FireBirdProcedure> getProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<FireBirdProcedure>) super.getProcedures(monitor);
+    }
+
+    /**
+     * Built-in data types, shown in the navigator "Data Types" folder. Domains are listed separately.
+     */
+    @NotNull
+    public List<FireBirdDataType> getBuiltInDataTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getFireBirdDataTypes(monitor).stream()
+            .filter(dataType -> !dataType.isDomain())
+            .toList();
+    }
+
+    /**
+     * User-defined domains, shown in the navigator "Domains" folder.
+     * System domains and implicit RDB$ domains created for each column are excluded.
+     */
+    @NotNull
+    public List<FireBirdDataType> getDomains(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getFireBirdDataTypes(monitor).stream()
+            .filter(dataType -> dataType.isDomain() && !dataType.isSystem())
+            .toList();
+    }
+
+    @NotNull
+    private List<FireBirdDataType> getFireBirdDataTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<FireBirdDataType> result = new ArrayList<>();
+        for (DBSDataType dataType : getDataTypes(monitor)) {
+            if (dataType instanceof FireBirdDataType fireBirdDataType) {
+                result.add(fireBirdDataType);
+            }
+        }
+        return result;
     }
 
     @NotNull

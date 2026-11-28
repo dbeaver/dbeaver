@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -26,37 +27,42 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
 
     private final FireBirdFieldType fieldType;
     private final int subType;
+    private final boolean domain;
+    private boolean systemDomain;
     private int fieldLength;
     private int charLength;
     private String computedSource;
     private String validationSource;
     private String defaultSource;
     private String charsetName;
+    private String collationName;
     private boolean notNull;
 
-    public FireBirdDataType(FireBirdDataSource genericDataSource, FireBirdFieldType fieldType, int subType, String name, String remarks,
-        boolean unsigned, boolean searchable, int precision, int minScale, int maxScale,
-        int fieldLength, int charLength,
-        String computedSource, String validationSource, String defaultSource, String charsetName, boolean notNull)
-    {
-        super(genericDataSource, fieldType.getValueType(), name, remarks, unsigned, searchable, precision, minScale, maxScale);
+    /**
+     * Creates a domain read from RDB$FIELDS. The remaining domain attributes are set with setters.
+     */
+    public FireBirdDataType(
+        @NotNull FireBirdDataSource dataSource,
+        @NotNull FireBirdFieldType fieldType,
+        int subType,
+        @NotNull String name,
+        @Nullable String remarks,
+        int precision,
+        int scale
+    ) {
+        super(dataSource, fieldType.getValueType(), name, remarks, false, true, precision, scale, scale);
 
         this.fieldType = fieldType;
         this.subType = subType;
-        this.fieldLength = fieldLength;
-        this.charLength = charLength;
-        this.computedSource = computedSource;
-        this.validationSource = validationSource;
-        this.defaultSource = defaultSource;
-        this.charsetName = charsetName;
-        this.notNull = notNull;
+        this.domain = true;
     }
 
-    public FireBirdDataType(FireBirdDataSource dataSource, FireBirdFieldType fieldType) {
+    public FireBirdDataType(@NotNull FireBirdDataSource dataSource, @NotNull FireBirdFieldType fieldType) {
         super(dataSource, fieldType.getValueType(), fieldType.getName(), null, false, true, 0, 0, 0);
 
         this.fieldType = fieldType;
         this.subType = 0;
+        this.domain = false;
     }
 
     @NotNull
@@ -95,6 +101,19 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
         return charsetName;
     }
 
+    /**
+     * Collation of a character domain, read from RDB$COLLATIONS.
+     */
+    @Nullable
+    @Property(order = 61)
+    public String getCollationName() {
+        return collationName;
+    }
+
+    public void setCollationName(@Nullable String collationName) {
+        this.collationName = collationName;
+    }
+
     @Property(order = 16)
     public String getFieldType() {
         return fieldType.getName();
@@ -115,8 +134,52 @@ public class FireBirdDataType extends GenericDataType implements DBPSystemObject
         return notNull;
     }
 
+    /**
+     * Returns true if this type is a domain read from RDB$FIELDS (including system and implicit domains),
+     * false for built-in types.
+     */
+    public boolean isDomain() {
+        return domain;
+    }
+
+    /**
+     * System domains (RDB$SYSTEM_FLAG set, e.g. RDB$..., MON$..., SEC$...) and the implicit RDB$&lt;n&gt; domains
+     * Firebird creates for columns with a built-in type. User-defined domains may contain '$' as well (DOM$USD).
+     */
     @Override
     public boolean isSystem() {
-        return getTypeName().contains("$");    // [JDBC: Firebird]
+        return systemDomain || (domain && getTypeName().startsWith(FireBirdConstants.SYSTEM_OBJECT_PREFIX));
+    }
+
+    public void setFieldLength(int fieldLength) {
+        this.fieldLength = fieldLength;
+    }
+
+    public void setCharLength(int charLength) {
+        this.charLength = charLength;
+    }
+
+    public void setComputedSource(@Nullable String computedSource) {
+        this.computedSource = computedSource;
+    }
+
+    public void setValidationSource(@Nullable String validationSource) {
+        this.validationSource = validationSource;
+    }
+
+    public void setDefaultSource(@Nullable String defaultSource) {
+        this.defaultSource = defaultSource;
+    }
+
+    public void setCharsetName(@Nullable String charsetName) {
+        this.charsetName = charsetName;
+    }
+
+    public void setNotNull(boolean notNull) {
+        this.notNull = notNull;
+    }
+
+    public void setSystemDomain(boolean systemDomain) {
+        this.systemDomain = systemDomain;
     }
 }

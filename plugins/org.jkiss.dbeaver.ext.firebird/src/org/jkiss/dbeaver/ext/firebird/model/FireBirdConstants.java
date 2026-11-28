@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ public class FireBirdConstants  {
     public static final String TYPE_FIELD_TYPE = "RDB$FIELD_TYPE";
     public static final String TYPE_FIELD_SUB_TYPE = "RDB$FIELD_SUB_TYPE";
     public static final String TYPE_CHARACTER_SET_NAME = "RDB$CHARACTER_SET_NAME";
+
+    /** Prefix of system objects and of the implicit domains Firebird creates for columns with a built-in type */
+    public static final String SYSTEM_OBJECT_PREFIX = "RDB$";
 
     public static final String CHARSET_OCTETS = "OCTETS";
     public static final String CHARSET_BINARY = "BINARY";
