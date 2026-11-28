@@ -78,6 +78,7 @@ public class ERDUIMessages extends NLS {
     public static String erd_preference_page_title_color_pref;
     public static String erd_preference_page_title_change_border_colors;
     public static String erd_preference_page_title_change_header_colors;
+    public static String erd_preference_page_title_change_arrow_colors;
     public static String erd_tool_color_action_text_set_color;
     public static String erd_tool_color_action_tip_text_set_figure_color;
     public static String erd_tool_color_action_text_reset_color;

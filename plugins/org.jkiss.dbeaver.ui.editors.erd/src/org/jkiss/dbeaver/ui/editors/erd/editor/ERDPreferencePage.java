@@ -56,6 +56,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Button contentsShowPartitions;
     private Button changeBorderColors;
     private Button changeHeaderColors;
+    private Button changeArrowColors;
 
     private Combo modeCombo;
     private Spinner spinnerMarginTop;
@@ -168,6 +169,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
         changeHeaderColors = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_change_header_colors,
             store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
+        changeArrowColors = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_change_arrow_colors,
+            store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_ARROW_COLORS));
     }
 
     private void createVisibilityGroup(DBPPreferenceStore store, Composite composite) {
@@ -255,6 +258,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         if (hasColorPrefGroup()) {
             changeBorderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
             changeHeaderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
+            changeArrowColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_ARROW_COLORS));
         }
 
         if (hasGridGroup()) {
@@ -320,6 +324,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         if (hasColorPrefGroup()) {
             store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
             store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
+            store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_ARROW_COLORS, changeArrowColors.getSelection());
         }
 
         if (hasGridGroup()) {

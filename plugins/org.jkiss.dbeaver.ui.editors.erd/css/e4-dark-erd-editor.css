@@ -33,3 +33,27 @@ ColorDefinition#org-jkiss-dbeaver-erd-diagram-fk-highlighting {
 ColorDefinition#org-jkiss-dbeaver-erd-diagram-lines-foreground {
     color: #0064ae;
 }
+
+ColorDefinition#org-jkiss-dbeaver-ui-presentation-erd-arrow-color-no-action {
+    color: #b07aff;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-presentation-erd-arrow-color-cascade {
+    color: #ff5f5f;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-presentation-erd-arrow-color-set-null {
+    color: #5cc96e;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-presentation-erd-arrow-color-set-default {
+    color: #64b5f6;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-presentation-erd-arrow-color-restrict {
+    color: #ffb347;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-presentation-erd-arrow-color-unknown {
+    color: #969696;
+}

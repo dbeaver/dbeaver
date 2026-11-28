@@ -23,29 +23,22 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 /**
  * DBSForeignKeyModifyRule
  */
-public class DBSForeignKeyModifyRule implements DBPNamedObject
+public enum DBSForeignKeyModifyRule implements DBPNamedObject
 {
-    public static final DBSForeignKeyModifyRule UNKNOWN = new DBSForeignKeyModifyRule("UNKNOWN", "?", null); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBSForeignKeyModifyRule NO_ACTION = new DBSForeignKeyModifyRule("NO_ACTION", ModelMessages.model_struct_No_Action, null); //$NON-NLS-1$
-    public static final DBSForeignKeyModifyRule CASCADE = new DBSForeignKeyModifyRule("CASCADE", ModelMessages.model_struct_Cascade, "CASCADE"); //$NON-NLS-1$ //$NON-NLS-3$
-    public static final DBSForeignKeyModifyRule SET_NULL = new DBSForeignKeyModifyRule("SET_NULL", ModelMessages.model_struct_Set_NULL, "SET NULL"); //$NON-NLS-1$ //$NON-NLS-3$
-    public static final DBSForeignKeyModifyRule SET_DEFAULT = new DBSForeignKeyModifyRule("SET_DEFAULT", ModelMessages.model_struct_Set_Default, "SET DEFAULT"); //$NON-NLS-1$ //$NON-NLS-3$
-    public static final DBSForeignKeyModifyRule RESTRICT = new DBSForeignKeyModifyRule("RESTRICT", ModelMessages.model_struct_Restrict, "RESTRICT"); //$NON-NLS-1$ //$NON-NLS-3$
+    UNKNOWN("?", null), //$NON-NLS-1$ //$NON-NLS-2$
+    NO_ACTION(ModelMessages.model_struct_No_Action, null), //$NON-NLS-1$
+    CASCADE(ModelMessages.model_struct_Cascade, "CASCADE"), //$NON-NLS-1$ //$NON-NLS-3$
+    SET_NULL(ModelMessages.model_struct_Set_NULL, "SET NULL"), //$NON-NLS-1$ //$NON-NLS-3$
+    SET_DEFAULT(ModelMessages.model_struct_Set_Default, "SET DEFAULT"), //$NON-NLS-1$ //$NON-NLS-3$
+    RESTRICT(ModelMessages.model_struct_Restrict, "RESTRICT"); //$NON-NLS-1$ //$NON-NLS-3$
 
-    private final String id;
     private final String name;
     private final String clause;
 
-    public DBSForeignKeyModifyRule(String id, String name, String clause)
+    DBSForeignKeyModifyRule(String name, String clause)
     {
-        this.id = id;
         this.name = name;
         this.clause = clause;
-    }
-
-    public String getId()
-    {
-        return id;
     }
 
     @NotNull
@@ -58,11 +51,5 @@ public class DBSForeignKeyModifyRule implements DBPNamedObject
     public String getClause()
     {
         return clause;
-    }
-
-    @Override
-    public String toString()
-    {
-        return id;
     }
 }
