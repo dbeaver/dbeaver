@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileUsageProvider;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -41,6 +43,11 @@ public final class LocalNetworkProfileUsageProvider implements DBWNetworkProfile
     public Map<String, String> findLocalProfileConflicts(@NotNull String profileName) throws DBException {
         Map<String, String> result = new LinkedHashMap<>();
         for (var project : workspace.getProjects()) {
+            // Pro marks the project secure, but CE does not support secured projects and reports it as unencrypted.
+            if (CommonUtils.toBoolean(project.getProjectProperty(DBPProject.PROP_SECURE_PROJECT)) &&
+                !project.isEncryptedProject()) {
+                continue;
+            }
             if (DataSourceConfigurationProfileQuery.hasLocalProfile(project, profileName)) {
                 result.put(project.getId(), project.getName());
             }
