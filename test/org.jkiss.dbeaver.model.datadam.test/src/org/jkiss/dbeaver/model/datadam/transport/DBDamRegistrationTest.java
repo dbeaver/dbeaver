@@ -76,6 +76,7 @@ public class DBDamRegistrationTest extends DBeaverUnitTest {
             Assertions.assertTrue(channel.getMonitor().getEvents().stream()
                 .noneMatch(event -> event.type() == DDConnectionMonitor.EventType.NAME_CHANGED));
 
+            channel.getMonitor().damNameLoaded(hello.suggestedName());
             String confirmed = DDRemoteDamProtocol.encode(new DDRemoteDamNameChanged(hello.suggestedName()).toMessage());
             listener.onText(socket, confirmed, true);
             listener.onText(socket, confirmed, true);

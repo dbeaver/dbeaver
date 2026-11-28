@@ -544,8 +544,9 @@ public final class DBDamChannel implements DDRemoteDamChannel {
             if (DDRemoteDamNameChanged.isNameChanged(message)) {
                 var changed = DDRemoteDamNameChanged.fromMessage(message);
                 synchronized (lock) {
-                    if (current == attempt) {
-                        monitor.damNameChanged(changed.damName());
+                    if (current == attempt && !attempt.nameAssigned) {
+                        attempt.nameAssigned = true;
+                        monitor.damNameAssigned(changed.damName());
                     }
                 }
                 return;
@@ -692,6 +693,7 @@ public final class DBDamChannel implements DDRemoteDamChannel {
         private WebSocket socket;
         @Nullable
         private DDRemoteDamSessionInfo session;
+        private boolean nameAssigned;
         @Nullable
         private Outgoing sending;
         @Nullable
