@@ -138,6 +138,11 @@
                <documentation>If true, this is a system function</documentation>
             </annotation>
          </attribute>
+         <attribute name="dangerous" type="boolean">
+            <annotation>
+               <documentation>If true, the chat highlights the confirmation of this function as dangerous. It does not change how the function is confirmed or executed</documentation>
+            </annotation>
+         </attribute>
          <attribute name="omitConfirmation" type="boolean">
             <annotation>
                <documentation>If true, this function does not require confirmation</documentation>
@@ -221,6 +226,18 @@
             <annotation>
                <documentation>Suffix appended to the parameter name when storing the transformed value. Used together with transformer</documentation>
             </annotation>
+         </attribute>
+         <attribute name="preview">
+            <annotation>
+               <documentation>If set, the chat shows the full value of this parameter in the function call confirmation instead of hiding it among the collapsed arguments</documentation>
+            </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="text"/>
+                  <enumeration value="sql"/>
+                  <enumeration value="url"/>
+               </restriction>
+            </simpleType>
          </attribute>
       </complexType>
    </element>

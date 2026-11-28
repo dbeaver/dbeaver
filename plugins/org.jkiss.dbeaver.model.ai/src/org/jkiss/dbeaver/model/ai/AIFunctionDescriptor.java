@@ -91,6 +91,13 @@ public interface AIFunctionDescriptor {
         return false;
     }
 
+    /**
+     * The chat highlights the confirmation of a dangerous function. Confirmation rules are not affected.
+     */
+    default boolean isDangerous() {
+        return false;
+    }
+
     boolean isEnabledByDefault();
 
     default boolean isOmitConfirmation() {

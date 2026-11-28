@@ -736,9 +736,32 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             if (!arguments.isEmpty()) {
                 args.put("arguments", arguments);
             }
+            if (descriptor != null) {
+                if (descriptor.isDangerous()) {
+                    args.put("warning", AIChatMessagesUI.ai_chat_confirm_dangerous);
+                }
+                args.put("previews", getArgumentPreviews(descriptor, arguments));
+            }
 
             renderer.execute("addFunctionConfirmation", args);
         }
+    }
+
+    @NotNull
+    private static List<Map<String, String>> getArgumentPreviews(
+        @NotNull AIFunctionDescriptor descriptor,
+        @NotNull Map<String, Object> arguments
+    ) {
+        List<Map<String, String>> previews = new ArrayList<>();
+        for (AIFunctionParameter parameter : descriptor.getParameters()) {
+            String kind = parameter.getPreview();
+            Object value = arguments.get(parameter.getName());
+            if (kind != null && value != null) {
+                String label = kind.equals("text") ? parameter.getName() : kind.toUpperCase(Locale.ENGLISH);
+                previews.add(Map.of("label", label, "value", value.toString()));
+            }
+        }
+        return previews;
     }
 
     private void checkAllDecisions(

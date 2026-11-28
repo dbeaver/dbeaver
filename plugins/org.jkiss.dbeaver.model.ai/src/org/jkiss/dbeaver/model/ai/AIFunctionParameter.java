@@ -41,6 +41,14 @@ public interface AIFunctionParameter {
     @Nullable
     String[] getValidValues();
 
+    /**
+     * Preview kind (text, sql, url) if the chat must show the full value in the function call confirmation.
+     */
+    @Nullable
+    default String getPreview() {
+        return null;
+    }
+
     @Nullable
     default AIFunctionParameterTransformer getTransformer() {
         return null;

@@ -56,6 +56,21 @@
     line-height: 1.4;
 }
 
+.confirmation-card-dangerous {
+    border-color: color-mix(in hsl, var(--error-background) 70%, var(--text-color));
+}
+
+.confirmation-warning {
+    color: var(--text-color);
+    font-size: smaller;
+    line-height: 1.4;
+}
+
+/* the reviewed value must be visible as a whole, without scrolling */
+.fn-detail-value.confirmation-preview {
+    max-height: none;
+}
+
 .confirmation-actions {
     display: flex;
     gap: 8px;

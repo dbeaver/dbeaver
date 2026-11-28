@@ -151,6 +151,12 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
 
     @Nullable
     @Override
+    public String getPreview() {
+        return config.getAttribute("preview");
+    }
+
+    @Nullable
+    @Override
     public AIFunctionParameterTransformer getTransformer() {
         return transformer;
     }

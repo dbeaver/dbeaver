@@ -91,6 +91,7 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_confirm_declined;
     public static String ai_chat_confirm_params;
     public static String ai_chat_confirm_result;
+    public static String ai_chat_confirm_dangerous;
     public static String ai_chat_confirm_allow_options;
     public static String ai_chat_attachment_invalid_data;
     public static String ai_chat_attachment_unknown_file;

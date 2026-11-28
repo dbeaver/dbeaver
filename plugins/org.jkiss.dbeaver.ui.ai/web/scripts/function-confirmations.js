@@ -56,6 +56,28 @@ function addFunctionConfirmation(args) {
         card.appendChild(desc);
     }
 
+    if (args.warning) {
+        card.classList.add('confirmation-card-dangerous');
+        const warning = document.createElement('div');
+        warning.className = 'confirmation-warning';
+        warning.textContent = '\u26A0 ' + args.warning;
+        card.appendChild(warning);
+    }
+
+    for (const preview of args.previews || []) {
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'fn-detail-section';
+        const previewLabel = document.createElement('div');
+        previewLabel.className = 'fn-detail-label';
+        previewLabel.textContent = preview.label;
+        previewDiv.appendChild(previewLabel);
+        const previewValue = document.createElement('pre');
+        previewValue.className = 'fn-detail-value confirmation-preview';
+        previewValue.textContent = preview.value;
+        previewDiv.appendChild(previewValue);
+        card.appendChild(previewDiv);
+    }
+
     const actions = document.createElement('div');
     actions.className = 'confirmation-actions';
 
@@ -112,7 +134,7 @@ function addFunctionConfirmation(args) {
     div.appendChild(card);
     makeItemFocusable(div, 'assistant');
     appendChatNode(div);
-    announce(args.title);
+    announce(args.warning ? args.title + '. ' + args.warning : args.title);
 }
 
 function approveFunctionConfirmation(messageId, functionIndex) {
